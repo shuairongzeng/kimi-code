@@ -161,7 +161,7 @@ describe('handleRemoteControlCommand', () => {
         nonce: 'holder',
         local_origin: 'http://127.0.0.1:58627',
         device_id: 'device-1',
-        url: 'https://code-rc.kimi.com/devices/device-1/?rc=1&from=kimi_code_cli',
+        url: 'https://code-rc.kimi.com/devices/device-1/?rc=1&from=zimi_code_cli',
         started_at: Date.now(),
       }),
     );
@@ -193,9 +193,9 @@ describe('handleRemoteControlCommand', () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'zimi-rc-qrcode-'));
     const dataDir = join(tempRoot, 'custom-home');
     const entryUrl =
-      'https://code-rc.kimi.com/devices/device-1/?rc=1&from=kimi_code_cli';
+      'https://code-rc.kimi.com/devices/device-1/?rc=1&from=zimi_code_cli';
     const sessionUrl =
-      'https://code-rc.kimi.com/devices/device-1/sessions/ses-1?rc=1&from=kimi_code_cli';
+      'https://code-rc.kimi.com/devices/device-1/sessions/ses-1?rc=1&from=zimi_code_cli';
     const pngPath = join(dataDir, 'rc-qrcode.png');
     mocks.getDataDir.mockReturnValue(dataDir);
     mocks.tryResolveServerToken.mockReturnValue('local-server-token');
@@ -267,7 +267,7 @@ describe('handleRemoteControlCommand', () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'zimi-rc-entry-'));
     const dataDir = join(tempRoot, 'custom-home');
     const entryUrl =
-      'https://code-rc.kimi.com/devices/device-1/?rc=1&from=kimi_code_cli';
+      'https://code-rc.kimi.com/devices/device-1/?rc=1&from=zimi_code_cli';
     mocks.getDataDir.mockReturnValue(dataDir);
     mocks.tryResolveServerToken.mockReturnValue('local-server-token');
     const close = vi.fn(async () => {});

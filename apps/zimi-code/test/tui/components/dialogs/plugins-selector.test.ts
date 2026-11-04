@@ -256,14 +256,14 @@ describe('plugins selector dialogs', () => {
         source: 'zip-url',
         originalSource,
       });
-    // code.zimi.ai mirrors the cdnBase rules; cdn.zimi.ai the content-CDN ones.
+    // code.kimi.ai mirrors the cdnBase rules; cdn.kimi.ai the content-CDN ones.
     expect(labelFor('https://code.kimi.ai/kimi-code/plugins/official/kimi-datasource.zip')).toBe('official');
     expect(labelFor('https://code.kimi.ai/kimi-code/plugins/curated/superpowers.zip')).toBe('curated');
-    expect(labelFor('https://cdn.zimi.ai/kimi-computer-use/latest/zimi-cu-plugin.zip')).toBe('official');
-    expect(labelFor('https://cdn.zimi.ai/kimi-computer-use-windows/latest/zimi-cu-win-plugin.zip')).toBe('official');
+    expect(labelFor('https://cdn.kimi.ai/kimi-computer-use/latest/zimi-cu-plugin.zip')).toBe('official');
+    expect(labelFor('https://cdn.kimi.ai/kimi-computer-use-windows/latest/zimi-cu-win-plugin.zip')).toBe('official');
     // Non-plugin paths on the .ai hosts, and lookalike hosts, stay third-party.
     expect(labelFor('https://code.kimi.ai/demo.zip')).toBe('third-party');
-    expect(labelFor('https://cdn.zimi.ai/unrelated/plugin.zip')).toBe('third-party');
+    expect(labelFor('https://cdn.kimi.ai/unrelated/plugin.zip')).toBe('third-party');
     expect(labelFor('https://code.kimi.ai.example.test/kimi-code/plugins/official/x.zip')).toBe('third-party');
   });
 
@@ -336,9 +336,9 @@ describe('plugins selector dialogs', () => {
     const out = strip(renderRaw(panel));
 
     expect(out).toContain('id zimi-cu');
-    expect(out).toContain('via cdn.zimi.com · official');
+    expect(out).toContain('via cdn.kimi.com · official');
     expect(out).toContain('id zimi-webbridge');
-    expect(out).toContain('via code.zimi.com · official');
+    expect(out).toContain('via code.kimi.com · official');
   });
 
   it('treats only the official Zimi CDN path as a trusted install source', () => {
@@ -351,14 +351,14 @@ describe('plugins selector dialogs', () => {
     ).toBe(true);
     // The .ai region family follows the same path rules.
     expect(isOfficialPluginSource('https://code.kimi.ai/kimi-code/plugins/official/kimi-datasource.zip')).toBe(true);
-    expect(isOfficialPluginSource('https://cdn.zimi.ai/kimi-computer-use/latest/zimi-cu-plugin.zip')).toBe(true);
+    expect(isOfficialPluginSource('https://cdn.kimi.ai/kimi-computer-use/latest/zimi-cu-plugin.zip')).toBe(true);
     expect(
       isOfficialPluginSource(
-        'https://cdn.zimi.ai/kimi-computer-use-windows/latest/zimi-cu-win-plugin.zip',
+        'https://cdn.kimi.ai/kimi-computer-use-windows/latest/zimi-cu-win-plugin.zip',
       ),
     ).toBe(true);
     expect(isOfficialPluginSource('https://code.kimi.ai/kimi-code/plugins/curated/superpowers.zip')).toBe(false);
-    expect(isOfficialPluginSource('https://cdn.zimi.ai/unrelated/plugin.zip')).toBe(false);
+    expect(isOfficialPluginSource('https://cdn.kimi.ai/unrelated/plugin.zip')).toBe(false);
     // Curated and other Zimi CDN paths are not "official" for the install gate.
     expect(isOfficialPluginSource('https://code.kimi.com/kimi-code/plugins/curated/superpowers.zip')).toBe(false);
     expect(isOfficialPluginSource('https://code.kimi.com/kimi-code/plugins/foo.zip')).toBe(false);
