@@ -92,7 +92,7 @@ export type {
   ZimiConfigPatch,
   LoopControl,
   ModelAlias,
-  MoonshotServiceConfig,
+  ZimiServiceConfig,
   OAuthRef,
   ProviderConfig,
   ProviderType,

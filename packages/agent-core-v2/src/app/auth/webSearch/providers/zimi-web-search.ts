@@ -14,7 +14,7 @@ export interface ZimiWebSearchProviderOptions {
   fetchImpl?: typeof fetch;
 }
 
-interface MoonshotSearchResult {
+interface ZimiSearchResult {
   site_name?: string;
   title?: string;
   url?: string;
@@ -25,8 +25,8 @@ interface MoonshotSearchResult {
   mime?: string;
 }
 
-interface MoonshotSearchResponse {
-  search_results?: MoonshotSearchResult[];
+interface ZimiSearchResponse {
+  search_results?: ZimiSearchResult[];
 }
 
 export class ZimiWebSearchProvider implements WebSearchProvider {
@@ -77,7 +77,7 @@ export class ZimiWebSearchProvider implements WebSearchProvider {
       );
     }
 
-    const json = (await response.json()) as MoonshotSearchResponse;
+    const json = (await response.json()) as ZimiSearchResponse;
     const raw = Array.isArray(json.search_results) ? json.search_results : [];
 
     return raw.map((r): WebSearchResult => {

@@ -509,11 +509,11 @@ describe('isToolExchangeAdjacencyError', () => {
     );
   });
 
-  const MOONSHOT_TOOL_CALL_ID_NOT_FOUND = '400 tool_call_id  is not found';
+  const ZIMI_TOOL_CALL_ID_NOT_FOUND = '400 tool_call_id  is not found';
 
   it('matches the OpenAI/Zimi tool_call_id-not-found 400', () => {
     expect(
-      isToolExchangeAdjacencyError(new APIStatusError(400, MOONSHOT_TOOL_CALL_ID_NOT_FOUND)),
+      isToolExchangeAdjacencyError(new APIStatusError(400, ZIMI_TOOL_CALL_ID_NOT_FOUND)),
     ).toBe(true);
     expect(
       isToolExchangeAdjacencyError(new APIStatusError(400, "tool_call_id 'call_abc123' is not found")),
@@ -522,7 +522,7 @@ describe('isToolExchangeAdjacencyError', () => {
 
   it('also matches a 422 tool_call_id-not-found', () => {
     expect(
-      isToolExchangeAdjacencyError(new APIStatusError(422, MOONSHOT_TOOL_CALL_ID_NOT_FOUND)),
+      isToolExchangeAdjacencyError(new APIStatusError(422, ZIMI_TOOL_CALL_ID_NOT_FOUND)),
     ).toBe(true);
   });
 

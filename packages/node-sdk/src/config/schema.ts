@@ -217,18 +217,18 @@ export const HookDefSchema = z
 
 export type HookDefConfig = z.infer<typeof HookDefSchema>;
 
-export const MoonshotServiceConfigSchema = z.object({
+export const ZimiServiceConfigSchema = z.object({
   baseUrl: z.string().optional(),
   apiKey: z.string().optional(),
   oauth: OAuthRefSchema.optional(),
   customHeaders: StringRecordSchema.optional(),
 });
 
-export type MoonshotServiceConfig = z.infer<typeof MoonshotServiceConfigSchema>;
+export type ZimiServiceConfig = z.infer<typeof ZimiServiceConfigSchema>;
 
 export const ServicesConfigSchema = z.object({
-  zimiSearch: MoonshotServiceConfigSchema.optional(),
-  zimiFetch: MoonshotServiceConfigSchema.optional(),
+  zimiSearch: ZimiServiceConfigSchema.optional(),
+  zimiFetch: ZimiServiceConfigSchema.optional(),
 });
 
 export type ServicesConfig = z.infer<typeof ServicesConfigSchema>;
@@ -338,10 +338,10 @@ const McpConfigPatchSchema = McpConfigSchema.partial();
 const ImageConfigPatchSchema = ImageConfigSchema.partial();
 const ModelCatalogConfigPatchSchema = ModelCatalogConfigSchema.partial();
 const ExperimentalConfigPatchSchema = ExperimentalConfigSchema;
-const MoonshotServiceConfigPatchSchema = MoonshotServiceConfigSchema.partial();
+const ZimiServiceConfigPatchSchema = ZimiServiceConfigSchema.partial();
 const ServicesConfigPatchSchema = z.object({
-  zimiSearch: MoonshotServiceConfigPatchSchema.optional(),
-  zimiFetch: MoonshotServiceConfigPatchSchema.optional(),
+  zimiSearch: ZimiServiceConfigPatchSchema.optional(),
+  zimiFetch: ZimiServiceConfigPatchSchema.optional(),
 });
 
 export const ZimiConfigPatchSchema = z

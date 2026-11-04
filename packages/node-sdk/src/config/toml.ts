@@ -20,7 +20,7 @@ import {
   type LoopControl,
   type McpConfig,
   type ModelAlias,
-  type MoonshotServiceConfig,
+  type ZimiServiceConfig,
   type OAuthRef,
   type PermissionConfig,
   type ProviderConfig,
@@ -614,7 +614,7 @@ function servicesToToml(services: ServicesConfig, rawServices: unknown): Record<
   return out;
 }
 
-function serviceToToml(service: MoonshotServiceConfig): Record<string, unknown> {
+function serviceToToml(service: ZimiServiceConfig): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(service)) {
     if (key === 'oauth' && value !== undefined) {

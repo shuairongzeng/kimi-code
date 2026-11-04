@@ -59,7 +59,7 @@ describe('Remote Control URLs', () => {
       'zimi_code_cli',
     );
     expect(url).toBe(
-      'https://code-rc.kimi.com/devices/device%2Fone/?rc=1&from=kimi_code_cli',
+      'https://code-rc.kimi.com/devices/device%2Fone/?rc=1&from=zimi_code_cli',
     );
     expect(url).not.toContain('token');
   });
@@ -68,7 +68,7 @@ describe('Remote Control URLs', () => {
     expect(
       buildRemoteControlUrl('device-1', 'session/a b', 'https://code-rc.kimi.com', 'zimi_code_cli'),
     ).toBe(
-      'https://code-rc.kimi.com/devices/device-1/sessions/session%2Fa%20b?rc=1&from=kimi_code_cli',
+      'https://code-rc.kimi.com/devices/device-1/sessions/session%2Fa%20b?rc=1&from=zimi_code_cli',
     );
   });
 
@@ -99,7 +99,7 @@ describe('Remote Control URLs', () => {
     expect(
       buildRemoteControlUrl('device-1', undefined, resolveRemoteControlRelayOrigin(), 'zimi_code_cli'),
     ).toBe(
-      'https://rc.example.test/coding-relay/devices/device-1/?rc=1&from=kimi_code_cli',
+      'https://rc.example.test/coding-relay/devices/device-1/?rc=1&from=zimi_code_cli',
     );
   });
 });

@@ -33,19 +33,19 @@ const OAuthRefSchema = z.object({
 
 type _AssertOAuthRef = AssertExact<Equal<z.infer<typeof OAuthRefSchema>, OAuthRef>>;
 
-export const MoonshotServiceConfigSchema = z.object({
+export const ZimiServiceConfigSchema = z.object({
   baseUrl: z.string().optional(),
   apiKey: z.string().optional(),
   oauth: OAuthRefSchema.optional(),
   customHeaders: StringRecordSchema.optional(),
 });
 
-export type MoonshotServiceConfig = z.infer<typeof MoonshotServiceConfigSchema>;
+export type ZimiServiceConfig = z.infer<typeof ZimiServiceConfigSchema>;
 
 export const ServicesConfigSchema = z
   .object({
-    zimiSearch: MoonshotServiceConfigSchema.optional(),
-    zimiFetch: MoonshotServiceConfigSchema.optional(),
+    zimiSearch: ZimiServiceConfigSchema.optional(),
+    zimiFetch: ZimiServiceConfigSchema.optional(),
   })
   .passthrough();
 
@@ -61,12 +61,12 @@ const nonBlankEnv = (raw: string): string | undefined => {
   return trimmed.length > 0 ? trimmed : undefined;
 };
 
-const zimiSearchEnvBindings = envBindings(MoonshotServiceConfigSchema, {
+const zimiSearchEnvBindings = envBindings(ZimiServiceConfigSchema, {
   baseUrl: { env: WEB_SEARCH_BASE_URL_ENV, parse: nonBlankEnv },
   apiKey: { env: WEB_SEARCH_API_KEY_ENV, parse: nonBlankEnv },
 });
 
-const zimiFetchEnvBindings = envBindings(MoonshotServiceConfigSchema, {
+const zimiFetchEnvBindings = envBindings(ZimiServiceConfigSchema, {
   baseUrl: { env: WEB_FETCH_BASE_URL_ENV, parse: nonBlankEnv },
   apiKey: { env: WEB_FETCH_API_KEY_ENV, parse: nonBlankEnv },
 });
@@ -125,15 +125,15 @@ function isolateEnvServiceCredentials(
   return { ...rest, apiKey };
 }
 
-const stripMoonshotSearchEnv = stripEnvBoundFields(zimiSearchEnvBindings);
-const stripMoonshotFetchEnv = stripEnvBoundFields(zimiFetchEnvBindings);
+const stripZimiSearchEnv = stripEnvBoundFields(zimiSearchEnvBindings);
+const stripZimiFetchEnv = stripEnvBoundFields(zimiFetchEnvBindings);
 
 export const stripServicesEnv: ConfigStripEnv<ServicesConfig> = (value, raw, getEnv) => {
   if (!isPlainObject(value)) return value;
   let out: ServicesConfig | undefined;
   for (const [key, strip] of [
-    ['zimiSearch', stripMoonshotSearchEnv],
-    ['zimiFetch', stripMoonshotFetchEnv],
+    ['zimiSearch', stripZimiSearchEnv],
+    ['zimiFetch', stripZimiFetchEnv],
   ] as const) {
     const entry = value[key];
     if (entry === undefined) continue;

@@ -57,5 +57,18 @@
   "engines": {
     "node": ">=24.15.0"
   },
-  "packageManager": "pnpm@10.33.0"
+  "packageManager": "pnpm@10.33.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@vscode/vsce-sign",
+      "core-js-pure",
+      "core-js",
+      "esbuild",
+      "keytar",
+      "msw",
+      "protobufjs",
+      "tree-sitter-bash",
+      "tree-sitter"
+    ]
+  }
 }
