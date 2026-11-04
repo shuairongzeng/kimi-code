@@ -1,9 +1,9 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 
-import type { SwarmModeTrigger } from '@moonshot-ai/agent-core-v2/features/swarm/agent/swarm';
+import type { SwarmModeTrigger } from '@zimi-ai/agent-core-v2/features/swarm/agent/swarm';
 
 import type { AgentContextData } from '#/context';
-import { ErrorCodes, KimiError, makeErrorPayload } from '#/errors';
+import { ErrorCodes, ZimiError, makeErrorPayload } from '#/errors';
 import type {
   ApprovalHandler,
   Event,
@@ -47,8 +47,8 @@ import type {
   GoalSnapshot,
   GoalToolResult,
   JsonObject,
-  KimiConfig,
-  KimiConfigPatch,
+  ZimiConfig,
+  ZimiConfigPatch,
   ListSessionsOptions,
   McpServerInfo,
   McpStartupMetrics,
@@ -218,7 +218,7 @@ export abstract class SDKRpcClientBase {
   abstract listWorkspaceSkills(workDir: string): Promise<readonly SkillSummary[]>;
 
   async getWorkspaceAdditionalDirs(_workDir: string): Promise<readonly string[]> {
-    throw new KimiError(
+    throw new ZimiError(
       ErrorCodes.NOT_IMPLEMENTED,
       'Workspace additional directories are not implemented for this engine',
     );
@@ -237,7 +237,7 @@ export abstract class SDKRpcClientBase {
 
   abstract exportSession(input: ExportSessionInput): Promise<ExportSessionResult>;
 
-  abstract getConfig(input?: GetConfigOptions): Promise<KimiConfig>;
+  abstract getConfig(input?: GetConfigOptions): Promise<ZimiConfig>;
 
   abstract getConfigDiagnostics(): Promise<ConfigDiagnostics>;
 
@@ -245,9 +245,9 @@ export abstract class SDKRpcClientBase {
 
   abstract getExperimentalFeatures(): Promise<readonly ExperimentalFeatureState[]>;
 
-  abstract setConfig(input: KimiConfigPatch): Promise<KimiConfig>;
+  abstract setConfig(input: ZimiConfigPatch): Promise<ZimiConfig>;
 
-  abstract removeProvider(providerId: string): Promise<KimiConfig>;
+  abstract removeProvider(providerId: string): Promise<ZimiConfig>;
 
   abstract importCustomRegistry(
     options: ImportCustomRegistryOptions,
@@ -385,7 +385,7 @@ export abstract class SDKRpcClientBase {
   abstract setTowerMode(input: SetSessionTowerModeRpcInput): Promise<void>;
 
   async getTowerStatus(_input: SessionIdRpcInput): Promise<string> {
-    throw new KimiError(
+    throw new ZimiError(
       ErrorCodes.NOT_IMPLEMENTED,
       'Tower status is not implemented for this engine',
     );

@@ -11,8 +11,8 @@ import {
   towerEnterFailureMessage,
   type PermissionMode,
   type Scope,
-} from '@moonshot-ai/agent-core-v2';
-import type { SessionAgentConfigPartial } from '@moonshot-ai/agent-core-v2/app/sessionLegacy/sessionProtocol';
+} from '@zimi-ai/agent-core-v2';
+import type { SessionAgentConfigPartial } from '@zimi-ai/agent-core-v2/app/sessionLegacy/sessionProtocol';
 
 import { ensureMainAgent } from '../transport/mainAgent';
 

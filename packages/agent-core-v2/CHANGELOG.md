@@ -1,4 +1,4 @@
-# @moonshot-ai/agent-core-v2
+# @zimi-ai/agent-core-v2
 
 ## 0.6.0
 
@@ -17,7 +17,7 @@
 ### Patch Changes
 
 - Updated dependencies [[`9f0693b`](https://github.com/MoonshotAI/kimi-code/commit/9f0693becb63a329cbf764325688448e76f40922)]:
-  - @moonshot-ai/kimi-code-oauth@0.5.0
+  - @zimi-ai/zimi-code-oauth@0.5.0
 
 ## 0.5.0
 
@@ -58,7 +58,7 @@
 - [#2911](https://github.com/MoonshotAI/kimi-code/pull/2911) [`249d8fa`](https://github.com/MoonshotAI/kimi-code/commit/249d8faa3447427665185a900926d048213d2ac7) Thanks [@7Sageer](https://github.com/7Sageer)! - Normalize provider tool call ids at the LLM ingestion boundary (`ToolCallIdNormalizer` in `llmRequester`): self-hosted endpoints may renumber ids per response, and a repeated id corrupted every downstream keying — dropped tool results in context rebuild, `duplicate_tool_call_dropped` in the strict projector, merged transcript frames, misrouted approvals. The first occurrence passes through unchanged; later ones are rewritten to a readable `<id>__<n>` suffix, kept consistent between streamed deltas and the finalized message, logged for provenance, and rolled back when the attempt fails so projection retries re-stream under the same ids. Interaction ids are additionally minted engine-side (`approval_<uuid>` / `question_<uuid>` / `user_tool_<uuid>`) instead of deriving from the provider toolCallId.
 
 - Updated dependencies [[`6be2697`](https://github.com/MoonshotAI/kimi-code/commit/6be26978b123bacf1c5ebce52bbeb6f7b7ff0629), [`4a93f70`](https://github.com/MoonshotAI/kimi-code/commit/4a93f70aa2cf5f70a88b4f8eeb2e409aab2c8f59)]:
-  - @moonshot-ai/kimi-code-oauth@0.4.0
+  - @zimi-ai/zimi-code-oauth@0.4.0
 
 ## 0.3.2
 
@@ -81,7 +81,7 @@
 ### Patch Changes
 
 - Updated dependencies [[`40172c7`](https://github.com/MoonshotAI/kimi-code/commit/40172c7ca96ca981b043b793588dd32e898979fa)]:
-  - @moonshot-ai/kimi-code-oauth@0.3.0
+  - @zimi-ai/zimi-code-oauth@0.3.0
 
 ## 0.2.0
 
@@ -99,18 +99,18 @@
 
 - [#2030](https://github.com/MoonshotAI/kimi-code/pull/2030) [`ec88d35`](https://github.com/MoonshotAI/kimi-code/commit/ec88d352e8f4dc5e8ffd1212f016138458f69893) Thanks [@RealKai42](https://github.com/RealKai42)! - Fix catalog-imported Claude models being wrongly locked into always-on thinking, and stop offering a misleading thinking Off option for models that cannot truly disable reasoning (such as Gemini 3). Also normalizes configured thinking effort values and unifies context-usage reporting.
 
-- [#1993](https://github.com/MoonshotAI/kimi-code/pull/1993) [`37eda4e`](https://github.com/MoonshotAI/kimi-code/commit/37eda4e59aebc8ecafa91be3f43f971ed63963a3) Thanks [@RealKai42](https://github.com/RealKai42)! - Add environment variable overrides for agent loop and background task limits. Set KIMI_LOOP_MAX_STEPS_PER_TURN, KIMI_LOOP_MAX_RETRIES_PER_STEP, or KIMI_CODE_BACKGROUND_MAX_RUNNING_TASKS to take priority over the [loop_control] and [background] config.
+- [#1993](https://github.com/MoonshotAI/kimi-code/pull/1993) [`37eda4e`](https://github.com/MoonshotAI/kimi-code/commit/37eda4e59aebc8ecafa91be3f43f971ed63963a3) Thanks [@RealKai42](https://github.com/RealKai42)! - Add environment variable overrides for agent loop and background task limits. Set ZIMI_LOOP_MAX_STEPS_PER_TURN, ZIMI_LOOP_MAX_RETRIES_PER_STEP, or ZIMI_CODE_BACKGROUND_MAX_RUNNING_TASKS to take priority over the [loop_control] and [background] config.
 
-- [#1993](https://github.com/MoonshotAI/kimi-code/pull/1993) [`37eda4e`](https://github.com/MoonshotAI/kimi-code/commit/37eda4e59aebc8ecafa91be3f43f971ed63963a3) Thanks [@RealKai42](https://github.com/RealKai42)! - Fix config environment overrides (such as KIMI_IMAGE_MAX_EDGE_PX or KIMI_SUBAGENT_TIMEOUT_MS) being persisted into config.toml by config API writes while the env var is set, and keeping the old value after the env var is changed to an invalid value or removed.
+- [#1993](https://github.com/MoonshotAI/kimi-code/pull/1993) [`37eda4e`](https://github.com/MoonshotAI/kimi-code/commit/37eda4e59aebc8ecafa91be3f43f971ed63963a3) Thanks [@RealKai42](https://github.com/RealKai42)! - Fix config environment overrides (such as ZIMI_IMAGE_MAX_EDGE_PX or ZIMI_SUBAGENT_TIMEOUT_MS) being persisted into config.toml by config API writes while the env var is set, and keeping the old value after the env var is changed to an invalid value or removed.
 
 - [#1968](https://github.com/MoonshotAI/kimi-code/pull/1968) [`71bcfba`](https://github.com/MoonshotAI/kimi-code/commit/71bcfba54a6836f4b6d4e26babde67576b293a64) Thanks [@RealKai42](https://github.com/RealKai42)! - Fix sessions getting stuck on every turn with a provider "message must not be empty" error after a content-filtered response.
 
-- [#2015](https://github.com/MoonshotAI/kimi-code/pull/2015) [`b5efba7`](https://github.com/MoonshotAI/kimi-code/commit/b5efba7abcaf4041f81ec520097a61e6546e8c50) Thanks [@RealKai42](https://github.com/RealKai42)! - Fix thinking levels being offered for models that do not support them (e.g. phantom levels on Kimi K3): levels now come from each model's declared capabilities. Models that cannot disable reasoning (e.g. gpt-5) no longer offer an Off option, and turning thinking Off on models that support it (e.g. xai grok) now truly disables reasoning.
+- [#2015](https://github.com/MoonshotAI/kimi-code/pull/2015) [`b5efba7`](https://github.com/MoonshotAI/kimi-code/commit/b5efba7abcaf4041f81ec520097a61e6546e8c50) Thanks [@RealKai42](https://github.com/RealKai42)! - Fix thinking levels being offered for models that do not support them (e.g. phantom levels on Zimi K3): levels now come from each model's declared capabilities. Models that cannot disable reasoning (e.g. gpt-5) no longer offer an Off option, and turning thinking Off on models that support it (e.g. xai grok) now truly disables reasoning.
 
 - [#1735](https://github.com/MoonshotAI/kimi-code/pull/1735) [`ce0e3ce`](https://github.com/MoonshotAI/kimi-code/commit/ce0e3ceb04223bdaad8e8931bad46eff561055b6) Thanks [@7Sageer](https://github.com/7Sageer)! - Warn when a tool allow/deny list entry can never match any tool, for example a misspelled name (v2 engine only).
 
 - Updated dependencies [[`ce0e3ce`](https://github.com/MoonshotAI/kimi-code/commit/ce0e3ceb04223bdaad8e8931bad46eff561055b6), [`ce0e3ce`](https://github.com/MoonshotAI/kimi-code/commit/ce0e3ceb04223bdaad8e8931bad46eff561055b6), [`a3699dd`](https://github.com/MoonshotAI/kimi-code/commit/a3699dd6aa7b41efd3129a117007d195282379fd)]:
-  - @moonshot-ai/protocol@0.5.0
+  - @zimi-ai/protocol@0.5.0
 
 ## 0.1.2
 
@@ -123,7 +123,7 @@
 ### Patch Changes
 
 - Updated dependencies [[`44f3341`](https://github.com/MoonshotAI/kimi-code/commit/44f334191989183d21920f6867c405581347c748), [`44f3341`](https://github.com/MoonshotAI/kimi-code/commit/44f334191989183d21920f6867c405581347c748), [`44f3341`](https://github.com/MoonshotAI/kimi-code/commit/44f334191989183d21920f6867c405581347c748), [`44f3341`](https://github.com/MoonshotAI/kimi-code/commit/44f334191989183d21920f6867c405581347c748)]:
-  - @moonshot-ai/minidb@0.2.0
+  - @zimi-ai/minidb@0.2.0
 
 ## 0.1.0
 
@@ -159,9 +159,9 @@
 
 - [#1637](https://github.com/MoonshotAI/kimi-code/pull/1637) [`0e0a6e9`](https://github.com/MoonshotAI/kimi-code/commit/0e0a6e9a5170c28c5e6809c1b2cf6d6f8904de73) Thanks [@sailist](https://github.com/sailist)! - Support caller-supplied MCP server configs on session create in the v2 engine (experimental), merged over the file config and under plugin servers.
 
-- [#1441](https://github.com/MoonshotAI/kimi-code/pull/1441) [`ceb158d`](https://github.com/MoonshotAI/kimi-code/commit/ceb158dc54586f254819edbc83c27e21dca1ecf6) Thanks [@sailist](https://github.com/sailist)! - Route FetchURL through the managed Kimi fetch service when the Kimi provider is logged in, with automatic fallback to local fetching on failure, and forward the host identity headers with the request.
+- [#1441](https://github.com/MoonshotAI/kimi-code/pull/1441) [`ceb158d`](https://github.com/MoonshotAI/kimi-code/commit/ceb158dc54586f254819edbc83c27e21dca1ecf6) Thanks [@sailist](https://github.com/sailist)! - Route FetchURL through the managed Zimi fetch service when the Zimi provider is logged in, with automatic fallback to local fetching on failure, and forward the host identity headers with the request.
 
-- [#1634](https://github.com/MoonshotAI/kimi-code/pull/1634) [`96b8328`](https://github.com/MoonshotAI/kimi-code/commit/96b83281b2da3ee479b59e8a8da990708d1d6a30) Thanks [@sailist](https://github.com/sailist)! - Fix v2 managed OAuth login ignoring `KIMI_CODE_BASE_URL` / `KIMI_CODE_OAUTH_HOST`: the login environment is now resolved env-aware (v1 parity), so the credential slot a token is written to always matches the slot the runtime reads — no more "login succeeds but every call 401s" against non-default environments. The provisioned provider entry records the login environment and credential slot explicitly, and logout deletes from the runtime (env-aware) slot.
+- [#1634](https://github.com/MoonshotAI/kimi-code/pull/1634) [`96b8328`](https://github.com/MoonshotAI/kimi-code/commit/96b83281b2da3ee479b59e8a8da990708d1d6a30) Thanks [@sailist](https://github.com/sailist)! - Fix v2 managed OAuth login ignoring `ZIMI_CODE_BASE_URL` / `ZIMI_CODE_OAUTH_HOST`: the login environment is now resolved env-aware (v1 parity), so the credential slot a token is written to always matches the slot the runtime reads — no more "login succeeds but every call 401s" against non-default environments. The provisioned provider entry records the login environment and credential slot explicitly, and logout deletes from the runtime (env-aware) slot.
 
 - [#1441](https://github.com/MoonshotAI/kimi-code/pull/1441) [`ceb158d`](https://github.com/MoonshotAI/kimi-code/commit/ceb158dc54586f254819edbc83c27e21dca1ecf6) Thanks [@sailist](https://github.com/sailist)! - Hide image-compression captions from user-visible history: captions that prompt ingestion places inside a user message are rerouted through hidden system reminders (and stripped from session titles), while the model still receives the full note. ReadMediaFile is now registered in production whenever the bound model supports image or video input, re-registering on model switches.
 
@@ -184,4 +184,4 @@
 - [#1441](https://github.com/MoonshotAI/kimi-code/pull/1441) [`ceb158d`](https://github.com/MoonshotAI/kimi-code/commit/ceb158dc54586f254819edbc83c27e21dca1ecf6) Thanks [@sailist](https://github.com/sailist)! - Report `video_upload` telemetry for ReadMediaFile video uploads — outcome, byte size, mime type, duration, and model/protocol tags; a failing telemetry sink never affects the upload.
 
 - Updated dependencies [[`ceb158d`](https://github.com/MoonshotAI/kimi-code/commit/ceb158dc54586f254819edbc83c27e21dca1ecf6), [`0303b82`](https://github.com/MoonshotAI/kimi-code/commit/0303b82c3e691836163ecf906febfb6324c81d74)]:
-  - @moonshot-ai/protocol@0.4.0
+  - @zimi-ai/protocol@0.4.0

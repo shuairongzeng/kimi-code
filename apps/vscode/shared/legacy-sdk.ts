@@ -172,7 +172,7 @@ export interface ModelConfig {
   default_effort?: string;
 }
 
-export interface KimiConfig {
+export interface ZimiConfig {
   defaultModel: string | null;
   defaultThinking: boolean;
   defaultThinkingEffort?: string;

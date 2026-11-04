@@ -17,7 +17,7 @@ import type { TokenInfo } from '../src/types';
 function makeTmpDir(): string {
   const dir = join(
     tmpdir(),
-    `kimi-storage-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    `zimi-storage-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
   );
   mkdirSync(dir, { recursive: true });
   return dir;
@@ -49,20 +49,20 @@ describe('FileTokenStorage', () => {
   });
 
   it('returns undefined when no token exists', async () => {
-    expect(await storage.load('kimi-code')).toBeUndefined();
+    expect(await storage.load('zimi-code')).toBeUndefined();
   });
 
   it('round-trips a token via save/load', async () => {
     const token = sampleToken();
-    await storage.save('kimi-code', token);
-    const loaded = await storage.load('kimi-code');
+    await storage.save('zimi-code', token);
+    const loaded = await storage.load('zimi-code');
     expect(loaded).toEqual(token);
   });
 
   it('persists tokens in snake_case JSON (Python-compatible)', async () => {
     const token = sampleToken();
-    await storage.save('kimi-code', token);
-    const raw = readFileSync(join(dir, 'kimi-code.json'), 'utf-8');
+    await storage.save('zimi-code', token);
+    const raw = readFileSync(join(dir, 'zimi-code.json'), 'utf-8');
     const parsed = JSON.parse(raw) as Record<string, unknown>;
     expect(parsed['access_token']).toBe('at-abc');
     expect(parsed['refresh_token']).toBe('rt-xyz');
@@ -73,16 +73,16 @@ describe('FileTokenStorage', () => {
   });
 
   it.skipIf(process.platform === 'win32')('writes the credentials file with mode 0600', async () => {
-    await storage.save('kimi-code', sampleToken());
-    const stat = statSync(join(dir, 'kimi-code.json'));
+    await storage.save('zimi-code', sampleToken());
+    const stat = statSync(join(dir, 'zimi-code.json'));
     // eslint-disable-next-line no-bitwise
     expect(stat.mode & 0o777).toBe(0o600);
   });
 
   it('remove() deletes the file; load() then returns undefined', async () => {
-    await storage.save('kimi-code', sampleToken());
-    await storage.remove('kimi-code');
-    expect(await storage.load('kimi-code')).toBeUndefined();
+    await storage.save('zimi-code', sampleToken());
+    await storage.remove('zimi-code');
+    expect(await storage.load('zimi-code')).toBeUndefined();
   });
 
   it('remove() is idempotent when file is absent', async () => {
@@ -90,54 +90,54 @@ describe('FileTokenStorage', () => {
   });
 
   it('save() overwrites an existing token atomically', async () => {
-    await storage.save('kimi-code', sampleToken({ accessToken: 'first' }));
-    await storage.save('kimi-code', sampleToken({ accessToken: 'second' }));
-    const loaded = await storage.load('kimi-code');
+    await storage.save('zimi-code', sampleToken({ accessToken: 'first' }));
+    await storage.save('zimi-code', sampleToken({ accessToken: 'second' }));
+    const loaded = await storage.load('zimi-code');
     expect(loaded?.accessToken).toBe('second');
   });
 
   it('load() returns undefined on corrupt JSON (does not throw)', async () => {
-    const file = join(dir, 'kimi-code.json');
+    const file = join(dir, 'zimi-code.json');
     writeFileSync(file, '{ not json', 'utf-8');
     chmodSync(file, 0o600);
-    expect(await storage.load('kimi-code')).toBeUndefined();
+    expect(await storage.load('zimi-code')).toBeUndefined();
   });
 
   it('load() returns undefined on malformed payload (not a dict)', async () => {
-    const file = join(dir, 'kimi-code.json');
+    const file = join(dir, 'zimi-code.json');
     writeFileSync(file, '["array", "instead"]', 'utf-8');
     chmodSync(file, 0o600);
-    expect(await storage.load('kimi-code')).toBeUndefined();
+    expect(await storage.load('zimi-code')).toBeUndefined();
   });
 
   it('load() tolerates missing numeric fields by defaulting to 0', async () => {
-    const file = join(dir, 'kimi-code.json');
+    const file = join(dir, 'zimi-code.json');
     writeFileSync(file, JSON.stringify({ access_token: 'a', refresh_token: 'r' }), 'utf-8');
     chmodSync(file, 0o600);
-    const token = await storage.load('kimi-code');
+    const token = await storage.load('zimi-code');
     expect(token?.expiresAt).toBe(0);
     expect(token?.expiresIn).toBe(0);
   });
 
   it('list() returns all stored token names', async () => {
-    await storage.save('kimi-code', sampleToken());
+    await storage.save('zimi-code', sampleToken());
     await storage.save('other-provider', sampleToken());
     const names = await storage.list();
-    expect(names.toSorted()).toEqual(['kimi-code', 'other-provider']);
+    expect(names.toSorted()).toEqual(['zimi-code', 'other-provider']);
   });
 
   it('list() ignores non-JSON files in the credentials dir', async () => {
-    await storage.save('kimi-code', sampleToken());
-    writeFileSync(join(dir, 'kimi-code.lock'), 'lock', 'utf-8');
+    await storage.save('zimi-code', sampleToken());
+    writeFileSync(join(dir, 'zimi-code.lock'), 'lock', 'utf-8');
     writeFileSync(join(dir, 'readme.txt'), 'readme', 'utf-8');
     const names = await storage.list();
-    expect(names).toEqual(['kimi-code']);
+    expect(names).toEqual(['zimi-code']);
   });
 
   it.skipIf(process.platform === 'win32')('creates the credentials dir with mode 0700 if missing', async () => {
     const freshDir = join(dir, 'nested', 'sub');
     const s = new FileTokenStorage(freshDir);
-    await s.save('kimi-code', sampleToken());
+    await s.save('zimi-code', sampleToken());
     const stat = statSync(freshDir);
     // eslint-disable-next-line no-bitwise
     expect(stat.mode & 0o777).toBe(0o700);
@@ -171,20 +171,20 @@ describe('FileTokenStorage', () => {
     // Atomic save must clean up its temp artefact after rename. Uses
     // `target.tmp.<pid>.<rand>` then renameSync; this test asserts the
     // resulting directory contains only the canonical file.
-    await storage.save('kimi-code', sampleToken());
+    await storage.save('zimi-code', sampleToken());
     const { readdirSync } = await import('node:fs');
     const entries = readdirSync(dir);
-    const tmps = entries.filter((name) => name.startsWith('kimi-code.json.tmp.'));
+    const tmps = entries.filter((name) => name.startsWith('zimi-code.json.tmp.'));
     expect(tmps).toEqual([]);
-    expect(entries).toContain('kimi-code.json');
+    expect(entries).toContain('zimi-code.json');
   });
 
   it('save() + load() preserves expires_in and expires_at roundtrip', async () => {
     // The wire format records both `expires_at` and `expires_in`; the
     // load path must restore both fields without loss.
     const token = sampleToken({ expiresAt: 1_800_000_000, expiresIn: 7200 });
-    await storage.save('kimi-code', token);
-    const loaded = await storage.load('kimi-code');
+    await storage.save('zimi-code', token);
+    const loaded = await storage.load('zimi-code');
     expect(loaded?.expiresAt).toBe(1_800_000_000);
     expect(loaded?.expiresIn).toBe(7200);
   });
@@ -192,7 +192,7 @@ describe('FileTokenStorage', () => {
   it('load() of a wire payload missing scope/token_type uses safe defaults', async () => {
     // A legacy file written without the optional `scope` / `token_type`
     // fields must still load; the defaults come from `tokenFromWire`.
-    const file = join(dir, 'kimi-code.json');
+    const file = join(dir, 'zimi-code.json');
     writeFileSync(
       file,
       JSON.stringify({
@@ -204,7 +204,7 @@ describe('FileTokenStorage', () => {
       'utf-8',
     );
     chmodSync(file, 0o600);
-    const loaded = await storage.load('kimi-code');
+    const loaded = await storage.load('zimi-code');
     expect(loaded?.accessToken).toBe('a');
     expect(loaded?.refreshToken).toBe('r');
     // Defaults should be strings (empty / 'Bearer'), never undefined.

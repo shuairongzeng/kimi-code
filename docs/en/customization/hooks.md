@@ -1,6 +1,6 @@
 # Hooks
 
-Hooks are an automatic trigger mechanism: you tell Kimi Code CLI in advance "whenever X happens, run this script." The script runs on your local machine, and you can put any logic inside it. This stays true when a session is bound to a [remote environment](../guides/remote-environment.md): hooks always execute on the machine running Kimi Code, so in a remote session they observe local files and processes, not the target's. Typical use cases:
+Hooks are an automatic trigger mechanism: you tell Zimi Code CLI in advance "whenever X happens, run this script." The script runs on your local machine, and you can put any logic inside it. This stays true when a session is bound to a [remote environment](../guides/remote-environment.md): hooks always execute on the machine running Zimi Code, so in a remote session they observe local files and processes, not the target's. Typical use cases:
 
 - **Security interception**: Before the Agent executes a shell command, check whether it contains dangerous operations (such as `rm -rf`) and block execution if so
 - **Desktop notifications**: When a background task completes, pop up a system notification to bring you back to review the results
@@ -28,18 +28,18 @@ Precisely because of fail-open, Hooks are suitable for alerts and lightweight in
 The following hook flashes a notification in the terminal title bar each time a background task completes (macOS requires `terminal-notifier` to be installed):
 
 ```toml
-# Written in ~/.kimi-code/config.toml
+# Written in ~/.zimi-code/config.toml
 [[hooks]]
 event = "Notification"           # Trigger: when a background task status changes
 matcher = "task\\.completed"     # Only care about "completed" notifications
-command = "terminal-notifier -title Kimi -message 'Task done'"
+command = "terminal-notifier -title Zimi -message 'Task done'"
 ```
 
 Save the config, start a new session, and a notification will appear the next time a background task completes.
 
 ## Configuration
 
-All hook rules are written in the `[[hooks]]` array in `~/.kimi-code/config.toml`, where each entry is one rule:
+All hook rules are written in the `[[hooks]]` array in `~/.zimi-code/config.toml`, where each entry is one rule:
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -54,7 +54,7 @@ All hook rules are written in the `[[hooks]]` array in `~/.kimi-code/config.toml
 
 Hook rules live only in your user-level `config.toml` and in local plugins — there is no project-level hook file, so content checked out on a remote target can never inject hook definitions into your session.
 
-Hook commands always execute on the machine running Kimi Code, with the current session's **local** project directory as their working directory. When the session is bound to a [remote environment](../guides/remote-environment.md), hooks that reference project paths operate on that local directory (the carrier of the binding), never on the target; running hooks on the target itself is not supported and remains a future, undesigned concept.
+Hook commands always execute on the machine running Zimi Code, with the current session's **local** project directory as their working directory. When the session is bound to a [remote environment](../guides/remote-environment.md), hooks that reference project paths operate on that local directory (the carrier of the binding), never on the target; running hooks on the target itself is not supported and remains a future, undesigned concept.
 
 <details>
 <summary>Process group and timeout handling</summary>
@@ -72,7 +72,7 @@ Each time a hook triggers, the CLI passes the following base information to the 
   "hook_event_name": "PreToolUse",
   "session_id": "session_abc",
   "session_title": "Fix the login page",
-  "client_type": "kimi_code_cli",
+  "client_type": "zimi_code_cli",
   "cwd": "/path/to/project"
 }
 ```
@@ -121,8 +121,8 @@ Only **blockable events** (`PreToolUse`, `Stop`, `UserPromptSubmit`) have return
 | `PermissionRequest` | Tool name | — | Triggered just before waiting for user approval |
 | `PermissionResult` | Tool name | — | Triggered after approval completes |
 | `SessionStart` | `startup` or `resume` | — | Triggered after a session starts or resumes; payload includes `source`, `model`, `profile` |
-| `SessionEnd` | `exit` or `archive` | — | Triggered after a session closes; `archive` means the session was archived rather than exited; not triggered when `kimi web` unloads an idle session from memory, nor when such an unloaded session is later archived or deleted; the transparent reload does not trigger `SessionStart` |
-| `SessionHeartbeat` | Empty string | — | Triggered every 60 seconds while the session is alive; the timer runs only when this event is configured; payload includes `uptime_ms`; pauses while `kimi web` has the session unloaded, and `uptime_ms` restarts after reload |
+| `SessionEnd` | `exit` or `archive` | — | Triggered after a session closes; `archive` means the session was archived rather than exited; not triggered when `zimi web` unloads an idle session from memory, nor when such an unloaded session is later archived or deleted; the transparent reload does not trigger `SessionStart` |
+| `SessionHeartbeat` | Empty string | — | Triggered every 60 seconds while the session is alive; the timer runs only when this event is configured; payload includes `uptime_ms`; pauses while `zimi web` has the session unloaded, and `uptime_ms` restarts after reload |
 | `SubagentStart` | Sub-agent name | — | Triggered before a sub-agent starts running |
 | `SubagentStop` | Sub-agent name | — | Triggered after a sub-agent completes successfully |
 | `TaskStarted` | Task kind (`agent`, `process`, or `question`) | — | Triggered when a background task starts; payload includes `task_id`, `description`, `detached` |
@@ -140,7 +140,7 @@ The following hook checks the command content before the Agent calls the `Bash` 
 [[hooks]]
 event = "PreToolUse"
 matcher = "Bash"
-command = "node ~/.kimi-code/hooks/block-dangerous-bash.mjs"
+command = "node ~/.zimi-code/hooks/block-dangerous-bash.mjs"
 timeout = 5
 ```
 
@@ -162,7 +162,7 @@ process.stdin.on('end', () => {
 });
 ```
 
-After blocking, Kimi Code CLI writes the blocking reason back into the context, and the model can use this to choose a safer alternative.
+After blocking, Zimi Code CLI writes the blocking reason back into the context, and the model can use this to choose a safer alternative.
 
 ::: warning Note
 This example only demonstrates the blocking mechanism and is not a production-grade security parser. Real scenarios are better served by whitelists, or a dedicated shell parser to handle quoting, variable expansion, and multi-command sequences.

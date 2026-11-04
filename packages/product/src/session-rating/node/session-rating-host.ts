@@ -28,13 +28,13 @@ import {
   type IDisposable,
   type ISessionScopeHandle,
   type Scope,
-} from '@moonshot-ai/agent-core-v2';
-import { TurnStarted } from '@moonshot-ai/agent-core-v2/agent/loop/turnEvents';
-import { TurnEnded } from '@moonshot-ai/agent-core-v2/agent/loop/turnOps';
+} from '@zimi-ai/agent-core-v2';
+import { TurnStarted } from '@zimi-ai/agent-core-v2/agent/loop/turnEvents';
+import { TurnEnded } from '@zimi-ai/agent-core-v2/agent/loop/turnOps';
 import {
   ToolCallStarted,
   ToolResultEvent,
-} from '@moonshot-ai/agent-core-v2/agent/toolExecutor/toolExecutorEvents';
+} from '@zimi-ai/agent-core-v2/agent/toolExecutor/toolExecutorEvents';
 
 import { ClientConfigClient } from '#/client-configs/node/client-configs';
 import {
@@ -58,7 +58,7 @@ import {
   type SurveyPopupPayload,
 } from '#/session-rating/common/survey-popup-config';
 
-export const SESSION_RATING_PREVIEW_ENV = 'KIMI_CODE_SESSION_RATING_PREVIEW';
+export const SESSION_RATING_PREVIEW_ENV = 'ZIMI_CODE_SESSION_RATING_PREVIEW';
 
 const CLIENT_CONFIG_CACHE_DIR = join('cache', 'client-configs');
 
@@ -143,7 +143,7 @@ export class SessionRatingHost implements IDisposable {
       const oauth = core.accessor.get(IOAuthToolkit);
       const client = new ClientConfigClient({
         region: () => auth.getRegion(),
-        baseUrlOverride: () => bootstrap.getEnv('KIMI_CODE_BASE_URL'),
+        baseUrlOverride: () => bootstrap.getEnv('ZIMI_CODE_BASE_URL'),
         cacheDir: () => join(bootstrap.homeDir, CLIENT_CONFIG_CACHE_DIR),
       });
       this.config = new LazyConfigFeed(() =>

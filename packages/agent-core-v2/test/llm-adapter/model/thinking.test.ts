@@ -17,25 +17,25 @@ const registry = new ProtocolAdapterRegistry();
 
 describe('registry-driven vendor verdicts', () => {
   it('drivesThinkingThroughTraits: trait-driven vendors only, no string branches', () => {
-    expect(drivesThinkingThroughTraits('kimi')).toBe(true);
+    expect(drivesThinkingThroughTraits('zimi')).toBe(true);
     expect(drivesThinkingThroughTraits('openai')).toBe(false);
     expect(drivesThinkingThroughTraits('anthropic')).toBe(false);
     expect(drivesThinkingThroughTraits('never-registered')).toBe(false);
     expect(drivesThinkingThroughTraits(undefined)).toBe(false);
   });
 
-  it('usesTraitDrivenThinking: native traits and the (kimi, anthropic) pair registration', () => {
-    expect(usesTraitDrivenThinking(registry, 'openai', 'kimi')).toBe(true);
-    expect(usesTraitDrivenThinking(registry, 'anthropic', 'kimi')).toBe(true);
+  it('usesTraitDrivenThinking: native traits and the (zimi, anthropic) pair registration', () => {
+    expect(usesTraitDrivenThinking(registry, 'openai', 'zimi')).toBe(true);
+    expect(usesTraitDrivenThinking(registry, 'anthropic', 'zimi')).toBe(true);
     expect(usesTraitDrivenThinking(registry, 'openai', 'openai')).toBe(false);
     expect(usesTraitDrivenThinking(registry, 'openai', undefined)).toBe(false);
     expect(usesTraitDrivenThinking(registry, 'anthropic', 'anthropic')).toBe(false);
-    expect(usesTraitDrivenThinking(registry, 'google-genai', 'kimi')).toBe(false);
+    expect(usesTraitDrivenThinking(registry, 'google-genai', 'zimi')).toBe(false);
   });
 
   it('requiresStrictThinkingValidation: only the strict-validation thinking driver', () => {
-    expect(requiresStrictThinkingValidation(registry, 'openai', 'kimi')).toBe(true);
-    expect(requiresStrictThinkingValidation(registry, 'anthropic', 'kimi')).toBe(false);
+    expect(requiresStrictThinkingValidation(registry, 'openai', 'zimi')).toBe(true);
+    expect(requiresStrictThinkingValidation(registry, 'anthropic', 'zimi')).toBe(false);
     expect(requiresStrictThinkingValidation(registry, 'openai', 'openai')).toBe(false);
     expect(requiresStrictThinkingValidation(registry, 'openai', undefined)).toBe(false);
     expect(requiresStrictThinkingValidation(registry, 'anthropic', 'anthropic')).toBe(false);
@@ -64,13 +64,13 @@ describe('resolveThinkingEffortForModel', () => {
     expect(defaultThinkingEffortForModel(undefined)).toBe('off');
   });
 
-  it('normalizes unknown efforts back to the model default under kimi semantics', () => {
+  it('normalizes unknown efforts back to the model default under zimi semantics', () => {
     expect(resolveThinkingEffortForModel('extreme', undefined, thinkingModel, true)).toBe('high');
     expect(resolveThinkingEffortForModel('extreme', undefined, thinkingModel, false)).toBe('extreme');
     expect(resolveThinkingEffortForModel('on', undefined, thinkingModel, true)).toBe('high');
   });
 
-  it('keeps always-thinking models on under kimi semantics', () => {
+  it('keeps always-thinking models on under zimi semantics', () => {
     const always = {
       capabilities: ['always_thinking'],
       alwaysThinking: true,

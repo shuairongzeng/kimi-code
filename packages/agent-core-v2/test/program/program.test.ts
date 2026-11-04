@@ -37,7 +37,7 @@ import type { IUserAgentProfileLoader } from '#/workspace/workspaceAgentProfileL
 import type { IWorkspaceAgentProfileLoader } from '#/workspace/workspaceAgentProfileLoader/workspaceAgentProfileLoader';
 import type { IWorkspaceSkillCatalog } from '#/features/skill/workspace/workspaceSkillCatalog';
 
-beforeEach(() => { vi.stubEnv('KIMI_CODE_WATCH', 'false'); });
+beforeEach(() => { vi.stubEnv('ZIMI_CODE_WATCH', 'false'); });
 afterEach(() => { vi.unstubAllEnvs(); });
 
 function deferred(): { readonly promise: Promise<void>; resolve(): void; reject(error: Error): void } {
@@ -362,57 +362,57 @@ function scopedFs(base: string, realBase: string, inner: IHostFileSystem, additi
 }
 
 async function localityFixture(options: { readonly remoteCwd?: string } = {}): Promise<LocalityFixture> {
-  const base = await mkdtemp(join(tmpdir(), 'kimi-program-locality-'));
+  const base = await mkdtemp(join(tmpdir(), 'zimi-program-locality-'));
   const localRoot = join(base, 'local');
   const remoteRoot = join(base, 'target');
   const remoteAltRoot = join(base, 'alt');
   const remoteCwd = 'remoteCwd' in options ? options.remoteCwd : remoteRoot;
   const homeDir = join(base, 'home');
   const remoteHomeDir = join(base, 'remote-home');
-  const kimiHome = join(homeDir, '.kimi-code');
+  const zimiHome = join(homeDir, '.zimi-code');
   await mkdir(localRoot, { recursive: true });
   await mkdir(remoteRoot, { recursive: true });
   await mkdir(remoteAltRoot, { recursive: true });
-  await mkdir(kimiHome, { recursive: true });
+  await mkdir(zimiHome, { recursive: true });
   await mkdir(join(remoteHomeDir, '.agents'), { recursive: true });
 
   await writeFile(join(localRoot, 'AGENTS.md'), 'local project instructions');
   await writeFile(join(remoteRoot, 'AGENTS.md'), 'target project instructions');
   await writeFile(join(remoteAltRoot, 'AGENTS.md'), 'alt project instructions');
-  await writeFile(join(kimiHome, 'AGENTS.md'), 'user instructions');
+  await writeFile(join(zimiHome, 'AGENTS.md'), 'user instructions');
   await writeFile(join(remoteHomeDir, '.agents', 'AGENTS.md'), 'remote user instructions');
 
   const writeSkill = async (root: string, name: string): Promise<void> => {
     await mkdir(join(root, 'skills', name), { recursive: true });
     await writeFile(join(root, 'skills', name, 'SKILL.md'), `---\nname: ${name}\ndescription: ${name}\n---\nbody`);
   };
-  await writeSkill(join(localRoot, '.kimi-code'), 'local-skill');
-  await writeSkill(join(remoteRoot, '.kimi-code'), 'target-skill');
-  await writeSkill(kimiHome, 'user-skill');
+  await writeSkill(join(localRoot, '.zimi-code'), 'local-skill');
+  await writeSkill(join(remoteRoot, '.zimi-code'), 'target-skill');
+  await writeSkill(zimiHome, 'user-skill');
 
   const writeAgent = async (dir: string, name: string): Promise<void> => {
     await mkdir(dir, { recursive: true });
     await writeFile(join(dir, `${name}.md`), `---\nname: ${name}\ndescription: ${name}\n---\n\nYou are ${name}.\n`);
   };
-  await writeAgent(join(localRoot, '.kimi-code', 'agents'), 'local-agent');
-  await writeAgent(join(remoteRoot, '.kimi-code', 'agents'), 'target-agent');
-  await writeAgent(join(remoteAltRoot, '.kimi-code', 'agents'), 'alt-agent');
-  await writeAgent(join(kimiHome, 'agents'), 'user-agent');
+  await writeAgent(join(localRoot, '.zimi-code', 'agents'), 'local-agent');
+  await writeAgent(join(remoteRoot, '.zimi-code', 'agents'), 'target-agent');
+  await writeAgent(join(remoteAltRoot, '.zimi-code', 'agents'), 'alt-agent');
+  await writeAgent(join(zimiHome, 'agents'), 'user-agent');
 
   await mkdir(join(localRoot, 'localextra'), { recursive: true });
   await mkdir(join(remoteRoot, 'targetextra'), { recursive: true });
   await mkdir(join(remoteAltRoot, 'altextra'), { recursive: true });
-  await mkdir(join(localRoot, '.kimi-code'), { recursive: true });
-  await mkdir(join(remoteRoot, '.kimi-code'), { recursive: true });
-  await mkdir(join(remoteAltRoot, '.kimi-code'), { recursive: true });
-  await writeFile(join(localRoot, '.kimi-code', 'local.toml'), '[workspace]\nadditional_dir = ["localextra"]\n');
-  await writeFile(join(remoteRoot, '.kimi-code', 'local.toml'), '[workspace]\nadditional_dir = ["targetextra"]\n');
-  await writeFile(join(remoteAltRoot, '.kimi-code', 'local.toml'), '[workspace]\nadditional_dir = ["altextra"]\n');
+  await mkdir(join(localRoot, '.zimi-code'), { recursive: true });
+  await mkdir(join(remoteRoot, '.zimi-code'), { recursive: true });
+  await mkdir(join(remoteAltRoot, '.zimi-code'), { recursive: true });
+  await writeFile(join(localRoot, '.zimi-code', 'local.toml'), '[workspace]\nadditional_dir = ["localextra"]\n');
+  await writeFile(join(remoteRoot, '.zimi-code', 'local.toml'), '[workspace]\nadditional_dir = ["targetextra"]\n');
+  await writeFile(join(remoteAltRoot, '.zimi-code', 'local.toml'), '[workspace]\nadditional_dir = ["altextra"]\n');
 
   const mcpJson = (name: string): string => JSON.stringify({ mcpServers: { [name]: { command: 'echo' } } });
   await writeFile(join(localRoot, '.mcp.json'), mcpJson('local-project-server'));
   await writeFile(join(remoteRoot, '.mcp.json'), mcpJson('target-project-server'));
-  await writeFile(join(kimiHome, 'mcp.json'), mcpJson('user-server'));
+  await writeFile(join(zimiHome, 'mcp.json'), mcpJson('user-server'));
 
   await execFileAsync('git', ['init', '-b', 'main', remoteRoot]);
 
@@ -440,7 +440,7 @@ async function localityFixture(options: { readonly remoteCwd?: string } = {}): P
   const profileContainer = new InstantiationService(new ServiceCollection(), true);
   const profileRegistry = profileContainer.createInstance(AgentProfileRegistryService);
   const profileRegistrations: { readonly sourceId: string; readonly profiles: readonly string[] }[] = [];
-  const bootstrap = { _serviceBrand: undefined, homeDir: kimiHome, osHomeDir: homeDir, args: {}, getEnv: () => undefined };
+  const bootstrap = { _serviceBrand: undefined, homeDir: zimiHome, osHomeDir: homeDir, args: {}, getEnv: () => undefined };
   const config = {
     _serviceBrand: undefined,
     ready: Promise.resolve(),
@@ -464,8 +464,8 @@ async function localityFixture(options: { readonly remoteCwd?: string } = {}): P
       git: { current: localGit, onDidChange: Event.None },
       identity: {
         _serviceBrand: undefined,
-        current: () => ({ slug: 'kimi-code' }),
-        resolved: async () => ({ slug: 'kimi-code' }),
+        current: () => ({ slug: 'zimi-code' }),
+        resolved: async () => ({ slug: 'zimi-code' }),
       },
       log: noopLogger,
       oauth: {
@@ -686,7 +686,7 @@ describe('Program local generation and remote workdirs', () => {
       await mkdir(join(fixture.remoteHomeDir, 'shared'), { recursive: true });
       await mkdir(join(fixture.homeDir, 'shared'), { recursive: true });
       await writeFile(
-        join(fixture.remoteRoot, '.kimi-code', 'local.toml'),
+        join(fixture.remoteRoot, '.zimi-code', 'local.toml'),
         '[workspace]\nadditional_dir = ["~/shared"]\n',
       );
       const remote = await fixture.workdir(fixture.remoteRoot);

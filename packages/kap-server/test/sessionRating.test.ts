@@ -21,15 +21,15 @@ import {
   SubagentSpawned,
   type CompactionResult,
   type TelemetryAppenderRecord,
-} from '@moonshot-ai/agent-core-v2';
-import { ContextAppendMessage } from '@moonshot-ai/agent-core-v2/agent/contextMemory/contextEvents';
-import { TurnStarted } from '@moonshot-ai/agent-core-v2/agent/loop/turnEvents';
-import { TurnEnded, TurnPrompt } from '@moonshot-ai/agent-core-v2/agent/loop/turnOps';
+} from '@zimi-ai/agent-core-v2';
+import { ContextAppendMessage } from '@zimi-ai/agent-core-v2/agent/contextMemory/contextEvents';
+import { TurnStarted } from '@zimi-ai/agent-core-v2/agent/loop/turnEvents';
+import { TurnEnded, TurnPrompt } from '@zimi-ai/agent-core-v2/agent/loop/turnOps';
 import {
   ToolCallStarted,
   ToolResultEvent,
-} from '@moonshot-ai/agent-core-v2/agent/toolExecutor/toolExecutorEvents';
-import type { TranscriptItem } from '@moonshot-ai/transcript';
+} from '@zimi-ai/agent-core-v2/agent/toolExecutor/toolExecutorEvents';
+import type { TranscriptItem } from '@zimi-ai/transcript';
 import type { SessionRatingResult } from '../src/protocol/rest-session-rating';
 import { pino } from 'pino';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -55,7 +55,7 @@ const OPEN_RIGHT_AWAY_SURVEY_POPUP = {
 
 function serverEnv(extra: Record<string, string>): Record<string, string | undefined> {
   const env: Record<string, string | undefined> = { ...process.env, ...extra };
-  delete env['KIMI_DISABLE_TELEMETRY'];
+  delete env['ZIMI_DISABLE_TELEMETRY'];
   return env;
 }
 
@@ -142,14 +142,14 @@ describe('session rating preview', () => {
   const logLines: string[] = [];
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-rating-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-rating-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
       port: 0,
       homeDir: home,
       debugEndpoints: true,
-      env: serverEnv({ KIMI_CODE_SESSION_RATING_PREVIEW: '1' }),
+      env: serverEnv({ ZIMI_CODE_SESSION_RATING_PREVIEW: '1' }),
       logger: pino(
         { level: 'info' },
         new Writable({
@@ -228,15 +228,15 @@ describe('session rating preview outside development', () => {
   let client: RatingClient;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-rating-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-rating-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
       port: 0,
       homeDir: home,
       env: serverEnv({
-        KIMI_CODE_SESSION_RATING_PREVIEW: '1',
-        KIMI_CODE_BASE_URL: 'http://127.0.0.1:9',
+        ZIMI_CODE_SESSION_RATING_PREVIEW: '1',
+        ZIMI_CODE_BASE_URL: 'http://127.0.0.1:9',
       }),
       logger: pino({ level: 'silent' }),
     });
@@ -265,15 +265,15 @@ describe('session rating lifecycle', () => {
   const records: TelemetryAppenderRecord[] = [];
 
   const MANAGED_MODEL_CONFIG = [
-    'default_model = "kimi-code/k3"',
+    'default_model = "zimi-code/k3"',
     '',
-    '[providers."managed:kimi-code"]',
-    'type = "kimi"',
+    '[providers."managed:zimi-code"]',
+    'type = "zimi"',
     'base_url = "https://api.kimi.com/coding/v1"',
     'api_key = "test-key"',
     '',
-    '[models."kimi-code/k3"]',
-    'provider = "managed:kimi-code"',
+    '[models."zimi-code/k3"]',
+    'provider = "managed:zimi-code"',
     'model = "k3"',
     'max_context_size = 262144',
     '',
@@ -286,7 +286,7 @@ describe('session rating lifecycle', () => {
       host: '127.0.0.1',
       port: 0,
       homeDir: home,
-      env: serverEnv({ KIMI_CODE_BASE_URL: `http://127.0.0.1:${port}` }),
+      env: serverEnv({ ZIMI_CODE_BASE_URL: `http://127.0.0.1:${port}` }),
       logger: pino({ level: 'silent' }),
     });
     started.core.accessor.get(ITelemetryService).addAppender({
@@ -319,7 +319,7 @@ describe('session rating lifecycle', () => {
   }
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-rating-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-rating-'));
     configServer = createServer((req, res) => {
       configRequests += 1;
       req.resume();
@@ -354,7 +354,7 @@ describe('session rating lifecycle', () => {
 
   it('identifies the managed model and its trace for the kfc check', async () => {
     const id = await client.createSession(home);
-    await (await client.mainAgent(id)).accessor.get(IAgentProfileService).setModel('kimi-code/k3');
+    await (await client.mainAgent(id)).accessor.get(IAgentProfileService).setModel('zimi-code/k3');
     await client.openRating(id);
 
     const appeared = records.find(
@@ -364,7 +364,7 @@ describe('session rating lifecycle', () => {
         record.properties['event_type'] === 'appeared',
     );
     expect(appeared?.properties).toMatchObject({
-      current_model: 'kimi-code/k3',
+      current_model: 'zimi-code/k3',
       kfc_model_id: 'k3',
       kfc_trace_id: 'trace-1',
     });
@@ -506,7 +506,7 @@ describe('session rating lifecycle', () => {
 
   it('resumes and evaluates a completed turn for a cold session', async () => {
     const id = await client.createSession(home);
-    await (await client.mainAgent(id)).accessor.get(IAgentProfileService).setModel('kimi-code/k3');
+    await (await client.mainAgent(id)).accessor.get(IAgentProfileService).setModel('zimi-code/k3');
     await client.finishUserTurn(id, undefined, 0);
     const agent = await client.mainAgent(id);
     const dispatcher = agent.accessor.get(IEventDispatcher);

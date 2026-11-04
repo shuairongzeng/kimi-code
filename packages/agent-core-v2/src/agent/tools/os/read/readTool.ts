@@ -590,7 +590,7 @@ export class ReadTool implements IReadTool {
         }
       }
       if (eventLog) {
-        notices.push('Kimi Code agent event log: read one record at a time (n_lines=1); follow Next Read for the rest of a longer record or extract fields with Bash.');
+        notices.push('Zimi Code agent event log: read one record at a time (n_lines=1); follow Next Read for the rest of a longer record or extract fields with Bash.');
       }
       if (page.lineEndingStyle === 'mixed') {
         notices.push('Mixed or lone carriage-return line endings are shown as \\r. Use exact \\r\\n or \\r escapes in Edit.old_string for those lines.');

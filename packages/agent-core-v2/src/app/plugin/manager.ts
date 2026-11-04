@@ -40,7 +40,7 @@ import {
 } from './types';
 
 export interface PluginManagerOptions {
-  readonly kimiHomeDir: string;
+  readonly zimiHomeDir: string;
   readonly client?: 'desktop' | 'cli';
   readonly platform?: NodeJS.Platform;
   readonly availability?: PluginAvailabilityStore;
@@ -88,7 +88,7 @@ type PluginInspection = Pick<
 const INSPECTION_CACHE_LIMIT = 20;
 
 export class PluginManager {
-  private readonly kimiHomeDir: string;
+  private readonly zimiHomeDir: string;
   private readonly client: 'desktop' | 'cli';
   private readonly platform: NodeJS.Platform;
   private readonly availability: PluginAvailabilityStore;
@@ -99,17 +99,17 @@ export class PluginManager {
   private records = new Map<string, PluginRecord>();
 
   constructor(options: PluginManagerOptions) {
-    this.kimiHomeDir = options.kimiHomeDir;
+    this.zimiHomeDir = options.zimiHomeDir;
     this.client = options.client ?? 'cli';
     this.platform = options.platform ?? process.platform;
-    this.availability = options.availability ?? new PluginAvailabilityStore(options.kimiHomeDir);
+    this.availability = options.availability ?? new PluginAvailabilityStore(options.zimiHomeDir);
     this.discoverSkills = options.discoverSkills ?? discoverFileSkills;
-    this.packages = new PluginPackageCache(options.kimiHomeDir);
+    this.packages = new PluginPackageCache(options.zimiHomeDir);
   }
 
   async load(): Promise<void> {
     await this.availability.refresh();
-    const file = await readInstalled(this.kimiHomeDir);
+    const file = await readInstalled(this.zimiHomeDir);
     const next = new Map<string, PluginRecord>();
     for (const entry of file.plugins) {
       next.set(entry.id, await this.materialize(entry));
@@ -220,7 +220,7 @@ export class PluginManager {
                 expectedPluginId: options.expectedPluginId,
                 fetchImpl: options.fetchImpl,
               });
-        zipTmpDir = await mkdtemp(path.join(tmpdir(), 'kimi-plugin-zip-'));
+        zipTmpDir = await mkdtemp(path.join(tmpdir(), 'zimi-plugin-zip-'));
         sourceRoot = await extractZip(buffer, zipTmpDir);
       }
 
@@ -260,7 +260,7 @@ export class PluginManager {
           { details: { migrateFrom, pluginId: id } },
         );
       }
-      managedCopy = await copyPluginToManagedRoot(this.kimiHomeDir, id, sourceRoot);
+      managedCopy = await copyPluginToManagedRoot(this.zimiHomeDir, id, sourceRoot);
       const normalizedRoot = managedCopy.root;
       const managedParsed = await parseManifest(normalizedRoot);
       const existing = this.records.get(id);
@@ -434,7 +434,7 @@ export class PluginManager {
   async reload(requiredSkill?: RequiredPluginSkill): Promise<ReloadSummary> {
     const prevIds = new Set(this.list().map((record) => record.id));
     await this.availability.refresh();
-    const file = await readInstalled(this.kimiHomeDir);
+    const file = await readInstalled(this.zimiHomeDir);
     const next = new Map<string, PluginRecord>();
     const errors: Array<{ id: string; message: string }> = [];
     for (const entry of file.plugins) {
@@ -468,8 +468,8 @@ export class PluginManager {
           ...hook,
           cwd: record.root,
           env: {
-            KIMI_CODE_HOME: this.kimiHomeDir,
-            KIMI_PLUGIN_ROOT: record.root,
+            ZIMI_CODE_HOME: this.zimiHomeDir,
+            ZIMI_PLUGIN_ROOT: record.root,
           },
         });
       }
@@ -552,7 +552,7 @@ export class PluginManager {
         out[pluginMcpRuntimeName(record.id, name)] = withPluginMcpRuntime(
           withMcpServerEnabled(config, true),
           record.root,
-          this.kimiHomeDir,
+          this.zimiHomeDir,
         );
       }
     }
@@ -568,7 +568,7 @@ export class PluginManager {
         const effective = withPluginMcpRuntime(
           withMcpServerEnabled(config, enabled),
           record.root,
-          this.kimiHomeDir,
+          this.zimiHomeDir,
         );
         out.push({
           name: pluginMcpRuntimeName(record.id, name),
@@ -635,7 +635,7 @@ export class PluginManager {
       expectedPluginId: options.expectedPluginId,
       fetchImpl: options.fetchImpl,
     });
-    const zipTmpDir = await mkdtemp(path.join(tmpdir(), 'kimi-plugin-inspect-'));
+    const zipTmpDir = await mkdtemp(path.join(tmpdir(), 'zimi-plugin-inspect-'));
     try {
       const sourceRoot = await extractZip(buffer, zipTmpDir);
       const parsed = await parseManifest(sourceRoot);
@@ -705,7 +705,7 @@ export class PluginManager {
       capabilities: record.capabilities,
       github: record.github,
     }));
-    await writeInstalled(this.kimiHomeDir, { version: 1, plugins: installed });
+    await writeInstalled(this.zimiHomeDir, { version: 1, plugins: installed });
   }
 
   private async materialize(
@@ -840,11 +840,11 @@ async function normalizeInstallRoot(rootPath: string): Promise<string> {
 }
 
 async function copyPluginToManagedRoot(
-  kimiHomeDir: string,
+  zimiHomeDir: string,
   id: string,
   sourceRoot: string,
 ): Promise<ManagedPluginCopy> {
-  const managedRoot = path.join(kimiHomeDir, 'plugins', 'managed', id);
+  const managedRoot = path.join(zimiHomeDir, 'plugins', 'managed', id);
   const managedDir = path.dirname(managedRoot);
   await mkdir(managedDir, { recursive: true });
   const stagingRoot = await mkdtemp(path.join(managedDir, `${id}-`));
@@ -1104,7 +1104,7 @@ function pluginMcpRuntimeName(pluginId: string, serverName: string): string {
   return `plugin-${pluginId}:${serverName}`;
 }
 
-const KIMI_NODE_FALLBACK_SUBCOMMAND = '__plugin_run_node';
+const ZIMI_NODE_FALLBACK_SUBCOMMAND = '__plugin_run_node';
 
 function withMcpServerEnabled(config: McpServerConfig, enabled: boolean): McpServerConfig {
   return { ...config, enabled };
@@ -1113,14 +1113,14 @@ function withMcpServerEnabled(config: McpServerConfig, enabled: boolean): McpSer
 function withPluginMcpRuntime(
   config: McpServerConfig,
   pluginRoot: string,
-  kimiHomeDir: string,
+  zimiHomeDir: string,
 ): McpServerConfig {
   if (config.transport === 'http' || config.transport === 'sse') return config;
 
   const env = {
     ...config.env,
-    KIMI_CODE_HOME: kimiHomeDir,
-    KIMI_PLUGIN_ROOT: pluginRoot,
+    ZIMI_CODE_HOME: zimiHomeDir,
+    ZIMI_PLUGIN_ROOT: pluginRoot,
   };
 
   if (config.command === 'node' && isElectron()) {
@@ -1133,11 +1133,11 @@ function withPluginMcpRuntime(
     };
   }
 
-  if (config.command === 'node' && isKimiNativeBinary()) {
+  if (config.command === 'node' && isZimiNativeBinary()) {
     return {
       ...config,
       command: process.execPath,
-      args: [KIMI_NODE_FALLBACK_SUBCOMMAND, ...(config.args ?? [])],
+      args: [ZIMI_NODE_FALLBACK_SUBCOMMAND, ...(config.args ?? [])],
       cwd: config.cwd ?? pluginRoot,
       env,
     };
@@ -1150,7 +1150,7 @@ function isElectron(): boolean {
   return typeof process.versions['electron'] === 'string';
 }
 
-function isKimiNativeBinary(): boolean {
+function isZimiNativeBinary(): boolean {
   return !path.basename(process.execPath).toLowerCase().startsWith('node');
 }
 

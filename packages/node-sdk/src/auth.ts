@@ -3,33 +3,33 @@ import {
   readConfigFile,
   readConfigFileForUpdate,
   writeConfigFile,
-  type KimiConfig,
+  type ZimiConfig,
   type OAuthRef,
 } from '#/config/index';
 import {
-  applyManagedKimiCodeConfig,
-  applyManagedKimiCodeLogoutConfig,
-  KIMI_CODE_PROVIDER_NAME,
-  KimiOAuthToolkit,
-  kimiRegionLoginHosts,
-  resolveKimiCodeLoginAuth,
-  resolveKimiCodeRuntimeAuth,
+  applyManagedZimiCodeConfig,
+  applyManagedZimiCodeLogoutConfig,
+  ZIMI_CODE_PROVIDER_NAME,
+  ZimiOAuthToolkit,
+  zimiRegionLoginHosts,
+  resolveZimiCodeLoginAuth,
+  resolveZimiCodeRuntimeAuth,
   type AuthManagedUsageResult,
   type AuthStatus,
   type BearerTokenProvider,
   type FetchCompleteFeedbackUploadResult,
   type FetchFeedbackUploadError,
   type FetchSubmitFeedbackResult,
-  type KimiHostIdentity,
-  type KimiOAuthLoginOptions,
-  type KimiRegion,
-  type ManagedKimiConfigShape,
+  type ZimiHostIdentity,
+  type ZimiOAuthLoginOptions,
+  type ZimiRegion,
+  type ManagedZimiConfigShape,
   type OAuthRefreshOutcome,
-} from '@moonshot-ai/kimi-code-oauth';
+} from '@zimi-ai/zimi-code-oauth';
 
 import { mapOAuthTokenError } from '#/oauth-error';
 
-export interface KimiAuthSubmitFeedbackInput {
+export interface ZimiAuthSubmitFeedbackInput {
   readonly content: string;
   readonly sessionId: string;
   readonly version: string;
@@ -39,52 +39,52 @@ export interface KimiAuthSubmitFeedbackInput {
   readonly info?: Record<string, unknown>;
 }
 
-export interface KimiAuthCreateFeedbackUploadUrlInput {
+export interface ZimiAuthCreateFeedbackUploadUrlInput {
   readonly feedbackId: number;
   readonly filename: string;
   readonly size: number;
   readonly sha256: string;
 }
 
-export interface KimiAuthCompleteFeedbackUploadPart {
+export interface ZimiAuthCompleteFeedbackUploadPart {
   readonly partNumber: number;
   readonly etag: string;
 }
 
-export interface KimiAuthCompleteFeedbackUploadInput {
+export interface ZimiAuthCompleteFeedbackUploadInput {
   readonly uploadId: number;
-  readonly parts: readonly KimiAuthCompleteFeedbackUploadPart[];
+  readonly parts: readonly ZimiAuthCompleteFeedbackUploadPart[];
 }
 
-export interface KimiAuthFeedbackUploadPart {
+export interface ZimiAuthFeedbackUploadPart {
   readonly partNumber: number;
   readonly url: string;
   readonly method: string;
   readonly size: number;
 }
 
-export interface KimiAuthCreateFeedbackUploadUrlOk {
+export interface ZimiAuthCreateFeedbackUploadUrlOk {
   readonly kind: 'ok';
   readonly uploadId: number;
-  readonly parts: readonly KimiAuthFeedbackUploadPart[];
+  readonly parts: readonly ZimiAuthFeedbackUploadPart[];
 }
 
-export type KimiAuthCreateFeedbackUploadUrlResult =
-  | KimiAuthCreateFeedbackUploadUrlOk
+export type ZimiAuthCreateFeedbackUploadUrlResult =
+  | ZimiAuthCreateFeedbackUploadUrlOk
   | FetchFeedbackUploadError;
 
-export type KimiAuthLoginOptions = Omit<KimiOAuthLoginOptions, 'provisionConfig'> & {
+export type ZimiAuthLoginOptions = Omit<ZimiOAuthLoginOptions, 'provisionConfig'> & {
   /**
    * Explicit region choice from the login UI ('mainland-cn' / 'global'). Maps
    * to the region profile's OAuth/API hosts — including for 'mainland-cn', so
    * switching back overrides a persisted global login. Yields to
-   * `KIMI_CODE_OAUTH_HOST` / `KIMI_CODE_BASE_URL` env overrides and to
+   * `ZIMI_CODE_OAUTH_HOST` / `ZIMI_CODE_BASE_URL` env overrides and to
    * explicit `oauthHost` / `baseUrl` options.
    */
-  readonly region?: KimiRegion;
+  readonly region?: ZimiRegion;
 };
 
-export interface KimiAuthLoginResult {
+export interface ZimiAuthLoginResult {
   readonly providerName: string;
   readonly ok: true;
   readonly defaultModel: string;
@@ -92,26 +92,26 @@ export interface KimiAuthLoginResult {
   readonly configPath?: string | undefined;
 }
 
-export interface KimiAuthLogoutResult {
+export interface ZimiAuthLogoutResult {
   readonly providerName: string;
   readonly ok: true;
 }
 
-export interface KimiAuthFacadeOptions {
+export interface ZimiAuthFacadeOptions {
   readonly homeDir: string;
   readonly configPath: string;
-  readonly identity?: KimiHostIdentity | undefined;
-  readonly onConfigUpdated?: ((config: KimiConfig) => void) | undefined;
+  readonly identity?: ZimiHostIdentity | undefined;
+  readonly onConfigUpdated?: ((config: ZimiConfig) => void) | undefined;
   readonly onRefresh?: ((outcome: OAuthRefreshOutcome) => void) | undefined;
 }
 
-type SDKManagedConfig = KimiConfig & ManagedKimiConfigShape;
+type SDKManagedConfig = ZimiConfig & ManagedZimiConfigShape;
 
-export class KimiAuthFacade {
-  private readonly toolkit: KimiOAuthToolkit<SDKManagedConfig>;
+export class ZimiAuthFacade {
+  private readonly toolkit: ZimiOAuthToolkit<SDKManagedConfig>;
 
-  constructor(private readonly options: KimiAuthFacadeOptions) {
-    this.toolkit = new KimiOAuthToolkit<SDKManagedConfig>({
+  constructor(private readonly options: ZimiAuthFacadeOptions) {
+    this.toolkit = new ZimiOAuthToolkit<SDKManagedConfig>({
       homeDir: options.homeDir,
       identity: options.identity,
       onRefresh: options.onRefresh,
@@ -123,8 +123,8 @@ export class KimiAuthFacade {
         write: async (config) => {
           await writeConfigFile(options.configPath, config);
         },
-        apply: applyManagedKimiCodeConfig,
-        remove: applyManagedKimiCodeLogoutConfig,
+        apply: applyManagedZimiCodeConfig,
+        remove: applyManagedZimiCodeLogoutConfig,
       },
     });
   }
@@ -134,13 +134,13 @@ export class KimiAuthFacade {
   }
 
   async login(
-    providerName: string | undefined = KIMI_CODE_PROVIDER_NAME,
-    options: KimiAuthLoginOptions = {},
-  ): Promise<KimiAuthLoginResult> {
+    providerName: string | undefined = ZIMI_CODE_PROVIDER_NAME,
+    options: ZimiAuthLoginOptions = {},
+  ): Promise<ZimiAuthLoginResult> {
     const { region, ...loginOptions } = options;
-    const regionHosts = region === undefined ? undefined : kimiRegionLoginHosts(region);
+    const regionHosts = region === undefined ? undefined : zimiRegionLoginHosts(region);
     const auth = this.resolveManagedAuth(providerName);
-    const loginAuth = resolveKimiCodeLoginAuth({
+    const loginAuth = resolveZimiCodeLoginAuth({
       configuredBaseUrl: auth.baseUrl,
       configuredOAuthRef: auth.oauthRef,
       requestedBaseUrl: loginOptions.baseUrl ?? regionHosts?.baseUrl,
@@ -154,7 +154,7 @@ export class KimiAuthFacade {
       provisionConfig: true,
     });
     if (result.provision === undefined) {
-      throw new Error('Kimi auth login did not provision model config.');
+      throw new Error('Zimi auth login did not provision model config.');
     }
     const updated = readConfigFile(this.options.configPath);
     this.options.onConfigUpdated?.(updated);
@@ -167,7 +167,7 @@ export class KimiAuthFacade {
     };
   }
 
-  async logout(providerName?: string | undefined): Promise<KimiAuthLogoutResult> {
+  async logout(providerName?: string | undefined): Promise<ZimiAuthLogoutResult> {
     const result = await this.toolkit.logout(
       providerName,
       this.resolveRuntimeManagedAuth(providerName).oauthRef,
@@ -189,7 +189,7 @@ export class KimiAuthFacade {
   }
 
   async submitFeedback(
-    input: KimiAuthSubmitFeedbackInput,
+    input: ZimiAuthSubmitFeedbackInput,
     providerName?: string | undefined,
   ): Promise<FetchSubmitFeedbackResult> {
     const auth = this.resolveRuntimeManagedAuth(providerName);
@@ -212,9 +212,9 @@ export class KimiAuthFacade {
   }
 
   async createFeedbackUploadUrl(
-    input: KimiAuthCreateFeedbackUploadUrlInput,
+    input: ZimiAuthCreateFeedbackUploadUrlInput,
     providerName?: string | undefined,
-  ): Promise<KimiAuthCreateFeedbackUploadUrlResult> {
+  ): Promise<ZimiAuthCreateFeedbackUploadUrlResult> {
     const auth = this.resolveRuntimeManagedAuth(providerName);
     const result = await this.toolkit.createFeedbackUploadUrl(
       {
@@ -243,7 +243,7 @@ export class KimiAuthFacade {
   }
 
   async completeFeedbackUpload(
-    input: KimiAuthCompleteFeedbackUploadInput,
+    input: ZimiAuthCompleteFeedbackUploadInput,
     providerName?: string | undefined,
   ): Promise<FetchCompleteFeedbackUploadResult> {
     const auth = this.resolveRuntimeManagedAuth(providerName);
@@ -283,7 +283,7 @@ export class KimiAuthFacade {
         try {
           return await provider.getAccessToken(options);
         } catch (error) {
-          // Classify OAuth token failures into the public KimiError protocol;
+          // Classify OAuth token failures into the public ZimiError protocol;
           // unrecognized errors are rethrown raw (see mapOAuthTokenError).
           throw mapOAuthTokenError(error, providerName) ?? error;
         }
@@ -295,7 +295,7 @@ export class KimiAuthFacade {
     readonly oauthRef?: OAuthRef | undefined;
     readonly baseUrl?: string | undefined;
   } {
-    const name = providerName ?? KIMI_CODE_PROVIDER_NAME;
+    const name = providerName ?? ZIMI_CODE_PROVIDER_NAME;
     // Read path: token/status resolution must work off a degraded config
     // instead of failing the session when an unrelated section is broken.
     // Write paths (the toolkit's configAdapter.read) stay strict.
@@ -312,7 +312,7 @@ export class KimiAuthFacade {
     readonly baseUrl?: string | undefined;
   } {
     const auth = this.resolveManagedAuth(providerName);
-    return resolveKimiCodeRuntimeAuth({
+    return resolveZimiCodeRuntimeAuth({
       configuredBaseUrl: auth.baseUrl,
       configuredOAuthRef: auth.oauthRef,
     });
@@ -322,9 +322,9 @@ export class KimiAuthFacade {
     providerName: string | undefined,
     oauthRef?: OAuthRef | undefined,
   ): OAuthRef | undefined {
-    if ((providerName ?? KIMI_CODE_PROVIDER_NAME) !== KIMI_CODE_PROVIDER_NAME) return oauthRef;
+    if ((providerName ?? ZIMI_CODE_PROVIDER_NAME) !== ZIMI_CODE_PROVIDER_NAME) return oauthRef;
     const auth = this.resolveManagedAuth(providerName);
-    return resolveKimiCodeRuntimeAuth({
+    return resolveZimiCodeRuntimeAuth({
       configuredBaseUrl: auth.baseUrl,
       configuredOAuthRef: oauthRef ?? auth.oauthRef,
     }).oauthRef;

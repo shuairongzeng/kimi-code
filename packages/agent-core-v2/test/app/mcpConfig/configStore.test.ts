@@ -33,7 +33,7 @@ describe('McpConfigStore', () => {
     const ix = createServices(disposables, {
       additionalServices: (reg) => {
         reg.defineInstance(IFileSystemStorageService, storage);
-        reg.definePartialInstance(IBootstrapService, { homeDir: '/kimi-test-home' });
+        reg.definePartialInstance(IBootstrapService, { homeDir: '/zimi-test-home' });
         reg.define(IMcpConfigStore, McpConfigStore);
       },
     });

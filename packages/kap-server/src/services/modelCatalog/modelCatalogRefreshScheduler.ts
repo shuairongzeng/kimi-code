@@ -3,13 +3,13 @@ import {
   type IProviderDiscoveryService,
   type ModelCatalogConfig,
   MODEL_CATALOG_SECTION,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 
 import type { ServerLogger } from '../pinoLoggerService';
 
 const DEFAULT_REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000;
-const INTERVAL_ENV = 'KIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS';
-const REFRESH_ON_START_ENV = 'KIMI_CODE_MODEL_CATALOG_REFRESH_ON_START';
+const INTERVAL_ENV = 'ZIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS';
+const REFRESH_ON_START_ENV = 'ZIMI_CODE_MODEL_CATALOG_REFRESH_ON_START';
 
 export class ModelCatalogRefreshScheduler {
   private timer: ReturnType<typeof setInterval> | undefined;

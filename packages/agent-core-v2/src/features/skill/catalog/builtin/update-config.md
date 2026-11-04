@@ -1,24 +1,24 @@
 ---
 name: update-config
-description: Inspect or edit kimi-code's own config — `config.toml` (model, provider, permission, hooks) and `tui.toml` (theme, editor, notifications, auto-update). Use when the user asks what a setting does, wants to change one, or needs to fix a deprecated config key / environment variable warning.
+description: Inspect or edit zimi-code's own config — `config.toml` (model, provider, permission, hooks) and `tui.toml` (theme, editor, notifications, auto-update). Use when the user asks what a setting does, wants to change one, or needs to fix a deprecated config key / environment variable warning.
 ---
 
-# Configure kimi-code (update-config)
+# Configure zimi-code (update-config)
 
-Help the user inspect, change, and validate kimi-code's configuration files. The files are **TOML** with **snake_case** keys.
+Help the user inspect, change, and validate zimi-code's configuration files. The files are **TOML** with **snake_case** keys.
 
 ## The two config files
 
-kimi-code has two TOML config files, both under `<KIMI_CODE_HOME>/`, both snake_case, but with different ownership — decide which one the user means before doing anything.
+zimi-code has two TOML config files, both under `<ZIMI_CODE_HOME>/`, both snake_case, but with different ownership — decide which one the user means before doing anything.
 
-The runtime resolves the data directory as `KIMI_CODE_HOME` first, falling back to `~/.kimi-code`. Before doing anything, resolve the actual directory with Bash so you don't write to the wrong place. Check whether `KIMI_CODE_HOME` is set and fall back to `~/.kimi-code` when it is empty:
+The runtime resolves the data directory as `ZIMI_CODE_HOME` first, falling back to `~/.zimi-code`. Before doing anything, resolve the actual directory with Bash so you don't write to the wrong place. Check whether `ZIMI_CODE_HOME` is set and fall back to `~/.zimi-code` when it is empty:
 
 ```bash
-echo "$KIMI_CODE_HOME"
-echo "$HOME/.kimi-code"
+echo "$ZIMI_CODE_HOME"
+echo "$HOME/.zimi-code"
 ```
 
-Use the first line when it is non-empty; otherwise use the second line. In the rest of this skill, `<KIMI_CODE_HOME>` means that resolved root — **never assume `~/.kimi-code`**.
+Use the first line when it is non-empty; otherwise use the second line. In the rest of this skill, `<ZIMI_CODE_HOME>` means that resolved root — **never assume `~/.zimi-code`**.
 
 - **`config.toml`** — agent / runtime settings: `default_model`, `[secondary_model]` (subagent model pool: `default_model` / `[secondary_model.models]`; subagents only run on pool entries, and a lone `default_model` pins every subagent to it; `force` is obsolete and ignored; a lone legacy v1 `model` key is honored as a fallback default), `[subagent]` (`timeout_ms`), `providers`, `models`, `thinking`, `permission`, `hooks`, `loop_control`, etc.
 - **`tui.toml`** — terminal-UI / client preferences: `theme`, `[editor].command`, `[notifications]`, `[upgrade].auto_install` (auto-update). These can usually also be changed with the interactive commands `/config`, `/theme`, `/editor`, which is easier — prefer pointing the user at those.
@@ -30,7 +30,7 @@ The "read → copy → Edit → validate → back up → overwrite" flow below a
 Before touching any config, use **FetchURL** to fetch the official config docs as the one authoritative reference for fields (key names, types, allowed values, owning section):
 
 ```
-https://moonshotai.github.io/kimi-code/en/configuration/config-files.html
+https://zimia.github.io/zimi-code/en/configuration/config-files.html
 ```
 
 - Use the **snake_case key names and sections exactly as documented** — don't invent them, don't guess camelCase.
@@ -40,7 +40,7 @@ https://moonshotai.github.io/kimi-code/en/configuration/config-files.html
 
 Before any modification, use **Read** on the target config file (decide whether it's `config.toml` or `tui.toml` per the above):
 
-- Location: `<KIMI_CODE_HOME>/config.toml` or `<KIMI_CODE_HOME>/tui.toml`. For other scopes/files, defer to the official docs.
+- Location: `<ZIMI_CODE_HOME>/config.toml` or `<ZIMI_CODE_HOME>/tui.toml`. For other scopes/files, defer to the official docs.
 - A missing or empty file is fine — you'll create a minimal skeleton later.
 - If the file exists but **fails to parse as TOML**, report the error verbatim and **stop** — never overwrite a broken file in place (it could destroy the user's existing config).
 
@@ -62,9 +62,9 @@ Don't edit the target file in place, and **don't rewrite it from scratch** — i
 1. **Clarify intent**: which key, what value, and which file (`config.toml` or `tui.toml`). Ask in one line if ambiguous; for discrete choices (e.g. scope) AskUserQuestion is fine, but use plain questions for free-form input.
 2. **Read the target file** (Prerequisite 2): Read it to understand the current state and confirm it parses.
 3. **Copy out a candidate (do not create from scratch)**: use **Bash** to copy the target verbatim — `cp config.toml config-new.toml` (same directory, `-new` suffix; for tui.toml, `cp tui.toml tui-new.toml`). **Leave the original untouched for now.**
-   - Only when the target doesn't exist (nothing to copy) should you use **Write** to create a minimal skeleton candidate (e.g. just the comment line `# <KIMI_CODE_HOME>/config.toml`).
+   - Only when the target doesn't exist (nothing to copy) should you use **Write** to create a minimal skeleton candidate (e.g. just the comment line `# <ZIMI_CODE_HOME>/config.toml`).
 4. **Edit the candidate**: use the **Edit** tool on the candidate to **change/add only the target key** — never rewrite the whole file. That way every existing section, entry, comment, and bit of formatting stays exactly as-is; only what should change changes. The candidate is identical to the original, so use the content you read in step 2 to locate the Edit anchor. Check the change against the official docs (key / section / value type / allowed values, snake_case).
-5. **Validate the candidate** (see Capability 3, via `kimi doctor`). **If anything fails, keep Editing the candidate and re-validate, looping until it all passes.**
+5. **Validate the candidate** (see Capability 3, via `zimi doctor`). **If anything fails, keep Editing the candidate and re-validate, looping until it all passes.**
 6. **Back up and overwrite** (only after validation fully passes):
    - **Back up the old file — always create a new timestamped backup, keep all of them, never overwrite an existing backup.** Copy this exactly with **Bash** (for config.toml): `cp config.toml "config.toml.$(date +%Y%m%d-%H%M%S).bak"`; for tui.toml: `cp tui.toml "tui.toml.$(date +%Y%m%d-%H%M%S).bak"`. Skip the backup only if the target didn't exist.
    - Overwrite with the candidate: `mv config-new.toml config.toml`.
@@ -73,19 +73,19 @@ Don't edit the target file in place, and **don't rewrite it from scratch** — i
 
 ## Capability 3: validate the candidate file (must pass before overwrite)
 
-Use **`kimi doctor`** to validate the candidate you wrote — it doesn't start the TUI and doesn't modify any file; it runs kimi's own parser + schema (syntax and schema together), so it's the authoritative check. Pick the subcommand by which file you changed, and pass the **candidate** path explicitly:
+Use **`zimi doctor`** to validate the candidate you wrote — it doesn't start the TUI and doesn't modify any file; it runs zimi's own parser + schema (syntax and schema together), so it's the authoritative check. Pick the subcommand by which file you changed, and pass the **candidate** path explicitly:
 
-- changed `config.toml` → `kimi doctor config <config-new.toml path>`
-- changed `tui.toml` → `kimi doctor tui <tui-new.toml path>`
+- changed `config.toml` → `zimi doctor config <config-new.toml path>`
+- changed `tui.toml` → `zimi doctor tui <tui-new.toml path>`
 
 When a path is passed explicitly the file must exist (your candidate does, so that's fine). **Exit code 0 = pass (valid or skipped); non-zero = a specified file is missing or the config is invalid** — show the output verbatim, fix the candidate, and re-run, looping until it's 0.
 
-Then do two checks `kimi doctor` can't:
+Then do two checks `zimi doctor` can't:
 
 1. **Cross-check values against the official docs** (single source of truth): are the key / section / enum values as documented, and snake_case? doctor guarantees "schema-valid", but "valid yet not what the user wanted" (e.g. a misspelled model alias) needs the docs.
 2. **Completeness**: every existing entry is still present (the candidate fully replaces the target — a dropped line is a deletion).
 
-> To also check whether the currently **active** config is OK overall, run `kimi doctor` with no path (it checks the default `config.toml` + `tui.toml`, showing a missing one as skipped).
+> To also check whether the currently **active** config is OK overall, run `zimi doctor` with no path (it checks the default `config.toml` + `tui.toml`, showing a missing one as skipped).
 
 ## Capability 4: tell the user how to apply changes
 
@@ -95,14 +95,14 @@ Once local validation passes, tell the user how to make the change take effect �
 - changed **`tui.toml`** → run **`/reload-tui`** (reloads only `tui.toml`, lighter); `/reload` works too (reloads both).
 - changed both → a single **`/reload`** covers it.
 
-Note: `/reload` is available **only when idle** — if a reply is streaming, press Esc / Ctrl-C to stop first. `kimi doctor` already validated the schema before the overwrite, so reload should apply cleanly; if it still errors, follow the message to fix it or recover from the most recent timestamped backup. If you don't want to reload now, the **next new session** picks it up automatically.
+Note: `/reload` is available **only when idle** — if a reply is streaming, press Esc / Ctrl-C to stop first. `zimi doctor` already validated the schema before the overwrite, so reload should apply cleanly; if it still errors, follow the message to fix it or recover from the most recent timestamped backup. If you don't want to reload now, the **next new session** picks it up automatically.
 
 ## Capability 5: fix a deprecated key or env-var warning
 
-kimi reports configuration deprecations as warnings — in the TUI startup notices and pushed to clients as the `event.config.warning` event. There are two shapes, handled differently:
+zimi reports configuration deprecations as warnings — in the TUI startup notices and pushed to clients as the `event.config.warning` event. There are two shapes, handled differently:
 
 - **Deprecated TOML key** — e.g. `[loop_control] 'max_retries_per_step' is deprecated and no longer used; rename it to 'max_attempts_per_step'.` The old value no longer applies, so fix it promptly: follow the Capability 2 flow (copy → Edit → validate → back up → overwrite) and **rename the key in `config.toml`, keeping its value unchanged**. The warning names the exact section and replacement key — use those; never guess other renames. After `/reload`, the warning disappears.
-- **Deprecated environment variable** — e.g. `Environment variable KIMI_LOOP_MAX_RETRIES_PER_STEP is deprecated; use KIMI_LOOP_MAX_ATTEMPTS_PER_STEP instead.` The old variable still works, but this is **not** fixable by editing `config.toml`/`tui.toml` — tell the user to rename the variable where they set it (shell profile, CI environment, launcher script). Do not add anything to the config files for this.
+- **Deprecated environment variable** — e.g. `Environment variable ZIMI_LOOP_MAX_RETRIES_PER_STEP is deprecated; use ZIMI_LOOP_MAX_ATTEMPTS_PER_STEP instead.` The old variable still works, but this is **not** fixable by editing `config.toml`/`tui.toml` — tell the user to rename the variable where they set it (shell profile, CI environment, launcher script). Do not add anything to the config files for this.
 
 ## Don'ts
 

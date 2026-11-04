@@ -13,11 +13,11 @@ coverage/
 .playwright-mcp/
 .claude
 .conductor
-.kimi-stash-dir
+.zimi-stash-dir
 plugins/cdn/
 .worktrees/
-.kimi-code/local.toml
-.kimi-sandbox/
+.zimi-code/local.toml
+.zimi-sandbox/
 .vscode/
 !apps/vscode/.vscode/
 !apps/vscode/.vscode/*.json

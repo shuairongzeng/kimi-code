@@ -3,14 +3,14 @@ import { Readable } from 'node:stream';
 import {
   ISessionMediaStore,
   type SessionMediaFile,
-} from '@moonshot-ai/agent-core-v2/agent/media/sessionMediaStore';
+} from '@zimi-ai/agent-core-v2/agent/media/sessionMediaStore';
 import {
   FileErrors,
   IFileService,
   isFileError,
-} from '@moonshot-ai/agent-core-v2/app/file/fileService';
-import { resumeSessionById } from '@moonshot-ai/agent-core-v2/app/sessionManager/sessionLookup';
-import type { Scope } from '@moonshot-ai/agent-core-v2/_base/di/scope';
+} from '@zimi-ai/agent-core-v2/app/file/fileService';
+import { resumeSessionById } from '@zimi-ai/agent-core-v2/app/sessionManager/sessionLookup';
+import type { Scope } from '@zimi-ai/agent-core-v2/_base/di/scope';
 import { z } from 'zod';
 
 import { buildContentDisposition } from '../lib/contentDisposition';

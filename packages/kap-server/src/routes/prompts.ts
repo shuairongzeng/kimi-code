@@ -36,9 +36,9 @@ import {
   sessionMediaOriginalsDir,
   type ISessionScopeHandle,
   type Scope,
-} from '@moonshot-ai/agent-core-v2';
-import { annotateBundledSkillParts, isSkillActivationPart } from '@moonshot-ai/agent-core-v2/human/agent/origin';
-import { isUserPromptSubmitHookPart } from '@moonshot-ai/agent-core-v2/agent/contextMemory/hookParts';
+} from '@zimi-ai/agent-core-v2';
+import { annotateBundledSkillParts, isSkillActivationPart } from '@zimi-ai/agent-core-v2/human/agent/origin';
+import { isUserPromptSubmitHookPart } from '@zimi-ai/agent-core-v2/agent/contextMemory/hookParts';
 import { ErrorCode } from '../protocol/error-codes';
 import { projectPromptContentParts } from '../services/messages/messageProjection';
 import {

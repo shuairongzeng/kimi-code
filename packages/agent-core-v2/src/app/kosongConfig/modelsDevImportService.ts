@@ -7,8 +7,8 @@ import {
   reconcileProviderCredentialUpdate,
   type CustomRegistryProviderEntry,
   type CustomRegistrySource,
-  type ManagedKimiConfigShape,
-} from '@moonshot-ai/kimi-code-oauth';
+  type ManagedZimiConfigShape,
+} from '@zimi-ai/zimi-code-oauth';
 import { LifecycleScope } from '#/app/scopes';
 import { ScopeActivation, registerScopedService } from '#/_base/di/scope';
 import { Error2 } from '#/_base/errors/errors';
@@ -248,11 +248,11 @@ export class ModelsDevImportService implements IModelsDevImportService {
     const previousDefault = config.inspect<string>(DEFAULT_MODEL_SECTION).userValue;
     const previousDefaultProvider = config.inspect<string>(DEFAULT_PROVIDER_SECTION).userValue;
     const previousThinking =
-      config.inspect<ManagedKimiConfigShape['thinking']>(THINKING_SECTION).userValue;
+      config.inspect<ManagedZimiConfigShape['thinking']>(THINKING_SECTION).userValue;
     const next = {
       providers: { ...providers },
       models: { ...config.inspect<ModelsSection>(MODELS_SECTION).userValue },
-    } as ManagedKimiConfigShape;
+    } as ManagedZimiConfigShape;
     next.defaultModel = previousDefault;
     next['defaultProvider'] = previousDefaultProvider;
     next.thinking = previousThinking;

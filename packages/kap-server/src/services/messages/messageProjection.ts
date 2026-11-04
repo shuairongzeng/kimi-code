@@ -1,6 +1,6 @@
-import { daemonFileRefFromPart, parseDaemonFileUrl, type ContextMessage } from '@moonshot-ai/agent-core-v2';
-import { fromCorePart } from '@moonshot-ai/agent-core-v2/human/message';
-import type { ContentPart } from '@moonshot-ai/agent-core-v2/human/llm/message';
+import { daemonFileRefFromPart, parseDaemonFileUrl, type ContextMessage } from '@zimi-ai/agent-core-v2';
+import { fromCorePart } from '@zimi-ai/agent-core-v2/human/message';
+import type { ContentPart } from '@zimi-ai/agent-core-v2/human/llm/message';
 
 import type { Message, MessageContent, MessageRole, ToolUseContent } from '../../protocol/message';
 

@@ -10,8 +10,8 @@ import {
   ISessionExportService,
   isError2,
   type Scope,
-} from '@moonshot-ai/agent-core-v2';
-import type { KimiHostIdentity } from '@moonshot-ai/kimi-code-oauth';
+} from '@zimi-ai/agent-core-v2';
+import type { ZimiHostIdentity } from '@zimi-ai/zimi-code-oauth';
 
 import { requestLog } from '../lib/requestLog';
 import { defineRoute } from '../middleware/defineRoute';
@@ -40,7 +40,7 @@ interface SessionExportReply {
 export function registerSessionExportRoute(
   app: SessionExportRouteHost,
   core: Scope,
-  options: { readonly hostIdentity: KimiHostIdentity },
+  options: { readonly hostIdentity: ZimiHostIdentity },
 ): void {
   const log = core.accessor.get(ILogService);
   const route = defineRoute(
@@ -98,7 +98,7 @@ export function registerSessionExportRoute(
         if (aborted) return;
 
         const safeSessionId = sanitizeSessionId(req.params.session_id);
-        tempDir = await mkdtemp(join(tmpdir(), `kimi-session-export-${safeSessionId}-`));
+        tempDir = await mkdtemp(join(tmpdir(), `zimi-session-export-${safeSessionId}-`));
         if (aborted) {
           await cleanup();
           return;
@@ -141,7 +141,7 @@ export function registerSessionExportRoute(
           .type('application/zip')
           .header(
             'content-disposition',
-            `attachment; filename="kimi-session-${safeSessionId}.zip"`,
+            `attachment; filename="zimi-session-${safeSessionId}.zip"`,
           )
           .header('content-length', archive.size)
           .header('cache-control', 'no-store')

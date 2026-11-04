@@ -1,4 +1,4 @@
-import type { ToolInputDisplay } from '@moonshot-ai/agent-core-v2/tool/toolInputDisplay';
+import type { ToolInputDisplay } from '@zimi-ai/agent-core-v2/tool/toolInputDisplay';
 
 import { normalizeContentPart, type NormalizedContentPart } from './content-part.js';
 
@@ -28,7 +28,7 @@ const USABLE_ROLES: ReadonlySet<string> = new Set(['user', 'assistant', 'tool'])
  *                  migratable conversation.
  *  - `'empty'`   — parses, but only carries markers (`_system_prompt`,
  *                  `_checkpoint`, `_usage`) or is genuinely blank → an unused
- *                  session, or one the user cleared in kimi-cli.
+ *                  session, or one the user cleared in zimi-cli.
  *  - `'corrupt'` — every non-blank line failed to parse → disk damage,
  *                  truncated write, etc. Must NOT be conflated with `empty`
  *                  or its data problem disappears into the skip count.
@@ -71,7 +71,7 @@ export function containsUsableMessage(lines: readonly string[]): boolean {
 }
 
 /**
- * The last `_usage` row's cumulative `token_count` — kimi-cli's own measured
+ * The last `_usage` row's cumulative `token_count` — zimi-cli's own measured
  * context size at the end of the session. Used to seed a
  * `token_counting.measured` anchor so a resumed session shows a measured
  * context size instead of an estimate until the engine re-measures.
@@ -134,7 +134,7 @@ export function translateContextLines(
 
 function normalizeContent(raw: unknown): NormalizedContentPart[] {
   // A legacy row may legitimately omit `content` (e.g. an assistant message
-  // that only carries tool calls). kimi's message shape allows `content: []`;
+  // that only carries tool calls). zimi's message shape allows `content: []`;
   // stringifying nullish here would emit a phantom text part holding `""`.
   if (raw === null || raw === undefined) {
     return [];

@@ -1,11 +1,11 @@
-import type { ToolInputDisplay } from '@moonshot-ai/agent-core-v2/tool/toolInputDisplay';
-import type { ContentPart } from '@moonshot-ai/agent-core-v2';
-import type { QuestionRequest as CoreQuestionRequest } from '@moonshot-ai/agent-core-v2/agent/interaction/question';
+import type { ToolInputDisplay } from '@zimi-ai/agent-core-v2/tool/toolInputDisplay';
+import type { ContentPart } from '@zimi-ai/agent-core-v2';
+import type { QuestionRequest as CoreQuestionRequest } from '@zimi-ai/agent-core-v2/agent/interaction/question';
 
 export type {
   ApprovalDecision,
   ApprovalResponse,
-} from '@moonshot-ai/agent-core-v2/agent/interaction/approval';
+} from '@zimi-ai/agent-core-v2/agent/interaction/approval';
 export type {
   QuestionAnswerMethod,
   QuestionAnswers,
@@ -13,7 +13,7 @@ export type {
   QuestionOption,
   QuestionResponse,
   QuestionResult,
-} from '@moonshot-ai/agent-core-v2/agent/interaction/question';
+} from '@zimi-ai/agent-core-v2/agent/interaction/question';
 
 export type ApprovalScope = 'session';
 

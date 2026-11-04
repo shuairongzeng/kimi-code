@@ -104,7 +104,7 @@ describe('process group over a subprocess loopback', () => {
   });
 
   it('spawns in the environment defaultCwd when the call omits cwd', async () => {
-    const envCwd = await realpath(await mkdtemp(join(tmpdir(), 'kimi-remote-default-cwd-')));
+    const envCwd = await realpath(await mkdtemp(join(tmpdir(), 'zimi-remote-default-cwd-')));
     try {
       expect(envCwd).not.toBe(process.cwd());
       const envProcesses = new RemoteProcessService(connection, envCwd, '/bin/bash');

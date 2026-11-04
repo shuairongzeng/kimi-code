@@ -99,23 +99,23 @@ export function mediaKindOfPart(part: ContentPart): 'image' | 'video' | 'audio' 
   return undefined;
 }
 
-const KIMI_FILE_SCHEME = 'kimi-file://';
+const ZIMI_FILE_SCHEME = 'zimi-file://';
 
 export interface DaemonFileRef {
   readonly fileId: string;
 }
 
 export function isDaemonFileUrl(url: string): boolean {
-  return url.startsWith(KIMI_FILE_SCHEME);
+  return url.startsWith(ZIMI_FILE_SCHEME);
 }
 
 export function buildDaemonFileUrl(fileId: string): string {
-  return `${KIMI_FILE_SCHEME}${fileId}`;
+  return `${ZIMI_FILE_SCHEME}${fileId}`;
 }
 
 export function parseDaemonFileUrl(url: string): DaemonFileRef | undefined {
-  if (!url.startsWith(KIMI_FILE_SCHEME)) return undefined;
-  const rest = url.slice(KIMI_FILE_SCHEME.length);
+  if (!url.startsWith(ZIMI_FILE_SCHEME)) return undefined;
+  const rest = url.slice(ZIMI_FILE_SCHEME.length);
   const queryAt = rest.indexOf('?');
   const fileId = queryAt === -1 ? rest : rest.slice(0, queryAt);
   return fileId.length > 0 ? { fileId } : undefined;

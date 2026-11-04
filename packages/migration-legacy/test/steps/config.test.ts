@@ -33,18 +33,18 @@ type = "openai_legacy"
 base_url = "https://internal.example.com/v1"
 api_key = "EMPTY"
 
-[models."kimi-code/kimi-for-coding"]
-provider = "managed:kimi-code"
+[models."zimi-code/kimi-for-coding"]
+provider = "managed:zimi-code"
 model = "kimi-for-coding"
 max_context_size = 262144
 
-[providers."managed:kimi-code"]
-type = "kimi"
+[providers."managed:zimi-code"]
+type = "zimi"
 base_url = "https://api.kimi.com/coding/v1"
 
-[providers."managed:kimi-code".oauth]
+[providers."managed:zimi-code".oauth]
 storage = "file"
-key = "oauth/kimi-code"
+key = "oauth/zimi-code"
 `;
 
 describe('migrateConfigStep', () => {
@@ -69,7 +69,7 @@ describe('migrateConfigStep', () => {
     expect(r.droppedModels).not.toContain('internal-vibe');
   });
 
-  it('maps legacy provider types onto kimi-code types', async () => {
+  it('maps legacy provider types onto zimi-code types', async () => {
     await writeFile(
       join(src, 'config.toml'),
       `[providers.vllm]\ntype = "openai_legacy"\nbase_url = "https://internal.example.com/v1"\napi_key = "EMPTY"\n\n[providers.g]\ntype = "gemini"\nbase_url = "https://g.example.com"\n\n[providers.g2]\ntype = "google_genai"\nbase_url = "https://g2.example.com"\n`,
@@ -106,32 +106,32 @@ describe('migrateConfigStep', () => {
     expect(cfg).toContain('merge_all_available_skills = false'); // target value kept
     expect(cfg).not.toContain('telemetry'); // v2 has no telemetry section — dropped
     expect(r.droppedKeys).toContain('telemetry');
-    expect(cfg).toContain('kimi-code/kimi-for-coding'); // migrated model added
+    expect(cfg).toContain('zimi-code/kimi-for-coding'); // migrated model added
   });
 
   it('reports a provider conflict and keeps the target provider', async () => {
     await writeFile(
       join(src, 'config.toml'),
-      `[providers."managed:kimi-code"]
-type = "kimi"
+      `[providers."managed:zimi-code"]
+type = "zimi"
 base_url = "https://source.example/v1"
 `,
     );
     await writeFile(
       join(tgt, 'config.toml'),
-      `[providers."managed:kimi-code"]
-type = "kimi"
+      `[providers."managed:zimi-code"]
+type = "zimi"
 base_url = "https://target.example/v1"
 `,
     );
     const r = await migrateConfigStep({ sourceHome: src, targetHome: tgt });
-    expect(r.configConflicts).toContain('providers.managed:kimi-code');
+    expect(r.configConflicts).toContain('providers.managed:zimi-code');
     const cfg = await readFile(join(tgt, 'config.toml'), 'utf-8');
     expect(cfg).toContain('https://target.example/v1');
     expect(cfg).not.toContain('https://source.example/v1');
   });
 
-  it('drops top-level keys kimi-code does not support', async () => {
+  it('drops top-level keys zimi-code does not support', async () => {
     await writeFile(
       join(src, 'config.toml'),
       'show_thinking_stream = true\nmerge_all_available_skills = true\n',
@@ -149,7 +149,7 @@ base_url = "https://target.example/v1"
     const r = await migrateConfigStep({ sourceHome: src, targetHome: tgt });
     expect(r.wroteSiblingDueToConflict).toBe(true);
     expect(
-      await readFile(join(tgt, 'config.migrated-from-kimi-cli.toml'), 'utf-8'),
+      await readFile(join(tgt, 'config.migrated-from-zimi-cli.toml'), 'utf-8'),
     ).toContain('merge_all_available_skills');
     // the unparseable target is left untouched
     expect(await readFile(join(tgt, 'config.toml'), 'utf-8')).toContain('not valid toml');
@@ -164,7 +164,7 @@ base_url = "https://target.example/v1"
     expect(r.wroteSiblingDueToConflict).toBe(false);
     expect(r.wroteTuiSibling).toBe(true);
     expect(
-      await readFile(join(tgt, 'tui.migrated-from-kimi-cli.toml'), 'utf-8'),
+      await readFile(join(tgt, 'tui.migrated-from-zimi-cli.toml'), 'utf-8'),
     ).toContain('theme');
     // original kept
     expect(await readFile(join(tgt, 'tui.toml'), 'utf-8')).toContain('# user added');
@@ -217,17 +217,17 @@ base_url = "https://target.example/v1"
   it('keeps a model missing optional schema fields under the v2 model schema', async () => {
     // v2's ModelRecordSchema treats `max_context_size` as optional, so a model
     // that v1's ModelAliasSchema rejected now validates and migrates.
-    const cfg = `[providers."managed:kimi-code"]
-type = "kimi"
+    const cfg = `[providers."managed:zimi-code"]
+type = "zimi"
 base_url = "https://api.kimi.com/coding/v1"
 
 [models."good-model"]
-provider = "managed:kimi-code"
+provider = "managed:zimi-code"
 model = "kimi-for-coding"
 max_context_size = 262144
 
 [models."bad-model"]
-provider = "managed:kimi-code"
+provider = "managed:zimi-code"
 model = "kimi-for-coding"
 `;
     await writeFile(join(src, 'config.toml'), cfg);
@@ -267,13 +267,13 @@ model = "kimi-for-coding"
   });
 
   it('drops a model whose provider has no entry anywhere', async () => {
-    const cfg = `[providers."managed:kimi-code"]
-type = "kimi"
+    const cfg = `[providers."managed:zimi-code"]
+type = "zimi"
 api_key = "k"
 base_url = "https://api.example/v1"
 
 [models."good"]
-provider = "managed:kimi-code"
+provider = "managed:zimi-code"
 model = "m"
 max_context_size = 1000
 
@@ -314,7 +314,7 @@ max_context_size = 1000
     await writeFile(
       join(tgt, 'config.toml'),
       `[models."target-only"]
-provider = "managed:kimi-code"
+provider = "managed:zimi-code"
 model = "m"
 max_context_size = 1000
 `,
@@ -330,12 +330,12 @@ max_context_size = 1000
   it('drops a migrated model whose provider conflicts with a differing target provider', async () => {
     await writeFile(
       join(src, 'config.toml'),
-      `[providers."managed:kimi-code"]
-type = "kimi"
+      `[providers."managed:zimi-code"]
+type = "zimi"
 base_url = "https://legacy.example/v1"
 
 [models."conflicted"]
-provider = "managed:kimi-code"
+provider = "managed:zimi-code"
 model = "m"
 max_context_size = 1000
 `,
@@ -345,19 +345,19 @@ max_context_size = 1000
     // to the wrong backend.
     await writeFile(
       join(tgt, 'config.toml'),
-      `[providers."managed:kimi-code"]
-type = "kimi"
+      `[providers."managed:zimi-code"]
+type = "zimi"
 base_url = "https://target.example/v1"
 `,
     );
     const r = await migrateConfigStep({ sourceHome: src, targetHome: tgt });
-    expect(r.configConflicts).toContain('providers.managed:kimi-code');
+    expect(r.configConflicts).toContain('providers.managed:zimi-code');
     expect(r.droppedModels).toContain('conflicted');
     const cfg = await readFile(join(tgt, 'config.toml'), 'utf-8');
     expect(cfg).not.toContain('conflicted');
   });
 
-  it('drops a legacy theme outside the kimi-code TUI enum', async () => {
+  it('drops a legacy theme outside the zimi-code TUI enum', async () => {
     await writeFile(join(src, 'config.toml'), 'theme = "solarized"\ndefault_editor = "vim"\n');
     const r = await migrateConfigStep({ sourceHome: src, targetHome: tgt });
     expect(r.tuiExtracted).toBe(true);
@@ -391,7 +391,7 @@ base_url = "https://target.example/v1"
     expect(cfg).toContain('command = "echo stop"');
   });
 
-  it('drops a single hook kimi-code\'s schema rejects, keeps the rest', async () => {
+  it('drops a single hook zimi-code\'s schema rejects, keeps the rest', async () => {
     await writeFile(
       join(src, 'config.toml'),
       '[[hooks]]\n' +
@@ -456,7 +456,7 @@ base_url = "https://target.example/v1"
 
   it('reports migratedHooks=0 and populates siblingContents when sibling mode kicks in', async () => {
     // The live `config.toml` is unparseable → migration falls back to writing
-    // `config.migrated-from-kimi-cli.toml`. Hooks land in the sibling, NOT in
+    // `config.migrated-from-zimi-cli.toml`. Hooks land in the sibling, NOT in
     // the live config, so `migratedHooks` must be 0 (the runtime never sees
     // them) and the sibling contents must be enumerated so the result-screen
     // warning can tell the user what is in the sibling.

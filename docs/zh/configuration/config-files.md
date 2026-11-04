@@ -1,16 +1,16 @@
 # 配置文件
 
-Kimi Code CLI 的长期偏好都写在 `~/.kimi-code/` 下的 TOML 文件里：运行时设置放 `config.toml`，终端界面偏好放配套的 `tui.toml`。
+Zimi Code CLI 的长期偏好都写在 `~/.zimi-code/` 下的 TOML 文件里：运行时设置放 `config.toml`，终端界面偏好放配套的 `tui.toml`。
 
 ## 配置文件位置
 
-CLI 从 `~/.kimi-code/config.toml` 读取配置，首次运行时自动创建。如需把数据目录迁移到别处，可用 `KIMI_CODE_HOME` 环境变量覆盖：
+CLI 从 `~/.zimi-code/config.toml` 读取配置，首次运行时自动创建。如需把数据目录迁移到别处，可用 `ZIMI_CODE_HOME` 环境变量覆盖：
 
 ```sh
-export KIMI_CODE_HOME=/path/to/kimi-home
+export ZIMI_CODE_HOME=/path/to/zimi-home
 ```
 
-此时配置文件路径变为 `$KIMI_CODE_HOME/config.toml`。无论目录在哪里，文件名固定是 `config.toml`。
+此时配置文件路径变为 `$ZIMI_CODE_HOME/config.toml`。无论目录在哪里，文件名固定是 `config.toml`。
 
 ::: tip
 TOML 字段名一律用下划线（snake_case），如 `default_model`、`max_context_size`。字段名里若含 `.`，需用引号包住，例如 `[models."gpt-4.1"]`；否则 TOML 会把 `.` 解释为嵌套表分隔符。
@@ -21,19 +21,19 @@ TOML 字段名一律用下划线（snake_case），如 `default_model`、`max_co
 以下示例覆盖最常用的配置项，可直接复制后按需修改：
 
 ```toml
-default_model = "kimi-code/k3"
+default_model = "zimi-code/k3"
 default_permission_mode = "manual"
 default_plan_mode = false
 merge_all_available_skills = true
 telemetry = true
 
-[providers."managed:kimi-code"]
-type = "kimi"
+[providers."managed:zimi-code"]
+type = "zimi"
 base_url = "https://api.kimi.com/coding/v1"
 api_key = ""
 
-[models."kimi-code/k3"]
-provider = "managed:kimi-code"
+[models."zimi-code/k3"]
+provider = "managed:zimi-code"
 model = "k3"
 max_context_size = 1048576
 capabilities = [ "thinking", "always_thinking", "image_in", "video_in", "tool_use" ]
@@ -41,14 +41,14 @@ display_name = "K3"
 support_efforts = [ "low", "high", "max" ]
 default_effort = "max"
 
-[models."kimi-code/kimi-for-coding"]
-provider = "managed:kimi-code"
+[models."zimi-code/kimi-for-coding"]
+provider = "managed:zimi-code"
 model = "kimi-for-coding"
 max_context_size = 262144
 capabilities = [ "thinking", "always_thinking", "image_in", "video_in", "tool_use" ]
 
-[models."kimi-code/kimi-for-coding-highspeed"]
-provider = "managed:kimi-code"
+[models."zimi-code/kimi-for-coding-highspeed"]
+provider = "managed:zimi-code"
 model = "kimi-for-coding-highspeed"
 max_context_size = 262144
 capabilities = [ "thinking", "always_thinking", "image_in", "video_in", "tool_use" ]
@@ -66,11 +66,11 @@ reserved_context_size = 50000
 max_running_tasks = 4
 keep_alive_on_exit = false
 
-[services.moonshot_search]
+[services.zimi_search]
 base_url = "https://api.kimi.com/coding/v1/search"
 api_key = ""
 
-[services.moonshot_fetch]
+[services.zimi_fetch]
 base_url = "https://api.kimi.com/coding/v1/fetch"
 api_key = ""
 
@@ -85,7 +85,7 @@ pattern = "Bash(rm -rf*)"
 [[hooks]]
 event = "PreToolUse"
 matcher = "Bash"
-command = "node ~/.kimi-code/hooks/check-bash.mjs"
+command = "node ~/.zimi-code/hooks/check-bash.mjs"
 timeout = 5
 ```
 
@@ -97,11 +97,11 @@ timeout = 5
 | --- | --- | --- | --- |
 | `default_model` | `string` | — | 默认模型别名，必须在 `models` 中定义 |
 | `default_permission_mode` | `string` | `manual` | 新会话的默认权限模式，可选 `yolo` / `auto`，见 [交互与权限](../guides/interaction.md#三种权限模式) |
-| `default_plan_mode` | `boolean` | `false` | 新会话是否默认以 [Plan 模式](../guides/interaction.md#plan-模式)启动。非交互模式（`kimi -p`）下不生效 |
+| `default_plan_mode` | `boolean` | `false` | 新会话是否默认以 [Plan 模式](../guides/interaction.md#plan-模式)启动。非交互模式（`zimi -p`）下不生效 |
 | `merge_all_available_skills` | `boolean` | `true` | 是否合并所有目录中的 Agent Skills |
 | `extra_skill_dirs` | `array<string>` | — | 额外 Skill 搜索目录，叠加到默认目录之上 |
 | `extra_agent_dirs` | `array<string>` | — | 额外自定义 Agent 搜索目录，叠加到默认目录之上 |
-| `builtin_product_skills` | `boolean` | `true` | 是否向模型提供介绍 Kimi Code 自身的内置 Skills |
+| `builtin_product_skills` | `boolean` | `true` | 是否向模型提供介绍 Zimi Code 自身的内置 Skills |
 | `telemetry` | `boolean` | `true` | 是否启用匿名遥测；显式设为 `false` 时关闭 |
 | `auto_session_title` | `boolean` | `true` | 是否允许客户端自动生成会话标题；显式设为 `false` 时关闭 |
 | `disable_feedback_survey` | `boolean` | `false` | 关闭 CLI 和桌面端偶尔出现的会话评分提示 |
@@ -121,11 +121,11 @@ timeout = 5
 
 ## `providers`
 
-`providers` 表的每一项定义一个 API 供应商，以唯一名称为 key。CLI 只从这里读取凭证，**不会**从 shell 环境变量自动取后备值。在终端里 `export KIMI_API_KEY` 不会让供应商自动获得密钥，必须显式写在配置文件里，或者用 `api_key_env` 指定一个变量名（详见[配置覆盖](./overrides.md#供应商凭证)）。
+`providers` 表的每一项定义一个 API 供应商，以唯一名称为 key。CLI 只从这里读取凭证，**不会**从 shell 环境变量自动取后备值。在终端里 `export ZIMI_API_KEY` 不会让供应商自动获得密钥，必须显式写在配置文件里，或者用 `api_key_env` 指定一个变量名（详见[配置覆盖](./overrides.md#供应商凭证)）。
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `type` | `string` | 是 | 供应商类型：`kimi`、`anthropic`、`openai`、`openai_responses`、`google-genai`、`vertexai` |
+| `type` | `string` | 是 | 供应商类型：`zimi`、`anthropic`、`openai`、`openai_responses`、`google-genai`、`vertexai` |
 | `api_key` | `string` | 否 | API 密钥，明文写在配置文件里 |
 | `api_key_env` | `string` | 否 | 指定一个 shell 环境变量名，从该变量读取 API 密钥，密钥不写入配置文件；每次请求时读取。与 `api_key`、`oauth` 互斥；变量未设置或为空时请求报错并指明变量名 |
 | `base_url` | `string` | 否 | API 基础 URL |
@@ -133,12 +133,12 @@ timeout = 5
 | `env` | `table<string, string>` | 否 | 供应商凭证的备用来源，见 `env` 子表 |
 | `custom_headers` | `table<string, string>` | 否 | 每次请求附加的自定义 HTTP 头 |
 
-**`env` 子表**：可以把供应商惯用的键名（如 `KIMI_API_KEY`）写在 `[providers.<name>.env]` 里，作为 `api_key` / `base_url` 的备用来源。这个子表**只在配置文件里读取**，不会修改 shell 环境：
+**`env` 子表**：可以把供应商惯用的键名（如 `ZIMI_API_KEY`）写在 `[providers.<name>.env]` 里，作为 `api_key` / `base_url` 的备用来源。这个子表**只在配置文件里读取**，不会修改 shell 环境：
 
 ```toml
-[providers.kimi.env]
-KIMI_API_KEY = "sk-xxx"
-KIMI_BASE_URL = "https://api.moonshot.ai/v1"
+[providers.zimi.env]
+ZIMI_API_KEY = "sk-xxx"
+ZIMI_BASE_URL = "https://api.moonshot.ai/v1"
 ```
 
 优先级：`api_key` 或 `api_key_env`（互斥替代项，只能设置其中一个）> `env` 子表键（两者都不存在时才读）> 全部缺失时启动报错。刷新 `/models` 时，声明的变量未设置或为空的供应商会被记为失败，不影响其他供应商。
@@ -178,19 +178,19 @@ max_context_size = 1047576
 如果某些用户覆盖需要在 provider-model 刷新后保留，请写到 `[models."<alias>".overrides]`。运行时读取的是 effective 值：有 override 时用 override，否则用顶层字段。
 
 ```toml
-[models."kimi-code/kimi-for-coding"]
-provider = "managed:kimi-code"
+[models."zimi-code/kimi-for-coding"]
+provider = "managed:zimi-code"
 model = "kimi-for-coding"
 max_context_size = 262144
 
-[models."kimi-code/kimi-for-coding".overrides]
+[models."zimi-code/kimi-for-coding".overrides]
 max_context_size = 131072
-display_name = "Kimi for Coding (custom)"
+display_name = "Zimi for Coding (custom)"
 ```
 
 `[models."<alias>".overrides]` 接受普通模型字段，例如 `max_context_size`、`max_input_size`、`max_output_size`、`capabilities`、`display_name`、`reasoning_key`、`adaptive_thinking`、`support_efforts`、`default_effort` 和 `off_effort`。不接受身份 / 路由字段（`provider`、`model`、`protocol`、`beta_api` 和 `base_url`），也不接受由 registry 管理的 `upgrade` 元数据。
 
-无需修改配置文件也可以临时切换模型：通过 `KIMI_MODEL_*` 环境变量在内存里合成一个临时供应商，详见[用环境变量定义模型](./env-vars.md#用环境变量定义模型kimi_model_)。
+无需修改配置文件也可以临时切换模型：通过 `ZIMI_MODEL_*` 环境变量在内存里合成一个临时供应商，详见[用环境变量定义模型](./env-vars.md#用环境变量定义模型zimi_model_)。
 
 ## `secondary_model`
 
@@ -204,7 +204,7 @@ subagent 默认继承 main agent 正在运行的模型。`[secondary_model]` 节
 
 ```toml
 [secondary_model]
-default_model = "kimi-code/kimi-for-coding-highspeed"
+default_model = "zimi-code/kimi-for-coding-highspeed"
 ```
 
 | 字段 | 类型 | 默认值 | 说明 |
@@ -224,15 +224,15 @@ default_model = "kimi-code/kimi-for-coding-highspeed"
 
 在交互式 TUI 中，也可以用 [`/secondary-model`](../reference/slash-commands.md) 命令（别名 `/subagent-model`）打开模型选择器：选择后写入 `default_model`（已有 models 表而所选别名不在其中时，会一并补一条空描述条目），之后派生的 subagent 立即按新默认值绑定，无需重启会话。
 
-subagent 只会运行在模型池列出的模型上。单独一行 `default_model`（或只有一个条目的 `models` 表）会把所有 subagent 固定到该模型。池中有两个及以上条目时启用模型选择：`Agent` / `AgentSwarm` 工具会获得 `model` 参数，工具描述中列出模型池（默认模型标注 `[default]`），main agent 可按次派生选择模型。池 key 只能引用已配置的 [`[models]`](#models) 条目。下面的 `kimi-code/*` 别名由 `/login` 自动提供：
+subagent 只会运行在模型池列出的模型上。单独一行 `default_model`（或只有一个条目的 `models` 表）会把所有 subagent 固定到该模型。池中有两个及以上条目时启用模型选择：`Agent` / `AgentSwarm` 工具会获得 `model` 参数，工具描述中列出模型池（默认模型标注 `[default]`），main agent 可按次派生选择模型。池 key 只能引用已配置的 [`[models]`](#models) 条目。下面的 `zimi-code/*` 别名由 `/login` 自动提供：
 
 ```toml
 [secondary_model]
-default_model = "kimi-code/kimi-for-coding-highspeed"
+default_model = "zimi-code/kimi-for-coding-highspeed"
 [secondary_model.models]
-"kimi-code/k3" = "难题选它。擅长复杂推理、算法设计、深度调试、数学和系统性难题。"
-"kimi-code/kimi-for-coding-highspeed" = "速度快但单价较高。适合日常重构、代码解释、小改动、总结等看重响应速度的任务。"
-"kimi-code/kimi-for-coding" = "均衡的编码主力。适合大多数功能开发和代码修改任务。"
+"zimi-code/k3" = "难题选它。擅长复杂推理、算法设计、深度调试、数学和系统性难题。"
+"zimi-code/kimi-for-coding-highspeed" = "速度快但单价较高。适合日常重构、代码解释、小改动、总结等看重响应速度的任务。"
+"zimi-code/kimi-for-coding" = "均衡的编码主力。适合大多数功能开发和代码修改任务。"
 ```
 
 派生时按以下顺序解析 subagent 的模型：
@@ -257,9 +257,9 @@ default_model = "kimi-code/kimi-for-coding-highspeed"
 2. 把原别名和变体别名都放进模型池。
 
 ```toml
-# "kimi-code/k3" 由 /login 提供（默认 high 档）；这里为同一模型注册一个 max 档位变体
+# "zimi-code/k3" 由 /login 提供（默认 high 档）；这里为同一模型注册一个 max 档位变体
 [models.k3-max]
-provider = "managed:kimi-code"
+provider = "managed:zimi-code"
 model = "k3"
 max_context_size = 1048576
 capabilities = [ "thinking", "always_thinking", "image_in", "video_in", "tool_use" ]
@@ -269,15 +269,15 @@ support_efforts = [ "low", "high", "max" ]
 default_effort = "max"
 
 [secondary_model]
-default_model = "kimi-code/k3"
+default_model = "zimi-code/k3"
 [secondary_model.models]
-"kimi-code/k3" = "默认 high 档位。适合大多数实现、分析和多轮交互任务。"
+"zimi-code/k3" = "默认 high 档位。适合大多数实现、分析和多轮交互任务。"
 k3-max = "同一模型的 max Thinking 档位。适合最难的子任务。"
 ```
 
 两个前提：
 
-- 底层模型必须声明了 `support_efforts`（`managed:kimi-code` 下目前只有 k3 系列声明了档位）。
+- 底层模型必须声明了 `support_efforts`（`managed:zimi-code` 下目前只有 k3 系列声明了档位）。
 - 变体是独立条目，不会继承被指向条目的字段：`capabilities`、`support_efforts` 等元数据要完整照抄，否则 `default_effort` 不生效（它必须是 `support_efforts` 列表中的值）。
 
 另外注意 main agent 与 subagent 的不对称：对 main agent，全局 `[thinking].effort` 一旦设置就压过变体的 `default_effort`；对绑定池内别名的 subagent，变体的 `default_effort` 优先于全局值，只有 `[secondary_model].default_effort` 的优先级更高。取值与回落规则同 [`[models]` 条目的 `default_effort`](#models)。
@@ -296,7 +296,7 @@ k3-max = "同一模型的 max Thinking 档位。适合最难的子任务。"
 | --- | --- | --- | --- |
 | `enabled` | `boolean` | `true` | 新会话是否默认开启 Thinking，设为 `false` 可强制关闭 |
 | `effort` | `string` | — | Thinking 强度：`low`/`medium`/`high`/`xhigh`/`max`；不在模型支持列表时回落默认档 |
-| `keep` | `string` | `"all"` | 保留思考透传；`kimi` 以 `thinking.keep` 发送，`anthropic` 以 `clear_thinking_20251015` 编辑发送（走 beta API）；关值可禁用；Thinking 开启时注入，可被同名环境变量覆盖 |
+| `keep` | `string` | `"all"` | 保留思考透传；`zimi` 以 `thinking.keep` 发送，`anthropic` 以 `clear_thinking_20251015` 编辑发送（走 beta API）；关值可禁用；Thinking 开启时注入，可被同名环境变量覆盖 |
 
 <details><summary>已废弃字段</summary>
 
@@ -320,7 +320,7 @@ k3-max = "同一模型的 max Thinking 档位。适合最难的子任务。"
 | `reserved_context_size` | `integer` | — | 预留给模型输出的 token 数；上下文窗口剩余量低于此值时触发自动压缩 |
 | `compaction_max_attempts` | `integer` | `5` | 压缩请求失败后的最大总尝试次数（含首次尝试） |
 
-`max_steps_per_turn` 可被环境变量 `KIMI_LOOP_MAX_STEPS_PER_TURN` 覆盖，`max_attempts_per_step` 可被 `KIMI_LOOP_MAX_ATTEMPTS_PER_STEP` 覆盖，优先级均高于配置文件。旧的 `KIMI_LOOP_MAX_RETRIES_PER_STEP` 已废弃，但在新变量未设置时仍生效（启动时会给出警告）。
+`max_steps_per_turn` 可被环境变量 `ZIMI_LOOP_MAX_STEPS_PER_TURN` 覆盖，`max_attempts_per_step` 可被 `ZIMI_LOOP_MAX_ATTEMPTS_PER_STEP` 覆盖，优先级均高于配置文件。旧的 `ZIMI_LOOP_MAX_RETRIES_PER_STEP` 已废弃，但在新变量未设置时仍生效（启动时会给出警告）。
 
 重试仅针对瞬时故障：连接错误、超时、HTTP 429 限流和 5xx 服务端错误。账户额度耗尽或余额不足导致的 429 不会重试，会立即失败：在充值之前重试不可能成功。
 
@@ -332,7 +332,7 @@ k3-max = "同一模型的 max Thinking 档位。适合最难的子任务。"
 | --- | --- | --- | --- |
 | `strategy` | `"measured+estimated" \| "measured" \| "estimated"` | `"measured+estimated"` | 上下文 token 计数策略：`measured+estimated` 为实测加估算兜底，`measured` 仅实测（请求完成后更新），`estimated` 纯估算（供应商不上报用量时用） |
 
-`strategy` 可被环境变量 `KIMI_TOKEN_COUNTING_STRATEGY` 覆盖，优先级高于 `config.toml`。
+`strategy` 可被环境变量 `ZIMI_TOKEN_COUNTING_STRATEGY` 覆盖，优先级高于 `config.toml`。
 
 <a id="background"></a>
 
@@ -351,11 +351,11 @@ k3-max = "同一模型的 max Thinking 档位。适合最难的子任务。"
 | `print_wait_ceiling_s` | `integer` | `2147483` | 等待/steer 循环的墙钟上限（秒），非 print 模式或 `"exit"` 时无效 |
 | `print_max_turns` | `integer` | `100000` | steer 模式下后台任务触发新 turn 的数量上限，防止 steer 循环失控 |
 
-对 Tower 而言，`max_running_tasks` 同时限制 worker 和 reviewer 的总运行数量。如果两个配置节与 `KIMI_CODE_BACKGROUND_MAX_RUNNING_TASKS` 都未设置该值，默认合计最多运行 256 个。
+对 Tower 而言，`max_running_tasks` 同时限制 worker 和 reviewer 的总运行数量。如果两个配置节与 `ZIMI_CODE_BACKGROUND_MAX_RUNNING_TASKS` 都未设置该值，默认合计最多运行 256 个。
 
-`keep_alive_on_exit` 可被环境变量 `KIMI_CODE_BACKGROUND_KEEP_ALIVE_ON_EXIT` 覆盖，`max_running_tasks` 可被 `KIMI_CODE_BACKGROUND_MAX_RUNNING_TASKS` 覆盖，`bash_task_timeout_s` 可被 `KIMI_CODE_BACKGROUND_BASH_TASK_TIMEOUT_S` 覆盖，`print_background_mode`、`print_wait_ceiling_s`、`print_max_turns` 可分别被 `KIMI_CODE_BACKGROUND_PRINT_BACKGROUND_MODE`、`KIMI_CODE_BACKGROUND_PRINT_WAIT_CEILING_S`、`KIMI_CODE_BACKGROUND_PRINT_MAX_TURNS` 覆盖，优先级均高于两个配置节。
+`keep_alive_on_exit` 可被环境变量 `ZIMI_CODE_BACKGROUND_KEEP_ALIVE_ON_EXIT` 覆盖，`max_running_tasks` 可被 `ZIMI_CODE_BACKGROUND_MAX_RUNNING_TASKS` 覆盖，`bash_task_timeout_s` 可被 `ZIMI_CODE_BACKGROUND_BASH_TASK_TIMEOUT_S` 覆盖，`print_background_mode`、`print_wait_ceiling_s`、`print_max_turns` 可分别被 `ZIMI_CODE_BACKGROUND_PRINT_BACKGROUND_MODE`、`ZIMI_CODE_BACKGROUND_PRINT_WAIT_CEILING_S`、`ZIMI_CODE_BACKGROUND_PRINT_MAX_TURNS` 覆盖，优先级均高于两个配置节。
 
-在 print 模式（`kimi -p "<prompt>"`）下，只要还有未决的后台任务，Kimi Code 在 main agent 的 turn 结束后不会退出：每个任务完成都会以合成 user 消息回馈给 main agent，steer 出新的 turn（默认 `print_background_mode = "steer"`），直到某 turn 结束时没有任何未决任务才退出。该循环受 `print_wait_ceiling_s` 与 `print_max_turns` 约束，默认值都近似不设限。print 模式下后台工作也不会被墙钟超时杀掉：后台 `Bash` 任务默认无超时（`bash_task_timeout_s = 0`），subagent 默认无超时（`[subagent] timeout_ms` 与 `[swarm] timeout_ms` 未显式设置时均为 `0`），只有模型自己能停止任务。将 `print_background_mode` 设为 `"drain"` 可等待任务结束但不回馈结果，设为 `"exit"` 则在 main agent 结束后立即退出。
+在 print 模式（`zimi -p "<prompt>"`）下，只要还有未决的后台任务，Zimi Code 在 main agent 的 turn 结束后不会退出：每个任务完成都会以合成 user 消息回馈给 main agent，steer 出新的 turn（默认 `print_background_mode = "steer"`），直到某 turn 结束时没有任何未决任务才退出。该循环受 `print_wait_ceiling_s` 与 `print_max_turns` 约束，默认值都近似不设限。print 模式下后台工作也不会被墙钟超时杀掉：后台 `Bash` 任务默认无超时（`bash_task_timeout_s = 0`），subagent 默认无超时（`[subagent] timeout_ms` 与 `[swarm] timeout_ms` 未显式设置时均为 `0`），只有模型自己能停止任务。将 `print_background_mode` 设为 `"drain"` 可等待任务结束但不回馈结果，设为 `"exit"` 则在 main agent 结束后立即退出。
 
 ## `subagent`
 
@@ -365,7 +365,7 @@ k3-max = "同一模型的 max Thinking 档位。适合最难的子任务。"
 | --- | --- | --- | --- |
 | `timeout_ms` | `integer` | `7200000`（2 小时） | 单个 `Agent` subagent 允许运行的最长时间（毫秒）；超时以 `timed_out` 收尾，`0` 表示无超时 |
 
-`timeout_ms` 可被环境变量 `KIMI_SUBAGENT_TIMEOUT_MS` 覆盖，优先级高于配置文件。
+`timeout_ms` 可被环境变量 `ZIMI_SUBAGENT_TIMEOUT_MS` 覆盖，优先级高于配置文件。
 
 ## `swarm`
 
@@ -375,7 +375,7 @@ k3-max = "同一模型的 max Thinking 档位。适合最难的子任务。"
 | --- | --- | --- | --- |
 | `timeout_ms` | `integer` | `7200000`（2 小时） | `AgentSwarm` 单个 subagent 允许运行的最长时间（毫秒）；超时后中止，聚合报告标记 `Subagent timed out.`；0 为无超时 |
 
-`timeout_ms` 可被环境变量 `KIMI_CODE_SWARM_TIMEOUT_MS` 覆盖，优先级高于配置文件。
+`timeout_ms` 可被环境变量 `ZIMI_CODE_SWARM_TIMEOUT_MS` 覆盖，优先级高于配置文件。
 
 ## `mcp`
 
@@ -387,9 +387,9 @@ k3-max = "同一模型的 max Thinking 档位。适合最难的子任务。"
 | `reconnect_initial_delay_ms` | `integer` | `5000`（5 秒） | workspace 级 MCP server 首次连接失败或意外断连后，首次自动重连前的等待时间（毫秒）；每次失败后再翻倍 |
 | `reconnect_max_delay_ms` | `integer` | `300000`（5 分钟） | workspace 级 MCP server 自动重连退避等待的上限（毫秒） |
 
-`startup_timeout_ms` 和 `tool_timeout_ms` 可分别被环境变量 `KIMI_MCP_STARTUP_TIMEOUT_MS` 和 `KIMI_MCP_TOOL_TIMEOUT_MS` 覆盖，优先级高于配置文件。MCP server 的完整配置方式见 [MCP](../customization/mcp.md)。
+`startup_timeout_ms` 和 `tool_timeout_ms` 可分别被环境变量 `ZIMI_MCP_STARTUP_TIMEOUT_MS` 和 `ZIMI_MCP_TOOL_TIMEOUT_MS` 覆盖，优先级高于配置文件。MCP server 的完整配置方式见 [MCP](../customization/mcp.md)。
 
-`reconnect_initial_delay_ms` 和 `reconnect_max_delay_ms` 同样可分别被环境变量 `KIMI_MCP_RECONNECT_INITIAL_DELAY_MS` 和 `KIMI_MCP_RECONNECT_MAX_DELAY_MS` 覆盖。自动重连只作用于 workspace 级 MCP server，遇到无法自行恢复的失败（命令不存在、配置非法、server 拒绝静态凭据）会停止重试；详见 [MCP](../customization/mcp.md)。
+`reconnect_initial_delay_ms` 和 `reconnect_max_delay_ms` 同样可分别被环境变量 `ZIMI_MCP_RECONNECT_INITIAL_DELAY_MS` 和 `ZIMI_MCP_RECONNECT_MAX_DELAY_MS` 覆盖。自动重连只作用于 workspace 级 MCP server，遇到无法自行恢复的失败（命令不存在、配置非法、server 拒绝静态凭据）会停止重试；详见 [MCP](../customization/mcp.md)。
 
 ## `identity`
 
@@ -406,13 +406,13 @@ name = "Acme Dev Agent"
 slug = "acme-dev"        # 可选
 ```
 
-两个字段都可以通过 `KIMI_CODE_IDENTITY_NAME` 和 `KIMI_CODE_IDENTITY_SLUG` 环境变量设置，优先级高于 `config.toml`，且不会被写回配置文件，适合不便写配置文件的容器和 CI 场景。
+两个字段都可以通过 `ZIMI_CODE_IDENTITY_NAME` 和 `ZIMI_CODE_IDENTITY_SLUG` 环境变量设置，优先级高于 `config.toml`，且不会被写回配置文件，适合不便写配置文件的容器和 CI 场景。
 
 如果名称中不含任何 ASCII 字母或数字（例如纯中文名称），就无法派生出 slug，此时回退为 `agent`；需要特定协议标识请显式填写 `slug`。
 
 身份在启动时解析一次，进程生命周期内保持不变：建立连接时它已宣告给 MCP 服务器和 provider，中途无法更换。修改本节配置在下次启动时对新会话生效；resume 的会话保留录制时的系统提示词，因为其历史轮次本就以原身份自称。同理，已完成的 MCP OAuth 授权保留其授予时的客户端注册；重置该服务器的认证即可在新身份下重新注册。
 
-本节由 `agent-core-v2` 引擎读取，Kimi Code 的所有界面都运行在该引擎上。
+本节由 `agent-core-v2` 引擎读取，Zimi Code 的所有界面都运行在该引擎上。
 
 ## `tools`
 
@@ -460,7 +460,7 @@ max_chars = 100000
 | `max_edge_px` | `integer` | `2000` | 图片最长边上限（像素）。超过时按比例缩小到该值以内；调大可保留更多细节，代价是更大的请求体积 |
 | `read_byte_budget` | `integer` | `262144`（256 KB） | 模型自行读取图片的单图字节预算（`ReadMediaFile` 默认读取）；`region` 与 `full_resolution` 回读不受此限制 |
 
-`max_edge_px` 可被环境变量 `KIMI_IMAGE_MAX_EDGE_PX` 覆盖，`read_byte_budget` 可被 `KIMI_IMAGE_READ_BYTE_BUDGET` 覆盖，优先级均高于配置文件。
+`max_edge_px` 可被环境变量 `ZIMI_IMAGE_MAX_EDGE_PX` 覆盖，`read_byte_budget` 可被 `ZIMI_IMAGE_READ_BYTE_BUDGET` 覆盖，优先级均高于配置文件。
 
 ## `database`
 
@@ -472,7 +472,7 @@ max_chars = 100000
 | `global_search` | `boolean` | `false` | 是否构建全局全文搜索索引并提供 `POST /api/v1/search`；关闭时不扫描会话、不启动搜索 worker，搜索接口返回索引不可用 |
 | `search` | `boolean` | `true` | 全局搜索开启时，在独立 worker 线程中运行索引；`false` 在服务器进程内运行 |
 
-`base` 可被环境变量 `KIMI_CODE_PERSISTENCE_MINIDB_READMODEL` 覆盖，`global_search` 可被 `KIMI_CODE_GLOBAL_SEARCH` 覆盖，`search` 可被 `KIMI_CODE_SEARCH_WORKER` 覆盖，优先级均高于配置文件。
+`base` 可被环境变量 `ZIMI_CODE_PERSISTENCE_MINIDB_READMODEL` 覆盖，`global_search` 可被 `ZIMI_CODE_GLOBAL_SEARCH` 覆盖，`search` 可被 `ZIMI_CODE_SEARCH_WORKER` 覆盖，优先级均高于配置文件。
 
 ## `watch`
 
@@ -482,7 +482,7 @@ max_chars = 100000
 | --- | --- | --- | --- |
 | `enabled` | `boolean` | `true` | 是否挂文件系统 watch；`false` 关闭进程内全部 `watch()` |
 
-`enabled` 可被环境变量 `KIMI_CODE_WATCH` 覆盖，优先级高于配置文件。
+`enabled` 可被环境变量 `ZIMI_CODE_WATCH` 覆盖，优先级高于配置文件。
 
 ## `workspace trust`
 
@@ -501,7 +501,7 @@ require_trust = false
 关闭首次打开的信任确认后，项目级 MCP server 和其他受信任机制控制的项目配置都会不经确认直接加载。仅应在所有工作区均已可信时使用该配置。它不会改变权限模式、工具审批或危险命令保护。
 :::
 
-配置变更在 `/reload` 后生效；已经运行的 TUI 不会补弹启动信任提示。`KIMI_CODE_TRUST_WORKSPACE=1` 仍是独立的进程级信任覆盖，假值不会在 `require_trust` 为 `false` 时恢复首次打开的信任确认。已有信任记录会保留，恢复该要求后继续使用。
+配置变更在 `/reload` 后生效；已经运行的 TUI 不会补弹启动信任提示。`ZIMI_CODE_TRUST_WORKSPACE=1` 仍是独立的进程级信任覆盖，假值不会在 `require_trust` 为 `false` 时恢复首次打开的信任确认。已有信任记录会保留，恢复该要求后继续使用。
 
 <!--
 ## `experimental`
@@ -515,7 +515,7 @@ require_trust = false
 
 ## `services`
 
-`services` 配置网页搜索（`moonshot_search`）和网页抓取（`moonshot_fetch`）两项内置服务。只识别这两个固定 key，其他 key 会被忽略。两项字段相同：
+`services` 配置网页搜索（`zimi_search`）和网页抓取（`zimi_fetch`）两项内置服务。只识别这两个固定 key，其他 key 会被忽略。两项字段相同：
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
@@ -524,14 +524,14 @@ require_trust = false
 | `oauth` | `table` | 否 | OAuth 凭据引用，结构同 `providers.*.oauth` |
 | `custom_headers` | `table<string, string>` | 否 | 请求时附加的自定义 HTTP 头 |
 
-`base_url` 和 `api_key` 也可由环境变量提供，环境变量优先于配置文件：`KIMI_WEB_SEARCH_BASE_URL` / `KIMI_WEB_SEARCH_API_KEY` 对应 `moonshot_search`，`KIMI_WEB_FETCH_BASE_URL` / `KIMI_WEB_FETCH_API_KEY` 对应 `moonshot_fetch`。`KIMI_WEB_SEARCH_BASE_URL` 和 `KIMI_WEB_FETCH_BASE_URL` 定义的是独立服务端点，因此文件中持久化的 API 密钥、OAuth 引用和自定义 header 都不会发送给它；该端点需要鉴权时，请同时设置对应的环境变量 API 密钥。只设置环境变量 API 密钥时，配置中的端点和自定义 header 保持不变，但两种配置凭据都会被替换。不写配置段、只通过环境变量设置 base URL 和 API 密钥，也可以启用对应服务。
+`base_url` 和 `api_key` 也可由环境变量提供，环境变量优先于配置文件：`ZIMI_WEB_SEARCH_BASE_URL` / `ZIMI_WEB_SEARCH_API_KEY` 对应 `zimi_search`，`ZIMI_WEB_FETCH_BASE_URL` / `ZIMI_WEB_FETCH_API_KEY` 对应 `zimi_fetch`。`ZIMI_WEB_SEARCH_BASE_URL` 和 `ZIMI_WEB_FETCH_BASE_URL` 定义的是独立服务端点，因此文件中持久化的 API 密钥、OAuth 引用和自定义 header 都不会发送给它；该端点需要鉴权时，请同时设置对应的环境变量 API 密钥。只设置环境变量 API 密钥时，配置中的端点和自定义 header 保持不变，但两种配置凭据都会被替换。不写配置段、只通过环境变量设置 base URL 和 API 密钥，也可以启用对应服务。
 
 ```toml
-[services.moonshot_search]
+[services.zimi_search]
 base_url = "https://api.moonshot.cn/v1/search"
 api_key = "sk-xxx"
 
-[services.moonshot_fetch]
+[services.zimi_fetch]
 base_url = "https://api.moonshot.cn/v1/fetch"
 api_key = "sk-xxx"
 ```
@@ -540,7 +540,7 @@ api_key = "sk-xxx"
 
 `permission` 设置会话启动时自动加载的权限规则，控制 Agent 调用工具时是否需要用户确认。规则用 `[[permission.rules]]` 数组表写出，按顺序匹配，第一条命中即生效。
 
-也可以在 `[permission]` 下设置 `dangerous_command_guard = false` 完全关闭所有内置 guard 确认策略：危险命令、敏感文件（如 `.env`、`id_rsa`）访问、git 控制路径访问在 "Always Ask" 和 "Ask When Needed" 模式下不再触发审批（"Never Ask" 模式本就不启用这些策略），默认 `true`。环境变量 `KIMI_CODE_DANGEROUS_COMMAND_GUARD=false` 会覆盖文件设置。全部内置 guard 关闭后，"Ask When Needed" 模式下只有你自己配置的 `ask` 规则仍会要求确认；"Always Ask" 模式下未被自动放行的工具照旧逐个询问。`Read`/`Write`/`Edit` 对秘密文件的硬阻断保持不变。此开关只适用于已经在 Agent 之外统一命令限权的环境。
+也可以在 `[permission]` 下设置 `dangerous_command_guard = false` 完全关闭所有内置 guard 确认策略：危险命令、敏感文件（如 `.env`、`id_rsa`）访问、git 控制路径访问在 "Always Ask" 和 "Ask When Needed" 模式下不再触发审批（"Never Ask" 模式本就不启用这些策略），默认 `true`。环境变量 `ZIMI_CODE_DANGEROUS_COMMAND_GUARD=false` 会覆盖文件设置。全部内置 guard 关闭后，"Ask When Needed" 模式下只有你自己配置的 `ask` 规则仍会要求确认；"Always Ask" 模式下未被自动放行的工具照旧逐个询问。`Read`/`Write`/`Edit` 对秘密文件的硬阻断保持不变。此开关只适用于已经在 Agent 之外统一命令限权的环境。
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
@@ -570,7 +570,7 @@ pattern = "Bash"
 ```
 
 ::: tip
-MCP server 的声明配置写在 `~/.kimi-code/mcp.json` 或项目内 `.kimi-code/mcp.json` 中，不在 `config.toml` 里。交互式配置入口是 `/mcp-config`，详见 [Model Context Protocol](../customization/mcp.md)。
+MCP server 的声明配置写在 `~/.zimi-code/mcp.json` 或项目内 `.zimi-code/mcp.json` 中，不在 `config.toml` 里。交互式配置入口是 `/mcp-config`，详见 [Model Context Protocol](../customization/mcp.md)。
 :::
 
 ## `environments`
@@ -589,7 +589,7 @@ MCP server 的声明配置写在 `~/.kimi-code/mcp.json` 或项目内 `.kimi-cod
 | --- | --- | --- | --- |
 | `type` | `string` | 是 | `"ssh"` |
 | `host` | `string` | 是 | SSH 主机；经系统 `ssh` 启动，`~/.ssh/config`（用户、端口、密钥、`ProxyJump`、`ControlMaster`）照常生效 |
-| `remoteBin` | `string` | 否 | 目标上的执行器路径，POSIX 默认 `~/.kimi-code/bin/kimi`，Windows 默认 `~/.kimi-code/bin/kimi.exe`。支持含空格的绝对路径、目标账户主目录下的 `~/` 路径或目标 `PATH` 中的裸名称（如 `kimi`） |
+| `remoteBin` | `string` | 否 | 目标上的执行器路径，POSIX 默认 `~/.zimi-code/bin/zimi`，Windows 默认 `~/.zimi-code/bin/zimi.exe`。支持含空格的绝对路径、目标账户主目录下的 `~/` 路径或目标 `PATH` 中的裸名称（如 `zimi`） |
 | `defaultCwd` | `string` | 否 | 绑定会话时工作目录的预填值，不在本机校验 |
 
 ### Docker 条目
@@ -599,19 +599,19 @@ MCP server 的声明配置写在 `~/.kimi-code/mcp.json` 或项目内 `.kimi-cod
 | `type` | `string` | 是 | `"docker"` |
 | `container` | `string` | 是 | 运行中的容器名或 id，经 `docker exec` 接入 |
 | `context` | `string` | 否 | Docker context（例如 `orbstack`） |
-| `remoteBin` | `string` | 否 | 容器内的执行器路径，默认为容器用户 home 下的 `~/.kimi-code/bin/kimi`；启动命令经 `docker exec … sh -c` 执行，`~` 前缀由容器内的 shell 展开 |
+| `remoteBin` | `string` | 否 | 容器内的执行器路径，默认为容器用户 home 下的 `~/.zimi-code/bin/zimi`；启动命令经 `docker exec … sh -c` 执行，`~` 前缀由容器内的 shell 展开 |
 | `defaultCwd` | `string` | 否 | 绑定会话时工作目录的预填值 |
 
 ### command 条目
 
-通用启动器形式，用于内置启动器未覆盖的环境（OrbStack 机器、`kubectl exec`、Apple Container、受管沙箱等）。`command` 与 `args` 描述如何进入目标：启动器必须在目标上执行跟在它后面的参数，`ssh host`、`kubectl exec -i pod --`、`docker exec -i container` 都是这样。Kimi Code 会在 `args` 末尾追加 `<remoteBin> exec-server`；`args` 已经调用 `exec-server` 时不追加。
+通用启动器形式，用于内置启动器未覆盖的环境（OrbStack 机器、`kubectl exec`、Apple Container、受管沙箱等）。`command` 与 `args` 描述如何进入目标：启动器必须在目标上执行跟在它后面的参数，`ssh host`、`kubectl exec -i pod --`、`docker exec -i container` 都是这样。Zimi Code 会在 `args` 末尾追加 `<remoteBin> exec-server`；`args` 已经调用 `exec-server` 时不追加。
 
 | 字段 | 类型 | 是否必填 | 说明 |
 | --- | --- | --- | --- |
 | `command` | `string` | 是 | 启动器可执行文件：按 `PATH` 解析的名称，或绝对路径。解析结果落在工作目录内会被拒绝，项目无法用同名二进制冒名顶替启动器 |
-| `args` | `array<string>` | 否 | 进入目标的启动器参数。某个参数已经调用 `exec-server` 时（例如 `--command "~/.kimi-code/bin/kimi exec-server"`），不再追加，按原样执行 |
+| `args` | `array<string>` | 否 | 进入目标的启动器参数。某个参数已经调用 `exec-server` 时（例如 `--command "~/.zimi-code/bin/zimi exec-server"`），不再追加，按原样执行 |
 | `env` | `table<string, string>` | 否 | 本机启动器进程的环境变量，不会传播到目标环境执行的命令中 |
-| `remoteBin` | `string` | 否 | 目标上的执行器路径，追加在 `args` 之后，默认 `~/.kimi-code/bin/kimi`。应为不含空格和 shell 特殊字符的路径。只有经目标上的 shell 执行参数的启动器（如 ssh）会展开 `~`；`kubectl exec`、`docker exec` 这类原样传递参数的启动器需要绝对路径 |
+| `remoteBin` | `string` | 否 | 目标上的执行器路径，追加在 `args` 之后，默认 `~/.zimi-code/bin/zimi`。应为不含空格和 shell 特殊字符的路径。只有经目标上的 shell 执行参数的启动器（如 ssh）会展开 `~`；`kubectl exec`、`docker exec` 这类原样传递参数的启动器需要绝对路径 |
 | `defaultCwd` | `string` | 否 | 绑定会话时工作目录的预填值 |
 
 ```toml
@@ -631,18 +631,18 @@ container = "myapp-dev"
 command = "sandbox"
 args = ["ssh", "i-1234567890", "--"]
 env = { SANDBOX_TOKEN = "..." }
-defaultCwd = "/home/me/kimi-code"
+defaultCwd = "/home/me/zimi-code"
 
 [environments.k8s]
 command = "kubectl"
 args = ["exec", "-i", "dev-pod", "--"]
-remoteBin = "/root/.kimi-code/bin/kimi"
+remoteBin = "/root/.zimi-code/bin/zimi"
 defaultCwd = "/workspace"
 ```
 
 ## `tui.toml`
 
-除了 `config.toml`，CLI 还在同一目录下用一份配套的 `tui.toml` 保存终端界面与客户端偏好（`~/.kimi-code/tui.toml`，或覆盖后的 `$KIMI_CODE_HOME/tui.toml`）。它在首次运行时以默认值创建，交互式命令 `/config`、`/theme`、`/editor` 会自动写入，通常无需手动编辑。文件格式有误时，CLI 会回退到默认值并给出提示，而不是启动失败。
+除了 `config.toml`，CLI 还在同一目录下用一份配套的 `tui.toml` 保存终端界面与客户端偏好（`~/.zimi-code/tui.toml`，或覆盖后的 `$ZIMI_CODE_HOME/tui.toml`）。它在首次运行时以默认值创建，交互式命令 `/config`、`/theme`、`/editor` 会自动写入，通常无需手动编辑。文件格式有误时，CLI 会回退到默认值并给出提示，而不是启动失败。
 
 | 字段 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
@@ -667,7 +667,7 @@ model、cwd、git 分支、permission 模式、plan 模式、上下文用量、s
 </details>
 
 ```toml
-# ~/.kimi-code/tui.toml
+# ~/.zimi-code/tui.toml
 theme = "auto" # "auto" | "dark" | "light" | 自定义主题名
 tui_mode = "regular" # "regular" | "fullscreen"（"fullscreen" 为实验性）
 render_latex = true # false 表示消息中的 LaTeX 公式保留原始源码
@@ -687,16 +687,16 @@ auto_install = true
 
 # [status_line]
 # items = ["mode", "goal", "model", "tasks", "cwd", "git", "tips"]
-# command = "~/.kimi-code/statusline.sh"
+# command = "~/.zimi-code/statusline.sh"
 ```
 
 修改在下次启动时生效，或用 `/reload-tui` 立即生效（只重载 `tui.toml`）；`/reload` 会同时重载 `config.toml` 和 `tui.toml`。
 
 ## 项目级本地配置
 
-除了 `~/.kimi-code` 下的用户级文件，Kimi Code 还会读取位于 `<项目根目录>/.kimi-code/local.toml` 的项目级本地配置文件。它保存的是与某一个项目检出相关、通常不应与队友共享的设置。
+除了 `~/.zimi-code` 下的用户级文件，Zimi Code 还会读取位于 `<项目根目录>/.zimi-code/local.toml` 的项目级本地配置文件。它保存的是与某一个项目检出相关、通常不应与队友共享的设置。
 
-早期版本的 [`/add-dir`](../reference/slash-commands.md) 会把「记住此目录」写入这个文件；现版本改为记入 `~/.kimi-code/projects.json` 中的工作区注册表，`local.toml` 随之成为只读的存量兼容字段，任何组件都不会再写入它。隐式工作区（终端按目录进入）的会话仍把其中的 `additional_dir` 并入额外目录；显式创建（managed）工作区的会话不再读取它。要把旧配置搬进注册表，可在客户端的新建/编辑工作区弹窗中使用导入功能（底层为 [`GET /api/v1/workspaces/project-config-dirs`](../reference/server-api.md#get-apiv1workspacesproject-config-dirs)），导入后即由注册表管理，删除即时生效。
+早期版本的 [`/add-dir`](../reference/slash-commands.md) 会把「记住此目录」写入这个文件；现版本改为记入 `~/.zimi-code/projects.json` 中的工作区注册表，`local.toml` 随之成为只读的存量兼容字段，任何组件都不会再写入它。隐式工作区（终端按目录进入）的会话仍把其中的 `additional_dir` 并入额外目录；显式创建（managed）工作区的会话不再读取它。要把旧配置搬进注册表，可在客户端的新建/编辑工作区弹窗中使用导入功能（底层为 [`GET /api/v1/workspaces/project-config-dirs`](../reference/server-api.md#get-apiv1workspacesproject-config-dirs)），导入后即由注册表管理，删除即时生效。
 
 ### `[workspace]`
 
@@ -711,12 +711,12 @@ auto_install = true
 additional_dir = ["/absolute/path/to/shared"]
 ```
 
-目录以绝对路径存储，与具体机器相关。因此建议把 `.kimi-code/local.toml` 加入项目的 `.gitignore`，避免被提交。
+目录以绝对路径存储，与具体机器相关。因此建议把 `.zimi-code/local.toml` 加入项目的 `.gitignore`，避免被提交。
 
-除了 `local.toml`，项目 `.kimi-code/` 目录还可以放 `mcp.json`（项目级 MCP server），受工作区信任门控：在启动提示中选择信任该文件夹后才生效。详见 [Model Context Protocol](../customization/mcp.md)。
+除了 `local.toml`，项目 `.zimi-code/` 目录还可以放 `mcp.json`（项目级 MCP server），受工作区信任门控：在启动提示中选择信任该文件夹后才生效。详见 [Model Context Protocol](../customization/mcp.md)。
 
 ## 下一步
 
-- [平台与模型](./providers.md) — 各供应商类型（Kimi、Claude、OpenAI、Gemini）的接入示例
+- [平台与模型](./providers.md) — 各供应商类型（Zimi、Claude、OpenAI、Gemini）的接入示例
 - [配置覆盖](./overrides.md) — CLI 选项、配置文件、环境变量的优先级规则
-- [环境变量](./env-vars.md) — `KIMI_CODE_HOME` 等运行时变量的完整列表
+- [环境变量](./env-vars.md) — `ZIMI_CODE_HOME` 等运行时变量的完整列表

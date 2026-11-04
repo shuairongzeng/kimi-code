@@ -1,4 +1,4 @@
-import type { KimiRegion } from '@moonshot-ai/kimi-code-oauth';
+import type { ZimiRegion } from '@zimi-ai/zimi-code-oauth';
 
 import type { IPluginService } from '#/app/plugin/plugin';
 import type { IPluginMarketplaceService } from '#/app/plugin/marketplaceService';
@@ -7,7 +7,7 @@ import type { IHostProcessService } from '#/os/interface/hostProcess';
 export interface CapabilityEntryContext {
   readonly platform: NodeJS.Platform;
   readonly arch: string;
-  readonly kimiHomeDir: string;
+  readonly zimiHomeDir: string;
   readonly userHomeDir: string;
   readonly plugins: IPluginService;
   readonly marketplace: IPluginMarketplaceService;
@@ -17,5 +17,5 @@ export interface CapabilityEntryContext {
   readonly webbridgeBaseUrl?: string;
   readonly detectProbeTimeoutMs?: number;
   readonly commandTimeoutMs?: number;
-  readonly resolveRegion?: () => KimiRegion | Promise<KimiRegion>;
+  readonly resolveRegion?: () => ZimiRegion | Promise<ZimiRegion>;
 }

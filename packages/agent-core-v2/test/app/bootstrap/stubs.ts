@@ -13,7 +13,7 @@ export const stubClientIdentity = {
 } as const;
 
 export function stubBootstrap(
-  homeDir = '/tmp/kimi-home',
+  homeDir = '/tmp/zimi-home',
   env: NodeJS.ProcessEnv = {},
   args: HostArgsInput = {},
   osHomeDir = '/home/test',
@@ -49,6 +49,6 @@ export function stubBootstrap(
 }
 
 export function registerBootstrapServices(reg: ServiceRegistration): void {
-  const homeDir = `/tmp/kimi-code-agent-core-v2-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const homeDir = `/tmp/zimi-code-agent-core-v2-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   reg.defineInstance(IBootstrapService, stubBootstrap(homeDir));
 }

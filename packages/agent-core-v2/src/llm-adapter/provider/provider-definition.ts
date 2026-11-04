@@ -4,14 +4,14 @@ import type { DefaultHeadersResolver, ProtocolEndpoint } from '#human/llm-reques
 import {
   anthropicEndpoint,
   geminiEndpoint,
-  kimiEndpoint,
+  zimiEndpoint,
   openAIEndpoint,
   vertexEndpoint,
 } from '#human/llm-requester/endpoints';
 import type { LlmErrorClassifier } from '#human/llm-requester/requester';
 import type { LlmRequester } from '#human/llm/requester';
-import { kimiRequesters } from '#human/llm/builtin/provider/kimi/index';
-import { classifyKimiQuotaError } from '#human/llm/builtin/provider/kimi/errors';
+import { zimiRequesters } from '#human/llm/builtin/provider/zimi/index';
+import { classifyZimiQuotaError } from '#human/llm/builtin/provider/zimi/errors';
 
 import type { Protocol } from '../protocol/protocol';
 import type { ModelSource } from './provider';
@@ -194,35 +194,35 @@ registerProviderDefinition({
 });
 
 registerProviderDefinition({
-  id: 'kimi',
+  id: 'zimi',
   baseProtocol: 'openai',
-  requester: kimiRequesters.openai,
+  requester: zimiRequesters.openai,
   thinkingDriven: true,
   strictThinkingValidation: true,
-  classifyError: classifyKimiQuotaError,
-  endpoint: kimiEndpoint,
+  classifyError: classifyZimiQuotaError,
+  endpoint: zimiEndpoint,
   hostHeaders: 'full',
   modelSource: 'oauth-catalog',
 });
 
 registerProviderDefinition({
-  id: 'kimi',
+  id: 'zimi',
   baseProtocol: 'anthropic',
-  requester: kimiRequesters.anthropic,
+  requester: zimiRequesters.anthropic,
   thinkingDriven: true,
-  classifyError: classifyKimiQuotaError,
-  endpoint: kimiEndpoint,
+  classifyError: classifyZimiQuotaError,
+  endpoint: zimiEndpoint,
   hostHeaders: 'full',
   modelSource: 'oauth-catalog',
 });
 
 registerProviderDefinition({
-  id: 'kimi',
+  id: 'zimi',
   baseProtocol: 'openai_responses',
-  requester: kimiRequesters.openai_responses,
+  requester: zimiRequesters.openai_responses,
   thinkingDriven: true,
-  classifyError: classifyKimiQuotaError,
-  endpoint: kimiEndpoint,
+  classifyError: classifyZimiQuotaError,
+  endpoint: zimiEndpoint,
   hostHeaders: 'full',
   modelSource: 'oauth-catalog',
 });

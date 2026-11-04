@@ -1,6 +1,6 @@
 # 平台与模型
 
-Kimi Code CLI 支持同时接入多家模型供应商服务，模型在供应商之上声明自己的名称、上下文长度和能力。本页介绍如何在 `config.toml` 里配置各种供应商。
+Zimi Code CLI 支持同时接入多家模型供应商服务，模型在供应商之上声明自己的名称、上下文长度和能力。本页介绍如何在 `config.toml` 里配置各种供应商。
 
 ## 支持的供应商类型
 
@@ -8,7 +8,7 @@ Kimi Code CLI 支持同时接入多家模型供应商服务，模型在供应商
 
 | 类型 | 协议 | 典型用途 |
 | --- | --- | --- |
-| [`kimi`](#kimi) | OpenAI 兼容 | Kimi Code 托管服务、Kimi Platform API 密钥 |
+| [`zimi`](#zimi) | OpenAI 兼容 | Zimi Code 托管服务、Zimi Platform API 密钥 |
 | [`anthropic`](#anthropic) | Anthropic Messages | Claude 系列模型 |
 | [`openai`](#openai) | OpenAI Chat Completions | OpenAI 及兼容服务、DeepSeek、Qwen 等 |
 | [`openai_responses`](#openai_responses) | OpenAI Responses API | OpenAI 较新的 Responses 接口 |
@@ -42,7 +42,7 @@ Kimi Code CLI 支持同时接入多家模型供应商服务，模型在供应商
 
   除了启动时自动刷新，你也可以在运行时手动触发同样的刷新：`/provider refresh` 重新拉取所有供应商的模型列表，`/provider refresh <providerId>` 只刷新指定供应商。命令会按供应商汇报新增和下架的模型；被下架的 alias 对绑定它的 agent 从下一轮起不再可解析，因此下架项会在输出中高亮标出。
 
-  这些字段是 Kimi registry 的扩展，不属于 models.dev 的 schema：
+  这些字段是 Zimi registry 的扩展，不属于 models.dev 的 schema：
 
   ```json
   {
@@ -55,27 +55,27 @@ Kimi Code CLI 支持同时接入多家模型供应商服务，模型在供应商
   ```
 
 ::: warning
-通过 `/login` 登录的 Kimi Code OAuth 托管账号不会在 `/provider` 里显示，请用 `/login` 和 `/logout` 管理。
+通过 `/login` 登录的 Zimi Code OAuth 托管账号不会在 `/provider` 里显示，请用 `/login` 和 `/logout` 管理。
 :::
 
-非交互环境下也可以用 shell 命令完成同样操作：[`kimi provider`](../reference/kimi-command.md#kimi-provider)。
+非交互环境下也可以用 shell 命令完成同样操作：[`zimi provider`](../reference/zimi-command.md#zimi-provider)。
 
-## `kimi`
+## `zimi`
 
-用于对接 Moonshot AI 的 OpenAI 兼容接口，包括 Kimi Code 托管服务和 Kimi Platform API 密钥。
+用于对接 Zimi AI 的 OpenAI 兼容接口，包括 Zimi Code 托管服务和 Zimi Platform API 密钥。
 
 - 默认 `base_url`：`https://api.moonshot.ai/v1`
-- 凭证键名：`KIMI_API_KEY`、`KIMI_BASE_URL`
+- 凭证键名：`ZIMI_API_KEY`、`ZIMI_BASE_URL`
 - 额外能力：支持视频上传
 
 ```toml
-[providers.kimi]
-type = "kimi"
+[providers.zimi]
+type = "zimi"
 base_url = "https://api.moonshot.ai/v1"
 api_key = "sk-xxxxx"
 ```
 
-> 使用 Kimi Code 托管服务时，`/login` 登录后会自动配置 `base_url` 和凭证，无需手动填写。
+> 使用 Zimi Code 托管服务时，`/login` 登录后会自动配置 `base_url` 和凭证，无需手动填写。
 
 ## `anthropic`
 
@@ -154,7 +154,7 @@ base_url = "https://your-gateway.example"
 
 与 `google-genai` 共用实现，`type = "vertexai"` 时切换到 Vertex AI 访问路径。
 
-认证走 Google Cloud 标准 ADC 流程（`gcloud auth application-default login` 或 `GOOGLE_APPLICATION_CREDENTIALS` 服务账号 JSON），这部分与 Kimi Code 无关。**项目 ID 和区域必须写在 `[providers.vertexai.env]` 子表里**。直接在 shell 里 `export GOOGLE_CLOUD_PROJECT` 不会被 CLI 读取。
+认证走 Google Cloud 标准 ADC 流程（`gcloud auth application-default login` 或 `GOOGLE_APPLICATION_CREDENTIALS` 服务账号 JSON），这部分与 Zimi Code 无关。**项目 ID 和区域必须写在 `[providers.vertexai.env]` 子表里**。直接在 shell 里 `export GOOGLE_CLOUD_PROJECT` 不会被 CLI 读取。
 
 ```toml
 [providers.vertexai]
@@ -167,7 +167,7 @@ GOOGLE_CLOUD_LOCATION = "us-central1"
 
 ```sh
 gcloud auth application-default login   # 一次性完成认证
-kimi
+zimi
 ```
 
 如需让 Vertex 请求走自定义（如代理）端点，可设置 `base_url`（或 `GOOGLE_VERTEX_BASE_URL` 环境变量）；不填时使用 SDK 默认的区域化 `*-aiplatform.googleapis.com` 地址。与 `google-genai` 一样，只填主机根地址。SDK 会自行追加 `/v1beta1/publishers/google/models/…`。

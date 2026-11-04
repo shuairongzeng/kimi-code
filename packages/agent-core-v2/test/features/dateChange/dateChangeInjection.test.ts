@@ -227,7 +227,7 @@ describe('AgentDateChangeService', () => {
   });
 
   it('announces a crossed midnight through a real bind rendered from the host clock', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-date-bind-home-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-date-bind-home-'));
     try {
       await ctx.dispose();
       ctx = createTestAgent(appService(IHostClock, clock), hostEnvironmentServices(homeDir));

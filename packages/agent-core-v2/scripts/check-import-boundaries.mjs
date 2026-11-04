@@ -22,7 +22,7 @@ const REMOTE_ROOT = join(SRC_ROOT, 'remote');
 const REMOTE_DECLARATION_ROOT = join(SRC_ROOT, 'remote/declaration');
 const REMOTE_CLIENT_ROOT = join(SRC_ROOT, 'remote/client');
 
-const SELF_PACKAGE_PREFIX = '@moonshot-ai/agent-core-v2/';
+const SELF_PACKAGE_PREFIX = '@zimi-ai/agent-core-v2/';
 const KOSONG_PATH_RE = /(?:^|\/)kosong(?:\/|$)/;
 const PIPELINE_DIR_RE = /\/llm\/builtin\/(?:protocol|provider)(?:\/|$)/;
 const PIPELINE_INTERNAL_MODULE_RE =
@@ -91,7 +91,7 @@ const HUMAN_VOCABULARY = new Set([
   'llm-requester/requester',
   'media/upload',
   'llm/protocol/kit/media',
-  'llm/builtin/provider/kimi/protocol',
+  'llm/builtin/provider/zimi/protocol',
   'interaction/interaction',
   'interaction/machine',
   'interaction/facade',

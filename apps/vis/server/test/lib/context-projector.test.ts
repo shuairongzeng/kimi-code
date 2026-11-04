@@ -1,7 +1,7 @@
 // apps/vis/server/test/lib/context-projector.test.ts
 import { describe, it, expect, afterEach } from 'vitest';
-import { estimateTokensForMessages } from '@moonshot-ai/agent-core-v2/llm-adapter/contract/tokens';
-import { buildCompactionContinuationText } from '@moonshot-ai/agent-core-v2/agent/contextMemory/compactionHandoff';
+import { estimateTokensForMessages } from '@zimi-ai/agent-core-v2/llm-adapter/contract/tokens';
+import { buildCompactionContinuationText } from '@zimi-ai/agent-core-v2/agent/contextMemory/compactionHandoff';
 import { buildSessionFixture } from '../fixtures/build';
 import { projectContext } from '../../src/lib/context-projector';
 import { readAgentWire } from '../../src/lib/wire-reader';
@@ -31,7 +31,7 @@ describe('context-projector', () => {
       inputOther: 10, output: 5, inputCacheRead: 0, inputCacheCreation: 0,
     });
 
-    expect(proj.config.systemPrompt).toBe('You are Kimi.');
+    expect(proj.config.systemPrompt).toBe('You are Zimi.');
     expect(proj.config.profileName).toBe('agent');
     expect(proj.permission.mode).toBe('manual');
     expect(proj.planMode.active).toBe(false);
@@ -1144,13 +1144,13 @@ describe('context-projector', () => {
   it('reads the config snapshot from v2 profile.bind', () => {
     const entries = [
       { lineNo: 1, data: { type: 'profile.bind' as const, agentId: 'main',
-          modelAlias: 'k2', profileName: 'agent', thinkingEffort: 'high', systemPrompt: 'You are Kimi.',
+          modelAlias: 'k2', profileName: 'agent', thinkingEffort: 'high', systemPrompt: 'You are Zimi.',
           environmentDisclosure: { cwd: '/repo' }, disallowedTools: [] }, raw: {} },
     ];
     const proj = projectContext(entries as any);
     expect(proj.config).toEqual({
       cwd: '/repo', modelAlias: 'k2', profileName: 'agent',
-      thinkingEffort: 'high', systemPrompt: 'You are Kimi.',
+      thinkingEffort: 'high', systemPrompt: 'You are Zimi.',
     });
   });
 

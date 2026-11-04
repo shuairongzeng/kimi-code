@@ -1,5 +1,5 @@
-import { IEnvironmentService } from '@moonshot-ai/agent-core-v2';
-import { environmentBindingKey } from '@moonshot-ai/agent-core-v2/agent/environmentBinding/environmentBindingOps';
+import { IEnvironmentService } from '@zimi-ai/agent-core-v2';
+import { environmentBindingKey } from '@zimi-ai/agent-core-v2/agent/environmentBinding/environmentBindingOps';
 import { chmod, mkdir, mkdtemp, open, readFile, readdir, realpath, rename, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -28,10 +28,10 @@ import {
   ErrorCodes,
   closeSessionById,
   getLiveSessionById,
-} from '@moonshot-ai/agent-core-v2';
-import { HostFileSystem } from '@moonshot-ai/agent-core-v2/os/backends/node-local/hostFsService';
-import { HostProcessService } from '@moonshot-ai/agent-core-v2/os/backends/node-local/hostProcessService';
-import { FakeEnvironment } from '@moonshot-ai/agent-core-v2/environment/fakeEnvironment';
+} from '@zimi-ai/agent-core-v2';
+import { HostFileSystem } from '@zimi-ai/agent-core-v2/os/backends/node-local/hostFsService';
+import { HostProcessService } from '@zimi-ai/agent-core-v2/os/backends/node-local/hostProcessService';
+import { FakeEnvironment } from '@zimi-ai/agent-core-v2/environment/fakeEnvironment';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type RunningServer, startServer } from '../src/start';
@@ -98,23 +98,23 @@ const PROMPT_TOML_OTHER_DEFAULT = [
   '',
 ].join('\n');
 
-const PROMPT_TOML_KIMI_VISION = [
+const PROMPT_TOML_ZIMI_VISION = [
   PROMPT_TOML,
   '[providers.vision]',
-  'type = "kimi"',
+  'type = "zimi"',
   'base_url = "http://127.0.0.1:9999"',
   'api_key = "sk-test"',
   '',
-  '[models.kimi-vision]',
+  '[models.zimi-vision]',
   'provider = "vision"',
-  'model = "kimi-vision"',
+  'model = "zimi-vision"',
   'max_context_size = 1000',
   '',
 ].join('\n');
 
-const PROMPT_TOML_KIMI_VISION_DEFAULT = PROMPT_TOML_KIMI_VISION.replace(
+const PROMPT_TOML_ZIMI_VISION_DEFAULT = PROMPT_TOML_ZIMI_VISION.replace(
   'default_model = "stub"',
-  'default_model = "kimi-vision"',
+  'default_model = "zimi-vision"',
 );
 
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
@@ -225,7 +225,7 @@ describe('server-v2 /api/v1 prompts', () => {
   let base: string;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-prompts-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-prompts-'));
     await writeConfigToml(home, PROMPT_TOML);
     server = await startServer({ hostIdentity: TEST_HOST_IDENTITY, host: '127.0.0.1', port: 0, homeDir: home, logLevel: 'silent' });
     base = `http://127.0.0.1:${server.port}`;
@@ -481,7 +481,7 @@ describe('server-v2 /api/v1 prompts', () => {
 
     const submitted = await call<PromptItemWire>('POST', `/api/v1/sessions/${id}/prompts`, {
       content: [{ type: 'text', text: 'Review this change.' }],
-      skills: [{ name: 'update-config' }, { name: 'check-kimi-code-docs' }],
+      skills: [{ name: 'update-config' }, { name: 'check-zimi-code-docs' }],
     });
     expect(submitted.body.code).toBe(0);
     expect(submitted.body.data.prompt_id).toMatch(/^msg_/);
@@ -494,7 +494,7 @@ describe('server-v2 /api/v1 prompts', () => {
     const bundled = history.find((message) => message.origin?.kind === 'user');
     expect(bundled?.origin).toMatchObject({
       kind: 'user',
-      skillActivations: [{ skillName: 'update-config' }, { skillName: 'check-kimi-code-docs' }],
+      skillActivations: [{ skillName: 'update-config' }, { skillName: 'check-zimi-code-docs' }],
     });
     const texts = bundled?.content
       .filter((part) => part.type === 'text')
@@ -539,7 +539,7 @@ describe('server-v2 /api/v1 prompts', () => {
   });
 
   it('projects client metadata for an active skill activation prompt', () => {
-    const metadata = { display_text: 'Save button', kimi_code_composer: { version: 1 } };
+    const metadata = { display_text: 'Save button', zimi_code_composer: { version: 1 } };
     const projected = projectPromptSnapshot({
       id: 'msg_skill',
       userMessageId: 'msg_skill',
@@ -559,7 +559,7 @@ describe('server-v2 /api/v1 prompts', () => {
     await createMainAgent(id);
     const session = getLiveSessionById(server!.core.accessor, id)!;
     const agent = session.accessor.get(IAgentLifecycleService).handleOf('main')!;
-    const metadata = [{ display_text: 'Save button', kimi_code_composer: { version: 1 } }];
+    const metadata = [{ display_text: 'Save button', zimi_code_composer: { version: 1 } }];
     const loop = agent.accessor.get(IAgentLoopService);
     const handle = {
       id: 'active-skill',
@@ -584,7 +584,7 @@ describe('server-v2 /api/v1 prompts', () => {
     await createMainAgent(id);
     const session = getLiveSessionById(server!.core.accessor, id)!;
     const agent = session.accessor.get(IAgentLifecycleService).handleOf('main')!;
-    const metadata = [{ display_text: 'Save button', kimi_code_composer: { version: 1 } }];
+    const metadata = [{ display_text: 'Save button', zimi_code_composer: { version: 1 } }];
     const loop = agent.accessor.get(IAgentLoopService);
     const origin = { kind: 'user', clientMetadata: metadata };
     const listing = vi.spyOn(loop, 'snapshot').mockReturnValue({
@@ -641,7 +641,7 @@ describe('server-v2 /api/v1 prompts', () => {
     await createMainAgent(id);
     const metadata = {
       display_text: 'Example browser element · Example comment',
-      kimi_code_composer: {
+      zimi_code_composer: {
         version: 1,
         doc: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: '[literal](example.md)' }] }] },
         browserReferences: [{ id: 'ref-example', captureId: 'capture-example', comment: 'Example comment' }],
@@ -896,7 +896,7 @@ describe('server-v2 /api/v1 prompts', () => {
     expect(session!.accessor.get(IAgentLifecycleService).handleOf('main')).toBeUndefined();
   });
 
-  it('carries an uploaded video into the prompt as an internal kimi-file reference', async () => {
+  it('carries an uploaded video into the prompt as an internal zimi-file reference', async () => {
     const id = await createSession(home as string);
     await createMainAgent(id);
     const videoBytes = Buffer.from('tiny fake mp4 bytes');
@@ -930,7 +930,7 @@ describe('server-v2 /api/v1 prompts', () => {
     await expectSessionMedia(server!, id, `${uploaded.data.id}.mp4`, videoBytes);
   });
 
-  it('carries a compressed uploaded image into the prompt as an internal kimi-file reference', async () => {
+  it('carries a compressed uploaded image into the prompt as an internal zimi-file reference', async () => {
     const id = await createSession(home as string);
     await createMainAgent(id);
     const bigPng = solidPng(3600, 1800);
@@ -972,7 +972,7 @@ describe('server-v2 /api/v1 prompts', () => {
       expect(result).toMatchObject({ code: 'file.not_found' });
     });
 
-    expect(JSON.stringify(content)).not.toContain('kimi-file://');
+    expect(JSON.stringify(content)).not.toContain('zimi-file://');
 
     const session = getLiveSessionById(server!.core.accessor, id);
     const main = session!.accessor.get(IAgentLifecycleService).handleOf('main')!;
@@ -1025,7 +1025,7 @@ describe('server-v2 /api/v1 prompts', () => {
     }
   });
 
-  it('carries an uncompressed uploaded image into the prompt as an internal kimi-file reference', async () => {
+  it('carries an uncompressed uploaded image into the prompt as an internal zimi-file reference', async () => {
     const id = await createSession(home as string);
     await createMainAgent(id);
     const smallPng = solidPng(10, 10);
@@ -1044,7 +1044,7 @@ describe('server-v2 /api/v1 prompts', () => {
     const mediaPath = await expectSessionMedia(server!, id, `${uploaded.id}.png`, smallPng);
     expect(JSON.stringify(content)).not.toContain(mediaPath);
 
-    expect(JSON.stringify(content)).not.toContain('kimi-file://');
+    expect(JSON.stringify(content)).not.toContain('zimi-file://');
   });
 
   it('accepts a stored session-media reference after the transient upload is deleted', async () => {
@@ -1089,7 +1089,7 @@ describe('server-v2 /api/v1 prompts', () => {
       expect(replayedMessage).toBeDefined();
       expect(replayedMessage!.content).toContainEqual({
         type: 'image_url',
-        imageUrl: { url: `kimi-file://${uploaded.id}`, id: uploaded.id, name: 'small.png' },
+        imageUrl: { url: `zimi-file://${uploaded.id}`, id: uploaded.id, name: 'small.png' },
       });
     });
   });
@@ -1120,7 +1120,7 @@ describe('server-v2 /api/v1 prompts', () => {
         expect(message).toBeDefined();
         expect(message!.content).toContainEqual({
           type: 'image_url',
-          imageUrl: { url: `kimi-file://${uploaded.id}`, name: 'small.png' },
+          imageUrl: { url: `zimi-file://${uploaded.id}`, name: 'small.png' },
         });
       });
 
@@ -1214,11 +1214,11 @@ describe('server-v2 /api/v1 prompts', () => {
   }
 
   it('keeps an inline image whose format the session model provider accepts', async () => {
-    await writeConfigToml(home as string, PROMPT_TOML_KIMI_VISION);
+    await writeConfigToml(home as string, PROMPT_TOML_ZIMI_VISION);
     await (server as RunningServer).core.accessor.get(IConfigService).reload();
     const id = await createSession(home as string);
     await createMainAgent(id);
-    await setSessionModel(id, 'kimi-vision');
+    await setSessionModel(id, 'zimi-vision');
 
     const submitted = await call<PromptItemWire>('POST', `/api/v1/sessions/${id}/prompts`, {
       content: [
@@ -1240,14 +1240,14 @@ describe('server-v2 /api/v1 prompts', () => {
   });
 
   it('gates media against the model selected by the same prompt request', async () => {
-    await writeConfigToml(home as string, PROMPT_TOML_KIMI_VISION);
+    await writeConfigToml(home as string, PROMPT_TOML_ZIMI_VISION);
     await (server as RunningServer).core.accessor.get(IConfigService).reload();
     const id = await createSession(home as string);
     await createMainAgent(id);
     await setSessionModel(id, 'stub');
 
     const submitted = await call<PromptItemWire>('POST', `/api/v1/sessions/${id}/prompts`, {
-      model: 'kimi-vision',
+      model: 'zimi-vision',
       content: [
         {
           type: 'image',
@@ -1267,7 +1267,7 @@ describe('server-v2 /api/v1 prompts', () => {
   });
 
   it('gates a first-prompt image against the configured default model before any model binds', async () => {
-    await writeConfigToml(home as string, PROMPT_TOML_KIMI_VISION_DEFAULT);
+    await writeConfigToml(home as string, PROMPT_TOML_ZIMI_VISION_DEFAULT);
     await (server as RunningServer).core.accessor.get(IConfigService).reload();
     const id = await createSession(home as string);
     await createMainAgent(id);
@@ -1292,7 +1292,7 @@ describe('server-v2 /api/v1 prompts', () => {
   });
 
   it('gates media against the default model a same-request profile selection binds', async () => {
-    await writeConfigToml(home as string, PROMPT_TOML_KIMI_VISION_DEFAULT);
+    await writeConfigToml(home as string, PROMPT_TOML_ZIMI_VISION_DEFAULT);
     await (server as RunningServer).core.accessor.get(IConfigService).reload();
     const id = await createSession(home as string);
     await createMainAgent(id);
@@ -1494,7 +1494,7 @@ describe('server-v2 /api/v1 prompts', () => {
   it('attaches a server-local file by path without copying it', async () => {
     const id = await createSession(home as string);
     await createMainAgent(id);
-    const outside = await mkdtemp(join(tmpdir(), 'kimi-attach-path-'));
+    const outside = await mkdtemp(join(tmpdir(), 'zimi-attach-path-'));
     try {
       const sourcePath = join(outside, 'notes.txt');
       const bytes = Buffer.from('path attachment body');
@@ -1607,7 +1607,7 @@ describe('server-v2 /api/v1 prompts', () => {
     });
     expect(missing.body.code).toBe(40001);
 
-    const remoteRoot = await realpath(await mkdtemp(join(tmpdir(), 'kimi-prompt-fake-remote-')));
+    const remoteRoot = await realpath(await mkdtemp(join(tmpdir(), 'zimi-prompt-fake-remote-')));
     try {
       const instance = server!.core.accessor.get(IWorkspaceInstanceManager).get(workspaceId);
       const fake = new FakeEnvironment(
@@ -1635,7 +1635,7 @@ describe('server-v2 /api/v1 prompts', () => {
       expect(upload.body.code).toBe(0);
       const content = upload.body.data.content as Array<{ type: string; text?: string }>;
       const attachedPath = attachedPathFrom(content[0]?.text ?? '');
-      expect(dirname(attachedPath)).toBe(join(remoteRoot, 'remote-tmp', 'kimi-code', 'attachments'));
+      expect(dirname(attachedPath)).toBe(join(remoteRoot, 'remote-tmp', 'zimi-code', 'attachments'));
       expect(await readFile(attachedPath)).toEqual(uploadBytes);
     } finally {
       await rm(remoteRoot, { recursive: true, force: true });
@@ -1643,7 +1643,7 @@ describe('server-v2 /api/v1 prompts', () => {
   });
 
   async function createRemoteBoundSession(): Promise<{ id: string; remoteTempDir: string; dispose(): Promise<void> }> {
-    const remoteRoot = await realpath(await mkdtemp(join(tmpdir(), 'kimi-prompt-remote-')));
+    const remoteRoot = await realpath(await mkdtemp(join(tmpdir(), 'zimi-prompt-remote-')));
     const remoteTempDir = join(remoteRoot, 'remote-tmp');
     const provider = await server!.core.accessor.get(IEnvironmentService).addProvider({
       id: 'prompt-remote-provider',
@@ -1705,7 +1705,7 @@ describe('server-v2 /api/v1 prompts', () => {
       const content = submitted.body.data.content as Array<{ type: string; text?: string }>;
       expect(content).toHaveLength(2);
       const attachedPath = attachedPathFrom(content[1]?.text ?? '');
-      expect(dirname(attachedPath)).toBe(join(remote.remoteTempDir, 'kimi-code', 'attachments'));
+      expect(dirname(attachedPath)).toBe(join(remote.remoteTempDir, 'zimi-code', 'attachments'));
       expect(attachedPath.endsWith(`${uploaded.id}-report.pdf`)).toBe(true);
       expect(await readFile(attachedPath)).toEqual(pdfBytes);
 
@@ -1717,7 +1717,7 @@ describe('server-v2 /api/v1 prompts', () => {
 
   it('fails loudly instead of writing the server-local disk when the environment fs write fails', async () => {
     const id = await createSession(home as string);
-    const remoteRoot = await realpath(await mkdtemp(join(tmpdir(), 'kimi-prompt-broken-remote-')));
+    const remoteRoot = await realpath(await mkdtemp(join(tmpdir(), 'zimi-prompt-broken-remote-')));
     const session = getLiveSessionById(server!.core.accessor, id);
     const workspaceId = session!.accessor.get(ISessionContext).workspaceId;
     try {
@@ -1787,10 +1787,10 @@ describe('server-v2 /api/v1 prompts', () => {
     expect(body.code).toBe(40001);
   });
 
-  it('carries a server-local image by path as an internal kimi-file reference', async () => {
+  it('carries a server-local image by path as an internal zimi-file reference', async () => {
     const id = await createSession(home as string);
     await createMainAgent(id);
-    const outside = await mkdtemp(join(tmpdir(), 'kimi-attach-img-'));
+    const outside = await mkdtemp(join(tmpdir(), 'zimi-attach-img-'));
     try {
       const smallPng = solidPng(10, 10);
       const sourcePath = join(outside, 'small.png');
@@ -1807,7 +1807,7 @@ describe('server-v2 /api/v1 prompts', () => {
       expect(image.type).toBe('image');
       expect(image.source.kind).toBe('session_media');
       await expectSessionMedia(server!, id, `${image.source.file_id}.png`, smallPng);
-      expect(JSON.stringify(content)).not.toContain('kimi-file://');
+      expect(JSON.stringify(content)).not.toContain('zimi-file://');
       expect(JSON.stringify(content)).not.toContain(sourcePath);
     } finally {
       await rm(outside, { recursive: true, force: true });
@@ -1817,7 +1817,7 @@ describe('server-v2 /api/v1 prompts', () => {
   it('compresses a server-local image by path and captions the original path', async () => {
     const id = await createSession(home as string);
     await createMainAgent(id);
-    const outside = await mkdtemp(join(tmpdir(), 'kimi-attach-big-'));
+    const outside = await mkdtemp(join(tmpdir(), 'zimi-attach-big-'));
     try {
       const bigPng = solidPng(3600, 1800);
       const sourcePath = join(outside, 'big.png');
@@ -1850,10 +1850,10 @@ describe('server-v2 /api/v1 prompts', () => {
     }
   });
 
-  it('carries a server-local video by path as an internal kimi-file reference', async () => {
+  it('carries a server-local video by path as an internal zimi-file reference', async () => {
     const id = await createSession(home as string);
     await createMainAgent(id);
-    const outside = await mkdtemp(join(tmpdir(), 'kimi-attach-vid-'));
+    const outside = await mkdtemp(join(tmpdir(), 'zimi-attach-vid-'));
     try {
       const videoBytes = Buffer.from('tiny fake mp4 bytes');
       const sourcePath = join(outside, 'clip.mp4');
@@ -2045,7 +2045,7 @@ describe('server-v2 /api/v1 prompts', () => {
   });
 
   it('binds a discovered custom agent profile on the first prompt', async () => {
-    const work = await mkdtemp(join(tmpdir(), 'kimi-server-v2-prompts-profile-'));
+    const work = await mkdtemp(join(tmpdir(), 'zimi-server-v2-prompts-profile-'));
     try {
       await mkdir(join(home as string, 'agents'), { recursive: true });
       await writeFile(

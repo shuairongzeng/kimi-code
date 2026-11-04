@@ -26,18 +26,18 @@ import {
   PluginChanged,
   logSeed,
   resolveConfigPath,
-  resolveKimiHome,
+  resolveZimiHome,
   resolveLoggingConfig,
   type ConfigDiagnostic,
   type Scope,
   type ScopeSeed,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import {
-  createKimiDefaultHeaders,
-  KIMI_CODE_PROVIDER_NAME,
-  type KimiHostIdentity,
-} from '@moonshot-ai/kimi-code-oauth';
-import { RemoteEnvironmentProviderFactory } from '@moonshot-ai/agent-core-v2/remote';
+  createZimiDefaultHeaders,
+  ZIMI_CODE_PROVIDER_NAME,
+  type ZimiHostIdentity,
+} from '@zimi-ai/zimi-code-oauth';
+import { RemoteEnvironmentProviderFactory } from '@zimi-ai/agent-core-v2/remote';
 import { createAsyncApiDocument } from './protocol/asyncapi';
 import Fastify, { type FastifyInstance } from 'fastify';
 
@@ -93,7 +93,7 @@ import { createAuthFailureLimiter } from './middleware/rateLimit';
 import {
   createRemoteControlManager,
   RemoteControlDeviceClient,
-} from '@moonshot-ai/remote-control';
+} from '@zimi-ai/remote-control';
 
 import { createAuthTokenService, type IAuthTokenService } from './services/auth/authTokenService';
 import { createCredentialValidator } from './services/auth/credentials';
@@ -102,7 +102,7 @@ import { createTokenStore } from './services/auth/tokenStore';
 
 import { drainGlobalSearchDisposals, IGlobalSearchService } from './search/searchService';
 
-export interface ServerHostIdentity extends KimiHostIdentity {
+export interface ServerHostIdentity extends ZimiHostIdentity {
   readonly displayName?: string;
   readonly replyStyleGuide?: string;
 }
@@ -152,7 +152,7 @@ const DEFAULT_PORT = 58627;
 export async function startServer(opts: ServerStartOptions): Promise<RunningServer> {
   const host = opts.host ?? DEFAULT_HOST;
   const port = opts.port ?? DEFAULT_PORT;
-  const homeDir = resolveKimiHome(opts.homeDir);
+  const homeDir = resolveZimiHome(opts.homeDir);
   const serverVersion = opts.serverVersion ?? getServerVersion();
   const idleReclaimMs = resolveSessionIdleReclaimMs(opts.env ?? process.env);
   const registry = createInstanceRegistry({
@@ -215,11 +215,11 @@ export async function startServer(opts: ServerStartOptions): Promise<RunningServ
           ? opts.env
           : {
               ...(opts.env ?? process.env),
-              KIMI_CODE_PLUGIN_MARKETPLACE_URL: opts.pluginMarketplaceUrl,
+              ZIMI_CODE_PLUGIN_MARKETPLACE_URL: opts.pluginMarketplaceUrl,
             },
       clientIdentity: opts.hostIdentity,
       args: {
-        requestHeaders: createKimiDefaultHeaders({ homeDir, ...opts.hostIdentity }),
+        requestHeaders: createZimiDefaultHeaders({ homeDir, ...opts.hostIdentity }),
         skillDirs: opts.skillDirs,
         displayName: opts.hostIdentity.displayName,
         replyStyleGuide: opts.hostIdentity.replyStyleGuide,
@@ -247,7 +247,7 @@ export async function startServer(opts: ServerStartOptions): Promise<RunningServ
     core.accessor
       .get(IConfigService)
       .inspect<Record<string, { oauth?: { key: string; oauthHost?: string } }>>('providers')
-      .userValue?.[KIMI_CODE_PROVIDER_NAME]?.oauth;
+      .userValue?.[ZIMI_CODE_PROVIDER_NAME]?.oauth;
   const remoteControlManager = createRemoteControlManager({
     homeDir,
     localOrigin: () => `http://${localOriginHost}:${boundPort}`,
@@ -289,7 +289,7 @@ export async function startServer(opts: ServerStartOptions): Promise<RunningServ
     if (!passwordConfigured) {
       logger.warn(
         { host, exposureClass },
-        'binding non-loopback host with token-only auth (no KIMI_CODE_PASSWORD) — the bearer token printed in the startup banner is the only credential protecting this server',
+        'binding non-loopback host with token-only auth (no ZIMI_CODE_PASSWORD) — the bearer token printed in the startup banner is the only credential protecting this server',
       );
     }
   }
@@ -451,9 +451,9 @@ export async function startServer(opts: ServerStartOptions): Promise<RunningServ
     await app.register(swagger, {
       openapi: {
         info: {
-          title: 'Kimi Code Server API',
+          title: 'Zimi Code Server API',
           description:
-            'REST API for the Kimi Code local server. All JSON responses are wrapped in a uniform envelope `{ code, msg, data, request_id }`.',
+            'REST API for the Zimi Code local server. All JSON responses are wrapped in a uniform envelope `{ code, msg, data, request_id }`.',
           version: serverVersion,
         },
         tags: [

@@ -8,9 +8,9 @@ import {
   migrateWireRecord,
   resolveWireMigrations,
   type WireMigration,
-} from '@moonshot-ai/agent-core-v2/wire/migration/migration';
-import type { WireRecord } from '@moonshot-ai/agent-core-v2/wire/record';
-import { fromPersistentWireRecord } from '@moonshot-ai/agent-core-v2/wire/wireService';
+} from '@zimi-ai/agent-core-v2/wire/migration/migration';
+import type { WireRecord } from '@zimi-ai/agent-core-v2/wire/record';
+import { fromPersistentWireRecord } from '@zimi-ai/agent-core-v2/wire/wireService';
 
 import type { AgentRecord, WireEntry } from './agent-record-types';
 

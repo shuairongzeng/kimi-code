@@ -64,7 +64,7 @@ export const pluginCapabilitiesSchema = z.object({
 export const pluginInfoSchema = pluginSummarySchema.extend({
   root: z.string(),
   updatedAt: z.string().optional(),
-  manifestKind: z.enum(['kimi-plugin-root', 'kimi-plugin-dir']).optional(),
+  manifestKind: z.enum(['zimi-plugin-root', 'zimi-plugin-dir']).optional(),
   manifestPath: z.string().optional(),
   skills: z.array(pluginSkillInfoSchema),
   mcpServers: z.array(pluginMcpServerInfoSchema),

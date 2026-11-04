@@ -1,20 +1,20 @@
 ---
 name: import-from-cc-codex
-description: Import Claude Code and Codex instructions, skills, and MCP settings into Kimi Code.
+description: Import Claude Code and Codex instructions, skills, and MCP settings into Zimi Code.
 disable-model-invocation: true
 ---
 
 # Import from Claude Code and Codex
 
 The user invoked `/import-from-cc-codex` (or `/skill:import-from-cc-codex`).
-Help them migrate selected local Claude Code and Codex assets into Kimi Code.
+Help them migrate selected local Claude Code and Codex assets into Zimi Code.
 This skill is intentionally conservative: it imports only instructions, skills,
 and MCP server declarations, with a user preview before any write.
 
 ## Non-negotiable rules
 
 - Do **not** migrate `.agents` content (`~/.agents/**`, `<project>/.agents/**`).
-  Kimi Code already reads `~/.agents/skills`, `~/.agents/AGENTS.md`, and
+  Zimi Code already reads `~/.agents/skills`, `~/.agents/AGENTS.md`, and
   `<project root>/.agents/skills`; Codex now stores its own skills and plugins
   there too.
 - Do **not** migrate Claude custom commands (`.claude/commands/**`), custom
@@ -26,18 +26,18 @@ and MCP server declarations, with a user preview before any write.
 - Do **not** run or install anything from the source directories.
 - Do **not** write anything until the user has chosen what to migrate, reviewed
   the final preview, and explicitly confirmed applying it.
-- Only write under Kimi Code targets:
-  - User-global: `$KIMI_CODE_HOME` if set, otherwise `~/.kimi-code`.
-  - Project instructions: `<dir>/.kimi-code/AGENTS.md`, where `<dir>` is the
+- Only write under Zimi Code targets:
+  - User-global: `$ZIMI_CODE_HOME` if set, otherwise `~/.zimi-code`.
+  - Project instructions: `<dir>/.zimi-code/AGENTS.md`, where `<dir>` is the
     project root or one of the directories between the project root and the
     current working directory. The project root is the nearest parent
     directory containing `.git`; if no `.git` exists, use the current working
     directory.
-  - Project skills: `<project root>/.kimi-code/skills/`.
-  - Project-local MCP: `<cwd>/.kimi-code/mcp.json`, because Kimi reads the
-    current working directory's Kimi-specific MCP file, not every project-root
-    `.kimi-code/mcp.json` from subdirectories.
-- Preserve existing Kimi files. Never overwrite existing skills or replace an
+  - Project skills: `<project root>/.zimi-code/skills/`.
+  - Project-local MCP: `<cwd>/.zimi-code/mcp.json`, because Zimi reads the
+    current working directory's Zimi-specific MCP file, not every project-root
+    `.zimi-code/mcp.json` from subdirectories.
+- Preserve existing Zimi files. Never overwrite existing skills or replace an
   existing AGENTS.md / mcp.json wholesale.
 
 ## Source locations
@@ -50,7 +50,7 @@ Resolve paths explicitly; `~` is the real OS home.
   `~/.claude.json`.
 - Codex home: `$CODEX_HOME` if set, otherwise `~/.codex`. Call it
   `<codex home>` below.
-- Kimi home: `$KIMI_CODE_HOME` if set, otherwise `~/.kimi-code`.
+- Zimi home: `$ZIMI_CODE_HOME` if set, otherwise `~/.zimi-code`.
 
 Check the environment variables with Bash before scanning; do not assume the
 defaults.
@@ -110,7 +110,7 @@ instructions from each level.
 - Codex instructions, per directory `<dir>`. Codex takes the first file that
   exists in this order and ignores the rest for that directory:
   - `<dir>/AGENTS.override.md`
-  - `<dir>/AGENTS.md` (Kimi-readable; never imported, but its presence means
+  - `<dir>/AGENTS.md` (Zimi-readable; never imported, but its presence means
     the fallback names below are inactive in `<dir>`)
   - any filename listed under `project_doc_fallback_filenames` in a Codex
     `config.toml`, only when neither file above exists in `<dir>` and the
@@ -120,7 +120,7 @@ instructions from each level.
     project is trusted; import them regardless, the user chose them)
 
 Do not scan `AGENTS.md` / `agents.md`, `.agents/**`, or project-root
-`.mcp.json` in this skill: Kimi already reads plain `AGENTS.md` files,
+`.mcp.json` in this skill: Zimi already reads plain `AGENTS.md` files,
 `<project root>/.agents/skills`, `~/.agents/skills`, `~/.agents/AGENTS.md`,
 and the project-root `.mcp.json`. `.claude/AGENTS.md`, `.codex/AGENTS.md`,
 and `.codex/CLAUDE.md` are not standalone instruction entrypoints; do not
@@ -142,14 +142,14 @@ source and target paths.
 
 Map user-level instruction sources to:
 
-- `$KIMI_CODE_HOME/AGENTS.md`, or `~/.kimi-code/AGENTS.md` if the env var is not
+- `$ZIMI_CODE_HOME/AGENTS.md`, or `~/.zimi-code/AGENTS.md` if the env var is not
   set.
 
 Map project-level instruction sources found in `<dir>` to:
 
-- `<dir>/.kimi-code/AGENTS.md`
+- `<dir>/.zimi-code/AGENTS.md`
 
-Kimi reads `.kimi-code/AGENTS.md` at each level from the project root to the
+Zimi reads `.zimi-code/AGENTS.md` at each level from the project root to the
 current working directory, so the imported file keeps the directory scope it
 had in Claude Code or Codex.
 
@@ -158,11 +158,11 @@ imports. Check content duplication after applying the import, as described
 below; a matching filename or source content alone is not proof of coverage.
 
 When importing an `AGENTS.override.md`, warn that Codex used it *instead of*
-the `AGENTS.md` in the same directory, while Kimi will read both; ask the user
+the `AGENTS.md` in the same directory, while Zimi will read both; ask the user
 to check the two for conflicting instructions.
 
 Claude rules (`rules/*.md`) may carry a `paths:` frontmatter list of globs that
-scopes the rule to matching files. Kimi has no path-scoped rules:
+scopes the rule to matching files. Zimi has no path-scoped rules:
 
 - If the rule has no `paths`, import its body (without the frontmatter) into
   the target for the directory that owns the `rules/` folder.
@@ -174,17 +174,17 @@ scopes the rule to matching files. Kimi has no path-scoped rules:
 
 Claude Code expands `@path` import lines (`@./docs/style.md`, `@~/notes.md`)
 inside `CLAUDE.md` files, ignoring `@` inside fenced code blocks, inline code
-spans, and HTML comments. Kimi does not expand imports at all. For each
+spans, and HTML comments. Zimi does not expand imports at all. For each
 imported block that contains such lines, inline the referenced file's content
 in place of the line when the file exists, is a text file, and lives inside
 the project root or the user's home; otherwise leave the line unchanged and
-warn that Kimi will not expand it. Follow imports at most 5 levels deep, and
+warn that Zimi will not expand it. Follow imports at most 5 levels deep, and
 never follow a path outside those boundaries.
 Resolve relative imports from the file containing the import, including
 `@AGENTS.md` and `@./AGENTS.md`.
 
-Warn when a `CLAUDE.local.md` is imported: `.kimi-code/AGENTS.md` is not
-private by convention, so the user may want to gitignore `.kimi-code/`.
+Warn when a `CLAUDE.local.md` is imported: `.zimi-code/AGENTS.md` is not
+private by convention, so the user may want to gitignore `.zimi-code/`.
 
 Append imported instruction content as marked blocks. Do not duplicate a block
 that already exists in the target file.
@@ -208,12 +208,12 @@ and cannot be read as UTF-8 text, stop before writing and report the blocker.
 
 Map user-level skill sources to:
 
-- `$KIMI_CODE_HOME/skills/`, or `~/.kimi-code/skills/` if the env var is not set.
+- `$ZIMI_CODE_HOME/skills/`, or `~/.zimi-code/skills/` if the env var is not set.
 
 Map project-level skill sources (from any `<dir>/.claude/skills/` or
 `<dir>/.codex/skills/`) to:
 
-- `<project root>/.kimi-code/skills/`
+- `<project root>/.zimi-code/skills/`
 
 Both Claude Code and Codex load only directory bundles: `<skill-name>/SKILL.md`
 (the directory may be a symlink). A loose `<name>.md` file under a skills
@@ -236,9 +236,9 @@ disabled in Claude Code.
 Before planning a copy:
 
 - Read a bundle's `SKILL.md` enough to verify that it has frontmatter with
-  non-empty `name` and `description`, because Kimi requires those fields for
+  non-empty `name` and `description`, because Zimi requires those fields for
   directory skills. Claude Code falls back to the directory name when `name` is
-  missing; Kimi does not.
+  missing; Zimi does not.
 - If the target top-level entry already exists, skip it; do not overwrite.
 - If two source entries would write the same target path, keep the first one in
   this order and report the later one as skipped:
@@ -246,25 +246,25 @@ Before planning a copy:
   2. project Codex (closest directory to the current working directory first)
   3. user Claude
   4. user Codex
-- Warn when a `SKILL.md` uses fields or syntax that Kimi does not interpret
+- Warn when a `SKILL.md` uses fields or syntax that Zimi does not interpret
   the same way. Preserve the file; do not rewrite it unless the user
   explicitly asks.
-  - Kimi honors `name`, `description`, `when_to_use` (or `when-to-use`),
+  - Zimi honors `name`, `description`, `when_to_use` (or `when-to-use`),
     `disable-model-invocation`, and `arguments` (a list or a space-separated
     string of argument names). Argument placeholders use the same syntax as
     in Claude Code (the dollar-prefixed `ARGUMENTS` placeholder, its `[N]`
     indexed form, positional `$N`, and declared argument names), so they need
-    no warning. Kimi's skill-directory and session-ID placeholders are named
-    `KIMI_SKILL_DIR` and `KIMI_SESSION_ID`, written in the same dollar-brace
+    no warning. Zimi's skill-directory and session-ID placeholders are named
+    `ZIMI_SKILL_DIR` and `ZIMI_SESSION_ID`, written in the same dollar-brace
     form as Claude's `${CLAUDE_SKILL_DIR}`.
   - Claude-only: `allowed-tools`, `disallowed-tools`, `context: fork`, `agent`,
     `background`, `model`, `effort`, `hooks`, `paths`, `user-invocable`,
-    `argument-hint`, `${CLAUDE_SKILL_DIR}` (suggest Kimi's `KIMI_SKILL_DIR`
-    placeholder), `${CLAUDE_SESSION_ID}` (suggest Kimi's `KIMI_SESSION_ID`
+    `argument-hint`, `${CLAUDE_SKILL_DIR}` (suggest Zimi's `ZIMI_SKILL_DIR`
+    placeholder), `${CLAUDE_SESSION_ID}` (suggest Zimi's `ZIMI_SESSION_ID`
     placeholder), `${CLAUDE_PROJECT_DIR}`, `${CLAUDE_EFFORT}`, and dynamic
     shell injection with ``!`command` ``.
   - Codex-only: `agents/openai.yaml` metadata inside the bundle.
-- If the user would rather not copy, mention once that Kimi can also read the
+- If the user would rather not copy, mention once that Zimi can also read the
   source directory in place through `extra_skill_dirs` in `config.toml`; do
   not configure it from this skill.
 
@@ -276,8 +276,8 @@ Do not edit `mcp.json` directly in this import skill. Prepare MCP entries for
 manual follow-up with `/mcp-config`; that built-in skill is user-invocable only,
 so you must not try to call it through the `Skill` tool.
 
-For the preview, collect MCP candidates and normalize them into Kimi's MCP shape
-when possible. Kimi infers the transport from `command` (stdio) vs `url`
+For the preview, collect MCP candidates and normalize them into Zimi's MCP shape
+when possible. Zimi infers the transport from `command` (stdio) vs `url`
 (http); write `"transport": "sse"` only for SSE servers:
 
 ```json
@@ -305,12 +305,12 @@ when possible. Kimi infers the transport from `command` (stdio) vs `url`
 }
 ```
 
-Kimi's stdio servers inherit the parent process environment and then apply
+Zimi's stdio servers inherit the parent process environment and then apply
 `env` on top, so pass-through declarations (Codex `env_vars`, Claude
-`"KEY": "${KEY}"`) need no Kimi equivalent; drop them and note that the
+`"KEY": "${KEY}"`) need no Zimi equivalent; drop them and note that the
 variable is inherited.
 
-Kimi does not expand `${VAR}` or `${VAR:-default}` placeholders in `mcp.json`.
+Zimi does not expand `${VAR}` or `${VAR:-default}` placeholders in `mcp.json`.
 Apply these rules to placeholders found in Claude entries:
 
 - An `Authorization: Bearer ${VAR}` header becomes `bearerTokenEnvVar: "VAR"`.
@@ -337,7 +337,7 @@ Claude Code MCP (user file `.claude.json`):
   `streamable-http`), `command`, `args`, `env`, `url`, `headers`, `timeout`
   (milliseconds per tool call), `alwaysLoad`, `tools`, `role`,
   `request_timeout_ms`, `headersHelper`.
-- Map Claude fields to Kimi fields:
+- Map Claude fields to Zimi fields:
   - `type: stdio` or absent with `command` -> stdio entry
   - `type: http` / `streamable-http` -> http entry
   - `type: sse` -> `transport: "sse"`
@@ -345,21 +345,21 @@ Claude Code MCP (user file `.claude.json`):
   - `timeout` -> `toolTimeoutMs`
   - `alwaysLoad: true` -> `deferred: false`
 - Drop entries with `type` `ws`, `sdk`, `claudeai-proxy`, `sse-ide`, or
-  `ws-ide` and report them; Kimi has no such transports.
+  `ws-ide` and report them; Zimi has no such transports.
 - Drop `tools` (per-tool permission policy), `role`, `request_timeout_ms`, and
   `headersHelper`, and report them.
-- Do not import project-root `.mcp.json`; Kimi already reads it. Warn,
+- Do not import project-root `.mcp.json`; Zimi already reads it. Warn,
   however, when `.claude/settings.json` or `.claude/settings.local.json`
   lists one of its servers under `disabledMcpjsonServers`: Claude rejected
-  that server, while Kimi will start every `.mcp.json` server. Suggest a
+  that server, while Zimi will start every `.mcp.json` server. Suggest a
   complete server entry with `"enabled": false` in
-  `<cwd>/.kimi-code/mcp.json`; an entry containing only `enabled` is invalid.
+  `<cwd>/.zimi-code/mcp.json`; an entry containing only `enabled` is invalid.
 
 Codex MCP (`config.toml`):
 
 - Read selected `config.toml` files only if MCP was selected.
 - Look for `[mcp_servers.<name>]` tables.
-- Map Codex fields to Kimi fields:
+- Map Codex fields to Zimi fields:
   - `command` -> `command`
   - `args` -> `args`
   - `env` -> `env`
@@ -391,12 +391,12 @@ Codex MCP (`config.toml`):
 
 For each MCP candidate, choose the target scope in the preview:
 
-- User-level source -> user-global MCP target (`$KIMI_CODE_HOME/mcp.json` or
-  `~/.kimi-code/mcp.json`).
+- User-level source -> user-global MCP target (`$ZIMI_CODE_HOME/mcp.json` or
+  `~/.zimi-code/mcp.json`).
 - Project-level source (Claude local scope, `<dir>/.codex/config.toml`) ->
-  project-local Kimi MCP target (`<cwd>/.kimi-code/mcp.json`). If `<cwd>` is
+  project-local Zimi MCP target (`<cwd>/.zimi-code/mcp.json`). If `<cwd>` is
   not the project root, call this out in the preview so the user understands
-  when Kimi will load it.
+  when Zimi will load it.
 
 Warn that stdio MCP entries spawn commands at session start, and the user should
 only import MCP servers they trust. Warn if an MCP entry contains apparent
@@ -410,7 +410,7 @@ and show a copy-pasteable manual follow-up for the user, including:
 - the `/mcp-config` command they should run,
 - target scope and target path,
 - the normalized JSON entry or entries to add,
-- collision policy: keep existing Kimi entries on name conflict,
+- collision policy: keep existing Zimi entries on name conflict,
 - the reminder that unrelated entries must be preserved.
 
 Make it clear that MCP import is pending until the user manually runs
@@ -449,14 +449,14 @@ When the user confirms:
 ### 6. Check instruction duplication after import
 
 Before the final report, read back the instruction targets and check each
-newly appended block against content Kimi actually loads in the same or a
+newly appended block against content Zimi actually loads in the same or a
 broader scope:
 
-- User-global instructions: `<kimi home>/AGENTS.md` and the first readable,
+- User-global instructions: `<zimi home>/AGENTS.md` and the first readable,
   non-empty `~/.agents/AGENTS.md` or `~/.agents/agents.md`.
 - Project instructions: those global files, plus each directory from the
-  project root to the target's owning directory. At each level Kimi reads
-  `.kimi-code/AGENTS.md` and the first readable, non-empty `AGENTS.md` or
+  project root to the target's owning directory. At each level Zimi reads
+  `.zimi-code/AGENTS.md` and the first readable, non-empty `AGENTS.md` or
   `agents.md`.
 
 Compare trimmed, expanded block bodies with retained instruction content or
@@ -465,7 +465,7 @@ whose content is exactly duplicated by another retained copy in the same or
 a broader scope. Preserve all pre-existing content and keep at least one
 covering copy. A project file cannot cover a global block, and a descendant
 file cannot cover an ancestor's block. An AGENTS.md beside a source in
-`.claude` or `.codex` is not automatically loaded by Kimi.
+`.claude` or `.codex` is not automatically loaded by Zimi.
 
 If content is merely similar, conflicts, or its loading scope is uncertain,
 keep the new block and report the uncertainty. Re-read targets after cleanup
@@ -474,7 +474,7 @@ removed block with the path of the retained copy.
 
 Report exactly what changed, what was skipped and why, and the duplication
 check results. Tell the user to start a new session (for example `/new`) or
-restart Kimi Code for newly imported skills and instructions to be picked up;
+restart Zimi Code for newly imported skills and instructions to be picked up;
 MCP import remains pending the manual `/mcp-config` follow-up.
 
 ## Output style

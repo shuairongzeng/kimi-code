@@ -4,22 +4,22 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { ensureKimiHome, resolveConfigPath, resolveKimiHome } from '#/app/bootstrap/bootstrap';
+import { ensureZimiHome, resolveConfigPath, resolveZimiHome } from '#/app/bootstrap/bootstrap';
 
 describe('bootstrap path helpers', () => {
-  describe('resolveKimiHome', () => {
+  describe('resolveZimiHome', () => {
     it('uses explicit homeDir when provided', () => {
-      expect(resolveKimiHome('/tmp/kimi')).toBe('/tmp/kimi');
+      expect(resolveZimiHome('/tmp/zimi')).toBe('/tmp/zimi');
     });
 
-    it('falls back to KIMI_CODE_HOME env', () => {
-      const prev = process.env['KIMI_CODE_HOME'];
-      process.env['KIMI_CODE_HOME'] = '/env/kimi';
+    it('falls back to ZIMI_CODE_HOME env', () => {
+      const prev = process.env['ZIMI_CODE_HOME'];
+      process.env['ZIMI_CODE_HOME'] = '/env/zimi';
       try {
-        expect(resolveKimiHome()).toBe('/env/kimi');
+        expect(resolveZimiHome()).toBe('/env/zimi');
       } finally {
-        if (prev === undefined) delete process.env['KIMI_CODE_HOME'];
-        else process.env['KIMI_CODE_HOME'] = prev;
+        if (prev === undefined) delete process.env['ZIMI_CODE_HOME'];
+        else process.env['ZIMI_CODE_HOME'] = prev;
       }
     });
   });
@@ -30,19 +30,19 @@ describe('bootstrap path helpers', () => {
     });
 
     it('joins homeDir with config.toml', () => {
-      expect(resolveConfigPath({ homeDir: '/tmp/kimi' })).toBe('/tmp/kimi/config.toml');
+      expect(resolveConfigPath({ homeDir: '/tmp/zimi' })).toBe('/tmp/zimi/config.toml');
     });
   });
 
-  describe('ensureKimiHome', () => {
+  describe('ensureZimiHome', () => {
     let dir: string | undefined;
     afterEach(() => {
       if (dir) rmSync(dir, { recursive: true, force: true });
     });
 
     it('creates the directory with 0700 permissions', () => {
-      dir = join(mkdtempSync(join(tmpdir(), 'kimi-home-')), 'nested');
-      ensureKimiHome(dir);
+      dir = join(mkdtempSync(join(tmpdir(), 'zimi-home-')), 'nested');
+      ensureZimiHome(dir);
       expect(existsSync(dir)).toBe(true);
     });
   });

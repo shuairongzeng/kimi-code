@@ -1,12 +1,12 @@
-import type { KimiRegion, KimiRegionResolution } from '@moonshot-ai/kimi-code-oauth';
+import type { ZimiRegion, ZimiRegionResolution } from '@zimi-ai/zimi-code-oauth';
 
 import { createDecorator, type ServiceIdentifier } from '#/_base/di/instantiation';
 
 export interface IRegionService {
   readonly _serviceBrand: undefined;
 
-  current(): KimiRegionResolution;
-  getRegionAsync(): Promise<KimiRegion>;
+  current(): ZimiRegionResolution;
+  getRegionAsync(): Promise<ZimiRegion>;
 }
 
 export const IRegionService: ServiceIdentifier<IRegionService> =

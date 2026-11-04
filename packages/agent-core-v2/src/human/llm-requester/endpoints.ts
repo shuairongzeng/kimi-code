@@ -1,4 +1,4 @@
-import { KIMI_DEFAULT_BASE_URL } from '#/llm/builtin/provider/kimi/protocol';
+import { ZIMI_DEFAULT_BASE_URL } from '#/llm/builtin/provider/zimi/protocol';
 
 import type { ProtocolEndpoint, ProtocolEndpointResolver } from './connection';
 
@@ -22,13 +22,13 @@ export const vertexEndpoint: ProtocolEndpoint = {
   baseUrlEnv: 'GOOGLE_VERTEX_BASE_URL',
 };
 
-export const KIMI_API_KEY_ENV = 'KIMI_API_KEY';
-export const KIMI_BASE_URL_ENV = 'KIMI_BASE_URL';
+export const ZIMI_API_KEY_ENV = 'ZIMI_API_KEY';
+export const ZIMI_BASE_URL_ENV = 'ZIMI_BASE_URL';
 
-export const kimiEndpoint: ProtocolEndpoint = {
-  apiKeyEnv: KIMI_API_KEY_ENV,
-  baseUrlEnv: KIMI_BASE_URL_ENV,
-  defaultBaseUrl: KIMI_DEFAULT_BASE_URL,
+export const zimiEndpoint: ProtocolEndpoint = {
+  apiKeyEnv: ZIMI_API_KEY_ENV,
+  baseUrlEnv: ZIMI_BASE_URL_ENV,
+  defaultBaseUrl: ZIMI_DEFAULT_BASE_URL,
 };
 
 export const googleGenAIEndpoint: ProtocolEndpointResolver = (ctx) =>

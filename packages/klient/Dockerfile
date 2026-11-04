@@ -10,18 +10,18 @@
 # server binds inside the container only, so this workflow can run alongside the
 # docker-compose.yml server that publishes host port 7878.
 
-ARG BASE_IMAGE=kimi-server:dev
+ARG BASE_IMAGE=zimi-server:dev
 FROM ${BASE_IMAGE}
 
-ENV KIMI_CODE_HOME=/data/docker-e2e/kimi-code-home \
-    KIMI_SERVER_URL=http://127.0.0.1:7878 \
-    KIMI_SERVER_E2E_REPORT_DIR=/data/server-e2e-reports/docker/latest \
+ENV ZIMI_CODE_HOME=/data/docker-e2e/zimi-code-home \
+    ZIMI_SERVER_URL=http://127.0.0.1:7878 \
+    ZIMI_SERVER_E2E_REPORT_DIR=/data/server-e2e-reports/docker/latest \
     TMPDIR=/data/docker-e2e/tmp \
     TERM=xterm-256color \
     TZ=Asia/Shanghai \
-    npm_config_store_dir=/workspace/kimi-code/node_modules/.pnpm-store \
+    npm_config_store_dir=/workspace/zimi-code/node_modules/.pnpm-store \
     npm_config_package_import_method=copy
 
-WORKDIR /workspace/kimi-code/packages/klient
+WORKDIR /workspace/zimi-code/packages/klient
 
 CMD ["bash"]

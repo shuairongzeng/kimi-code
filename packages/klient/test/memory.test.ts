@@ -6,9 +6,9 @@ import {
   getLiveSessionById,
   IAgentLifecycleService,
   IEventBus,
-} from '@moonshot-ai/agent-core-v2';
-import { TurnPrompt } from '@moonshot-ai/agent-core-v2/agent/loop/turnOps';
-import { ISessionEventBus } from '@moonshot-ai/agent-core-v2/app/event/eventBus';
+} from '@zimi-ai/agent-core-v2';
+import { TurnPrompt } from '@zimi-ai/agent-core-v2/agent/loop/turnOps';
+import { ISessionEventBus } from '@zimi-ai/agent-core-v2/app/event/eventBus';
 
 import { defineKlientConformance } from './helpers/conformance.js';
 import { createKlient } from '../src/transports/memory/index.js';

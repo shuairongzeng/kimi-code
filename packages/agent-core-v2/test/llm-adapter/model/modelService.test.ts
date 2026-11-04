@@ -8,7 +8,7 @@ describe('models TOML transforms', () => {
   it('converts snake_case entries to camelCase and back', () => {
     const from = modelsFromToml({
       k1: {
-        provider: 'moonshot',
+        provider: 'zimi',
         model: 'kimi-k2',
         max_context_size: 262144,
         max_output_size: 8192,
@@ -22,7 +22,7 @@ describe('models TOML transforms', () => {
       },
     }) as Record<string, Record<string, unknown>>;
     expect(from['k1']).toEqual({
-      provider: 'moonshot',
+      provider: 'zimi',
       model: 'kimi-k2',
       maxContextSize: 262144,
       maxOutputSize: 8192,
@@ -37,7 +37,7 @@ describe('models TOML transforms', () => {
 
     const back = modelsToToml(from, undefined) as Record<string, Record<string, unknown>>;
     expect(back['k1']).toEqual({
-      provider: 'moonshot',
+      provider: 'zimi',
       model: 'kimi-k2',
       max_context_size: 262144,
       max_output_size: 8192,
@@ -85,7 +85,7 @@ describe('ModelService', () => {
       events.push({ added: e.added, removed: e.removed, changed: e.changed }),
     );
 
-    const k1: ModelRecord = { provider: 'moonshot', model: 'kimi-k2', maxContextSize: 262144 };
+    const k1: ModelRecord = { provider: 'zimi', model: 'kimi-k2', maxContextSize: 262144 };
     await service.set('k1', k1);
     expect(service.get('k1')).toEqual(k1);
     expect(service.list()).toEqual({ k1 });

@@ -81,7 +81,7 @@ export async function createSshAskpass(options: SshAuthOptions): Promise<SshAskp
   try {
     let binary = options.command[0];
     if (options.command.length > 1 && process.platform !== 'win32') {
-      directory = await mkdtemp(join(tmpdir(), 'kimi-ssh-askpass-'));
+      directory = await mkdtemp(join(tmpdir(), 'zimi-ssh-askpass-'));
       binary = join(directory, 'askpass');
       await writeFile(binary, `#!/bin/sh\nexec ${options.command.map(shQuote).join(' ')} "$@"\n`, {
         mode: 0o700,
@@ -91,7 +91,7 @@ export async function createSshAskpass(options: SshAuthOptions): Promise<SshAskp
       env: {
         SSH_ASKPASS: binary,
         SSH_ASKPASS_REQUIRE: 'force',
-        DISPLAY: process.env['DISPLAY'] || 'kimi',
+        DISPLAY: process.env['DISPLAY'] || 'zimi',
         [SSH_ASKPASS_PORT_ENV]: String(address.port),
         [SSH_ASKPASS_TOKEN_ENV]: token,
       },

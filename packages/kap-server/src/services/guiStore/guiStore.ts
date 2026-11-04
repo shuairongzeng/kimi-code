@@ -1,4 +1,4 @@
-import { createDecorator } from '@moonshot-ai/agent-core-v2';
+import { createDecorator } from '@zimi-ai/agent-core-v2';
 
 export interface IGuiStoreService {
   readonly _serviceBrand: undefined;

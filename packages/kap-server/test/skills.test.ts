@@ -9,7 +9,7 @@ import {
   IAgentSkillService,
   closeSessionById,
   getLiveSessionById,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import {
   activateSkillResultSchema,
   listSkillsResponseSchema,
@@ -43,7 +43,7 @@ describe('server-v2 /api/v1 skills', () => {
   let base: string;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-skills-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-skills-'));
     server = await startServer({ hostIdentity: TEST_HOST_IDENTITY, host: '127.0.0.1', port: 0, homeDir: home, logLevel: 'silent' });
     base = `http://127.0.0.1:${server.port}`;
   });
@@ -115,7 +115,7 @@ describe('server-v2 /api/v1 skills', () => {
   }
 
   async function seedProjectSkill(root: string, name: string): Promise<void> {
-    const dir = join(root, '.kimi-code', 'skills', name);
+    const dir = join(root, '.zimi-code', 'skills', name);
     await mkdir(dir, { recursive: true });
     await writeFile(
       join(dir, 'SKILL.md'),
@@ -165,7 +165,7 @@ describe('server-v2 /api/v1 skills', () => {
       expect(updateConfig).not.toHaveProperty('isSubSkill');
     });
 
-    it('lists the check-kimi-code-docs builtin skill', async () => {
+    it('lists the check-zimi-code-docs builtin skill', async () => {
       const id = await createSession();
       const { body } = await getJson<{ skills: SkillWire[] }>(
         `/api/v1/sessions/${id}/skills`,
@@ -173,7 +173,7 @@ describe('server-v2 /api/v1 skills', () => {
       expect(body.code).toBe(0);
       const skills = listSkillsResponseSchema.parse(body.data).skills;
 
-      const docsSkill = skills.find((s) => s.name === 'check-kimi-code-docs');
+      const docsSkill = skills.find((s) => s.name === 'check-zimi-code-docs');
       expect(docsSkill).toBeDefined();
       expect(docsSkill).toMatchObject({ source: 'builtin' });
       expect(docsSkill?.description.length).toBeGreaterThan(0);
@@ -215,7 +215,7 @@ describe('server-v2 /api/v1 skills', () => {
     it('retains rich client metadata and ordered context through a single activation and cold resume', async () => {
       const id = await createSession();
       await createMainAgent(id);
-      const metadata = { display_text: 'Example skill · Save button', kimi_code_composer: { version: 1, doc: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'client-only literal' }] }] }, attachments: [], attachmentOrder: [] } };
+      const metadata = { display_text: 'Example skill · Save button', zimi_code_composer: { version: 1, doc: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'client-only literal' }] }] }, attachments: [], attachmentOrder: [] } };
       const result = await postJson(`/api/v1/sessions/${id}/skills/update-config:activate`, { args: 'Example argument', attachments: [{ type: 'text', text: 'Captured page evidence' }, { type: 'text', text: 'Image association' }], metadata });
       expect(result.body.code).toBe(0);
       const messages = await getJson<{ items: { role: string; content: { type: string; text?: string }[]; metadata?: { origin?: { clientMetadata?: unknown } } }[] }>(`/api/v1/sessions/${id}/messages`);

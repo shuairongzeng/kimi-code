@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { UNKNOWN_CAPABILITY } from '#/llm-requester/capability';
-import { createKimiOpenAIRequester } from '#/llm-requester/factories';
+import { createZimiOpenAIRequester } from '#/llm-requester/factories';
 import { createUserMessage, type Message } from '#/message';
 import type { LlmModel } from '#/llm-requester/model';
 import { createAnthropicRequester } from '#/llm-requester/factories';
@@ -122,9 +122,9 @@ describe('openai requester cacheKey', () => {
     expect(client.body()['extra_body']).toEqual({ trace_id: 't1' });
   });
 
-  it('encodes the cache key as prompt_cache_key for the kimi requester', async () => {
+  it('encodes the cache key as prompt_cache_key for the zimi requester', async () => {
     const client = stubOpenAIClient(chatCompletionChunks);
-    const requester = createKimiOpenAIRequester({
+    const requester = createZimiOpenAIRequester({
       clientFactory: client.clientFactory,
     });
     await requester.generate(

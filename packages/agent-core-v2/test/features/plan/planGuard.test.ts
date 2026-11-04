@@ -310,7 +310,7 @@ describe('AgentPlanService plan-guard listener', () => {
 
     it('blocks a non-plan file addressed through the same tempDir alias prefix', async () => {
       await enterPlan();
-      const otherPath = `/private${TEMP_DIR}/kimi-code/plans/test-agent/other.md`;
+      const otherPath = `/private${TEMP_DIR}/zimi-code/plans/test-agent/other.md`;
       const decision = await run(
         hookContext('Write', {
           args: { path: otherPath },

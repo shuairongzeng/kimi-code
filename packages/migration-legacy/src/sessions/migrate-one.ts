@@ -2,8 +2,8 @@ import { existsSync } from 'node:fs';
 import { readFile, mkdir, rm, stat, utimes } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import type { OldSessionState } from '../kimi-cli-schema.js';
-import { readTodoItems } from '@moonshot-ai/agent-core-v2/features/todo/todoItem';
+import type { OldSessionState } from '../zimi-cli-schema.js';
+import { readTodoItems } from '@zimi-ai/agent-core-v2/features/todo/todoItem';
 import { targetSessionsDir } from '../paths.js';
 import { computeWorkdirBucket } from './workdir-bucket.js';
 import { closeDanglingToolCalls } from './close-tool-calls.js';
@@ -42,7 +42,7 @@ export async function migrateOneSession(input: MigrateOneInput): Promise<Migrate
     if (cls === 'imported') {
       return { outcome: 'already-migrated', targetDir };
     }
-    // A real, unrelated kimi-code session occupies the path — a true conflict.
+    // A real, unrelated zimi-code session occupies the path — a true conflict.
     if (cls === 'foreign') {
       return { outcome: 'conflict', targetDir };
     }
@@ -168,7 +168,7 @@ export async function migrateOneSession(input: MigrateOneInput): Promise<Migrate
     return { outcome: 'failed', reason };
   }
 
-  // kimi-core's `SessionStore.list()` ranks sessions by the *filesystem*
+  // zimi-core's `SessionStore.list()` ranks sessions by the *filesystem*
   // mtimes of `state.json` / `wire.jsonl` / the session dir — not by the
   // `updatedAt` field. Writing newest-first would otherwise make the newest
   // original session the oldest by mtime, inverting `--continue` ordering.
@@ -219,7 +219,7 @@ type ExistingTarget = 'imported' | 'foreign' | 'debris';
 /**
  * Classify an existing `targetDir`:
  *  - `imported`: a complete dir written by a previous run of this migrator.
- *  - `foreign`:  a real, unrelated kimi-code session occupying the path.
+ *  - `foreign`:  a real, unrelated zimi-code session occupying the path.
  *  - `debris`:   no `state.json`, or a corrupt/unparseable one — a prior
  *                migration was killed mid-write; safe to delete and re-migrate.
  */
@@ -241,7 +241,7 @@ async function classifyExistingTarget(targetDir: string): Promise<ExistingTarget
   if (
     typeof custom === 'object' &&
     custom !== null &&
-    (custom as { imported_from_kimi_cli?: unknown }).imported_from_kimi_cli === true
+    (custom as { imported_from_zimi_cli?: unknown }).imported_from_zimi_cli === true
   ) {
     return 'imported';
   }

@@ -298,7 +298,7 @@ describe('AgentLifecycleService', () => {
       _serviceBrand: undefined,
       sessionId: 'sess_test',
       workspaceId: 'ws_test',
-      sessionDir: '/tmp/kimi-agentLifecycle-test',
+      sessionDir: '/tmp/zimi-agentLifecycle-test',
       metaScope: 'test',
       scope: (subKey?: string) =>
         subKey === undefined || subKey === ''
@@ -337,8 +337,8 @@ describe('AgentLifecycleService', () => {
     });
     ix.stub(IBootstrapService, {
       _serviceBrand: undefined,
-      homeDir: '/tmp/kimi-agentLifecycle-home',
-      cwd: '/tmp/kimi-agentLifecycle-home',
+      homeDir: '/tmp/zimi-agentLifecycle-home',
+      cwd: '/tmp/zimi-agentLifecycle-home',
       getEnv: () => undefined,
     } as unknown as IBootstrapService);
     ix.stub(IFlagService, {
@@ -348,7 +348,7 @@ describe('AgentLifecycleService', () => {
     ix.stub(ISessionNotify, { _serviceBrand: undefined, ready: Promise.resolve(), enabled: false });
     ix.stub(ISessionWorkspaceContext, {
       _serviceBrand: undefined,
-      workDir: '/tmp/kimi-agentLifecycle-work',
+      workDir: '/tmp/zimi-agentLifecycle-work',
       additionalDirs: [],
       setWorkDir: () => {},
     } as unknown as ISessionWorkspaceContext);
@@ -941,8 +941,8 @@ describe('AgentLifecycleService', () => {
           updatedAt: 0,
           archived: false,
           agents: {
-            'agent-0': { homedir: '/tmp/kimi-agentLifecycle-test/agents/agent-0', type: 'sub' },
-            'agent-1': { homedir: '/tmp/kimi-agentLifecycle-test/agents/agent-1', type: 'sub' },
+            'agent-0': { homedir: '/tmp/zimi-agentLifecycle-test/agents/agent-0', type: 'sub' },
+            'agent-1': { homedir: '/tmp/zimi-agentLifecycle-test/agents/agent-1', type: 'sub' },
           },
         }),
       update: () => Promise.resolve(),
@@ -997,7 +997,7 @@ describe('AgentLifecycleService', () => {
 
     expect(child.agentId).toBe('child');
     expect(registerAgent).toHaveBeenCalledWith('child', {
-      homedir: '/tmp/kimi-agentLifecycle-home/sessions/ws_test/sess_test/agents/child',
+      homedir: '/tmp/zimi-agentLifecycle-home/sessions/ws_test/sess_test/agents/child',
       type: 'sub',
       parentAgentId: 'main',
       forkedFrom: 'main',
@@ -1454,7 +1454,7 @@ describe('AgentLifecycleService', () => {
   it('getOrRestoreAgent rebuilds a registered agent with its persisted identity', async () => {
     const agents: Record<string, AgentMeta> = {
       'agent-3': {
-        homedir: '/tmp/kimi-agentLifecycle-home/agents/agent-3',
+        homedir: '/tmp/zimi-agentLifecycle-home/agents/agent-3',
         type: 'sub',
         parentAgentId: 'main',
         forkedFrom: 'main',
@@ -1672,7 +1672,7 @@ describe('AgentLifecycleService', () => {
     await svc
       .create({
         agentId: 'child',
-        binding: { profile: 'coder', model: 'kimi-test' },
+        binding: { profile: 'coder', model: 'zimi-test' },
         labels: { parentAgentId: 'main' },
       })
       .catch(() => undefined);

@@ -1,8 +1,8 @@
-import { Error2, ErrorCodes, type ISessionManager } from '@moonshot-ai/agent-core-v2';
+import { Error2, ErrorCodes, type ISessionManager } from '@zimi-ai/agent-core-v2';
 
 import type { ServerLogger } from './pinoLoggerService';
 
-export const SESSION_IDLE_RECLAIM_ENV = 'KIMI_CODE_SESSION_IDLE_RECLAIM_MS';
+export const SESSION_IDLE_RECLAIM_ENV = 'ZIMI_CODE_SESSION_IDLE_RECLAIM_MS';
 export const DEFAULT_SESSION_IDLE_RECLAIM_MS = 30 * 60 * 1000;
 const SWEEP_INTERVAL_MS = 60_000;
 

@@ -14,16 +14,16 @@ import { IConfigService } from '#/app/config/config';
 import { ITelemetryService, noopTelemetryService } from '#/app/telemetry/telemetry';
 import { IProviderService, type ProviderConfig } from '#/llm-adapter/provider/provider';
 import { LocalFetchURLProvider } from '#/app/web/providers/local-fetch-url';
-import { MoonshotFetchURLProvider } from '#/app/web/providers/moonshot-fetch-url';
+import { ZimiFetchURLProvider } from '#/app/web/providers/zimi-fetch-url';
 import { IWebFetchService } from '#/app/web/web';
 import { WebFetchService } from '#/app/web/webService';
 
 import { stubAgentIdentity } from '../agentIdentity/stubs';
 
-const OAUTH_PROVIDER = 'managed:kimi-code';
+const OAUTH_PROVIDER = 'managed:zimi-code';
 const NON_OAUTH_PROVIDER = 'openai-main';
 const HOST_HEADERS = {
-  'User-Agent': 'kimi-code-cli/test',
+  'User-Agent': 'zimi-code-cli/test',
   'X-Msh-Device-Id': 'device-test',
 };
 
@@ -87,8 +87,8 @@ describe('WebFetchService', () => {
     expect(resolveTokenProvider).not.toHaveBeenCalled();
   });
 
-  it('yields the local fetcher when the managed provider is not an OAuth kimi provider', () => {
-    providers = { [OAUTH_PROVIDER]: { type: 'kimi', apiKey: 'sk-test' } };
+  it('yields the local fetcher when the managed provider is not an OAuth zimi provider', () => {
+    providers = { [OAUTH_PROVIDER]: { type: 'zimi', apiKey: 'sk-test' } };
     expect(fetcher()).toBeInstanceOf(LocalFetchURLProvider);
     expect(resolveTokenProvider).not.toHaveBeenCalled();
   });
@@ -96,36 +96,36 @@ describe('WebFetchService', () => {
   it('yields the local fetcher when the oauth service yields no token provider', () => {
     providers = {
       [OAUTH_PROVIDER]: {
-        type: 'kimi',
+        type: 'zimi',
         baseUrl: 'https://api.example.com',
-        oauth: { storage: 'file', key: 'oauth/kimi-code' },
+        oauth: { storage: 'file', key: 'oauth/zimi-code' },
       },
     };
     resolveTokenProvider.mockReturnValue(undefined);
     expect(fetcher()).toBeInstanceOf(LocalFetchURLProvider);
   });
 
-  it('builds a Moonshot fetcher from the managed provider oauth ref', () => {
+  it('builds a Zimi fetcher from the managed provider oauth ref', () => {
     providers = {
       [OAUTH_PROVIDER]: {
-        type: 'kimi',
+        type: 'zimi',
         baseUrl: 'https://api.example.com/v1',
-        oauth: { storage: 'file', key: 'oauth/kimi-code' },
+        oauth: { storage: 'file', key: 'oauth/zimi-code' },
       },
     };
-    expect(fetcher()).toBeInstanceOf(MoonshotFetchURLProvider);
+    expect(fetcher()).toBeInstanceOf(ZimiFetchURLProvider);
     expect(resolveTokenProvider).toHaveBeenCalledWith(OAUTH_PROVIDER, {
       storage: 'file',
-      key: 'oauth/kimi-code',
+      key: 'oauth/zimi-code',
     });
   });
 
   it('fetches against /fetch with the OAuth access token, host identity headers, and custom headers', async () => {
     providers = {
       [OAUTH_PROVIDER]: {
-        type: 'kimi',
+        type: 'zimi',
         baseUrl: 'https://api.example.com/v1/',
-        oauth: { storage: 'file', key: 'oauth/kimi-code' },
+        oauth: { storage: 'file', key: 'oauth/zimi-code' },
         customHeaders: { 'X-Custom': 'yes' },
       },
     };
@@ -143,14 +143,14 @@ describe('WebFetchService', () => {
     expect(url).toBe('https://api.example.com/v1/fetch');
     const headers = init.headers as Record<string, string>;
     expect(headers['Authorization']).toBe('Bearer access-token');
-    expect(headers['User-Agent']).toBe('kimi-code-cli/test');
+    expect(headers['User-Agent']).toBe('zimi-code-cli/test');
     expect(headers['X-Msh-Device-Id']).toBe('device-test');
     expect(headers['X-Custom']).toBe('yes');
   });
 
-  it('builds a Moonshot fetcher from the services.moonshot_fetch api_key config', async () => {
+  it('builds a Zimi fetcher from the services.zimi_fetch api_key config', async () => {
     servicesConfig = {
-      moonshotFetch: {
+      zimiFetch: {
         baseUrl: 'https://fetch.example.com/fetch',
         apiKey: 'fetch-key',
         customHeaders: { 'X-Config': '1' },
@@ -162,7 +162,7 @@ describe('WebFetchService', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
 
-    expect(fetcher()).toBeInstanceOf(MoonshotFetchURLProvider);
+    expect(fetcher()).toBeInstanceOf(ZimiFetchURLProvider);
     expect(resolveTokenProvider).not.toHaveBeenCalled();
     const result = await fetcher().fetch('https://example.com/page');
 
@@ -171,7 +171,7 @@ describe('WebFetchService', () => {
     expect(url).toBe('https://fetch.example.com/fetch');
     const headers = init.headers as Record<string, string>;
     expect(headers['Authorization']).toBe('Bearer fetch-key');
-    expect(headers['User-Agent']).toBe('kimi-code-cli/test');
+    expect(headers['User-Agent']).toBe('zimi-code-cli/test');
     expect(headers['X-Msh-Device-Id']).toBe('device-test');
     expect(headers['X-Config']).toBe('1');
   });
@@ -179,7 +179,7 @@ describe('WebFetchService', () => {
   it('sends the configured identity to a services-config endpoint', async () => {
     identitySlug = 'acme';
     servicesConfig = {
-      moonshotFetch: { baseUrl: 'https://fetch.example.com/fetch', apiKey: 'fetch-key' },
+      zimiFetch: { baseUrl: 'https://fetch.example.com/fetch', apiKey: 'fetch-key' },
     };
     const fetchMock = vi.fn().mockResolvedValue({ status: 200, text: async () => 'page body' });
     vi.stubGlobal('fetch', fetchMock);
@@ -194,9 +194,9 @@ describe('WebFetchService', () => {
   it('keeps the host token on the managed oauth endpoint under a custom identity', async () => {
     identitySlug = 'acme';
     providers[OAUTH_PROVIDER] = {
-      type: 'kimi',
+      type: 'zimi',
       baseUrl: 'https://api.example.com/v1',
-      oauth: { storage: 'file', key: 'oauth/kimi-code' },
+      oauth: { storage: 'file', key: 'oauth/zimi-code' },
     };
     const fetchMock = vi.fn().mockResolvedValue({ status: 200, text: async () => 'page body' });
     vi.stubGlobal('fetch', fetchMock);
@@ -205,40 +205,40 @@ describe('WebFetchService', () => {
 
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     const headers = init.headers as Record<string, string>;
-    expect(headers['User-Agent']).toBe('kimi-code-cli/test');
+    expect(headers['User-Agent']).toBe('zimi-code-cli/test');
   });
 
-  it('prefers the services.moonshot_fetch config over the managed oauth provider', () => {
+  it('prefers the services.zimi_fetch config over the managed oauth provider', () => {
     servicesConfig = {
-      moonshotFetch: { baseUrl: 'https://config.example.com/fetch', apiKey: 'config-key' },
+      zimiFetch: { baseUrl: 'https://config.example.com/fetch', apiKey: 'config-key' },
     };
     providers = {
       [OAUTH_PROVIDER]: {
-        type: 'kimi',
+        type: 'zimi',
         baseUrl: 'https://managed.example.com/v1',
-        oauth: { storage: 'file', key: 'oauth/kimi-code' },
+        oauth: { storage: 'file', key: 'oauth/zimi-code' },
       },
     };
-    expect(fetcher()).toBeInstanceOf(MoonshotFetchURLProvider);
+    expect(fetcher()).toBeInstanceOf(ZimiFetchURLProvider);
     expect(resolveTokenProvider).not.toHaveBeenCalled();
   });
 
-  it('builds a Moonshot fetcher from the services.moonshot_fetch oauth ref', () => {
+  it('builds a Zimi fetcher from the services.zimi_fetch oauth ref', () => {
     servicesConfig = {
-      moonshotFetch: {
+      zimiFetch: {
         baseUrl: 'https://fetch.example.com/fetch',
-        oauth: { storage: 'file', key: 'oauth/kimi-code' },
+        oauth: { storage: 'file', key: 'oauth/zimi-code' },
       },
     };
-    expect(fetcher()).toBeInstanceOf(MoonshotFetchURLProvider);
+    expect(fetcher()).toBeInstanceOf(ZimiFetchURLProvider);
     expect(resolveTokenProvider).toHaveBeenCalledWith(OAUTH_PROVIDER, {
       storage: 'file',
-      key: 'oauth/kimi-code',
+      key: 'oauth/zimi-code',
     });
   });
 
-  it('yields the local fetcher when services.moonshot_fetch has no baseUrl and no managed oauth', () => {
-    servicesConfig = { moonshotFetch: { apiKey: 'fetch-key' } };
+  it('yields the local fetcher when services.zimi_fetch has no baseUrl and no managed oauth', () => {
+    servicesConfig = { zimiFetch: { apiKey: 'fetch-key' } };
     expect(fetcher()).toBeInstanceOf(LocalFetchURLProvider);
     expect(resolveTokenProvider).not.toHaveBeenCalled();
   });

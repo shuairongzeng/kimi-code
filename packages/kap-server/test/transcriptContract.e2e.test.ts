@@ -18,7 +18,7 @@ import {
   resumeSessionById,
   type AgentTask,
   type ApprovalRequest,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 
 import { type RunningServer, startServer } from '../src/start';
 import { TEST_HOST_IDENTITY } from './helpers/hostIdentity';
@@ -209,7 +209,7 @@ function rawToString(data: RawData): string {
 }
 
 async function subscribeTranscript(server: RunningServer, sid: string): Promise<TranscriptChannel> {
-  const ws = new WebSocket(`ws://127.0.0.1:${server.port}/api/v1/ws`, [`kimi-code.bearer.${bearerToken(server)}`]);
+  const ws = new WebSocket(`ws://127.0.0.1:${server.port}/api/v1/ws`, [`zimi-code.bearer.${bearerToken(server)}`]);
   const frames: any[] = [];
   const ops: any[] = [];
   const tasks: any[] = [];
@@ -259,7 +259,7 @@ interface FrameSocket {
 }
 
 async function openFrameSocket(server: RunningServer): Promise<FrameSocket> {
-  const ws = new WebSocket(`ws://127.0.0.1:${server.port}/api/v1/ws`, [`kimi-code.bearer.${bearerToken(server)}`]);
+  const ws = new WebSocket(`ws://127.0.0.1:${server.port}/api/v1/ws`, [`zimi-code.bearer.${bearerToken(server)}`]);
   const frames: any[] = [];
   ws.on('message', (data) => {
     try {
@@ -303,7 +303,7 @@ describe('transcript contract e2e', () => {
   let base: string;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-transcript-contract-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-transcript-contract-'));
     server = await startServer({ hostIdentity: TEST_HOST_IDENTITY, host: '127.0.0.1', port: 0, homeDir: home, logLevel: 'silent' });
     base = `http://127.0.0.1:${server.port}`;
   });

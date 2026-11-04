@@ -51,7 +51,7 @@ const profile = {
 const toolPolicy = { isToolActive: () => true } as unknown as IAgentToolPolicyService;
 const toolRegistry = { resolve: () => ({}) } as unknown as IAgentToolRegistryService;
 
-const attachmentStore = { put: async () => 'kimi-file://a' } as unknown as ISessionMediaStore;
+const attachmentStore = { put: async () => 'zimi-file://a' } as unknown as ISessionMediaStore;
 
 function registryBackedService(registry: EnvironmentRegistry): IAgentEnvironmentService {
   return {

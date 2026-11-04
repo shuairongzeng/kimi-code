@@ -3,7 +3,7 @@ import {
   detachGrades,
   transcriptSubscribeV2PayloadSchema,
   type TranscriptGradeSpec,
-} from '@moonshot-ai/transcript';
+} from '@zimi-ai/transcript';
 import { ulid } from 'ulid';
 import type { RawData, WebSocket } from 'ws';
 

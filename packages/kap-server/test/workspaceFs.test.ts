@@ -1,12 +1,12 @@
-import { IEnvironmentService } from '@moonshot-ai/agent-core-v2';
+import { IEnvironmentService } from '@zimi-ai/agent-core-v2';
 import { mkdir, mkdtemp, realpath, rm, stat, writeFile } from 'node:fs/promises';
 import { homedir, tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
-import { IModelCatalog, IWorkspaceInstanceManager, IWorkspaceService } from '@moonshot-ai/agent-core-v2';
-import { HostFileSystem } from '@moonshot-ai/agent-core-v2/os/backends/node-local/hostFsService';
-import type { IHostFileSystem } from '@moonshot-ai/agent-core-v2/os/interface/hostFileSystem';
-import { FakeEnvironment } from '@moonshot-ai/agent-core-v2/environment/fakeEnvironment';
+import { IModelCatalog, IWorkspaceInstanceManager, IWorkspaceService } from '@zimi-ai/agent-core-v2';
+import { HostFileSystem } from '@zimi-ai/agent-core-v2/os/backends/node-local/hostFsService';
+import type { IHostFileSystem } from '@zimi-ai/agent-core-v2/os/interface/hostFileSystem';
+import { FakeEnvironment } from '@zimi-ai/agent-core-v2/environment/fakeEnvironment';
 import { afterAll, beforeAll, beforeEach, afterEach, describe, expect, it } from 'vitest';
 
 import { type RunningServer, startServer } from '../src/start';
@@ -46,8 +46,8 @@ describe('server-v2 /api/v1 fs folder picker', () => {
   let base: string;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-'));
-    instancesDir = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-instances-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-'));
+    instancesDir = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-instances-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -190,8 +190,8 @@ describe('server-v2 /api/v1 fs:mkdir', () => {
   let base: string;
 
   beforeAll(async () => {
-    dir = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fsmkdir-'));
-    instancesDir = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fsmkdir-instances-'));
+    dir = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fsmkdir-'));
+    instancesDir = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fsmkdir-instances-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -292,8 +292,8 @@ describe('server-v2 /api/v1 fs:content', () => {
   let base: string;
 
   beforeAll(async () => {
-    dir = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fscontent-'));
-    instancesDir = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fscontent-instances-'));
+    dir = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fscontent-'));
+    instancesDir = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fscontent-instances-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -481,7 +481,7 @@ describe('server-v2 /api/v1 fs:content and fs:mkdir with environment_id', () => 
   const remoteRoots = new Map<string, string>();
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fsrt-home-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fsrt-home-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -494,8 +494,8 @@ describe('server-v2 /api/v1 fs:content and fs:mkdir with environment_id', () => 
   });
 
   beforeEach(async () => {
-    localRoot = await realpath(await mkdtemp(join(tmpdir(), 'kimi-server-v2-fsrt-local-')));
-    remoteRoot = await realpath(await mkdtemp(join(tmpdir(), 'kimi-server-v2-fsrt-remote-')));
+    localRoot = await realpath(await mkdtemp(join(tmpdir(), 'zimi-server-v2-fsrt-local-')));
+    remoteRoot = await realpath(await mkdtemp(join(tmpdir(), 'zimi-server-v2-fsrt-remote-')));
     remoteRoots.set(localRoot, remoteRoot);
     provider = await server!.core.accessor.get(IEnvironmentService).addProvider({
       id: 'remote-test-provider',

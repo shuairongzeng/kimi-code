@@ -27,20 +27,20 @@ import {
   type ISessionMediaStore,
   type ITelemetryService,
   type PromptFileAttachment,
-} from '@moonshot-ai/agent-core-v2';
-import { sniffMediaFromMagic } from '@moonshot-ai/agent-core-v2/agent/media/file-type';
+} from '@zimi-ai/agent-core-v2';
+import { sniffMediaFromMagic } from '@zimi-ai/agent-core-v2/agent/media/file-type';
 import {
   toCorePart,
   type ContentPart as LegacyContentPart,
-} from '@moonshot-ai/agent-core-v2/human/message';
-import type { ContentPart } from '@moonshot-ai/agent-core-v2/human/llm/message';
+} from '@zimi-ai/agent-core-v2/human/message';
+import type { ContentPart } from '@zimi-ai/agent-core-v2/human/llm/message';
 import {
   IMAGE_MIME_BY_SUFFIX,
   VIDEO_MIME_BY_SUFFIX,
-} from '@moonshot-ai/agent-core-v2/agent/media/mediaRef';
-import { isSensitiveFile } from '@moonshot-ai/agent-core-v2/tool/path-access';
-import type { IHostFileSystem } from '@moonshot-ai/agent-core-v2/os/interface/hostFileSystem';
-import type { Environment, EnvironmentLease, EnvironmentPath } from '@moonshot-ai/agent-core-v2/environment/environment';
+} from '@zimi-ai/agent-core-v2/agent/media/mediaRef';
+import { isSensitiveFile } from '@zimi-ai/agent-core-v2/tool/path-access';
+import type { IHostFileSystem } from '@zimi-ai/agent-core-v2/os/interface/hostFileSystem';
+import type { Environment, EnvironmentLease, EnvironmentPath } from '@zimi-ai/agent-core-v2/environment/environment';
 
 import type { PromptSubmission } from '../protocol/rest-prompt';
 
@@ -180,7 +180,7 @@ function environmentTempDirTarget(environment: Environment, subdir: string): Pro
     );
   }
   return {
-    dir: environment.path.join(tempDir, 'kimi-code', subdir),
+    dir: environment.path.join(tempDir, 'zimi-code', subdir),
     fs: environment.fs,
     path: environment.path,
   };

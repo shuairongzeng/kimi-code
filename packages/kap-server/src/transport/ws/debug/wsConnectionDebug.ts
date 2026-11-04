@@ -2,7 +2,7 @@ import {
   xstateInspectionCollector,
   type XstateInspectionCollector,
   type XstateInspectionEnvelope,
-} from '@moonshot-ai/agent-core-v2/human/xstateInspection';
+} from '@zimi-ai/agent-core-v2/human/xstateInspection';
 import type { WebSocket } from 'ws';
 
 const DEFAULT_HEARTBEAT_INTERVAL_MS = 10_000;

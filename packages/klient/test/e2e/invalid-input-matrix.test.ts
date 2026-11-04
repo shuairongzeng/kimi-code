@@ -20,7 +20,7 @@
  *    `API*Error` family, and is translated by `translateProviderError`.
  *
  * Provider columns: plain OpenAI (protocol `openai`, no vendor), composed
- * Kimi (protocol `openai` + provider `type: kimi` — the trait-composition
+ * Zimi (protocol `openai` + provider `type: zimi` — the trait-composition
  * path), Anthropic, and Google GenAI. Rows are chosen for representativeness
  * rather than a full cartesian product.
  */
@@ -33,11 +33,11 @@ import { join } from 'node:path';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { bootstrap, logSeed, resolveLoggingConfig } from '@moonshot-ai/agent-core-v2';
+import { bootstrap, logSeed, resolveLoggingConfig } from '@zimi-ai/agent-core-v2';
 
 import { TEST_CLIENT_IDENTITY } from '../helpers/engine.js';
-import type { ContentPart } from '@moonshot-ai/agent-core-v2/human/message';
-import { IModelService } from '@moonshot-ai/agent-core-v2/llm-adapter/model/model';
+import type { ContentPart } from '@zimi-ai/agent-core-v2/human/message';
+import { IModelService } from '@zimi-ai/agent-core-v2/llm-adapter/model/model';
 
 import type { Klient } from '../../src/index.js';
 import type { AgentHandle } from '../../src/core/klient.js';
@@ -87,14 +87,14 @@ function onceEvent<TPayloadMap extends object, E extends keyof TPayloadMap & str
 
 const M_OPENAI = 'matrix-openai';
 const M_OPENAI_VISION = 'matrix-openai-vision';
-const M_KIMI = 'matrix-kimi';
+const M_ZIMI = 'matrix-zimi';
 const M_ANTHROPIC = 'matrix-anthropic';
 const M_GOOGLE = 'matrix-google';
 
-const KIMI_PROVIDER = 'matrix-kimi-provider';
+const ZIMI_PROVIDER = 'matrix-zimi-provider';
 
 const IMAGE_BAD_MIME_URL = 'data:image/tiff;base64,QUJD'; // tiff is outside every provider's accepted set
-const IMAGE_KIMI_ONLY_MIME_URL = 'data:image/bmp;base64,QUJD'; // bmp is accepted by Kimi alone
+const IMAGE_ZIMI_ONLY_MIME_URL = 'data:image/bmp;base64,QUJD'; // bmp is accepted by Zimi alone
 const IMAGE_BAD_BASE64_URL = 'data:image/png;base64,%%%not-base64%%%';
 const VIDEO_HTTP_URL = 'https://example.com/clip.mp4';
 const VIDEO_BAD_MIME_URL = 'data:video/x-ms-wmv;base64,QUJD';
@@ -365,8 +365,8 @@ beforeAll(async () => {
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
   baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
 
-  await klient.global.kosong.addProvider(KIMI_PROVIDER, {
-    type: 'kimi',
+  await klient.global.kosong.addProvider(ZIMI_PROVIDER, {
+    type: 'zimi',
     auth: { method: 'api-key', apiKey: 'test-key' },
     baseUrl: `${baseUrl}/v1`,
   });
@@ -387,12 +387,12 @@ beforeAll(async () => {
     maxContextSize: 262_144,
     capabilities: { image_in: true, video_in: true },
   });
-  // M_KIMI needs a `provider` reference to KIMI_PROVIDER so the engine
-  // resolves kimi provider traits (uploadVideo). The facade's addProvider()
+  // M_ZIMI needs a `provider` reference to ZIMI_PROVIDER so the engine
+  // resolves zimi provider traits (uploadVideo). The facade's addProvider()
   // doesn't support provider-linkage, so call modelService directly.
-  await app!.accessor.get(IModelService).set(M_KIMI, {
+  await app!.accessor.get(IModelService).set(M_ZIMI, {
     model: 'kimi-k2-matrix',
-    provider: KIMI_PROVIDER,
+    provider: ZIMI_PROVIDER,
     protocol: 'openai',
     maxContextSize: 262_144,
     capabilities: ['image_in', 'video_in'],
@@ -561,7 +561,7 @@ describe('image blocks with invalid data', () => {
     // poisoning" defense and holds for every provider.
     const cases = [
       { label: 'tiff-openai', model: M_OPENAI, reply: OK_OPENAI },
-      { label: 'tiff-kimi', model: M_KIMI, reply: OK_OPENAI },
+      { label: 'tiff-zimi', model: M_ZIMI, reply: OK_OPENAI },
       { label: 'tiff-anthropic', model: M_ANTHROPIC, reply: OK_ANTHROPIC },
       { label: 'tiff-google', model: M_GOOGLE, reply: OK_GOOGLE },
     ] as const;
@@ -580,11 +580,11 @@ describe('image blocks with invalid data', () => {
     }
   }, 60_000);
 
-  it('a data-URL image in a Kimi-only format reaches a Kimi model but is replaced elsewhere (l2)', async () => {
-    // The accepted set is keyed by the provider the agent is bound to: Kimi
+  it('a data-URL image in a Zimi-only format reaches a Zimi model but is replaced elsewhere (l2)', async () => {
+    // The accepted set is keyed by the provider the agent is bound to: Zimi
     // takes BMP/HEIC/HEIF on top of the baseline, the other providers do not.
     const cases = [
-      { label: 'bmp-kimi', model: M_KIMI, reply: OK_OPENAI, accepted: true },
+      { label: 'bmp-zimi', model: M_ZIMI, reply: OK_OPENAI, accepted: true },
       { label: 'bmp-openai', model: M_OPENAI, reply: OK_OPENAI, accepted: false },
       { label: 'bmp-anthropic', model: M_ANTHROPIC, reply: OK_ANTHROPIC, accepted: false },
     ] as const;
@@ -593,7 +593,7 @@ describe('image blocks with invalid data', () => {
       resetMock(queueScript(reply));
       await promptAndWait(ctx, [
         { type: 'text', text: 'what is this?' },
-        { type: 'image_url', imageUrl: { url: IMAGE_KIMI_ONLY_MIME_URL } },
+        { type: 'image_url', imageUrl: { url: IMAGE_ZIMI_ONLY_MIME_URL } },
       ]);
       expect(requests, label).toHaveLength(1);
       const wireText = JSON.stringify(requests[0]?.json);
@@ -646,8 +646,8 @@ describe('image blocks with invalid data', () => {
     expect(ctx.payloads('prompt.completed')[0]?.['reason']).toBe('completed');
   }, 30_000);
 
-  it('kimi (composed): same media-strip fallback as plain openai (l3 + engine fallback)', async () => {
-    const ctx = await newCase(M_KIMI, 'kimi-image-base64');
+  it('zimi (composed): same media-strip fallback as plain openai (l3 + engine fallback)', async () => {
+    const ctx = await newCase(M_ZIMI, 'zimi-image-base64');
     resetMock(queueScript(jsonError(400, 'Invalid image data'), OK_OPENAI));
 
     await promptAndWait(ctx, [
@@ -727,33 +727,33 @@ describe('image blocks with invalid data', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Daemon file references (kimi-file://): engine-side resolution before the
+// Daemon file references (zimi-file://): engine-side resolution before the
 // provider wire.
 // ---------------------------------------------------------------------------
 
-describe('daemon file references (kimi-file://)', () => {
+describe('daemon file references (zimi-file://)', () => {
   // Regression for the duplicated resolver-token shadowing: the legacy
   // video-only resolver won the shared DI token on the production import
-  // order, so image kimi-file refs leaked to the provider unchanged and
+  // order, so image zimi-file refs leaked to the provider unchanged and
   // gateways rejected the unknown scheme with a 400 ("unsupported image
   // url"), which the media-strip fallback then mistook for a bad image.
-  // Kimi models now upload the image via the files API and reference it as
+  // Zimi models now upload the image via the files API and reference it as
   // ms://<id>; other providers keep the inline data URL.
-  it('a kimi-file image reference reaches a non-kimi provider as a data URL, never verbatim', async () => {
+  it('a zimi-file image reference reaches a non-zimi provider as a data URL, never verbatim', async () => {
     const meta = await klient.global.files.save({
       data: new Uint8Array(Buffer.from(PNG_1X1_BASE64, 'base64')),
       filename: 'pasted-image.png',
       mimeType: 'image/png',
       expiresInSec: 3600,
     });
-    const ctx = await newCase(M_OPENAI_VISION, 'kimifile-image-openai');
+    const ctx = await newCase(M_OPENAI_VISION, 'zimifile-image-openai');
     resetMock(queueScript(OK_OPENAI));
     await promptAndWait(ctx, [
-      { type: 'image_url', imageUrl: { url: `kimi-file://${meta.id}` } },
+      { type: 'image_url', imageUrl: { url: `zimi-file://${meta.id}` } },
       { type: 'text', text: 'what is this?' },
     ]);
     expect(requests).toHaveLength(1);
-    expect(JSON.stringify(requests[0]?.json)).not.toContain(`kimi-file://${meta.id}`);
+    expect(JSON.stringify(requests[0]?.json)).not.toContain(`zimi-file://${meta.id}`);
     const content = openAiMessages(0).at(-1)?.['content'] as unknown[];
     const imagePart = content.find(
       (part) => (part as { type?: string }).type === 'image_url',
@@ -762,14 +762,14 @@ describe('daemon file references (kimi-file://)', () => {
     expect(ctx.payloads('prompt.completed')[0]?.['reason']).toBe('completed');
   }, 60_000);
 
-  it('a kimi-file image reference reaches kimi as an uploaded ms:// reference, never verbatim', async () => {
+  it('a zimi-file image reference reaches zimi as an uploaded ms:// reference, never verbatim', async () => {
     const meta = await klient.global.files.save({
       data: new Uint8Array(Buffer.from(PNG_1X1_BASE64, 'base64')),
       filename: 'pasted-image.png',
       mimeType: 'image/png',
       expiresInSec: 3600,
     });
-    const ctx = await newCase(M_KIMI, 'kimifile-image-kimi');
+    const ctx = await newCase(M_ZIMI, 'zimifile-image-zimi');
     resetMock((req) => {
       if (req.url === '/v1/files') {
         return {
@@ -788,7 +788,7 @@ describe('daemon file references (kimi-file://)', () => {
       return OK_OPENAI;
     });
     await promptAndWait(ctx, [
-      { type: 'image_url', imageUrl: { url: `kimi-file://${meta.id}` } },
+      { type: 'image_url', imageUrl: { url: `zimi-file://${meta.id}` } },
       { type: 'text', text: 'what is this?' },
     ]);
 
@@ -801,7 +801,7 @@ describe('daemon file references (kimi-file://)', () => {
 
     const chatCalls = requests.filter((request) => request.url === '/v1/chat/completions');
     expect(chatCalls).toHaveLength(1);
-    expect(JSON.stringify(chatCalls[0]?.json)).not.toContain(`kimi-file://${meta.id}`);
+    expect(JSON.stringify(chatCalls[0]?.json)).not.toContain(`zimi-file://${meta.id}`);
     const content = (chatCalls[0]?.json as { messages?: Record<string, unknown>[] })
       .messages?.filter((message) => !isDateReminderMessage(message))
       .at(-1)?.['content'] as unknown[];
@@ -840,8 +840,8 @@ describe('video blocks', () => {
         },
       },
       {
-        label: 'video-url-kimi',
-        model: M_KIMI,
+        label: 'video-url-zimi',
+        model: M_ZIMI,
         reply: OK_OPENAI,
         assertBody: (body) => {
           const parts = (body as { messages: { content?: unknown }[] }).messages.flatMap(
@@ -895,8 +895,8 @@ describe('video blocks', () => {
     }
   }, 60_000);
 
-  it('kimi (composed): ReadMediaFile on a video uploads via the files API (uploadVideo trait)', async () => {
-    const ctx = await newCase(M_KIMI, 'kimi-video-upload');
+  it('zimi (composed): ReadMediaFile on a video uploads via the files API (uploadVideo trait)', async () => {
+    const ctx = await newCase(M_ZIMI, 'zimi-video-upload');
     await writeFile(join(ctx.workDir, 'clip.mp4'), Buffer.from(MP4_FTYP_HEX, 'hex'));
 
     let chatCallCount = 0;
@@ -925,7 +925,7 @@ describe('video blocks', () => {
     });
     await promptAndWait(ctx, [{ type: 'text', text: 'watch clip.mp4' }]);
 
-    // The KimiFiles client POSTs multipart form data to {baseUrl}/files.
+    // The ZimiFiles client POSTs multipart form data to {baseUrl}/files.
     const fileUpload = requests.find((request) => request.url === '/v1/files');
     expect(fileUpload).toBeDefined();
     expect(fileUpload?.contentType).toContain('multipart/form-data');
@@ -944,8 +944,8 @@ describe('video blocks', () => {
     expect(ctx.payloads('prompt.completed')[0]?.['reason']).toBe('completed');
   }, 30_000);
 
-  it('kimi (composed): cancelling ReadMediaFile aborts the in-flight video upload', async () => {
-    const ctx = await newCase(M_KIMI, 'kimi-video-upload-cancel');
+  it('zimi (composed): cancelling ReadMediaFile aborts the in-flight video upload', async () => {
+    const ctx = await newCase(M_ZIMI, 'zimi-video-upload-cancel');
     await writeFile(
       join(ctx.workDir, 'clip.mp4'),
       Buffer.concat([Buffer.from(MP4_FTYP_HEX, 'hex'), Buffer.from([0])]),
@@ -1066,7 +1066,7 @@ describe('tool exchange structure', () => {
     expect(ctx.payloads('prompt.completed')[0]?.['reason']).toBe('completed');
   }, 30_000);
 
-  it('media tool result: plain openai extracts text + appends a media user message; kimi keeps parts in place', async () => {
+  it('media tool result: plain openai extracts text + appends a media user message; zimi keeps parts in place', async () => {
     const runMediaToolResultCase = async (
       model: string,
       label: string,
@@ -1117,14 +1117,14 @@ describe('tool exchange structure', () => {
     });
     expect(trailingContent.some((part) => part.type === 'image_url')).toBe(true);
 
-    // Composed kimi: trait mode hands shaping to the trait — the image part
+    // Composed zimi: trait mode hands shaping to the trait — the image part
     // stays inside the tool message content; no extra user message appears.
-    const kimiWire = await runMediaToolResultCase(M_KIMI, 'media-result-kimi');
-    const kimiTool = kimiWire.find((message) => message['role'] === 'tool');
-    const kimiContent = kimiTool?.['content'] as { type: string }[];
-    expect(Array.isArray(kimiContent)).toBe(true);
-    expect(kimiContent.some((part) => part.type === 'image_url')).toBe(true);
-    expect(kimiWire.at(-1)?.['role']).toBe('tool');
+    const zimiWire = await runMediaToolResultCase(M_ZIMI, 'media-result-zimi');
+    const zimiTool = zimiWire.find((message) => message['role'] === 'tool');
+    const zimiContent = zimiTool?.['content'] as { type: string }[];
+    expect(Array.isArray(zimiContent)).toBe(true);
+    expect(zimiContent.some((part) => part.type === 'image_url')).toBe(true);
+    expect(zimiWire.at(-1)?.['role']).toBe('tool');
   }, 60_000);
 
   it('tool call ids are sanitized (64-char, safe charset) consistently across call and result', async () => {
@@ -1147,7 +1147,7 @@ describe('tool exchange structure', () => {
 
     for (const [model, label] of [
       [M_OPENAI, 'tool-id-openai'],
-      [M_KIMI, 'tool-id-kimi'],
+      [M_ZIMI, 'tool-id-zimi'],
     ] as const) {
       const messages = await runIdCase(model, label);
       const assistant = messages.find((message) => message['tool_calls'] !== undefined);

@@ -1,9 +1,9 @@
-import { IConfigService, ITelemetryService, type Scope } from '@moonshot-ai/agent-core-v2';
-import { FiberState } from '@moonshot-ai/agent-core-v2/_base/di/fiber';
-import { IFeatureManager } from '@moonshot-ai/agent-core-v2/app/feature/featureManager';
-import { IFlagService } from '@moonshot-ai/agent-core-v2/app/flag/flag';
-import type { KimiHostIdentity } from '@moonshot-ai/kimi-code-oauth';
-import type { SessionRatingHost } from '@moonshot-ai/kimi-code-product/session-rating/node';
+import { IConfigService, ITelemetryService, type Scope } from '@zimi-ai/agent-core-v2';
+import { FiberState } from '@zimi-ai/agent-core-v2/_base/di/fiber';
+import { IFeatureManager } from '@zimi-ai/agent-core-v2/app/feature/featureManager';
+import { IFlagService } from '@zimi-ai/agent-core-v2/app/flag/flag';
+import type { ZimiHostIdentity } from '@zimi-ai/zimi-code-oauth';
+import type { SessionRatingHost } from '@zimi-ai/zimi-code-product/session-rating/node';
 import { ulid } from 'ulid';
 
 import { okEnvelope } from '../envelope';
@@ -59,7 +59,7 @@ interface ApiV1RouteHost {
 
 export interface RegisterApiV1RoutesOptions {
   readonly serverVersion: string;
-  readonly hostIdentity: KimiHostIdentity;
+  readonly hostIdentity: ZimiHostIdentity;
   readonly debugEndpoints?: boolean;
   readonly enableShutdown?: boolean;
   readonly guiStore: IGuiStoreService;

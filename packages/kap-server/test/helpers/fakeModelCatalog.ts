@@ -1,4 +1,4 @@
-import { IModelCatalog } from '@moonshot-ai/agent-core-v2';
+import { IModelCatalog } from '@zimi-ai/agent-core-v2';
 
 export function fakeModelCatalog(): IModelCatalog {
   return {

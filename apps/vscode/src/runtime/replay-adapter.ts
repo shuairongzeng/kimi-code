@@ -4,7 +4,7 @@ import type {
   PromptOrigin,
   ResumedAgentState,
   ResumedSessionState,
-} from "@moonshot-ai/kimi-code-sdk";
+} from "@zimi-ai/zimi-code-sdk";
 
 import type {
   ContentPart as LegacyContentPart,

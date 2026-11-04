@@ -1,6 +1,6 @@
 import { readFile, mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import { McpServerConfigSchema } from '@moonshot-ai/agent-core-v2/mcpCore/config-schema';
+import { McpServerConfigSchema } from '@zimi-ai/agent-core-v2/mcpCore/config-schema';
 import { atomicWrite } from '../atomic-write.js';
 import { siblingMcpJson, sourceMcpJson, targetMcpFile } from '../paths.js';
 
@@ -12,7 +12,7 @@ export interface McpStepInput {
 export interface McpStepResult {
   readonly mergedServers: readonly string[];
   readonly keptNewForConflicts: readonly string[];
-  /** Source servers dropped because kimi-code's MCP schema rejects them. */
+  /** Source servers dropped because zimi-code's MCP schema rejects them. */
   readonly droppedServers: readonly string[];
   /** Target `mcp.json` existed but was unparseable; output went to a sibling. */
   readonly wroteSiblingDueToConflict: boolean;
@@ -100,7 +100,7 @@ export async function migrateMcpStep(input: McpStepInput): Promise<McpStepResult
   const droppedServers: string[] = [];
 
   for (const [name, srv] of Object.entries(srcServers)) {
-    // A server kimi-code's MCP schema rejects would break every session
+    // A server zimi-code's MCP schema rejects would break every session
     // (resolveSessionMcpConfig parses all entries on create/resume) — drop it.
     if (!McpServerConfigSchema.safeParse(srv).success) {
       droppedServers.push(name);

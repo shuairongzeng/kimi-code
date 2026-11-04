@@ -5,14 +5,14 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { IPluginMarketplaceService, IPluginService } from '@moonshot-ai/agent-core-v2';
+import { IPluginMarketplaceService, IPluginService } from '@zimi-ai/agent-core-v2';
 import {
-  KIMI_CODE_PROVIDER_NAME,
-  KIMI_REGION_PROFILES,
-  KimiOAuthToolkit,
+  ZIMI_CODE_PROVIDER_NAME,
+  ZIMI_REGION_PROFILES,
+  ZimiOAuthToolkit,
   OAuthUnauthorizedError,
-  resolveKimiCodeOAuthRef,
-} from '@moonshot-ai/kimi-code-oauth';
+  resolveZimiCodeOAuthRef,
+} from '@zimi-ai/zimi-code-oauth';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WebSocket } from 'ws';
 
@@ -29,7 +29,7 @@ interface Envelope<T> {
 
 const CATALOG_URL = 'http://marketplace.test/marketplace.json';
 const DEFAULT_CATALOG_URL = 'http://marketplace.test/coding/v1/plugins/marketplace';
-const GLOBAL_CATALOG_URL = `${KIMI_REGION_PROFILES.global.baseUrl}/plugins/marketplace`;
+const GLOBAL_CATALOG_URL = `${ZIMI_REGION_PROFILES.global.baseUrl}/plugins/marketplace`;
 
 function fetchInputUrl(input: Parameters<typeof fetch>[0]): string {
   if (typeof input === 'string') return input;
@@ -79,21 +79,21 @@ function createCatalog(): { plugins: Array<Record<string, unknown>> } {
         source: './plugins/relative.zip',
       }),
       catalogEntry({
-        id: 'kimi-browser-extension',
-        displayName: 'Kimi Browser Extension',
-        source: 'https://cdn.example.test/kimi-browser-extension.zip',
+        id: 'zimi-browser-extension',
+        displayName: 'Zimi Browser Extension',
+        source: 'https://cdn.example.test/zimi-browser-extension.zip',
         distribution: { category: 'official', weight: 1 },
       }),
       catalogEntry({
-        id: 'kimi-cu',
-        displayName: 'Kimi Computer Use',
-        source: 'https://cdn.example.test/kimi-cu.zip',
+        id: 'zimi-cu',
+        displayName: 'Zimi Computer Use',
+        source: 'https://cdn.example.test/zimi-cu.zip',
         distribution: { category: 'official', weight: 1 },
       }),
       catalogEntry({
-        id: 'kimi-cu-win',
-        displayName: 'Kimi Computer Use for Windows',
-        source: 'https://cdn.example.test/kimi-cu-win.zip',
+        id: 'zimi-cu-win',
+        displayName: 'Zimi Computer Use for Windows',
+        source: 'https://cdn.example.test/zimi-cu-win.zip',
         distribution: { category: 'official', weight: 1 },
       }),
       catalogEntry({
@@ -136,7 +136,7 @@ describe('server-v2 /api/v1 plugins', () => {
   const createdDirs: string[] = [];
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-plugins-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-plugins-'));
     await bootDefault();
   });
 
@@ -228,10 +228,10 @@ describe('server-v2 /api/v1 plugins', () => {
   }
 
   async function makePluginDir(id: string, version: string, withCapabilities = false): Promise<string> {
-    const dir = await mkdtemp(join(tmpdir(), `kimi-test-plugin-${id}-`));
+    const dir = await mkdtemp(join(tmpdir(), `zimi-test-plugin-${id}-`));
     createdDirs.push(dir);
     await writeFile(
-      join(dir, 'kimi.plugin.json'),
+      join(dir, 'zimi.plugin.json'),
       JSON.stringify({
         name: id,
         version,
@@ -302,12 +302,12 @@ describe('server-v2 /api/v1 plugins', () => {
     description = 'test plugin',
     withCapabilities = false,
   ): Promise<Buffer> {
-    const dir = await mkdtemp(join(tmpdir(), `kimi-test-plugin-zip-${id}-`));
+    const dir = await mkdtemp(join(tmpdir(), `zimi-test-plugin-zip-${id}-`));
     createdDirs.push(dir);
     const source = join(dir, 'source');
     await mkdir(source);
     await writeFile(
-      join(source, 'kimi.plugin.json'),
+      join(source, 'zimi.plugin.json'),
       JSON.stringify({
         name: id,
         version,
@@ -488,7 +488,7 @@ describe('server-v2 /api/v1 plugins', () => {
 
   it('omits raw plugin manifests and MCP secrets from detail responses', async () => {
     const source = await makePluginDir('demo-plugin', '1.0.0', true);
-    const manifestPath = join(source, 'kimi.plugin.json');
+    const manifestPath = join(source, 'zimi.plugin.json');
     const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as {
       mcpServers: Record<string, unknown>;
     };
@@ -535,7 +535,7 @@ describe('server-v2 /api/v1 plugins', () => {
 
   it('fans out event.plugin.changed over WS on install and remove', async () => {
     const ws = new WebSocket(`${base.replace('http', 'ws')}/api/v1/ws`, [
-      `kimi-code.bearer.${bearerToken(server!)}`,
+      `zimi-code.bearer.${bearerToken(server!)}`,
     ]);
     const types: string[] = [];
     try {
@@ -564,7 +564,7 @@ describe('server-v2 /api/v1 plugins', () => {
     expect(
       (await call('POST', '/api/v1/plugins', { source: join(home!, 'no-such-plugin-dir') })).body.code,
     ).toBe(40409);
-    const noManifest = await mkdtemp(join(tmpdir(), 'kimi-no-manifest-'));
+    const noManifest = await mkdtemp(join(tmpdir(), 'zimi-no-manifest-'));
     createdDirs.push(noManifest);
     expect((await call('POST', '/api/v1/plugins', { source: noManifest })).body.code).toBe(40001);
   });
@@ -589,7 +589,7 @@ describe('server-v2 /api/v1 plugins', () => {
 
     await server?.close();
     server = await startServer({
-      hostIdentity: { ...TEST_HOST_IDENTITY, platform: 'kimi_code_desktop' },
+      hostIdentity: { ...TEST_HOST_IDENTITY, platform: 'zimi_code_desktop' },
       host: '127.0.0.1',
       port: 0,
       homeDir: home!,
@@ -663,9 +663,9 @@ describe('server-v2 /api/v1 plugins', () => {
       'demo-plugin',
       'third-party-plugin',
       'relative-plugin',
-      'kimi-browser-extension',
-      'kimi-cu',
-      'kimi-cu-win',
+      'zimi-browser-extension',
+      'zimi-cu',
+      'zimi-cu-win',
       'meta-plugin',
       'cloud-only',
       'cloud-and-local',
@@ -690,7 +690,7 @@ describe('server-v2 /api/v1 plugins', () => {
       billing: 'free',
       distribution: { userLevel: 'pro' },
     });
-    expect(before.body.data.entries.find((entry) => entry.id === 'kimi-browser-extension')?.capabilityId).toBeUndefined();
+    expect(before.body.data.entries.find((entry) => entry.id === 'zimi-browser-extension')?.capabilityId).toBeUndefined();
 
     await useDemoArtifact('demo-plugin', '1.0.0');
     await call('POST', '/api/v1/plugins', {
@@ -764,8 +764,8 @@ describe('server-v2 /api/v1 plugins', () => {
 
   it('treats the explicitly marked dev catalog as the default capability catalog', async () => {
     await server?.close();
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', CATALOG_URL);
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_FROM_DEV_SERVER', '1');
+    vi.stubEnv('ZIMI_CODE_PLUGIN_MARKETPLACE_URL', CATALOG_URL);
+    vi.stubEnv('ZIMI_CODE_PLUGIN_MARKETPLACE_FROM_DEV_SERVER', '1');
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -782,22 +782,22 @@ describe('server-v2 /api/v1 plugins', () => {
     );
     expect(body.code).toBe(0);
     expect(
-      body.data.entries.find((entry) => entry.id === 'kimi-browser-extension')?.capabilityId,
-    ).toBe('kimi-webbridge');
+      body.data.entries.find((entry) => entry.id === 'zimi-browser-extension')?.capabilityId,
+    ).toBe('zimi-webbridge');
     const expectedCuId =
       process.platform === 'darwin'
-        ? 'kimi-cu'
+        ? 'zimi-cu'
         : process.platform === 'win32' && process.arch === 'x64'
-          ? 'kimi-cu-win'
+          ? 'zimi-cu-win'
           : undefined;
     const cuIds = body.data.entries
       .map((entry) => entry.id)
-      .filter((id) => id === 'kimi-cu' || id === 'kimi-cu-win');
+      .filter((id) => id === 'zimi-cu' || id === 'zimi-cu-win');
     expect(cuIds).toEqual(expectedCuId === undefined ? [] : [expectedCuId]);
     if (expectedCuId === undefined) return;
     expect(
       body.data.entries.find((entry) => entry.id === expectedCuId)?.capabilityId,
-    ).toBe('kimi-cu');
+    ).toBe('zimi-cu');
 
     const cuSource = await makePluginDir(expectedCuId, '0.5.4');
     await call('POST', '/api/v1/plugins', { source: cuSource });
@@ -812,8 +812,8 @@ describe('server-v2 /api/v1 plugins', () => {
 
   it('maps the canonical WebBridge entry and projects legacy installed state', async () => {
     await server?.close();
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', CATALOG_URL);
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_FROM_DEV_SERVER', '1');
+    vi.stubEnv('ZIMI_CODE_PLUGIN_MARKETPLACE_URL', CATALOG_URL);
+    vi.stubEnv('ZIMI_CODE_PLUGIN_MARKETPLACE_FROM_DEV_SERVER', '1');
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -825,12 +825,12 @@ describe('server-v2 /api/v1 plugins', () => {
     custom = true;
     catalog.plugins.push(
       catalogEntry({
-        id: 'kimi-webbridge',
+        id: 'zimi-webbridge',
         source: 'https://cdn.example.test/legacy-webbridge.zip',
         distribution: { category: 'official', weight: 1 },
       }),
     );
-    const legacySource = await makePluginDir('kimi-webbridge', '1.0.0');
+    const legacySource = await makePluginDir('zimi-webbridge', '1.0.0');
     await call('POST', '/api/v1/plugins', { source: legacySource });
 
     const { body } = await call<{
@@ -843,29 +843,29 @@ describe('server-v2 /api/v1 plugins', () => {
     }>('GET', '/api/v1/plugins/marketplace');
 
     expect(body.code).toBe(0);
-    expect(body.data.entries.map((entry) => entry.id)).not.toContain('kimi-webbridge');
-    expect(body.data.entries.find((entry) => entry.id === 'kimi-browser-extension')).toMatchObject({
-      capabilityId: 'kimi-webbridge',
+    expect(body.data.entries.map((entry) => entry.id)).not.toContain('zimi-webbridge');
+    expect(body.data.entries.find((entry) => entry.id === 'zimi-browser-extension')).toMatchObject({
+      capabilityId: 'zimi-webbridge',
       installed: { version: '1.0.0', enabled: true },
       updateAvailable: true,
     });
 
-    catalog.plugins = catalog.plugins.filter((entry) => entry['id'] !== 'kimi-browser-extension');
+    catalog.plugins = catalog.plugins.filter((entry) => entry['id'] !== 'zimi-browser-extension');
     const legacyOnly = await call<{ entries: Array<{ id: string }> }>(
       'GET',
       '/api/v1/plugins/marketplace',
     );
     expect(legacyOnly.body.code).toBe(0);
-    expect(legacyOnly.body.data.entries.map((entry) => entry.id)).not.toContain('kimi-webbridge');
+    expect(legacyOnly.body.data.entries.map((entry) => entry.id)).not.toContain('zimi-webbridge');
     const rejected = await call('POST', '/api/v1/plugins', {
-      marketplaceId: 'kimi-webbridge',
+      marketplaceId: 'zimi-webbridge',
       expectedVersion: '1.0.0',
     });
     expect(rejected.body.code).toBe(40001);
-    expect(rejected.body.msg).toContain('install "kimi-browser-extension" instead');
+    expect(rejected.body.msg).toContain('install "zimi-browser-extension" instead');
 
     await server?.close();
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_FROM_DEV_SERVER', undefined);
+    vi.stubEnv('ZIMI_CODE_PLUGIN_MARKETPLACE_FROM_DEV_SERVER', undefined);
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -880,9 +880,9 @@ describe('server-v2 /api/v1 plugins', () => {
     );
     expect(customLegacyOnly.body.code).toBe(0);
     expect(customLegacyOnly.body.data.entries.map((entry) => entry.id)).not.toContain(
-      'kimi-webbridge',
+      'zimi-webbridge',
     );
-    await call('POST', '/api/v1/plugins/kimi-webbridge:remove');
+    await call('POST', '/api/v1/plugins/zimi-webbridge:remove');
   });
 
   it('maps an unreachable custom marketplace to a catalog error', async () => {
@@ -901,7 +901,7 @@ describe('server-v2 /api/v1 plugins', () => {
 
   it('reads local new-protocol catalogs from plain paths and file URLs', async () => {
     await server?.close();
-    const catalogDir = await mkdtemp(join(tmpdir(), 'kimi-local-catalog-'));
+    const catalogDir = await mkdtemp(join(tmpdir(), 'zimi-local-catalog-'));
     createdDirs.push(catalogDir);
     const fileUrlPluginPath = join(catalogDir, 'plugins', 'file.zip');
     const localCatalog = {
@@ -938,7 +938,7 @@ describe('server-v2 /api/v1 plugins', () => {
 
   it('expands tilde paths in local catalogs and entry sources', async () => {
     await server?.close();
-    const fakeHome = await mkdtemp(join(tmpdir(), 'kimi-tilde-home-'));
+    const fakeHome = await mkdtemp(join(tmpdir(), 'zimi-tilde-home-'));
     createdDirs.push(fakeHome);
     await writeFile(
       join(fakeHome, 'marketplace.json'),
@@ -1217,9 +1217,9 @@ describe('server-v2 /api/v1 plugins', () => {
 
   it('keeps capability rows for managed base URL overrides', async () => {
     await server?.close();
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
-    vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
+    vi.stubEnv('ZIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
+    vi.spyOn(ZimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });
     server = await startServer({
@@ -1237,16 +1237,16 @@ describe('server-v2 /api/v1 plugins', () => {
     }>('GET', '/api/v1/plugins/marketplace');
 
     expect(response.body.code).toBe(0);
-    expect(response.body.data.entries.find((entry) => entry.id === 'kimi-browser-extension')?.capabilityId)
-      .toBe('kimi-webbridge');
+    expect(response.body.data.entries.find((entry) => entry.id === 'zimi-browser-extension')?.capabilityId)
+      .toBe('zimi-webbridge');
   });
 
   it('keeps strict metadata requirements for the managed catalog', async () => {
     await server?.close();
     catalog.plugins[0]!['version'] = undefined;
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
-    vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
+    vi.stubEnv('ZIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
+    vi.spyOn(ZimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });
     server = await startServer({
@@ -1270,9 +1270,9 @@ describe('server-v2 /api/v1 plugins', () => {
     catalog.plugins[0]!['source'] = 'http://marketplace.test/artifacts/demo.zip';
     await useDemoArtifact();
     artifact!.requireAuth = true;
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1/');
-    vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
+    vi.stubEnv('ZIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1/');
+    vi.spyOn(ZimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });
     server = await startServer({
@@ -1315,9 +1315,9 @@ describe('server-v2 /api/v1 plugins', () => {
     await server?.close();
     catalog.plugins[0]!['source'] = 'http://marketplace.test/artifacts/demo.zip';
     await useDemoArtifact();
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1/');
-    vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
+    vi.stubEnv('ZIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1/');
+    vi.spyOn(ZimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });
     const currentFetch = globalThis.fetch;
@@ -1379,9 +1379,9 @@ describe('server-v2 /api/v1 plugins', () => {
     catalog.plugins[0]!['source'] = 'http://marketplace.test/artifacts/demo.zip';
     await useDemoArtifact();
     artifact!.requireAuth = true;
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1/');
-    vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
+    vi.stubEnv('ZIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1/');
+    vi.spyOn(ZimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });
     const currentFetch = globalThis.fetch;
@@ -1437,9 +1437,9 @@ describe('server-v2 /api/v1 plugins', () => {
     await server?.close();
     await useDemoArtifact();
     artifact!.requireAuth = true;
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
-    vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
+    vi.stubEnv('ZIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
+    vi.spyOn(ZimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });
     server = await startServer({
@@ -1467,9 +1467,9 @@ describe('server-v2 /api/v1 plugins', () => {
     await server?.close();
     catalog.plugins[0]!['source'] = 'http://marketplace.test/artifacts/demo.zip';
     await useDemoArtifact();
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
-    vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
+    vi.stubEnv('ZIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
+    vi.spyOn(ZimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });
     const currentFetch = globalThis.fetch;
@@ -1509,15 +1509,15 @@ describe('server-v2 /api/v1 plugins', () => {
 
   it('uses the global region profile and matching OAuth ref for a fresh global home', async () => {
     await server?.close();
-    const emptyHome = await mkdtemp(join(tmpdir(), 'kimi-global-plugin-home-'));
+    const emptyHome = await mkdtemp(join(tmpdir(), 'zimi-global-plugin-home-'));
     createdDirs.push(emptyHome);
     await writeFile(join(emptyHome, 'region'), 'global');
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_OAUTH_HOST', undefined);
-    vi.stubEnv('KIMI_OAUTH_HOST', undefined);
-    vi.stubEnv('KIMI_CODE_REGION_MARKER', 'on');
-    const tokenProvider = vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
+    vi.stubEnv('ZIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', undefined);
+    vi.stubEnv('ZIMI_CODE_OAUTH_HOST', undefined);
+    vi.stubEnv('ZIMI_OAUTH_HOST', undefined);
+    vi.stubEnv('ZIMI_CODE_REGION_MARKER', 'on');
+    const tokenProvider = vi.spyOn(ZimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });
     server = await startServer({
@@ -1537,21 +1537,21 @@ describe('server-v2 /api/v1 plugins', () => {
       vi.mocked(globalThis.fetch).mock.calls.some(([input]) => fetchInputUrl(input) === GLOBAL_CATALOG_URL),
     ).toBe(true);
     expect(tokenProvider).toHaveBeenCalledWith(
-      KIMI_CODE_PROVIDER_NAME,
-      resolveKimiCodeOAuthRef({ baseUrl: KIMI_REGION_PROFILES.global.baseUrl }),
+      ZIMI_CODE_PROVIDER_NAME,
+      resolveZimiCodeOAuthRef({ baseUrl: ZIMI_REGION_PROFILES.global.baseUrl }),
     );
   });
 
   it('prefers provider baseURL over region and explicit env baseURL over provider', async () => {
     await server?.close();
-    const providerHome = await mkdtemp(join(tmpdir(), 'kimi-provider-plugin-home-'));
+    const providerHome = await mkdtemp(join(tmpdir(), 'zimi-provider-plugin-home-'));
     createdDirs.push(providerHome);
     const providerBaseUrl = 'http://provider.example.test/coding/v1/';
     const providerCatalogUrl = 'http://provider.example.test/coding/v1/plugins/marketplace';
     const envBaseUrl = 'http://env.example.test/coding/v1/';
     const envCatalogUrl = 'http://env.example.test/coding/v1/plugins/marketplace';
     const providerOAuthHost = 'https://auth.provider.example.test';
-    const providerOAuthRef = resolveKimiCodeOAuthRef({
+    const providerOAuthRef = resolveZimiCodeOAuthRef({
       baseUrl: providerBaseUrl,
       oauthHost: providerOAuthHost,
     });
@@ -1559,23 +1559,23 @@ describe('server-v2 /api/v1 plugins', () => {
     await writeFile(
       join(providerHome, 'config.toml'),
       [
-        '[providers."managed:kimi-code"]',
-        'type = "kimi"',
+        '[providers."managed:zimi-code"]',
+        'type = "zimi"',
         `base_url = "${providerBaseUrl}"`,
         '',
-        '[providers."managed:kimi-code".oauth]',
+        '[providers."managed:zimi-code".oauth]',
         'storage = "file"',
         `key = "${providerOAuthRef.key}"`,
         `oauth_host = "${providerOAuthHost}"`,
         '',
       ].join('\n'),
     );
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_OAUTH_HOST', undefined);
-    vi.stubEnv('KIMI_OAUTH_HOST', undefined);
-    vi.stubEnv('KIMI_CODE_REGION_MARKER', 'on');
-    const tokenProvider = vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
+    vi.stubEnv('ZIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', undefined);
+    vi.stubEnv('ZIMI_CODE_OAUTH_HOST', undefined);
+    vi.stubEnv('ZIMI_OAUTH_HOST', undefined);
+    vi.stubEnv('ZIMI_CODE_REGION_MARKER', 'on');
+    const tokenProvider = vi.spyOn(ZimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });
     const currentFetch = globalThis.fetch;
@@ -1605,10 +1605,10 @@ describe('server-v2 /api/v1 plugins', () => {
     expect(
       vi.mocked(globalThis.fetch).mock.calls.some(([input]) => fetchInputUrl(input) === providerCatalogUrl),
     ).toBe(true);
-    expect(tokenProvider).toHaveBeenCalledWith(KIMI_CODE_PROVIDER_NAME, providerOAuthRef);
+    expect(tokenProvider).toHaveBeenCalledWith(ZIMI_CODE_PROVIDER_NAME, providerOAuthRef);
 
     await server.close();
-    vi.stubEnv('KIMI_CODE_BASE_URL', envBaseUrl);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', envBaseUrl);
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -1625,17 +1625,17 @@ describe('server-v2 /api/v1 plugins', () => {
       vi.mocked(globalThis.fetch).mock.calls.some(([input]) => fetchInputUrl(input) === envCatalogUrl),
     ).toBe(true);
     expect(tokenProvider).toHaveBeenLastCalledWith(
-      KIMI_CODE_PROVIDER_NAME,
-      resolveKimiCodeOAuthRef({ baseUrl: envBaseUrl }),
+      ZIMI_CODE_PROVIDER_NAME,
+      resolveZimiCodeOAuthRef({ baseUrl: envBaseUrl }),
     );
   });
 
   it('allows anonymous default catalog access with an empty home', async () => {
     await server?.close();
-    const emptyHome = await mkdtemp(join(tmpdir(), 'kimi-empty-plugin-home-'));
+    const emptyHome = await mkdtemp(join(tmpdir(), 'zimi-empty-plugin-home-'));
     createdDirs.push(emptyHome);
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
+    vi.stubEnv('ZIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -1660,12 +1660,12 @@ describe('server-v2 /api/v1 plugins', () => {
 
   it('does not hide rejected managed credentials as anonymous catalog access', async () => {
     await server?.close();
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
+    vi.stubEnv('ZIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
     const failure = new OAuthUnauthorizedError(
-      'Stored token for "kimi-code" was rejected; re-login required.',
+      'Stored token for "zimi-code" was rejected; re-login required.',
     );
-    vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
+    vi.spyOn(ZimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => {
         throw failure;
       },
@@ -1695,9 +1695,9 @@ describe('server-v2 /api/v1 plugins', () => {
 
   it('does not retry a real catalog HTTP 401 anonymously', async () => {
     await server?.close();
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
-    vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
+    vi.stubEnv('ZIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
+    vi.spyOn(ZimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });
     const currentFetch = globalThis.fetch;
@@ -1733,9 +1733,9 @@ describe('server-v2 /api/v1 plugins', () => {
 
   it('does not fall back to the source checkout when the default catalog fails', async () => {
     await server?.close();
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
-    vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
+    vi.stubEnv('ZIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
+    vi.spyOn(ZimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });
     const currentFetch = globalThis.fetch;

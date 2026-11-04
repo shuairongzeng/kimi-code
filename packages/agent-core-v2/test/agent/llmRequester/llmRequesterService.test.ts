@@ -6,7 +6,7 @@ import { TestInstantiationService } from '#/_base/di/test';
 import type { AgentContext } from '#/agent/agentContext/agentContext';
 import { IAgentContextMemoryService } from '#/agent/contextMemory/contextMemory';
 import type { ContextMessage } from '#/agent/contextMemory/types';
-import { AgentLoopRequester, KIMI_CODE_INFINITE_RETRY_ENV } from '#/agent/loop/requester';
+import { AgentLoopRequester, ZIMI_CODE_INFINITE_RETRY_ENV } from '#/agent/loop/requester';
 import { createAgentMediaPolicy } from '#/agent/loop/mediaPolicy';
 import { createMachineRequester } from '#/agent/loop/machine/requester';
 import { IBootstrapService } from '#/app/bootstrap/bootstrap';
@@ -194,7 +194,7 @@ function createService(
   } = {},
 ) {
   const ix = disposables.add(new TestInstantiationService());
-  ix.stub(IBootstrapService, stubBootstrap('/tmp/kimi-code-llm-requester-test', options.env ?? {}));
+  ix.stub(IBootstrapService, stubBootstrap('/tmp/zimi-code-llm-requester-test', options.env ?? {}));
   const thinkingLevel = options.thinkingLevel ?? 'off';
   const profile: Partial<IAgentProfileService> = {
     hasProvider: () => true,
@@ -643,7 +643,7 @@ describe('AgentLoopRequester infinite retry', () => {
     vi.useRealTimers();
   });
 
-  it('retries every request error while KIMI_CODE_INFINITE_RETRY is set', async () => {
+  it('retries every request error while ZIMI_CODE_INFINITE_RETRY is set', async () => {
     vi.useFakeTimers();
     const calls = { value: 0 };
     const requester = createRequester(calls, new APIStatusError(400, 'endpoint broken'), [
@@ -652,7 +652,7 @@ describe('AgentLoopRequester infinite retry', () => {
       new APIProviderQuotaExhaustedError('quota exhausted'),
     ]);
     const { service } = createService(requester, {
-      env: { [KIMI_CODE_INFINITE_RETRY_ENV]: '1' },
+      env: { [ZIMI_CODE_INFINITE_RETRY_ENV]: '1' },
     });
 
     const promise = service.request();
@@ -667,7 +667,7 @@ describe('AgentLoopRequester infinite retry', () => {
     const calls = { value: 0 };
     const requester = createRequester(calls, new APIProviderRateLimitError('slow down', null, 1));
     const { service } = createService(requester, {
-      env: { [KIMI_CODE_INFINITE_RETRY_ENV]: '1' },
+      env: { [ZIMI_CODE_INFINITE_RETRY_ENV]: '1' },
     });
 
     const startedAt = Date.now();
@@ -682,7 +682,7 @@ describe('AgentLoopRequester infinite retry', () => {
     const calls = { value: 0 };
     const requester = createRequester(calls, new APIStatusError(400, 'endpoint broken'));
     const { service } = createService(requester, {
-      env: { [KIMI_CODE_INFINITE_RETRY_ENV]: '1' },
+      env: { [ZIMI_CODE_INFINITE_RETRY_ENV]: '1' },
     });
     const controller = new AbortController();
     setTimeout(() => controller.abort(new Error('stop')), 100);
@@ -700,7 +700,7 @@ describe('AgentLoopRequester infinite retry', () => {
     const calls = { value: 0 };
     const requester = createRequester(calls, new APIRequestTooLargeError(413, 'Request Entity Too Large'));
     const { service } = createService(requester, {
-      env: { [KIMI_CODE_INFINITE_RETRY_ENV]: '1' },
+      env: { [ZIMI_CODE_INFINITE_RETRY_ENV]: '1' },
     });
 
     await service.request();
@@ -716,7 +716,7 @@ describe('AgentLoopRequester infinite retry', () => {
       new APIContextOverflowError(400, 'context length exceeded'),
     );
     const { service } = createService(requester, {
-      env: { [KIMI_CODE_INFINITE_RETRY_ENV]: '1' },
+      env: { [ZIMI_CODE_INFINITE_RETRY_ENV]: '1' },
     });
 
     await expect(service.request()).rejects.toBeInstanceOf(APIContextOverflowError);
@@ -730,7 +730,7 @@ describe('AgentLoopRequester infinite retry', () => {
       new APIStatusError(404, 'model not found'),
     ]);
     const { service } = createService(requester, {
-      env: { [KIMI_CODE_INFINITE_RETRY_ENV]: '1' },
+      env: { [ZIMI_CODE_INFINITE_RETRY_ENV]: '1' },
     });
 
     const promise = service.request({
@@ -892,9 +892,9 @@ describe('AgentLoopRequester media-degraded resend', () => {
       content: [{ type: 'image_url', imageUrl: { url } }],
     });
     const messages = [
-      imageMessage('kimi-file://f_old'),
-      imageMessage('kimi-file://f_keep1'),
-      imageMessage('kimi-file://f_keep2'),
+      imageMessage('zimi-file://f_old'),
+      imageMessage('zimi-file://f_keep1'),
+      imageMessage('zimi-file://f_keep2'),
     ];
     const { service } = createService(
       createRequester(calls, BODY_TOO_LARGE_413, [BODY_TOO_LARGE_413], capturedInputs),
@@ -903,9 +903,9 @@ describe('AgentLoopRequester media-degraded resend', () => {
           resolve: async (current) => current,
           displayPaths: async () =>
             new Map([
-              ['kimi-file://f_old', `${directory}/f_old.png`],
-              ['kimi-file://f_keep1', `${directory}/f_keep1.png`],
-              ['kimi-file://f_keep2', `${directory}/f_keep2.png`],
+              ['zimi-file://f_old', `${directory}/f_old.png`],
+              ['zimi-file://f_keep1', `${directory}/f_keep1.png`],
+              ['zimi-file://f_keep2', `${directory}/f_keep2.png`],
             ]),
         },
       },
@@ -923,7 +923,7 @@ describe('AgentLoopRequester media-degraded resend', () => {
     const urls = degradedParts
       .filter((part) => part.type === 'image_url')
       .map((part) => mediaUrlOf(part));
-    expect(urls).toEqual(['kimi-file://f_keep1', 'kimi-file://f_keep2']);
+    expect(urls).toEqual(['zimi-file://f_keep1', 'zimi-file://f_keep2']);
     expect(textsAt(1)).toContain('<image path="/session/media/first/f_old.png"></image>');
     expect(textsAt(2)).toEqual(
       expect.arrayContaining([
@@ -1729,7 +1729,7 @@ describe('AgentLoopRequester media resolver wiring', () => {
             toolCallId: 'media',
             content: [
               { type: 'text', text: '<image path="/tmp/pic.png">' },
-              { type: 'image_url', imageUrl: { url: 'kimi-file://media' } },
+              { type: 'image_url', imageUrl: { url: 'zimi-file://media' } },
               { type: 'text', text: '</image>' },
             ],
           },
@@ -1979,7 +1979,7 @@ describe('AgentLoopRequester attempt retry notification', () => {
       new APIConnectionError('socket hang up again'),
     ]);
     const { service } = createService(requester, {
-      env: { [KIMI_CODE_INFINITE_RETRY_ENV]: '1' },
+      env: { [ZIMI_CODE_INFINITE_RETRY_ENV]: '1' },
     });
     const onAttemptRetry = vi.fn();
 
@@ -2015,7 +2015,7 @@ describe('turn machine stream state across service-internal retries', () => {
         { ids: ['call_a'], error: new APIConnectionError('terminated') },
         { ids: ['call_b'] },
       ]),
-      { env: { [KIMI_CODE_INFINITE_RETRY_ENV]: '1' } },
+      { env: { [ZIMI_CODE_INFINITE_RETRY_ENV]: '1' } },
     );
     const machineRequester = createMachineRequester(service);
     const doneEntries: AssistantEntry[] = [];

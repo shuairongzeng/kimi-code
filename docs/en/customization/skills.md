@@ -1,6 +1,6 @@
 # Agent Skills
 
-Agent Skills are a lightweight mechanism for extending model capabilities in Kimi Code CLI. A Skill is a Markdown document with YAML frontmatter that describes a specialized area of knowledge or a workflow: a project's code style guidelines, a PR review process, or a commit message format.
+Agent Skills are a lightweight mechanism for extending model capabilities in Zimi Code CLI. A Skill is a Markdown document with YAML frontmatter that describes a specialized area of knowledge or a workflow: a project's code style guidelines, a PR review process, or a commit message format.
 
 Compared to pasting the same instructions into a prompt every time, Skills offer the advantage of keeping content in a file, enabling reuse across projects and teams, allowing instant loading via a slash command, and letting the model invoke them automatically when needed.
 
@@ -17,7 +17,7 @@ Both structures register a Skill; they differ only in how the files are organize
 skills/
 ├── review-pr/              # Directory form → Skill name review-pr
 │   ├── SKILL.md            # Main file
-│   └── checklist.md        # Supporting file, referenced via ${KIMI_SKILL_DIR}
+│   └── checklist.md        # Supporting file, referenced via ${ZIMI_SKILL_DIR}
 └── commit.md               # Flat form → Skill name commit
 ```
 
@@ -30,7 +30,7 @@ How the Skill name is derived:
 Two limitations of the flat form:
 
 - Only `.md` files placed directly at the top level of a skills directory are recognized; loose `.md` files inside subdirectories (other than `SKILL.md`) are not treated as Skills.
-- A flat Skill has no directory of its own, so `${KIMI_SKILL_DIR}` points at the skills directory itself — switch to the directory form whenever the Skill needs supporting files.
+- A flat Skill has no directory of its own, so `${ZIMI_SKILL_DIR}` points at the skills directory itself — switch to the directory form whenever the Skill needs supporting files.
 
 ### File Format
 
@@ -78,25 +78,25 @@ Before the body is sent to the model, a small set of placeholders are expanded:
 - `$ARGUMENTS`: The full raw argument string passed at invocation
 - `$ARGUMENTS[0]`, `$ARGUMENTS[1]` and shorthand `$0`, `$1`: Positional arguments after whitespace tokenization (zero-indexed)
 - `$<name>`: Named parameters declared in `arguments`
-- `${KIMI_SKILL_DIR}`: The directory containing the current Skill file
+- `${ZIMI_SKILL_DIR}`: The directory containing the current Skill file
 
 Positional arguments support single and double quoting, so in `/skill:commit "fix login" patch`, `$0` expands to `fix login`. If the body contains no argument placeholders, text passed at invocation is appended to the end of the body as `\n\nARGUMENTS: <text>`.
 
 ## Skill Locations
 
-Kimi Code CLI scans four tiers by scope; more specific scopes take higher priority: **Project > User > Extra > Built-in**
+Zimi Code CLI scans four tiers by scope; more specific scopes take higher priority: **Project > User > Extra > Built-in**
 
 **User level** (applies to all projects):
-- `$KIMI_CODE_HOME/skills/` (default: `~/.kimi-code/skills/`)
+- `$ZIMI_CODE_HOME/skills/` (default: `~/.zimi-code/skills/`)
 - `~/.agents/skills/`
 
-The Kimi-specific user Skill directory moves with `KIMI_CODE_HOME`, so isolated data roots also get isolated Kimi-specific Skills. The generic `~/.agents/skills/` directory stays under the real OS home so it can be shared across tools.
+The Zimi-specific user Skill directory moves with `ZIMI_CODE_HOME`, so isolated data roots also get isolated Zimi-specific Skills. The generic `~/.agents/skills/` directory stays under the real OS home so it can be shared across tools.
 
 **Project level** (project root = the nearest directory containing `.git`, searching upward from the working directory):
-- `.kimi-code/skills/`
+- `.zimi-code/skills/`
 - `.agents/skills/`
 
-For a workspace with multiple configured source directories, Kimi Code CLI discovers project-level Skills for every source directory using the project-root rules above and merges them into one Skill catalog. The primary directory wins duplicate Skill names; additional directories follow their workspace order. Skill changes in any source directory automatically reload the catalog. Session-only additional directories are excluded; remember a directory in the workspace to include its Skills.
+For a workspace with multiple configured source directories, Zimi Code CLI discovers project-level Skills for every source directory using the project-root rules above and merges them into one Skill catalog. The primary directory wins duplicate Skill names; additional directories follow their workspace order. Skill changes in any source directory automatically reload the catalog. Session-only additional directories are excluded; remember a directory in the workspace to include its Skills.
 
 **Extra directories**: Declared via `extra_skill_dirs` at the top level of `config.toml`:
 
@@ -104,7 +104,7 @@ For a workspace with multiple configured source directories, Kimi Code CLI disco
 extra_skill_dirs = ["~/team-skills", ".agents/team-skills"]
 ```
 
-**Built-in Skills** are distributed with the CLI and have the lowest priority. They provide out-of-the-box workflows for common tasks: configuring MCP servers, customizing the TUI theme, and editing config files. See [Built-in skill commands](../reference/slash-commands.md#built-in-skill-commands) for the full list. Those describing Kimi Code itself can be turned off with the top-level [`builtin_product_skills`](../configuration/config-files.md#top-level-fields) field.
+**Built-in Skills** are distributed with the CLI and have the lowest priority. They provide out-of-the-box workflows for common tasks: configuring MCP servers, customizing the TUI theme, and editing config files. See [Built-in skill commands](../reference/slash-commands.md#built-in-skill-commands) for the full list. Those describing Zimi Code itself can be turned off with the top-level [`builtin_product_skills`](../configuration/config-files.md#top-level-fields) field.
 
 ## Invoking a Skill
 
@@ -145,7 +145,7 @@ Please review the PR the user specified: $pr_ref
    - Noteworthy positives
 ```
 
-Save this as `$KIMI_CODE_HOME/skills/review-pr/SKILL.md` (or `~/.kimi-code/skills/review-pr/SKILL.md` when `KIMI_CODE_HOME` is unset), place the checklist at `references/checklist.md` in the same directory, and after starting a new session you can invoke it with `/skill:review-pr #1234`, where `#1234` is expanded into `$pr_ref`.
+Save this as `$ZIMI_CODE_HOME/skills/review-pr/SKILL.md` (or `~/.zimi-code/skills/review-pr/SKILL.md` when `ZIMI_CODE_HOME` is unset), place the checklist at `references/checklist.md` in the same directory, and after starting a new session you can invoke it with `/skill:review-pr #1234`, where `#1234` is expanded into `$pr_ref`.
 
 ## Next steps
 

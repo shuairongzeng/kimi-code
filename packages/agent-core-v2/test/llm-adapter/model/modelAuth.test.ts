@@ -63,7 +63,7 @@ describe('resolveModelAuthMaterial', () => {
     expect(
       authMaterial({
         model: { model: 'm' },
-        provider: { type: 'kimi', apiKeyEnv: 'ACME_API_KEY', env: { KIMI_API_KEY: 'sub-table-key' } },
+        provider: { type: 'zimi', apiKeyEnv: 'ACME_API_KEY', env: { ZIMI_API_KEY: 'sub-table-key' } },
       }),
     ).toEqual({ apiKeyEnv: 'ACME_API_KEY' });
   });
@@ -87,9 +87,9 @@ describe('resolveModelAuthMaterial', () => {
     expect(
       authMaterial({
         model: { model: 'm' },
-        provider: { type: 'kimi', env: { KIMI_API_KEY: 'kimi-env-key' } },
+        provider: { type: 'zimi', env: { ZIMI_API_KEY: 'zimi-env-key' } },
       }),
-    ).toEqual({ apiKey: 'kimi-env-key' });
+    ).toEqual({ apiKey: 'zimi-env-key' });
     expect(
       authMaterial({
         model: { model: 'm' },
@@ -154,9 +154,9 @@ describe('effectiveModelConfig', () => {
     expect(inferred.defaultEffort).toBe('high');
     expect(inferred.capabilities).toContain('thinking');
 
-    const kimiRouted = effectiveModelConfig({ model: 'kimi-k2', protocol: 'anthropic' }, 'kimi');
-    expect(kimiRouted.supportEfforts).toBeUndefined();
-    expect(kimiRouted.capabilities).toBeUndefined();
+    const zimiRouted = effectiveModelConfig({ model: 'kimi-k2', protocol: 'anthropic' }, 'zimi');
+    expect(zimiRouted.supportEfforts).toBeUndefined();
+    expect(zimiRouted.capabilities).toBeUndefined();
   });
 });
 
@@ -170,7 +170,7 @@ describe('deriveProviderId', () => {
 describe('resolveModelForReady', () => {
   const providers: Readonly<Record<string, ProviderConfig>> = {
     'prov-a': { type: 'openai', apiKey: 'sk-a' },
-    '__kimi_env__': { type: 'kimi', baseUrl: 'https://api.example.test/coding/v1' },
+    '__zimi_env__': { type: 'zimi', baseUrl: 'https://api.example.test/coding/v1' },
   };
 
   it('reports no-default when the model id is missing or empty', () => {
@@ -275,13 +275,13 @@ describe('resolveModelForReady', () => {
 
   it('resolves the env-overlay injected model against the env provider', () => {
     const models = {
-      '__kimi_env_model__': {
-        provider: '__kimi_env__',
+      '__zimi_env_model__': {
+        provider: '__zimi_env__',
         model: 'kimi-for-coding',
         maxContextSize: 262144,
       },
     };
-    expect(resolveModelForReady('__kimi_env_model__', models, providers)).toEqual({
+    expect(resolveModelForReady('__zimi_env_model__', models, providers)).toEqual({
       resolved: true,
     });
   });

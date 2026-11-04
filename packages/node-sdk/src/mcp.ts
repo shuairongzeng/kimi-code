@@ -6,12 +6,12 @@ import type {
   McpServerInspection,
   McpServerLocator,
   McpServerTestResult,
-} from '@moonshot-ai/agent-core-v2/app/mcpManagement/mcpManagement';
+} from '@zimi-ai/agent-core-v2/app/mcpManagement/mcpManagement';
 import type {
   McpRegistryPluginOrigin,
   McpServerSource,
-} from '@moonshot-ai/agent-core-v2/app/mcpRegistry/mcpRegistry';
-import type { McpServerConfigView } from '@moonshot-ai/agent-core-v2/mcpCore/configView';
+} from '@zimi-ai/agent-core-v2/app/mcpRegistry/mcpRegistry';
+import type { McpServerConfigView } from '@zimi-ai/agent-core-v2/mcpCore/configView';
 
 export type { McpServerSource };
 export type { McpServerLocator };

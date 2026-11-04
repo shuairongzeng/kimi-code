@@ -17,10 +17,10 @@ import {
   WorkspaceGitService,
   ITelemetryService,
   type Scope,
-} from '@moonshot-ai/agent-core-v2';
-import { Event } from '@moonshot-ai/agent-core-v2/_base/event';
-import { IGitService } from '@moonshot-ai/agent-core-v2/app/git/git';
-import { encodeWorkDirKey } from '@moonshot-ai/agent-core-v2/_base/utils/workdir-slug';
+} from '@zimi-ai/agent-core-v2';
+import { Event } from '@zimi-ai/agent-core-v2/_base/event';
+import { IGitService } from '@zimi-ai/agent-core-v2/app/git/git';
+import { encodeWorkDirKey } from '@zimi-ai/agent-core-v2/_base/utils/workdir-slug';
 import {
   fsDiffRequestSchema,
   fsGitStatusRequestSchema,
@@ -39,8 +39,8 @@ import {
   fsStatRequestSchema,
   fsSuggestRequestSchema,
   fsSuggestResponseSchema,
-} from '@moonshot-ai/agent-core-v2/workspace/workspaceFs/fs';
-import type { EnvironmentCapability, EnvironmentLease } from '@moonshot-ai/agent-core-v2/environment/environment';
+} from '@zimi-ai/agent-core-v2/workspace/workspaceFs/fs';
+import type { EnvironmentCapability, EnvironmentLease } from '@zimi-ai/agent-core-v2/environment/environment';
 import { z } from 'zod';
 
 import { errEnvelope, okEnvelope } from '../envelope';

@@ -74,8 +74,8 @@ describe('WorkspaceMcpConfigService', () => {
   let invalidate: Mock<(source: object | undefined, serverName: string, serverUrl: string | URL) => Promise<void>>;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'kimi-workspace-mcp-config-cwd-'));
-    homeDir = mkdtempSync(join(tmpdir(), 'kimi-workspace-mcp-config-home-'));
+    cwd = mkdtempSync(join(tmpdir(), 'zimi-workspace-mcp-config-cwd-'));
+    homeDir = mkdtempSync(join(tmpdir(), 'zimi-workspace-mcp-config-home-'));
     disposables = new DisposableStore();
     watchFires.clear();
     pluginServers = {};
@@ -159,7 +159,7 @@ describe('WorkspaceMcpConfigService', () => {
   }
 
   async function writeProjectConfig(servers: Record<string, McpServerConfig>): Promise<string> {
-    const dir = join(cwd, '.kimi-code');
+    const dir = join(cwd, '.zimi-code');
     await mkdir(dir, { recursive: true });
     const file = join(dir, 'mcp.json');
     await writeFile(file, JSON.stringify({ mcpServers: servers }), 'utf8');
@@ -507,13 +507,13 @@ describe('WorkspaceMcpConfigService', () => {
       });
 
       trusted = true;
-      cwd = mkdtempSync(join(tmpdir(), 'kimi-workspace-mcp-config-cwd-b-'));
+      cwd = mkdtempSync(join(tmpdir(), 'zimi-workspace-mcp-config-cwd-b-'));
       await writeProjectConfig({ alpha: config });
       const serviceB = createService(undefined, undefined, undefined, oauth);
       await serviceB.ready;
       await writeProjectConfig({});
       watchFires.get(cwd)?.fire({
-        path: join(cwd, '.kimi-code', 'mcp.json'),
+        path: join(cwd, '.zimi-code', 'mcp.json'),
         action: 'modified',
         kind: 'file',
       });

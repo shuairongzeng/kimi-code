@@ -42,7 +42,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
       - name: Smoke test CLI bundle
-        run: pnpm -C apps/kimi-code run smoke
+        run: pnpm -C apps/zimi-code run smoke
 
   test:
     runs-on: ubuntu-latest
@@ -80,7 +80,7 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @moonshot-ai/pi-tui test
+      - run: pnpm --filter @zimi-ai/pi-tui test
 
   # The VS Code extension suite runs on the default (v2) engine as part of the
   # sharded root run above; this job reruns it on the legacy v1 engine, which
@@ -99,9 +99,9 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter kimi-code test
+      - run: pnpm --filter zimi-code test
         env:
-          KIMI_CODE_LEGACY_FLAG: "1"
+          ZIMI_CODE_LEGACY_FLAG: "1"
 
   test-windows:
     runs-on: windows-latest
@@ -158,13 +158,13 @@ jobs:
       - name: Typecheck
         run: |
           pnpm exec tsc --version
-          for config in packages/*/tsconfig.json apps/kimi-code/tsconfig.json; do
+          for config in packages/*/tsconfig.json apps/zimi-code/tsconfig.json; do
             echo "Typechecking ${config}"
             pnpm exec tsc -p "${config}" --noEmit
           done
       - name: Typecheck VS Code extension
-        run: pnpm --filter kimi-code run typecheck
+        run: pnpm --filter zimi-code run typecheck
       - name: Typecheck vis-server
-        run: pnpm --filter @moonshot-ai/vis-server run typecheck
+        run: pnpm --filter @zimi-ai/vis-server run typecheck
       - name: Typecheck vis-web
-        run: pnpm --filter @moonshot-ai/vis-web run typecheck
+        run: pnpm --filter @zimi-ai/vis-web run typecheck

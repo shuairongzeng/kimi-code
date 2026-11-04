@@ -1,4 +1,4 @@
-# Contributing to kimi-code
+# Contributing to zimi-code
 
 [中文版](CONTRIBUTING.zh-CN.md)
 
@@ -6,7 +6,7 @@ Thanks for taking the time to contribute! This project moves quickly, and though
 
 ## Before You Start
 
-Kimi Code already has opinions on CLI/TUI behavior, agent workflows, and public APIs. If your change shifts that direction, open an issue first so we can align before you invest time in a PR.
+Zimi Code already has opinions on CLI/TUI behavior, agent workflows, and public APIs. If your change shifts that direction, open an issue first so we can align before you invest time in a PR.
 
 We hold AI-assisted contributions to the same standard as hand-written ones. **You should understand what you submit** — what changed, how it behaves at the edges, and why it fits this codebase. If you cannot explain that, the PR is not ready for review.
 
@@ -25,10 +25,10 @@ We only merge PRs aligned with the roadmap. Drive-by refactors without context a
 
 This is a pnpm monorepo. The most relevant entry points are:
 
-- `apps/kimi-code` — CLI / TUI
+- `apps/zimi-code` — CLI / TUI
 - `apps/vscode` — VS Code extension
 - `apps/vis` — session debug visualizer
-- `packages/node-sdk` — public TypeScript SDK (`@moonshot-ai/kimi-code-sdk`)
+- `packages/node-sdk` — public TypeScript SDK (`@zimi-ai/zimi-code-sdk`)
 - `packages/agent-core-v2` — the agent engine (v2, DI Scope architecture); `packages/agent-core` is v1 and being phased out
 - `packages/klient`, `kap-server`, `protocol`, `transcript`, `oauth`, `telemetry` — internal engine packages
 - `docs/` — VitePress bilingual docs site
@@ -40,8 +40,8 @@ For the full project map, see [AGENTS.md](AGENTS.md).
 Prerequisites: Node.js >= 24.15.0, pnpm 10.33.0, Git.
 
 ```sh
-git clone https://github.com/MoonshotAI/kimi-code.git
-cd kimi-code
+git clone https://github.com/ZimiAI/zimi-code.git
+cd zimi-code
 pnpm install
 ```
 
@@ -95,7 +95,7 @@ Every PR opens with the [PR template](.github/pull_request_template.md). PR titl
 
 ## Engine Invariants
 
-- Two filesystems exist side by side and must not be conflated. Anything workspace-related (project files, project config such as `AGENTS.md` and `.kimi-code/`, skill and instruction discovery, file the model can be told to read) always goes through the session's `environment.fs` — acquire it from the calling agent's environment lease, never from a node-local backend. The App-level `IHostFileSystem` is reserved for server-local data only: session storage, the search index, and the blob store.
+- Two filesystems exist side by side and must not be conflated. Anything workspace-related (project files, project config such as `AGENTS.md` and `.zimi-code/`, skill and instruction discovery, file the model can be told to read) always goes through the session's `environment.fs` — acquire it from the calling agent's environment lease, never from a node-local backend. The App-level `IHostFileSystem` is reserved for server-local data only: session storage, the search index, and the blob store.
 - The same split applies to processes: workspace commands run through the environment's process service; App-level process backends are for host-local jobs (hooks, local MCP servers, server maintenance).
 
 ## Reporting Security Issues

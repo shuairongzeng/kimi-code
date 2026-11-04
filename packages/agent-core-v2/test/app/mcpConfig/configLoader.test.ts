@@ -19,7 +19,7 @@ afterEach(async () => {
 });
 
 function makeTempDir(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'kimi-mcp-loader-'));
+  const dir = mkdtempSync(join(tmpdir(), 'zimi-mcp-loader-'));
   tempDirs.push(dir);
   return dir;
 }
@@ -36,11 +36,11 @@ describe('resolveMcpJsonPaths', () => {
     await mkdir(join(repoRoot, '.git'), { recursive: true });
     await mkdir(cwd, { recursive: true });
 
-    const paths = await resolveMcpJsonPaths({ fs, cwd, homeDir: '/home/user/.kimi-code' });
+    const paths = await resolveMcpJsonPaths({ fs, cwd, homeDir: '/home/user/.zimi-code' });
 
-    expect(paths.user).toBe('/home/user/.kimi-code/mcp.json');
+    expect(paths.user).toBe('/home/user/.zimi-code/mcp.json');
     expect(paths.projectRoot).toBe(join(repoRoot, '.mcp.json'));
-    expect(paths.project).toBe(join(cwd, '.kimi-code', 'mcp.json'));
+    expect(paths.project).toBe(join(cwd, '.zimi-code', 'mcp.json'));
   });
 });
 
@@ -80,7 +80,7 @@ describe('loadMcpServers', () => {
         userOnly: { transport: 'stdio', command: 'user-only' },
       },
     });
-    await writeJson(join(cwd, '.kimi-code', 'mcp.json'), {
+    await writeJson(join(cwd, '.zimi-code', 'mcp.json'), {
       mcpServers: {
         shared: { transport: 'stdio', command: 'shared-project' },
         local: { transport: 'http', url: 'http://localhost:8080/mcp' },
@@ -123,7 +123,7 @@ describe('loadMcpServers', () => {
         rootOnly: { command: 'root-only' },
       },
     });
-    await writeJson(join(cwd, '.kimi-code', 'mcp.json'), {
+    await writeJson(join(cwd, '.zimi-code', 'mcp.json'), {
       mcpServers: {
         shared: { transport: 'stdio', command: 'shared-project' },
         projectOnly: { transport: 'http', url: 'https://mcp.example.com' },
@@ -158,7 +158,7 @@ describe('loadMcpServers', () => {
         rootOnly: { command: 'root-only' },
       },
     });
-    await writeJson(join(cwd, '.kimi-code', 'mcp.json'), {
+    await writeJson(join(cwd, '.zimi-code', 'mcp.json'), {
       mcpServers: {
         shared: { transport: 'stdio', command: 'shared-project' },
         projectOnly: { transport: 'http', url: 'https://mcp.example.com' },
@@ -361,7 +361,7 @@ describe('loadMcpServers', () => {
         legacy: {
           transport: 'sse',
           url: 'https://mcp.example.com/sse',
-          headers: { 'X-Tenant': 'kimi' },
+          headers: { 'X-Tenant': 'zimi' },
           bearerTokenEnvVar: 'LEGACY_MCP_TOKEN',
         },
       },
@@ -370,25 +370,25 @@ describe('loadMcpServers', () => {
     expect(servers['legacy']).toEqual({
       transport: 'sse',
       url: 'https://mcp.example.com/sse',
-      headers: { 'X-Tenant': 'kimi' },
+      headers: { 'X-Tenant': 'zimi' },
       bearerTokenEnvVar: 'LEGACY_MCP_TOKEN',
     });
   });
 
-  it('honors KIMI_CODE_HOME env var when homeDir is not supplied', async () => {
+  it('honors ZIMI_CODE_HOME env var when homeDir is not supplied', async () => {
     const home = makeTempDir();
     const cwd = makeTempDir();
     await writeJson(join(home, 'mcp.json'), {
       mcpServers: { from_env: { transport: 'stdio', command: 'env-cmd' } },
     });
-    const saved = process.env['KIMI_CODE_HOME'];
-    process.env['KIMI_CODE_HOME'] = home;
+    const saved = process.env['ZIMI_CODE_HOME'];
+    process.env['ZIMI_CODE_HOME'] = home;
     try {
       const servers = await loadMcpServers({ fs, cwd });
       expect(servers['from_env']).toEqual({ transport: 'stdio', command: 'env-cmd' });
     } finally {
-      if (saved === undefined) delete process.env['KIMI_CODE_HOME'];
-      else process.env['KIMI_CODE_HOME'] = saved;
+      if (saved === undefined) delete process.env['ZIMI_CODE_HOME'];
+      else process.env['ZIMI_CODE_HOME'] = saved;
     }
   });
 });

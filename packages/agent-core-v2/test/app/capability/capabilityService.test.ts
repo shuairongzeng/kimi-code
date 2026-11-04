@@ -13,7 +13,7 @@ import type {
 import { stubLog } from '../../_base/log/stubs';
 
 function fakeEntry(overrides: {
-  id: 'kimi-cu' | 'kimi-webbridge';
+  id: 'zimi-cu' | 'zimi-webbridge';
   pluginId?: string;
   supported?: boolean;
   detect?: CapabilityDetectResult;
@@ -55,7 +55,7 @@ function expectErrorCode(error: unknown, code: string): void {
 
 describe('CapabilityService', () => {
   it('publishes confirmation without an install error and forwards explicit consent on retry', async () => {
-    const entry = fakeEntry({ id: 'kimi-cu' });
+    const entry = fakeEntry({ id: 'zimi-cu' });
     let installed = false;
     entry.install = async (_report, options) => {
       if (!options?.stopRunningProcesses) {
@@ -65,25 +65,25 @@ describe('CapabilityService', () => {
       return undefined;
     };
     const service = fakeService([entry]);
-    await service.installCapability('kimi-cu');
-    expect((await service.getCapability('kimi-cu')).install).toEqual({
+    await service.installCapability('zimi-cu');
+    expect((await service.getCapability('zimi-cu')).install).toEqual({
       running: false, confirmationRequired: 'stop-processes',
     });
     expect(installed).toBe(false);
-    await service.installCapability('kimi-cu', { stopRunningProcesses: true });
+    await service.installCapability('zimi-cu', { stopRunningProcesses: true });
     expect(installed).toBe(true);
-    expect((await service.getCapability('kimi-cu')).install.confirmationRequired).toBeUndefined();
+    expect((await service.getCapability('zimi-cu')).install.confirmationRequired).toBeUndefined();
   });
 
   it('lists entries with readiness computed from required steps', async () => {
     const service = fakeService([
       fakeEntry({
-        id: 'kimi-cu',
-        pluginId: 'kimi-cu-win',
+        id: 'zimi-cu',
+        pluginId: 'zimi-cu-win',
         detect: { steps: [{ id: 'plugin', state: 'ok' }] },
       }),
       fakeEntry({
-        id: 'kimi-webbridge',
+        id: 'zimi-webbridge',
         detect: {
           steps: [
             { id: 'daemon', state: 'ok' },
@@ -95,16 +95,16 @@ describe('CapabilityService', () => {
     ]);
     const list = await service.listCapabilities();
     expect(list.map((c) => [c.id, c.state])).toEqual([
-      ['kimi-cu', 'ready'],
-      ['kimi-webbridge', 'partial'],
+      ['zimi-cu', 'ready'],
+      ['zimi-webbridge', 'partial'],
     ]);
-    expect(list[0]?.pluginId).toBe('kimi-cu-win');
+    expect(list[0]?.pluginId).toBe('zimi-cu-win');
   });
 
   it('isolates a failing detector to its own entry', async () => {
     const broken: CapabilityEntry = {
-      id: 'kimi-cu',
-      displayName: 'kimi-cu',
+      id: 'zimi-cu',
+      displayName: 'zimi-cu',
       description: 'fake',
       supported: true,
       detect: () => Promise.reject(new Error('probe timed out')),
@@ -112,12 +112,12 @@ describe('CapabilityService', () => {
     };
     const service = fakeService([
       broken,
-      fakeEntry({ id: 'kimi-webbridge', detect: { steps: [{ id: 'daemon', state: 'ok' }] } }),
+      fakeEntry({ id: 'zimi-webbridge', detect: { steps: [{ id: 'daemon', state: 'ok' }] } }),
     ]);
 
     const list = await service.listCapabilities();
-    expect(list.find((c) => c.id === 'kimi-webbridge')?.state).toBe('ready');
-    const cu = list.find((c) => c.id === 'kimi-cu');
+    expect(list.find((c) => c.id === 'zimi-webbridge')?.state).toBe('ready');
+    const cu = list.find((c) => c.id === 'zimi-cu');
     expect(cu?.state).toBe('partial');
     expect(cu?.steps).toEqual([{ id: 'detect', state: 'failed', detail: 'probe timed out' }]);
   });
@@ -125,7 +125,7 @@ describe('CapabilityService', () => {
   it('marks optional steps as non-blocking for ready', async () => {
     const service = fakeService([
       fakeEntry({
-        id: 'kimi-webbridge',
+        id: 'zimi-webbridge',
         detect: {
           version: 'v1.11.3',
           steps: [
@@ -135,19 +135,19 @@ describe('CapabilityService', () => {
         },
       }),
     ]);
-    const status = await service.getCapability('kimi-webbridge');
+    const status = await service.getCapability('zimi-webbridge');
     expect(status.state).toBe('ready');
     expect(status.version).toBe('v1.11.3');
   });
 
   it('reports not_installed when no step is ok, and unsupported as-is', async () => {
     const service = fakeService([
-      fakeEntry({ id: 'kimi-cu', detect: { steps: [{ id: 'plugin', state: 'missing' }] } }),
-      fakeEntry({ id: 'kimi-webbridge', supported: false }),
+      fakeEntry({ id: 'zimi-cu', detect: { steps: [{ id: 'plugin', state: 'missing' }] } }),
+      fakeEntry({ id: 'zimi-webbridge', supported: false }),
     ]);
     const list = await service.listCapabilities();
-    expect(list.find((c) => c.id === 'kimi-cu')?.state).toBe('not_installed');
-    const unsupported = list.find((c) => c.id === 'kimi-webbridge');
+    expect(list.find((c) => c.id === 'zimi-cu')?.state).toBe('not_installed');
+    const unsupported = list.find((c) => c.id === 'zimi-webbridge');
     expect(unsupported?.state).toBe('unsupported');
     expect(unsupported?.supported).toBe(false);
   });
@@ -173,8 +173,8 @@ describe('CapabilityService', () => {
   });
 
   it('rejects install on an unsupported entry', async () => {
-    const service = fakeService([fakeEntry({ id: 'kimi-cu', supported: false })]);
-    await service.installCapability('kimi-cu').then(
+    const service = fakeService([fakeEntry({ id: 'zimi-cu', supported: false })]);
+    await service.installCapability('zimi-cu').then(
       () => {
         expect.unreachable();
       },
@@ -188,7 +188,7 @@ describe('CapabilityService', () => {
     let release: (() => void) | undefined;
     const service = fakeService([
       fakeEntry({
-        id: 'kimi-cu',
+        id: 'zimi-cu',
         install: (report) => {
           report('download', 42);
           return new Promise<string | undefined>((resolve) => {
@@ -200,10 +200,10 @@ describe('CapabilityService', () => {
       }),
     ]);
 
-    const started = await service.installCapability('kimi-cu');
+    const started = await service.installCapability('zimi-cu');
     expect(started.install.running).toBe(true);
 
-    await service.installCapability('kimi-cu').then(
+    await service.installCapability('zimi-cu').then(
       () => {
         expect.unreachable();
       },
@@ -212,12 +212,12 @@ describe('CapabilityService', () => {
       },
     );
 
-    const during = await service.getCapability('kimi-cu');
+    const during = await service.getCapability('zimi-cu');
     expect(during.install).toEqual({ running: true, step: 'download', percent: 42 });
 
     release?.();
     for (let i = 0; i < 50; i += 1) {
-      const status = await service.getCapability('kimi-cu');
+      const status = await service.getCapability('zimi-cu');
       if (!status.install.running) {
         expect(status.install.error).toBeUndefined();
         return;
@@ -229,18 +229,18 @@ describe('CapabilityService', () => {
 
   it('describes the registry without running detectors', async () => {
     const service = fakeService([
-      fakeEntry({ id: 'kimi-cu', supported: true }),
-      fakeEntry({ id: 'kimi-webbridge', supported: false }),
+      fakeEntry({ id: 'zimi-cu', supported: true }),
+      fakeEntry({ id: 'zimi-webbridge', supported: false }),
     ]);
     const descriptors = service.describeCapabilities();
-    expect(descriptors.map((d) => d.id)).toEqual(['kimi-cu', 'kimi-webbridge']);
-    expect(descriptors.find((d) => d.id === 'kimi-webbridge')?.supported).toBe(false);
+    expect(descriptors.map((d) => d.id)).toEqual(['zimi-cu', 'zimi-webbridge']);
+    expect(descriptors.find((d) => d.id === 'zimi-webbridge')?.supported).toBe(false);
   });
 
   it('emits onDidChangeInstall on every progress transition', async () => {
     const service = fakeService([
       fakeEntry({
-        id: 'kimi-cu',
+        id: 'zimi-cu',
         install: (report) => {
           report('download', 42);
           return Promise.resolve(undefined);
@@ -252,39 +252,39 @@ describe('CapabilityService', () => {
       seen.push({ id: change.id, install: change.install });
     });
 
-    await service.installCapability('kimi-cu');
+    await service.installCapability('zimi-cu');
     for (let i = 0; i < 50; i += 1) {
-      const status = await service.getCapability('kimi-cu');
+      const status = await service.getCapability('zimi-cu');
       if (!status.install.running) break;
       await new Promise((resolve) => setTimeout(resolve, 10));
     }
 
-    expect(seen[0]).toEqual({ id: 'kimi-cu', install: { running: true } });
-    expect(seen).toContainEqual({ id: 'kimi-cu', install: { running: true, step: 'download', percent: 42 } });
-    expect(seen.at(-1)).toEqual({ id: 'kimi-cu', install: { running: false } });
+    expect(seen[0]).toEqual({ id: 'zimi-cu', install: { running: true } });
+    expect(seen).toContainEqual({ id: 'zimi-cu', install: { running: true, step: 'download', percent: 42 } });
+    expect(seen.at(-1)).toEqual({ id: 'zimi-cu', install: { running: false } });
   });
 
   it('surfaces an install note from the entry through progress', async () => {
     const service = fakeService([
       fakeEntry({
-        id: 'kimi-cu',
+        id: 'zimi-cu',
         install: () => Promise.resolve('user-skill-migrated'),
       }),
     ]);
-    await service.installCapability('kimi-cu');
+    await service.installCapability('zimi-cu');
     for (let i = 0; i < 50; i += 1) {
-      const status = await service.getCapability('kimi-cu');
+      const status = await service.getCapability('zimi-cu');
       if (!status.install.running) break;
       await new Promise((resolve) => setTimeout(resolve, 10));
     }
-    expect((await service.getCapability('kimi-cu')).install.note).toBe('user-skill-migrated');
+    expect((await service.getCapability('zimi-cu')).install.note).toBe('user-skill-migrated');
   });
 
   it('surfaces install errors through progress until the next attempt', async () => {
     let attempts = 0;
     const service = fakeService([
       fakeEntry({
-        id: 'kimi-cu',
+        id: 'zimi-cu',
         install: () => {
           attempts += 1;
           return attempts === 1
@@ -293,22 +293,22 @@ describe('CapabilityService', () => {
         },
       }),
     ]);
-    await service.installCapability('kimi-cu');
+    await service.installCapability('zimi-cu');
     for (let i = 0; i < 50; i += 1) {
-      const status = await service.getCapability('kimi-cu');
+      const status = await service.getCapability('zimi-cu');
       if (!status.install.running) break;
       await new Promise((resolve) => setTimeout(resolve, 10));
     }
-    const failed = await service.getCapability('kimi-cu');
+    const failed = await service.getCapability('zimi-cu');
     expect(failed.install).toEqual({ running: false, error: 'boom' });
 
-    await service.installCapability('kimi-cu');
+    await service.installCapability('zimi-cu');
     for (let i = 0; i < 50; i += 1) {
-      const status = await service.getCapability('kimi-cu');
+      const status = await service.getCapability('zimi-cu');
       if (!status.install.running) break;
       await new Promise((resolve) => setTimeout(resolve, 10));
     }
-    const retried = await service.getCapability('kimi-cu');
+    const retried = await service.getCapability('zimi-cu');
     expect(retried.install.error).toBeUndefined();
     expect(attempts).toBe(2);
   });
@@ -330,7 +330,7 @@ describe('CapabilityService', () => {
     const service = fakeService(
       [
         fakeEntry({
-          id: 'kimi-cu',
+          id: 'zimi-cu',
           install: async (report) => {
             report('runtime');
             throw error;
@@ -340,13 +340,13 @@ describe('CapabilityService', () => {
       log,
     );
 
-    await service.installCapability('kimi-cu');
+    await service.installCapability('zimi-cu');
     await logged;
 
     expect(warnings).toEqual([
       {
         message: 'capability install failed',
-        payload: { capabilityId: 'kimi-cu', step: 'runtime', error },
+        payload: { capabilityId: 'zimi-cu', step: 'runtime', error },
       },
     ]);
   });

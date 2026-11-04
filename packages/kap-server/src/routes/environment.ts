@@ -14,8 +14,8 @@ import {
   type EnvironmentBinding,
   type EnvironmentGenerationSnapshot,
   type Scope,
-} from '@moonshot-ai/agent-core-v2';
-import { HandshakeError } from '@moonshot-ai/agent-core-v2/remote';
+} from '@zimi-ai/agent-core-v2';
+import { HandshakeError } from '@zimi-ai/agent-core-v2/remote';
 
 import { errEnvelope, okEnvelope } from '../envelope';
 import { defineRoute } from '../middleware/defineRoute';

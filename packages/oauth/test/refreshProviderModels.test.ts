@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
-  KIMI_CODE_PROVIDER_NAME,
-  resolveKimiCodeOAuthKey,
-  resolveKimiCodeOAuthRef,
-  type ManagedKimiConfigShape,
-} from '../src/managed-kimi-code';
+  ZIMI_CODE_PROVIDER_NAME,
+  resolveZimiCodeOAuthKey,
+  resolveZimiCodeOAuthRef,
+  type ManagedZimiConfigShape,
+} from '../src/managed-zimi-code';
 import { refreshProviderModels } from '../src/refreshProviderModels';
 
 type FetchMock = (
@@ -19,10 +19,10 @@ function fetchInputUrl(input: Parameters<typeof fetch>[0]): string {
   return input.url;
 }
 
-function makeRefreshHost(initial: ManagedKimiConfigShape): {
-  current: () => ManagedKimiConfigShape;
-  removeProvider: ReturnType<typeof vi.fn<(providerId: string) => Promise<ManagedKimiConfigShape>>>;
-  setConfig: ReturnType<typeof vi.fn<(patch: Partial<ManagedKimiConfigShape>) => Promise<ManagedKimiConfigShape>>>;
+function makeRefreshHost(initial: ManagedZimiConfigShape): {
+  current: () => ManagedZimiConfigShape;
+  removeProvider: ReturnType<typeof vi.fn<(providerId: string) => Promise<ManagedZimiConfigShape>>>;
+  setConfig: ReturnType<typeof vi.fn<(patch: Partial<ManagedZimiConfigShape>) => Promise<ManagedZimiConfigShape>>>;
 } {
   let persisted = structuredClone(initial);
   const removeProvider = vi.fn(async (providerId: string) => {
@@ -39,7 +39,7 @@ function makeRefreshHost(initial: ManagedKimiConfigShape): {
     if (defaultRemoved) persisted = { ...persisted, defaultModel: undefined };
     return structuredClone(persisted);
   });
-  const setConfig = vi.fn(async (patch: Partial<ManagedKimiConfigShape>) => {
+  const setConfig = vi.fn(async (patch: Partial<ManagedZimiConfigShape>) => {
     persisted = { ...persisted, ...patch };
     return structuredClone(persisted);
   });
@@ -56,19 +56,19 @@ describe('refreshProviderModels', () => {
     vi.unstubAllGlobals();
   });
 
-  it('refreshes managed Kimi Code against environment endpoints over persisted config', async () => {
+  it('refreshes managed Zimi Code against environment endpoints over persisted config', async () => {
     const configuredBaseUrl = 'https://api.configured.example.test/coding/v1';
     const envBaseUrl = 'https://api.env.example.test/coding/v1';
     const envOauthHost = 'https://auth.env.example.test';
-    const configuredOauthKey = resolveKimiCodeOAuthKey({ baseUrl: configuredBaseUrl });
-    const envOauthRef = resolveKimiCodeOAuthRef({
+    const configuredOauthKey = resolveZimiCodeOAuthKey({ baseUrl: configuredBaseUrl });
+    const envOauthRef = resolveZimiCodeOAuthRef({
       oauthHost: envOauthHost,
       baseUrl: envBaseUrl,
     });
-    const config: ManagedKimiConfigShape = {
+    const config: ManagedZimiConfigShape = {
       providers: {
-        [KIMI_CODE_PROVIDER_NAME]: {
-          type: 'kimi',
+        [ZIMI_CODE_PROVIDER_NAME]: {
+          type: 'zimi',
           baseUrl: configuredBaseUrl,
           apiKey: '',
           oauth: {
@@ -79,18 +79,18 @@ describe('refreshProviderModels', () => {
         },
       },
       models: {
-        'kimi-code/kimi-for-coding': {
-          provider: KIMI_CODE_PROVIDER_NAME,
+        'zimi-code/kimi-for-coding': {
+          provider: ZIMI_CODE_PROVIDER_NAME,
           model: 'kimi-for-coding',
           maxContextSize: 262144,
           capabilities: ['thinking', 'tool_use'],
         },
       },
-      defaultModel: 'kimi-code/kimi-for-coding',
+      defaultModel: 'zimi-code/kimi-for-coding',
       telemetry: true,
     };
-    vi.stubEnv('KIMI_CODE_BASE_URL', envBaseUrl);
-    vi.stubEnv('KIMI_CODE_OAUTH_HOST', envOauthHost);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', envBaseUrl);
+    vi.stubEnv('ZIMI_CODE_OAUTH_HOST', envOauthHost);
     const resolveOAuthToken = vi.fn(async (_providerName, oauthRef) => {
       expect(oauthRef).toEqual(envOauthRef);
       return 'env-access-token';
@@ -121,23 +121,23 @@ describe('refreshProviderModels', () => {
     });
 
     expect(result.failed).toEqual([]);
-    expect(result.unchanged).toEqual([KIMI_CODE_PROVIDER_NAME]);
+    expect(result.unchanged).toEqual([ZIMI_CODE_PROVIDER_NAME]);
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(resolveOAuthToken).toHaveBeenCalledWith(KIMI_CODE_PROVIDER_NAME, envOauthRef);
+    expect(resolveOAuthToken).toHaveBeenCalledWith(ZIMI_CODE_PROVIDER_NAME, envOauthRef);
   });
 
   it('can refresh only the managed OAuth provider without fetching third-party registries', async () => {
     const baseUrl = 'https://api.example.test/coding/v1';
     const registryUrl = 'https://registry.example.test/v1/models/api.json';
-    const config: ManagedKimiConfigShape = {
+    const config: ManagedZimiConfigShape = {
       providers: {
-        [KIMI_CODE_PROVIDER_NAME]: {
-          type: 'kimi',
+        [ZIMI_CODE_PROVIDER_NAME]: {
+          type: 'zimi',
           baseUrl,
           apiKey: '',
           oauth: {
             storage: 'file',
-            key: resolveKimiCodeOAuthKey({ baseUrl }),
+            key: resolveZimiCodeOAuthKey({ baseUrl }),
           },
         },
         custom: {
@@ -148,12 +148,12 @@ describe('refreshProviderModels', () => {
         },
       },
       models: {
-        'kimi-code/kimi-for-coding': {
-          provider: KIMI_CODE_PROVIDER_NAME,
+        'zimi-code/kimi-for-coding': {
+          provider: ZIMI_CODE_PROVIDER_NAME,
           model: 'kimi-for-coding',
           maxContextSize: 262144,
           capabilities: ['thinking', 'tool_use'],
-          displayName: 'Old Kimi',
+          displayName: 'Old Zimi',
         },
         'custom/m1': {
           provider: 'custom',
@@ -163,7 +163,7 @@ describe('refreshProviderModels', () => {
           displayName: 'Custom M1',
         },
       },
-      defaultModel: 'kimi-code/kimi-for-coding',
+      defaultModel: 'zimi-code/kimi-for-coding',
       telemetry: true,
     };
     const host = makeRefreshHost(config);
@@ -178,7 +178,7 @@ describe('refreshProviderModels', () => {
               id: 'kimi-for-coding',
               limit: { context: 262144 },
               reasoning: { type: 'both' },
-              display_name: 'Fresh Kimi',
+              display_name: 'Fresh Zimi',
             },
           ],
         }),
@@ -200,15 +200,15 @@ describe('refreshProviderModels', () => {
     expect(result.failed).toEqual([]);
     expect(result.changed).toEqual([
       {
-        providerId: KIMI_CODE_PROVIDER_NAME,
-        providerName: 'Kimi Code',
+        providerId: ZIMI_CODE_PROVIDER_NAME,
+        providerName: 'Zimi Code',
         added: 0,
         removed: 0,
       },
     ]);
     expect(result.unchanged).toEqual([]);
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(host.current().models?.['kimi-code/kimi-for-coding']?.displayName).toBe('Fresh Kimi');
+    expect(host.current().models?.['zimi-code/kimi-for-coding']?.displayName).toBe('Fresh Zimi');
     expect(host.current().models?.['custom/m1']?.displayName).toBe('Custom M1');
   });
 
@@ -261,7 +261,7 @@ describe('refreshProviderModels', () => {
       },
       defaultModel: modelAlias,
       telemetry: true,
-    } as unknown as ManagedKimiConfigShape);
+    } as unknown as ManagedZimiConfigShape);
 
     const fetchMock = vi.fn<FetchMock>(async (input, init) => {
       expect(fetchInputUrl(input)).toBe(registryUrl);
@@ -379,7 +379,7 @@ describe('refreshProviderModels', () => {
       },
       defaultModel: currentAlias,
       telemetry: true,
-    } as unknown as ManagedKimiConfigShape);
+    } as unknown as ManagedZimiConfigShape);
     vi.stubGlobal(
       'fetch',
       vi.fn<FetchMock>(async () => {
@@ -458,7 +458,7 @@ describe('refreshProviderModels', () => {
         },
         defaultModel: legacyAlias,
         thinking: { enabled: true, effort: 'low' },
-      } as unknown as ManagedKimiConfigShape);
+      } as unknown as ManagedZimiConfigShape);
       vi.stubGlobal(
         'fetch',
         vi.fn<FetchMock>(async () => {
@@ -530,7 +530,7 @@ describe('refreshProviderModels', () => {
         },
       },
       telemetry: true,
-    } as unknown as ManagedKimiConfigShape);
+    } as unknown as ManagedZimiConfigShape);
 
     const fetchMock = vi.fn<FetchMock>(async (input, init) => {
       expect(fetchInputUrl(input)).toBe(registryUrl);
@@ -638,7 +638,7 @@ describe('refreshProviderModels', () => {
       defaultModel: 'my-b',
       thinking: { enabled: true },
       telemetry: true,
-    } as unknown as ManagedKimiConfigShape);
+    } as unknown as ManagedZimiConfigShape);
 
     const fetchMock = vi.fn<FetchMock>(async (input, init) => {
       expect(fetchInputUrl(input)).toBe(registryUrl);
@@ -722,7 +722,7 @@ describe('refreshProviderModels', () => {
         },
       },
       telemetry: true,
-    } as unknown as ManagedKimiConfigShape);
+    } as unknown as ManagedZimiConfigShape);
 
     const fetchMock = vi.fn<FetchMock>(async (input, init) => {
       expect(fetchInputUrl(input)).toBe(registryUrl);
@@ -827,7 +827,7 @@ describe('refreshProviderModels', () => {
       defaultModel: userAlias,
       thinking: { enabled: false },
       telemetry: true,
-    } as unknown as ManagedKimiConfigShape);
+    } as unknown as ManagedZimiConfigShape);
 
     const fetchMock = vi.fn<FetchMock>(async (input, init) => {
       expect(fetchInputUrl(input)).toBe(registryUrl);
@@ -901,7 +901,7 @@ describe('refreshProviderModels', () => {
         },
       },
       defaultModel: modelAlias,
-    } as unknown as ManagedKimiConfigShape);
+    } as unknown as ManagedZimiConfigShape);
 
     vi.stubGlobal(
       'fetch',
@@ -948,24 +948,24 @@ describe('refreshProviderModels', () => {
   it('forces default thinking on when the refreshed default model cannot disable thinking', async () => {
     const host = makeRefreshHost({
       providers: {
-        [KIMI_CODE_PROVIDER_NAME]: {
-          type: 'kimi',
+        [ZIMI_CODE_PROVIDER_NAME]: {
+          type: 'zimi',
           apiKey: '',
-          oauth: { storage: 'file', key: 'oauth/kimi-code' },
+          oauth: { storage: 'file', key: 'oauth/zimi-code' },
         },
       },
       models: {
-        'kimi-code/kimi-deep-coder': {
-          provider: KIMI_CODE_PROVIDER_NAME,
-          model: 'kimi-deep-coder',
+        'zimi-code/zimi-deep-coder': {
+          provider: ZIMI_CODE_PROVIDER_NAME,
+          model: 'zimi-deep-coder',
           maxContextSize: 262144,
           capabilities: ['thinking', 'tool_use'],
         },
       },
-      defaultModel: 'kimi-code/kimi-deep-coder',
+      defaultModel: 'zimi-code/zimi-deep-coder',
       thinking: { enabled: false },
       telemetry: true,
-    } as unknown as ManagedKimiConfigShape);
+    } as unknown as ManagedZimiConfigShape);
 
     const fetchMock = vi.fn<FetchMock>(
       async () =>
@@ -973,7 +973,7 @@ describe('refreshProviderModels', () => {
           JSON.stringify({
             data: [
               {
-                id: 'kimi-deep-coder',
+                id: 'zimi-deep-coder',
                 limit: { context: 262144 },
                 reasoning: { type: 'only' },
               },
@@ -992,20 +992,20 @@ describe('refreshProviderModels', () => {
     });
 
     expect(result.failed).toEqual([]);
-    expect(host.current().models?.['kimi-code/kimi-deep-coder']?.capabilities).toEqual([
+    expect(host.current().models?.['zimi-code/zimi-deep-coder']?.capabilities).toEqual([
       'thinking',
       'always_thinking',
       'tool_use',
     ]);
-    expect(host.current().defaultModel).toBe('kimi-code/kimi-deep-coder');
+    expect(host.current().defaultModel).toBe('zimi-code/zimi-deep-coder');
     expect(host.current().thinking?.enabled).toBe(true);
   });
 
   it('refreshes a hand-configured API-key provider pointing at the managed endpoint', async () => {
     const baseUrl = 'https://api.managed.example.test/coding/v1';
-    vi.stubEnv('KIMI_CODE_BASE_URL', baseUrl);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', baseUrl);
     const userAliasModel = {
-      provider: 'my-kimi',
+      provider: 'my-zimi',
       model: 'kimi-for-coding',
       maxContextSize: 131072,
       capabilities: ['tool_use'],
@@ -1013,31 +1013,31 @@ describe('refreshProviderModels', () => {
     };
     const host = makeRefreshHost({
       providers: {
-        'my-kimi': {
-          type: 'kimi',
+        'my-zimi': {
+          type: 'zimi',
           baseUrl,
           apiKey: 'sk-distributed-key',
         },
       },
       models: {
-        'my-kimi/kimi-for-coding': {
-          provider: 'my-kimi',
+        'my-zimi/kimi-for-coding': {
+          provider: 'my-zimi',
           model: 'kimi-for-coding',
           maxContextSize: 262144,
           capabilities: ['tool_use'],
-          displayName: 'Old Kimi',
+          displayName: 'Old Zimi',
         },
-        'my-kimi/kimi-old': {
-          provider: 'my-kimi',
-          model: 'kimi-old',
+        'my-zimi/zimi-old': {
+          provider: 'my-zimi',
+          model: 'zimi-old',
           maxContextSize: 131072,
           capabilities: ['tool_use'],
         },
         'my-fav': userAliasModel,
       },
-      defaultModel: 'my-kimi/kimi-for-coding',
+      defaultModel: 'my-zimi/kimi-for-coding',
       telemetry: true,
-    } as unknown as ManagedKimiConfigShape);
+    } as unknown as ManagedZimiConfigShape);
 
     const fetchMock = vi.fn<FetchMock>(async (input, init) => {
       expect(fetchInputUrl(input)).toBe(`${baseUrl}/models`);
@@ -1049,7 +1049,7 @@ describe('refreshProviderModels', () => {
               id: 'kimi-for-coding',
               limit: { context: 262144 },
               reasoning: { type: 'both' },
-              display_name: 'Fresh Kimi',
+              display_name: 'Fresh Zimi',
             },
             { id: 'kimi-k2', limit: { context: 131072 } },
           ],
@@ -1068,49 +1068,49 @@ describe('refreshProviderModels', () => {
 
     expect(result.failed).toEqual([]);
     expect(result.changed).toEqual([
-      { providerId: 'my-kimi', providerName: 'my-kimi', added: 1, removed: 1 },
+      { providerId: 'my-zimi', providerName: 'my-zimi', added: 1, removed: 1 },
     ]);
     // The provider record is user-owned and must survive untouched.
-    expect(host.current().providers['my-kimi']).toEqual({
-      type: 'kimi',
+    expect(host.current().providers['my-zimi']).toEqual({
+      type: 'zimi',
       baseUrl,
       apiKey: 'sk-distributed-key',
     });
     // Upstream-owned fields merge; the dropped model disappears; the new one appears.
-    expect(host.current().models?.['my-kimi/kimi-for-coding']?.displayName).toBe('Fresh Kimi');
-    expect(host.current().models?.['my-kimi/kimi-for-coding']?.capabilities).toEqual([
+    expect(host.current().models?.['my-zimi/kimi-for-coding']?.displayName).toBe('Fresh Zimi');
+    expect(host.current().models?.['my-zimi/kimi-for-coding']?.capabilities).toEqual([
       'thinking',
       'tool_use',
     ]);
-    expect(host.current().models?.['my-kimi/kimi-k2']).toBeDefined();
-    expect(host.current().models?.['my-kimi/kimi-old']).toBeUndefined();
+    expect(host.current().models?.['my-zimi/kimi-k2']).toBeDefined();
+    expect(host.current().models?.['my-zimi/zimi-old']).toBeUndefined();
     // Non-prefix user aliases and the default selection are preserved.
     expect(host.current().models?.['my-fav']).toEqual(userAliasModel);
-    expect(host.current().defaultModel).toBe('my-kimi/kimi-for-coding');
+    expect(host.current().defaultModel).toBe('my-zimi/kimi-for-coding');
   });
 
   it('resolves the API key from the provider env sub-table when api_key is empty', async () => {
     const baseUrl = 'https://api.managed.example.test/coding/v1';
-    vi.stubEnv('KIMI_CODE_BASE_URL', baseUrl);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', baseUrl);
     const host = makeRefreshHost({
       providers: {
-        'my-kimi': {
-          type: 'kimi',
+        'my-zimi': {
+          type: 'zimi',
           baseUrl,
           apiKey: '',
-          env: { KIMI_API_KEY: 'sk-env-key' },
+          env: { ZIMI_API_KEY: 'sk-env-key' },
         },
       },
       models: {
-        'my-kimi/kimi-for-coding': {
-          provider: 'my-kimi',
+        'my-zimi/kimi-for-coding': {
+          provider: 'my-zimi',
           model: 'kimi-for-coding',
           maxContextSize: 262144,
           capabilities: ['thinking', 'tool_use'],
         },
       },
       telemetry: true,
-    } as unknown as ManagedKimiConfigShape);
+    } as unknown as ManagedZimiConfigShape);
 
     const fetchMock = vi.fn<FetchMock>(async (input, init) => {
       expect(fetchInputUrl(input)).toBe(`${baseUrl}/models`);
@@ -1134,23 +1134,23 @@ describe('refreshProviderModels', () => {
     });
 
     expect(result.failed).toEqual([]);
-    expect(result.unchanged).toEqual(['my-kimi']);
+    expect(result.unchanged).toEqual(['my-zimi']);
     expect(host.setConfig).not.toHaveBeenCalled();
   });
 
   it('matches the managed endpoint even with a trailing slash on the configured baseUrl', async () => {
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'https://api.managed.example.test/coding/v1');
+    vi.stubEnv('ZIMI_CODE_BASE_URL', 'https://api.managed.example.test/coding/v1');
     const host = makeRefreshHost({
       providers: {
-        'my-kimi': {
-          type: 'kimi',
+        'my-zimi': {
+          type: 'zimi',
           baseUrl: 'https://api.managed.example.test/coding/v1/',
           apiKey: 'sk-distributed-key',
         },
       },
       models: {},
       telemetry: true,
-    } as unknown as ManagedKimiConfigShape);
+    } as unknown as ManagedZimiConfigShape);
 
     const fetchMock = vi.fn<FetchMock>(async (input) => {
       expect(fetchInputUrl(input)).toBe('https://api.managed.example.test/coding/v1/models');
@@ -1170,29 +1170,29 @@ describe('refreshProviderModels', () => {
 
     expect(result.failed).toEqual([]);
     expect(result.changed).toEqual([
-      { providerId: 'my-kimi', providerName: 'my-kimi', added: 1, removed: 0 },
+      { providerId: 'my-zimi', providerName: 'my-zimi', added: 1, removed: 0 },
     ]);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('does not refresh API-key providers pointing at non-managed endpoints', async () => {
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'https://api.managed.example.test/coding/v1');
+    vi.stubEnv('ZIMI_CODE_BASE_URL', 'https://api.managed.example.test/coding/v1');
     const host = makeRefreshHost({
       providers: {
         gateway: {
-          type: 'kimi',
+          type: 'zimi',
           baseUrl: 'https://gateway.example.test/v1',
           apiKey: 'sk-gateway-key',
         },
-        'moonshot-lookalike': {
-          type: 'kimi',
+        'zimi-lookalike': {
+          type: 'zimi',
           baseUrl: 'https://api.moonshot.cn/v1',
           apiKey: 'sk-platform-key',
         },
       },
       models: {},
       telemetry: true,
-    } as unknown as ManagedKimiConfigShape);
+    } as unknown as ManagedZimiConfigShape);
 
     const fetchMock = vi.fn<FetchMock>();
     vi.stubGlobal('fetch', fetchMock);
@@ -1208,29 +1208,29 @@ describe('refreshProviderModels', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('refreshes a hand-written managed:kimi-code provider that uses an API key instead of OAuth', async () => {
+  it('refreshes a hand-written managed:zimi-code provider that uses an API key instead of OAuth', async () => {
     const baseUrl = 'https://api.managed.example.test/coding/v1';
-    vi.stubEnv('KIMI_CODE_BASE_URL', baseUrl);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', baseUrl);
     const host = makeRefreshHost({
       providers: {
-        [KIMI_CODE_PROVIDER_NAME]: {
-          type: 'kimi',
+        [ZIMI_CODE_PROVIDER_NAME]: {
+          type: 'zimi',
           baseUrl,
           apiKey: 'sk-distributed-key',
         },
       },
       models: {
-        'kimi-code/kimi-for-coding': {
-          provider: KIMI_CODE_PROVIDER_NAME,
+        'zimi-code/kimi-for-coding': {
+          provider: ZIMI_CODE_PROVIDER_NAME,
           model: 'kimi-for-coding',
           maxContextSize: 262144,
           capabilities: ['tool_use'],
-          displayName: 'Old Kimi',
+          displayName: 'Old Zimi',
         },
       },
-      defaultModel: 'kimi-code/kimi-for-coding',
+      defaultModel: 'zimi-code/kimi-for-coding',
       telemetry: true,
-    } as unknown as ManagedKimiConfigShape);
+    } as unknown as ManagedZimiConfigShape);
 
     const resolveOAuthToken = vi.fn(async () => 'oauth-access-token');
     const fetchMock = vi.fn<FetchMock>(async (input, init) => {
@@ -1243,7 +1243,7 @@ describe('refreshProviderModels', () => {
               id: 'kimi-for-coding',
               limit: { context: 262144 },
               reasoning: { type: 'both' },
-              display_name: 'Fresh Kimi',
+              display_name: 'Fresh Zimi',
             },
           ],
         }),
@@ -1262,8 +1262,8 @@ describe('refreshProviderModels', () => {
     expect(result.failed).toEqual([]);
     expect(result.changed).toEqual([
       {
-        providerId: KIMI_CODE_PROVIDER_NAME,
-        providerName: KIMI_CODE_PROVIDER_NAME,
+        providerId: ZIMI_CODE_PROVIDER_NAME,
+        providerName: ZIMI_CODE_PROVIDER_NAME,
         added: 0,
         removed: 0,
       },
@@ -1271,37 +1271,37 @@ describe('refreshProviderModels', () => {
     // The OAuth branch must not run: no token resolution, and the provider
     // record keeps the user's API-key shape (no oauth ref, no apiKey reset).
     expect(resolveOAuthToken).not.toHaveBeenCalled();
-    expect(host.current().providers[KIMI_CODE_PROVIDER_NAME]).toEqual({
-      type: 'kimi',
+    expect(host.current().providers[ZIMI_CODE_PROVIDER_NAME]).toEqual({
+      type: 'zimi',
       baseUrl,
       apiKey: 'sk-distributed-key',
     });
     expect(host.current().services).toBeUndefined();
-    expect(host.current().models?.['kimi-code/kimi-for-coding']?.displayName).toBe('Fresh Kimi');
-    expect(host.current().defaultModel).toBe('kimi-code/kimi-for-coding');
+    expect(host.current().models?.['zimi-code/kimi-for-coding']?.displayName).toBe('Fresh Zimi');
+    expect(host.current().defaultModel).toBe('zimi-code/kimi-for-coding');
   });
 
   it('reports a failed refresh and keeps config when the managed endpoint rejects the API key', async () => {
     const baseUrl = 'https://api.managed.example.test/coding/v1';
-    vi.stubEnv('KIMI_CODE_BASE_URL', baseUrl);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', baseUrl);
     const host = makeRefreshHost({
       providers: {
-        'my-kimi': {
-          type: 'kimi',
+        'my-zimi': {
+          type: 'zimi',
           baseUrl,
           apiKey: 'sk-revoked-key',
         },
       },
       models: {
-        'my-kimi/kimi-for-coding': {
-          provider: 'my-kimi',
+        'my-zimi/kimi-for-coding': {
+          provider: 'my-zimi',
           model: 'kimi-for-coding',
           maxContextSize: 262144,
           capabilities: ['tool_use'],
         },
       },
       telemetry: true,
-    } as unknown as ManagedKimiConfigShape);
+    } as unknown as ManagedZimiConfigShape);
 
     const fetchMock = vi.fn<FetchMock>(
       async () =>
@@ -1321,33 +1321,33 @@ describe('refreshProviderModels', () => {
 
     expect(result.changed).toEqual([]);
     expect(result.failed).toHaveLength(1);
-    expect(result.failed[0]?.provider).toBe('my-kimi');
+    expect(result.failed[0]?.provider).toBe('my-zimi');
     expect(result.failed[0]?.reason).toContain('the API key');
     expect(host.setConfig).not.toHaveBeenCalled();
-    expect(host.current().models?.['my-kimi/kimi-for-coding']).toBeDefined();
+    expect(host.current().models?.['my-zimi/kimi-for-coding']).toBeDefined();
   });
 
   it('skips the API-key refresh when the managed endpoint returns no models', async () => {
     const baseUrl = 'https://api.managed.example.test/coding/v1';
-    vi.stubEnv('KIMI_CODE_BASE_URL', baseUrl);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', baseUrl);
     const host = makeRefreshHost({
       providers: {
-        'my-kimi': {
-          type: 'kimi',
+        'my-zimi': {
+          type: 'zimi',
           baseUrl,
           apiKey: 'sk-distributed-key',
         },
       },
       models: {
-        'my-kimi/kimi-for-coding': {
-          provider: 'my-kimi',
+        'my-zimi/kimi-for-coding': {
+          provider: 'my-zimi',
           model: 'kimi-for-coding',
           maxContextSize: 262144,
           capabilities: ['tool_use'],
         },
       },
       telemetry: true,
-    } as unknown as ManagedKimiConfigShape);
+    } as unknown as ManagedZimiConfigShape);
 
     const fetchMock = vi.fn<FetchMock>(
       async () =>
@@ -1367,32 +1367,32 @@ describe('refreshProviderModels', () => {
 
     expect(result).toEqual({ changed: [], unchanged: [], failed: [] });
     expect(host.setConfig).not.toHaveBeenCalled();
-    expect(host.current().models?.['my-kimi/kimi-for-coding']).toBeDefined();
+    expect(host.current().models?.['my-zimi/kimi-for-coding']).toBeDefined();
   });
 
   it('writes defaultProvider back when refreshing the provider it points at', async () => {
     const baseUrl = 'https://api.managed.example.test/coding/v1';
-    vi.stubEnv('KIMI_CODE_BASE_URL', baseUrl);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', baseUrl);
     const host = makeRefreshHost({
       providers: {
-        'my-kimi': {
-          type: 'kimi',
+        'my-zimi': {
+          type: 'zimi',
           baseUrl,
           apiKey: 'sk-distributed-key',
         },
       },
       models: {
-        'my-kimi/kimi-for-coding': {
-          provider: 'my-kimi',
+        'my-zimi/kimi-for-coding': {
+          provider: 'my-zimi',
           model: 'kimi-for-coding',
           maxContextSize: 262144,
           capabilities: ['tool_use'],
-          displayName: 'Old Kimi',
+          displayName: 'Old Zimi',
         },
       },
-      defaultProvider: 'my-kimi',
+      defaultProvider: 'my-zimi',
       telemetry: true,
-    } as unknown as ManagedKimiConfigShape);
+    } as unknown as ManagedZimiConfigShape);
 
     const fetchMock = vi.fn<FetchMock>(
       async () =>
@@ -1403,7 +1403,7 @@ describe('refreshProviderModels', () => {
                 id: 'kimi-for-coding',
                 limit: { context: 262144 },
                 reasoning: { type: 'both' },
-                display_name: 'Fresh Kimi',
+                display_name: 'Fresh Zimi',
               },
             ],
           }),
@@ -1425,19 +1425,19 @@ describe('refreshProviderModels', () => {
     // refreshed provider; the setConfig patch must carry the original value
     // back.
     expect(host.setConfig).toHaveBeenCalledWith(
-      expect.objectContaining({ defaultProvider: 'my-kimi' }),
+      expect.objectContaining({ defaultProvider: 'my-zimi' }),
     );
-    expect(host.current()['defaultProvider']).toBe('my-kimi');
+    expect(host.current()['defaultProvider']).toBe('my-zimi');
   });
 
   it('leaves registry-sourced providers at the managed base URL to the registry branch', async () => {
     const baseUrl = 'https://api.managed.example.test/coding/v1';
-    vi.stubEnv('KIMI_CODE_BASE_URL', baseUrl);
+    vi.stubEnv('ZIMI_CODE_BASE_URL', baseUrl);
     const registryUrl = 'https://registry.example.test/v1/models/api.json';
     const host = makeRefreshHost({
       providers: {
         custom: {
-          type: 'kimi',
+          type: 'zimi',
           baseUrl,
           apiKey: 'sk-test-token',
           source: { kind: 'apiJson', url: registryUrl, apiKey: 'sk-test-token' },
@@ -1453,7 +1453,7 @@ describe('refreshProviderModels', () => {
         },
       },
       telemetry: true,
-    } as unknown as ManagedKimiConfigShape);
+    } as unknown as ManagedZimiConfigShape);
 
     const fetchMock = vi.fn<FetchMock>(async (input) => {
       expect(fetchInputUrl(input)).toBe(registryUrl);
@@ -1463,7 +1463,7 @@ describe('refreshProviderModels', () => {
             id: 'custom',
             name: 'Custom',
             api: baseUrl,
-            type: 'kimi',
+            type: 'zimi',
             models: { m1: { id: 'm1' } },
           },
         }),

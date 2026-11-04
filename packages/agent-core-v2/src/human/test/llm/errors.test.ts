@@ -12,7 +12,7 @@ import { UNKNOWN_CAPABILITY } from '#/llm-requester/capability';
 import { createAssistantMessage, createUserMessage, type Message } from '#/message';
 import type { LlmModel } from '#/llm-requester/model';
 import type { LlmRemoteErrorMessage } from '#/llm/response';
-import { classifyKimiQuotaError } from '#/llm/builtin/provider/kimi/errors';
+import { classifyZimiQuotaError } from '#/llm/builtin/provider/zimi/errors';
 import { decodeError as convertAnthropicError } from '#/llm/builtin/protocol/anthropic/decode';
 import { decodeError as convertGoogleGenAIError } from '#/llm/builtin/protocol/google-genai/decode';
 import {
@@ -23,11 +23,11 @@ import { createDecoder as createOpenAIResponsesDecoder } from '#/llm/builtin/pro
 import {
   createAnthropicRequester,
   createGoogleGenAIRequester,
-  createKimiAnthropicRequester,
-  createKimiOpenAIRequester,
+  createZimiAnthropicRequester,
+  createZimiOpenAIRequester,
   createOpenAIRequester,
   createOpenAIResponsesRequester,
-  kimiEndpoint,
+  zimiEndpoint,
 } from '#/llm-requester/factories';
 import { isRetryableError } from '#/llm/policy/retry';
 import type { LlmRequester, LlmRequestEvent } from '#/llm-requester/requester';
@@ -358,9 +358,9 @@ describe('retry policy', () => {
   });
 });
 
-describe('classifyKimiQuotaError', () => {
+describe('classifyZimiQuotaError', () => {
   it('classifies by structured error code and uses the backend message', () => {
-    const classified = classifyKimiQuotaError({
+    const classified = classifyZimiQuotaError({
       status: 429,
       message: 'SDK-composed fallback',
       code: 'exceeded_current_quota_error',
@@ -381,7 +381,7 @@ describe('classifyKimiQuotaError', () => {
   });
 
   it('descends into the Anthropic quota error body', () => {
-    const classified = classifyKimiQuotaError({
+    const classified = classifyZimiQuotaError({
       status: 429,
       message: 'SDK-composed fallback',
       error: {
@@ -398,7 +398,7 @@ describe('classifyKimiQuotaError', () => {
   });
 
   it('does not classify by message wording', () => {
-    const classified = classifyKimiQuotaError({
+    const classified = classifyZimiQuotaError({
       status: 429,
       message: 'insufficient balance',
       error: { message: 'insufficient balance' },
@@ -409,7 +409,7 @@ describe('classifyKimiQuotaError', () => {
 
   it('ignores non-429 errors even with a quota code', () => {
     expect(
-      classifyKimiQuotaError({
+      classifyZimiQuotaError({
         status: 400,
         code: 'exceeded_current_quota_error',
         error: { message: 'backend quota message' },
@@ -497,10 +497,10 @@ describe('requester error conversion', () => {
     });
   });
 
-  it('converts a kimi quota response to quota_exhausted', async () => {
-    const requester = createKimiOpenAIRequester({
-      endpoint: kimiEndpoint,
-      classifyError: classifyKimiQuotaError,
+  it('converts a zimi quota response to quota_exhausted', async () => {
+    const requester = createZimiOpenAIRequester({
+      endpoint: zimiEndpoint,
+      classifyError: classifyZimiQuotaError,
       clientFactory: failingOpenAIClient(
         new RawOpenAISDKAPIError(
           429,
@@ -517,16 +517,16 @@ describe('requester error conversion', () => {
     });
   });
 
-  it('does not restore a stream status through the Kimi classification hook', async () => {
+  it('does not restore a stream status through the Zimi classification hook', async () => {
     const raw = new RawOpenAISDKAPIError(
       429,
       { message: 'backend stream quota', code: 'exceeded_current_quota_error' },
       'SDK-composed fallback',
       new Headers({ 'retry-after': '5' }),
     );
-    const requester = createKimiOpenAIRequester({
-      endpoint: kimiEndpoint,
-      classifyError: classifyKimiQuotaError,
+    const requester = createZimiOpenAIRequester({
+      endpoint: zimiEndpoint,
+      classifyError: classifyZimiQuotaError,
       clientFactory: () =>
         ({
           chat: {
@@ -541,7 +541,7 @@ describe('requester error conversion', () => {
                   },
                   response: new Response(null, {
                     status: 200,
-                    headers: { 'x-trace-id': 'req-kimi-stream' },
+                    headers: { 'x-trace-id': 'req-zimi-stream' },
                   }),
                 }),
               }),
@@ -556,14 +556,14 @@ describe('requester error conversion', () => {
       error: {
         kind: 'quota_exhausted',
         message: 'backend stream quota',
-        requestId: 'req-kimi-stream',
+        requestId: 'req-zimi-stream',
         retryAfterMs: 5000,
       },
     });
     expect(failure).not.toHaveProperty('error.statusCode');
   });
 
-  it('does not restore a stream status through Kimi Anthropic classification', async () => {
+  it('does not restore a stream status through Zimi Anthropic classification', async () => {
     const raw = new RawAnthropicSDKAPIError(
       429,
       {
@@ -577,10 +577,10 @@ describe('requester error conversion', () => {
       new Headers(),
       'error',
     );
-    const requester = createKimiAnthropicRequester({
-      endpoint: kimiEndpoint,
+    const requester = createZimiAnthropicRequester({
+      endpoint: zimiEndpoint,
       betaApi: false,
-      classifyError: classifyKimiQuotaError,
+      classifyError: classifyZimiQuotaError,
       clientFactory: () =>
         ({
           messages: {
@@ -594,7 +594,7 @@ describe('requester error conversion', () => {
                 },
                 response: new Response(null, {
                   status: 200,
-                  headers: { 'x-trace-id': 'req-kimi-anthropic-stream', 'retry-after': '6' },
+                  headers: { 'x-trace-id': 'req-zimi-anthropic-stream', 'retry-after': '6' },
                 }),
               }),
             }),
@@ -608,13 +608,13 @@ describe('requester error conversion', () => {
       error: {
         kind: 'quota_exhausted',
         message: 'backend anthropic stream quota',
-        requestId: 'req-kimi-anthropic-stream',
+        requestId: 'req-zimi-anthropic-stream',
         retryAfterMs: 6000,
       },
     });
     expect(failure).not.toHaveProperty('error.statusCode');
     if (failure?.type === 'llm.failed.remote' && failure.error.kind === 'quota_exhausted') {
-      expect(failure.error.headers?.['x-trace-id']).toBe('req-kimi-anthropic-stream');
+      expect(failure.error.headers?.['x-trace-id']).toBe('req-zimi-anthropic-stream');
     }
   });
 

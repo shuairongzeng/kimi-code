@@ -331,7 +331,7 @@ describe('prompt queue', () => {
     eventBus.subscribe(TurnSteer, (event) => events.push(event));
     await enqueue(loop, { message: message('active') });
     await hold.started;
-    const metadata = { display_text: 'Save button', kimi_code_composer: { version: 1 } };
+    const metadata = { display_text: 'Save button', zimi_code_composer: { version: 1 } };
     const one = await enqueue(loop, { message: message('[literal](example.md)') });
     const two = await enqueue(loop, { message: { ...message('browser wire'), origin: { kind: 'user', clientMetadata: [metadata] } } });
     const three = await enqueue(loop, { message: message('last instruction') });
@@ -790,7 +790,7 @@ describe('prompt queue', () => {
       id: 'prompt-steer-daemon',
       message: {
         role: 'user',
-        content: [{ type: 'image_url', imageUrl: { url: 'kimi-file://file_1' } }],
+        content: [{ type: 'image_url', imageUrl: { url: 'zimi-file://file_1' } }],
         origin: { kind: 'user' },
       },
     });
@@ -895,7 +895,7 @@ describe('prompt queue', () => {
     await enqueue(loop, {
       id: 'a',
       message: bundledMessage('review', 'a text', [
-        { type: 'image_url', imageUrl: { url: 'kimi-file://file_1' } },
+        { type: 'image_url', imageUrl: { url: 'zimi-file://file_1' } },
       ]),
     });
     await enqueue(loop, { id: 'b', message: message('b') });

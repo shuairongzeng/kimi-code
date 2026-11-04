@@ -26,7 +26,7 @@ import {
   type Event2,
   type ISessionScopeHandle,
   type Scope,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 
 import {
   AgentTranscript,
@@ -38,13 +38,13 @@ import {
   type TranscriptFrame,
   type TranscriptOperation,
   type TranscriptTurn,
-} from '@moonshot-ai/transcript';
+} from '@zimi-ai/transcript';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { bindSessionTranscript } from '../../src/services/transcript/coreBinding';
 import { toWireQuestion } from '../../src/protocol/question-wire';
 import type { TaskEventMessage } from '../../src/protocol/ws-task';
-import type { AgentActivitySnapshot } from '@moonshot-ai/agent-core-v2/agent/loop/loop';
+import type { AgentActivitySnapshot } from '@zimi-ai/agent-core-v2/agent/loop/loop';
 import {
   AgentTranscriptProjector,
   type ProjectorBusEvent,
@@ -1552,7 +1552,7 @@ describe('AgentTranscriptProjector', () => {
     const projector = new AgentTranscriptProjector('main', TEST_SESSION_ID);
     const tx = new AgentTranscript('main');
     const feed = (event: ProjectorBusEvent): void => void tx.apply(projector.map(event));
-    const metadata = [{ display_text: 'Save button', kimi_code_composer: { version: 1, doc: { type: 'doc' } } }];
+    const metadata = [{ display_text: 'Save button', zimi_code_composer: { version: 1, doc: { type: 'doc' } } }];
     feed(ev({ type: 'prompt.submitted', promptId: 'p1', userMessageId: 'm1', status: 'queued', content: [{ type: 'text', text: 'wire' }], clientMetadata: metadata, createdAt: '2026-01-01T00:00:00.000Z' }));
     feed(ev({ type: 'prompt.queued', promptId: 'p1', content: [{ type: 'text', text: 'wire' }], queueLength: 1, clientMetadata: metadata }));
     feed(ev({ type: 'prompt.started', promptId: 'p1' }));
@@ -1750,7 +1750,7 @@ describe('AgentTranscriptProjector', () => {
           { type: 'text', text: 'look at this' },
           {
             type: 'image_url',
-            imageUrl: { url: 'kimi-file://f_img1?path=%2Fabs%2Fsession%2Fmedia%2Ff_img1.png' },
+            imageUrl: { url: 'zimi-file://f_img1?path=%2Fabs%2Fsession%2Fmedia%2Ff_img1.png' },
           },
         ],
         steeredAt: '2026-01-01T00:00:02.000Z',
@@ -1779,7 +1779,7 @@ describe('AgentTranscriptProjector', () => {
         promptIds: ['p2'],
         content: [
           { type: 'text', text: 'steered in' },
-          { type: 'video_url', videoUrl: { url: 'kimi-file://f_vid2', name: 'queued.mp4' } },
+          { type: 'video_url', videoUrl: { url: 'zimi-file://f_vid2', name: 'queued.mp4' } },
         ],
         steeredAt: '2026-01-01T00:00:02.000Z',
       }),
@@ -1789,7 +1789,7 @@ describe('AgentTranscriptProjector', () => {
         type: 'turn.steer',
         input: [
           { type: 'text', text: 'steered in' },
-          { type: 'video_url', videoUrl: { url: 'kimi-file://f_vid2', name: 'queued.mp4' } },
+          { type: 'video_url', videoUrl: { url: 'zimi-file://f_vid2', name: 'queued.mp4' } },
         ],
         origin: { kind: 'user' },
         promptIds: ['p2'],
@@ -1839,7 +1839,7 @@ describe('AgentTranscriptProjector', () => {
           { type: 'text', text: 'look at this' },
           {
             type: 'image_url',
-            imageUrl: { url: 'kimi-file://f_img9?path=%2Fabs%2Fsession%2Fmedia%2Ff_img9.png', name: 'architecture.png' },
+            imageUrl: { url: 'zimi-file://f_img9?path=%2Fabs%2Fsession%2Fmedia%2Ff_img9.png', name: 'architecture.png' },
           },
         ],
         steeredAt: '2026-01-01T00:00:02.000Z',
@@ -1854,7 +1854,7 @@ describe('AgentTranscriptProjector', () => {
           { type: 'text', text: 'look at this' },
           {
             type: 'image_url',
-            imageUrl: { url: 'kimi-file://f_img9?path=%2Fabs%2Fsession%2Fmedia%2Ff_img9.png', name: 'architecture.png' },
+            imageUrl: { url: 'zimi-file://f_img9?path=%2Fabs%2Fsession%2Fmedia%2Ff_img9.png', name: 'architecture.png' },
           },
         ],
         promptIds: ['p2', 'p3'],

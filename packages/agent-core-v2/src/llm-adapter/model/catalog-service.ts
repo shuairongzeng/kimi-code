@@ -1,8 +1,8 @@
-import { parseKimiCodeCustomHeaders } from '@moonshot-ai/kimi-code-oauth';
+import { parseZimiCodeCustomHeaders } from '@zimi-ai/zimi-code-oauth';
 import {
   apiKeyEnvMissingMessage,
   declaredProviderCredential,
-} from '@moonshot-ai/kimi-code-oauth/provider-credential';
+} from '@zimi-ai/zimi-code-oauth/provider-credential';
 
 import { Disposable } from '#/_base/di/lifecycle';
 import { LifecycleScope } from '#/app/scopes';
@@ -414,7 +414,7 @@ export function resolveOutboundHeaders(
     providerType !== undefined &&
     getProviderDefinition(providerType)?.hostHeaders === 'full';
   const hostLayer = forwardsAll ? host.headers : host.thirdPartyHeaders;
-  return { ...parseKimiCodeCustomHeaders(), ...hostLayer, ...customHeaders };
+  return { ...parseZimiCodeCustomHeaders(), ...hostLayer, ...customHeaders };
 }
 
 function resolveModelCapabilities(

@@ -259,7 +259,7 @@ async function withSkillCatalogWorkspace(
   run: (fixture: { readonly workDir: string; readonly skillRoot: string }) => Promise<void>,
 ): Promise<void> {
   const workDir = await mkdtemp(join(tmpdir(), 'skill-catalog-'));
-  const skillRoot = join(workDir, '.kimi-code', 'skills');
+  const skillRoot = join(workDir, '.zimi-code', 'skills');
   await mkdir(skillRoot, { recursive: true });
   try {
     await run({ workDir, skillRoot: await realpath(skillRoot) });
@@ -294,7 +294,7 @@ describe('WorkspaceSkillCatalogService', () => {
     name: string,
     description: string,
   ): Promise<void> {
-    const dir = join(workDir, '.kimi-code', 'skills', name);
+    const dir = join(workDir, '.zimi-code', 'skills', name);
     await mkdir(dir, { recursive: true });
     await writeFile(
       join(dir, 'SKILL.md'),
@@ -854,7 +854,7 @@ describe('WorkspaceSkillCatalogService', () => {
   it('feeds skipped skills from file sources into the merged catalog', async () => {
     await withSkillCatalogWorkspace(async ({ workDir }) => {
       const skippedEntry = {
-        path: join(workDir, '.kimi-code', 'skills', 'bad', 'SKILL.md'),
+        path: join(workDir, '.zimi-code', 'skills', 'bad', 'SKILL.md'),
         type: 'nope',
         reason: 'unsupported skill type "nope"',
       };
@@ -1048,7 +1048,7 @@ describe('WorkspaceSkillCatalogService', () => {
     const managedRoot = join(homeDir, 'plugins', 'managed', 'demo');
     await mkdir(join(managedRoot, 'skills', 'demo-skill'), { recursive: true });
     await writeFile(
-      join(managedRoot, 'kimi.plugin.json'),
+      join(managedRoot, 'zimi.plugin.json'),
       JSON.stringify({ name: 'demo', skills: './skills/' }),
       'utf8',
     );

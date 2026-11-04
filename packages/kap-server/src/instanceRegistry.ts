@@ -2,12 +2,12 @@ import { randomBytes } from 'node:crypto';
 import { mkdir, open, readdir, readFile, rename, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { resolveKimiHome } from '@moonshot-ai/agent-core-v2';
+import { resolveZimiHome } from '@zimi-ai/agent-core-v2';
 import { ulid } from 'ulid';
 
 export const HEARTBEAT_INTERVAL_MS = 15_000;
 
-export const DEFAULT_SERVER_DIR = join(resolveKimiHome(), 'server');
+export const DEFAULT_SERVER_DIR = join(resolveZimiHome(), 'server');
 export const DEFAULT_SERVER_INSTANCES_DIR = join(DEFAULT_SERVER_DIR, 'instances');
 
 export interface ServerInstanceInfo {

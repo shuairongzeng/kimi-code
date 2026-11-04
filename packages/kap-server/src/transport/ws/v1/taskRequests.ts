@@ -6,8 +6,8 @@ import {
   type AgentTaskOutputTail,
   type IDisposable,
   type Scope,
-} from '@moonshot-ai/agent-core-v2';
-import type { AgentTaskInfo } from '@moonshot-ai/agent-core-v2/agent/task/types';
+} from '@zimi-ai/agent-core-v2';
+import type { AgentTaskInfo } from '@zimi-ai/agent-core-v2/agent/task/types';
 
 import { ErrorCode } from '../../../protocol/error-codes';
 import {

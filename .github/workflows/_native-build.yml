@@ -7,7 +7,7 @@ on:
         description: 'Prefix for uploaded artifact name'
         required: false
         type: string
-        default: 'kimi-code-native'
+        default: 'zimi-code-native'
       retention-days:
         description: 'Artifact retention in days'
         required: false
@@ -93,7 +93,7 @@ jobs:
       - name: Override CLI version
         if: inputs.version != ''
         shell: bash
-        working-directory: apps/kimi-code
+        working-directory: apps/zimi-code
         env:
           VERSION: ${{ inputs.version }}
         run: npm pkg set version="$VERSION"
@@ -112,36 +112,36 @@ jobs:
         if: inputs.sign-macos
         shell: bash
         run: |
-          CATALOG_FILE="$RUNNER_TEMP/kimi-code-built-in-catalog.json"
-          node apps/kimi-code/scripts/update-catalog.mjs --out "$CATALOG_FILE"
-          echo "KIMI_CODE_BUILT_IN_CATALOG_FILE=$CATALOG_FILE" >> "$GITHUB_ENV"
+          CATALOG_FILE="$RUNNER_TEMP/zimi-code-built-in-catalog.json"
+          node apps/zimi-code/scripts/update-catalog.mjs --out "$CATALOG_FILE"
+          echo "ZIMI_CODE_BUILT_IN_CATALOG_FILE=$CATALOG_FILE" >> "$GITHUB_ENV"
 
-      - name: Build Kimi web assets
-        # The SEA blob step embeds apps/kimi-code/dist-web. The bundle is
+      - name: Build Zimi web assets
+        # The SEA blob step embeds apps/zimi-code/dist-web. The bundle is
         # committed (synced from the code-app repo) — just verify it is in place.
-        run: node apps/kimi-code/scripts/check-web-assets.mjs
+        run: node apps/zimi-code/scripts/check-web-assets.mjs
 
       - name: Build native executable (release profile, macOS signed)
         if: runner.os == 'macOS' && inputs.sign-macos
-        run: pnpm --filter @moonshot-ai/kimi-code run build:native:release
+        run: pnpm --filter @zimi-ai/zimi-code run build:native:release
 
       - name: Build native executable (local profile)
         if: '!(runner.os == ''macOS'' && inputs.sign-macos)'
         env:
-          KIMI_AZURE_TRUSTED_SIGNING: ${{ runner.os == 'Windows' && inputs.sign-windows && 'true' || 'false' }}
+          ZIMI_AZURE_TRUSTED_SIGNING: ${{ runner.os == 'Windows' && inputs.sign-windows && 'true' || 'false' }}
           AZURE_TRUSTED_SIGNING_ENDPOINT: ${{ vars.AZURE_TRUSTED_SIGNING_ENDPOINT }}
           AZURE_TRUSTED_SIGNING_ACCOUNT_NAME: ${{ vars.AZURE_TRUSTED_SIGNING_ACCOUNT_NAME }}
           AZURE_TRUSTED_SIGNING_CERTIFICATE_PROFILE_NAME: ${{ vars.AZURE_TRUSTED_SIGNING_CERTIFICATE_PROFILE_NAME }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-        run: pnpm --filter @moonshot-ai/kimi-code run build:native:sea
+        run: pnpm --filter @zimi-ai/zimi-code run build:native:sea
 
       - name: Notarize macOS binary
         if: runner.os == 'macOS' && inputs.sign-macos
         uses: ./.github/actions/macos-notarize
         with:
-          binary-path: ${{ github.workspace }}/apps/kimi-code/dist-native/bin/${{ matrix.target }}/kimi
+          binary-path: ${{ github.workspace }}/apps/zimi-code/dist-native/bin/${{ matrix.target }}/zimi
           notarization-key-p8: ${{ secrets.APPLE_NOTARIZATION_KEY_P8 }}
           notarization-key-id: ${{ secrets.APPLE_NOTARIZATION_KEY_ID }}
           notarization-issuer-id: ${{ secrets.APPLE_NOTARIZATION_ISSUER_ID }}
@@ -151,10 +151,10 @@ jobs:
         uses: ./.github/actions/macos-keychain-cleanup
 
       - name: Smoke test native executable
-        run: pnpm --filter @moonshot-ai/kimi-code run test:native:smoke
+        run: pnpm --filter @zimi-ai/zimi-code run test:native:smoke
 
       - name: Package native artifact
-        run: pnpm --filter @moonshot-ai/kimi-code run package:native
+        run: pnpm --filter @zimi-ai/zimi-code run package:native
 
       - name: Upload native artifact
         uses: actions/upload-artifact@v7
@@ -162,6 +162,6 @@ jobs:
           name: ${{ inputs.upload-artifact-prefix }}-${{ matrix.target }}
           retention-days: ${{ inputs.retention-days }}
           path: |
-            apps/kimi-code/dist-native/artifacts/kimi-code-${{ matrix.target }}.zip
-            apps/kimi-code/dist-native/artifacts/kimi-code-${{ matrix.target }}.zip.sha256
+            apps/zimi-code/dist-native/artifacts/zimi-code-${{ matrix.target }}.zip
+            apps/zimi-code/dist-native/artifacts/zimi-code-${{ matrix.target }}.zip.sha256
           if-no-files-found: ignore

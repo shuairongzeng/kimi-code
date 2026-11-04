@@ -1,21 +1,21 @@
 {
-  "name": "@moonshot-ai/kimi-code-oauth",
+  "name": "@zimi-ai/zimi-code-oauth",
   "version": "0.5.0",
   "private": true,
-  "description": "Kimi OAuth toolkit for managed Kimi Code authentication",
+  "description": "Zimi OAuth toolkit for managed Zimi Code authentication",
   "license": "MIT",
-  "author": "Moonshot AI",
-  "homepage": "https://github.com/MoonshotAI/kimi-code/tree/main/packages/oauth#readme",
+  "author": "Zimi AI",
+  "homepage": "https://github.com/ZimiAI/zimi-code/tree/main/packages/oauth#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MoonshotAI/kimi-code.git",
+    "url": "git+https://github.com/ZimiAI/zimi-code.git",
     "directory": "packages/oauth"
   },
   "bugs": {
-    "url": "https://github.com/MoonshotAI/kimi-code/issues"
+    "url": "https://github.com/ZimiAI/zimi-code/issues"
   },
   "keywords": [
-    "kimi",
+    "zimi",
     "oauth",
     "authentication",
     "auth",

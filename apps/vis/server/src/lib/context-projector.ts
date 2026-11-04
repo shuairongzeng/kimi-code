@@ -1,14 +1,14 @@
 import {
   buildContextCompactionShape,
-} from '@moonshot-ai/agent-core-v2/agent/contextMemory/compactionHandoff';
+} from '@zimi-ai/agent-core-v2/agent/contextMemory/compactionHandoff';
 import {
   computeUndoCut,
   isFullyUndoable,
   readContextCompactionShapeInput,
-} from '@moonshot-ai/agent-core-v2/agent/contextMemory/contextOps';
-import { createLoopEventFold } from '@moonshot-ai/agent-core-v2/agent/contextMemory/loopEventFold';
-import { renderToolResultForModel } from '@moonshot-ai/agent-core-v2/agent/contextMemory/toolResultRender';
-import type { ContentPart } from '@moonshot-ai/agent-core-v2/human/llm/message';
+} from '@zimi-ai/agent-core-v2/agent/contextMemory/contextOps';
+import { createLoopEventFold } from '@zimi-ai/agent-core-v2/agent/contextMemory/loopEventFold';
+import { renderToolResultForModel } from '@zimi-ai/agent-core-v2/agent/contextMemory/toolResultRender';
+import type { ContentPart } from '@zimi-ai/agent-core-v2/human/llm/message';
 import type {
   ContextMessage,
   PermissionMode,

@@ -89,8 +89,8 @@ describe('AgentProfileService.applyProfile', () => {
   let workDir: string;
 
   beforeEach(async () => {
-    homeDir = await mkdtemp(join(tmpdir(), 'kimi-apply-home-'));
-    workDir = await mkdtemp(join(tmpdir(), 'kimi-apply-work-'));
+    homeDir = await mkdtemp(join(tmpdir(), 'zimi-apply-home-'));
+    workDir = await mkdtemp(join(tmpdir(), 'zimi-apply-work-'));
   });
 
   afterEach(async () => {
@@ -201,9 +201,9 @@ describe('AgentProfileService.applyProfile', () => {
   });
 
   it('maps prompt context roots through the bound environment workspace view', async () => {
-    const mappedDir = await mkdtemp(join(tmpdir(), 'kimi-apply-mapped-'));
-    const localExtra = await mkdtemp(join(tmpdir(), 'kimi-apply-extra-local-'));
-    const mappedExtra = await mkdtemp(join(tmpdir(), 'kimi-apply-extra-mapped-'));
+    const mappedDir = await mkdtemp(join(tmpdir(), 'zimi-apply-mapped-'));
+    const localExtra = await mkdtemp(join(tmpdir(), 'zimi-apply-extra-local-'));
+    const mappedExtra = await mkdtemp(join(tmpdir(), 'zimi-apply-extra-mapped-'));
     try {
       await writeFile(join(workDir, 'local-only.txt'), 'x', 'utf-8');
       await writeFile(join(mappedDir, 'mapped-only.txt'), 'x', 'utf-8');
@@ -238,7 +238,7 @@ describe('AgentProfileService.applyProfile', () => {
   });
 
   it('renders the binding-derived workspace workDir instead of the host session cwd', async () => {
-    const bindingDir = await mkdtemp(join(tmpdir(), 'kimi-apply-binding-'));
+    const bindingDir = await mkdtemp(join(tmpdir(), 'zimi-apply-binding-'));
     try {
       await writeFile(join(bindingDir, 'binding-only.txt'), 'x', 'utf-8');
       await writeFile(join(workDir, 'host-only.txt'), 'x', 'utf-8');

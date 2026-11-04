@@ -1,4 +1,4 @@
-# @moonshot-ai/pi-tui
+# @zimi-ai/pi-tui
 
 ## 0.86.0
 

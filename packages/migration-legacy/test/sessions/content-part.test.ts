@@ -51,7 +51,7 @@ describe('normalizeContentPart', () => {
     expect((res as { type: 'text'; text: string }).text).toContain('image expired');
   });
 
-  it('nested image_url (current kimi-cli form): packs url and id', () => {
+  it('nested image_url (current zimi-cli form): packs url and id', () => {
     const part = { type: 'image_url', image_url: { url: 'data:...', id: 'img-1' } };
     expect(normalizeContentPart(part)).toEqual({
       type: 'image_url',

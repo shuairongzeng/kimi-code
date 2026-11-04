@@ -9,8 +9,8 @@ import type {
   ILogService,
   ISessionIndex,
   SessionSummary,
-} from '@moonshot-ai/agent-core-v2';
-import { DATABASE_SECTION } from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
+import { DATABASE_SECTION } from '@zimi-ai/agent-core-v2';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {

@@ -1,7 +1,7 @@
 import { createConnection } from 'node:net';
 
-export const SSH_ASKPASS_PORT_ENV = 'KIMI_CODE_SSH_ASKPASS_PORT';
-export const SSH_ASKPASS_TOKEN_ENV = 'KIMI_CODE_SSH_ASKPASS_TOKEN';
+export const SSH_ASKPASS_PORT_ENV = 'ZIMI_CODE_SSH_ASKPASS_PORT';
+export const SSH_ASKPASS_TOKEN_ENV = 'ZIMI_CODE_SSH_ASKPASS_TOKEN';
 
 export function isSshAskpassEnvironment(env: Readonly<Record<string, string | undefined>> = process.env): boolean {
   return env[SSH_ASKPASS_PORT_ENV] !== undefined && env[SSH_ASKPASS_TOKEN_ENV] !== undefined;

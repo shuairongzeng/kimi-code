@@ -1,4 +1,4 @@
-import { defineTelemetryEvent } from '@moonshot-ai/agent-core-v2';
+import { defineTelemetryEvent } from '@zimi-ai/agent-core-v2';
 
 import type { SurveyEventType, SurveyKind, SurveyResponse } from '../common/types';
 import type { SurveyPopupConfig } from '../common/survey-popup-config';
@@ -73,7 +73,7 @@ const surveyEventPropertyDescriptions: {
   appearance_index: 'Ordinal of the appearance within the current session mount, starting at 1',
   response: 'Answer carried by responded events: bad, fine, good, or dismissed',
   current_model: 'Session model alias when the prompt appeared',
-  kfc_model_id: 'Managed Kimi Code model id, present when the session model uses the managed endpoint',
+  kfc_model_id: 'Managed Zimi Code model id, present when the session model uses the managed endpoint',
   kfc_trace_id: 'Trace id of the turn that triggered the prompt, present only with kfc_model_id',
   user_turn_count:
     'User turns in the session when the prompt appeared, absent when the history count is unknown',
@@ -102,12 +102,12 @@ const surveyEventPropertyDescriptions: {
 
 export const surveyEventDefinitions = {
   feedback_survey: defineTelemetryEvent<SurveyEventProperties>({
-    owner: 'kimi-code',
+    owner: 'zimi-code',
     comment: 'A session rating prompt appears, is answered, or is abandoned.',
     properties: surveyEventPropertyDescriptions,
   }),
   long_context_survey: defineTelemetryEvent<SurveyEventProperties>({
-    owner: 'kimi-code',
+    owner: 'zimi-code',
     comment: 'A long-context session rating prompt appears, is answered, or is abandoned.',
     properties: surveyEventPropertyDescriptions,
   }),

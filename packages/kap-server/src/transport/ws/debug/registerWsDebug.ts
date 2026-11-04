@@ -1,4 +1,4 @@
-import type { XstateInspectionCollector } from '@moonshot-ai/agent-core-v2/human/xstateInspection';
+import type { XstateInspectionCollector } from '@zimi-ai/agent-core-v2/human/xstateInspection';
 import { WebSocketServer } from 'ws';
 
 import { selectWsBearerProtocol } from '../bearerProtocol';

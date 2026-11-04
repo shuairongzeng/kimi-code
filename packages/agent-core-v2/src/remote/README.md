@@ -2,7 +2,7 @@
 
 Remote execution protocol and bridge: a self-contained NDJSON line-framed RPC
 (codex exec-server dialect) between the local `ExecBridge` and the light
-`kimi exec-server` executor, and the provider that registers each declared
+`zimi exec-server` executor, and the provider that registers each declared
 remote target as an engine `Environment` (`src/environment/`).
 
 The fs/process RPC stubs are an OS backend, so they live next to the
@@ -30,12 +30,12 @@ packages/agent-core-v2/src/
 
 ## Entries
 
-- `@moonshot-ai/agent-core-v2/remote` — client side: protocol + bridge + `RemoteSession` + `RemoteEnvironmentProviderFactory`.
-- `@moonshot-ai/agent-core-v2/remote/server` — the executor side: `runExecServer` (light entry), `StdioHost`.
-- `@moonshot-ai/agent-core-v2/remote/askpass` — the SSH askpass helper side: env contract and `runSshAskpass` (light entry). The listener half is `remote/client/sshAskpass`; hosts opt into the password retry with `sshPassword: { prompt, askpassCommand }`, where `askpassCommand` re-enters a process whose entry dispatches to `runSshAskpass` when `isSshAskpassEnvironment()` holds.
+- `@zimi-ai/agent-core-v2/remote` — client side: protocol + bridge + `RemoteSession` + `RemoteEnvironmentProviderFactory`.
+- `@zimi-ai/agent-core-v2/remote/server` — the executor side: `runExecServer` (light entry), `StdioHost`.
+- `@zimi-ai/agent-core-v2/remote/askpass` — the SSH askpass helper side: env contract and `runSshAskpass` (light entry). The listener half is `remote/client/sshAskpass`; hosts opt into the password retry with `sshPassword: { prompt, askpassCommand }`, where `askpassCommand` re-enters a process whose entry dispatches to `runSshAskpass` when `isSshAskpassEnvironment()` holds.
 
 The CLI consumes only the server entry: argv pre-dispatch
-(`kimi exec-server --listen stdio`) then `await import('@moonshot-ai/kimi-code-sdk/exec-server')`
+(`zimi exec-server --listen stdio`) then `await import('@zimi-ai/zimi-code-sdk/exec-server')`
 (a light SDK subpath re-exporting this entry) and `runExecServer({ version })`.
 The fs/process handlers are protocol adapters over the same node-local
 `HostFileSystem` / `HostProcessService` implementations the local environment
@@ -157,7 +157,7 @@ PowerShell probe when needed, before launching the executor exactly once.
 Authentication failures and probe timeouts stop detection. POSIX paths retain
 shell quoting and tilde expansion. Windows paths use an encoded PowerShell
 script with a literal executable path, target-side `~` expansion, and the
-executor's exit status; the default becomes `~/.kimi-code/bin/kimi.exe`.
+executor's exit status; the default becomes `~/.zimi-code/bin/zimi.exe`.
 The outer command contains no shell conditionals, so Windows PowerShell 5.1
 can serve as the SSH default shell. Docker retains
 `docker exec -i <container> sh -c 'exec <remoteBin> exec-server --listen stdio'`.
@@ -165,8 +165,8 @@ can serve as the SSH default shell. Docker retains
 - **Missing executor** — the launcher exited 127 (the remote shell could not
   find the executor binary) or 126 (the remote shell found the executor but
   could not execute it, e.g. a missing exec bit), or the handshake **timed out**.
-  The error gains install guidance: download the `kimi` binary for the target
-  platform from the Kimi Code release CDN and install it at the executor path
+  The error gains install guidance: download the `zimi` binary for the target
+  platform from the Zimi Code release CDN and install it at the executor path
   the launcher invokes (named in the message; `command` environments append
   `<remoteBin> exec-server` to their args and are pointed at that `remoteBin`,
   unless their args already invoke `exec-server`, in which case they are

@@ -316,7 +316,7 @@ describe('ConfigService key-level writeback', () => {
   let homeDir: string;
 
   beforeEach(() => {
-    homeDir = mkdtempSync(join(tmpdir(), 'kimi-v2-keyedit-'));
+    homeDir = mkdtempSync(join(tmpdir(), 'zimi-v2-keyedit-'));
   });
 
   afterEach(() => {

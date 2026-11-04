@@ -39,16 +39,16 @@ import {
 import { useChatStore } from "../webview-ui/src/stores/chat.store";
 
 const MODELS = [
-  { id: "plain", name: "Plain", provider: "managed:kimi-code", capabilities: [] },
+  { id: "plain", name: "Plain", provider: "managed:zimi-code", capabilities: [] },
   {
     id: "reasoning",
     name: "Reasoning",
-    provider: "managed:kimi-code",
+    provider: "managed:zimi-code",
     capabilities: ["thinking"],
     support_efforts: ["low", "high"],
     default_effort: "high",
   },
-  { id: "always", name: "Always", provider: "managed:kimi-code", capabilities: ["always_thinking"] },
+  { id: "always", name: "Always", provider: "managed:zimi-code", capabilities: ["always_thinking"] },
 ];
 
 beforeEach(() => {
@@ -145,7 +145,7 @@ describe("Webview model settings persistence", () => {
 describe("Webview model metadata", () => {
   it("keeps same-named models in separate provider groups", () => {
     const groups = groupModelsByProvider([
-      { id: "kimi/shared", name: "Shared", provider: "managed:kimi-code", capabilities: [] },
+      { id: "zimi/shared", name: "Shared", provider: "managed:zimi-code", capabilities: [] },
       { id: "proxy/shared", name: "Shared", provider: "company-proxy", capabilities: [] },
     ]);
 
@@ -155,7 +155,7 @@ describe("Webview model metadata", () => {
       models: group.models.map((model) => model.id),
     }))).toEqual([
       { provider: "company-proxy", label: "company-proxy", models: ["proxy/shared"] },
-      { provider: "managed:kimi-code", label: "Kimi Code", models: ["kimi/shared"] },
+      { provider: "managed:zimi-code", label: "Zimi Code", models: ["zimi/shared"] },
     ]);
   });
 
@@ -184,16 +184,16 @@ describe("Webview model metadata", () => {
     expect(fallback?.id).toBe("openai/vision");
   });
 
-  it("does not require Kimi login when the default model uses a custom provider", () => {
+  it("does not require Zimi login when the default model uses a custom provider", () => {
     expect(requiresManagedProviderLogin([
       { id: "local/model", name: "Local", provider: "local", capabilities: [] },
     ], "local/model", false)).toBe(false);
   });
 
-  it("requires Kimi login when the default model uses the managed provider", () => {
+  it("requires Zimi login when the default model uses the managed provider", () => {
     expect(requiresManagedProviderLogin([
-      { id: "kimi/model", name: "Kimi", provider: "managed:kimi-code", capabilities: [] },
-    ], "kimi/model", false)).toBe(true);
+      { id: "zimi/model", name: "Zimi", provider: "managed:zimi-code", capabilities: [] },
+    ], "zimi/model", false)).toBe(true);
   });
 });
 
@@ -207,7 +207,7 @@ describe("Webview model catalog refresh", () => {
     });
     const models = [
       ...MODELS,
-      { id: "new", name: "New", provider: "managed:kimi-code", capabilities: [] },
+      { id: "new", name: "New", provider: "managed:zimi-code", capabilities: [] },
     ];
 
     useSettingsStore.getState().setModels(models);
@@ -324,7 +324,7 @@ describe("Webview thinking mode parity with the TUI", () => {
     expect(getModelThinkingMode({ ...base, capabilities: ["always_thinking"] })).toBe("always");
     expect(getModelThinkingMode({ ...base, capabilities: ["thinking"] })).toBe("switch");
     expect(getModelThinkingMode({ ...base, adaptive_thinking: true })).toBe("switch");
-    expect(getModelThinkingMode({ ...base, name: "Kimi Thinking Pro" })).toBe("none");
+    expect(getModelThinkingMode({ ...base, name: "Zimi Thinking Pro" })).toBe("none");
     expect(getModelThinkingMode(base)).toBe("none");
   });
 });
@@ -427,7 +427,7 @@ describe("Webview thinking effort parity with the TUI", () => {
       {
         id: "reasoning",
         name: "Reasoning",
-        provider: "managed:kimi-code",
+        provider: "managed:zimi-code",
         capabilities: ["thinking"],
         support_efforts: ["low", "high", "max"],
         default_effort: "low",
@@ -447,7 +447,7 @@ describe("Webview thinking effort parity with the TUI", () => {
       {
         id: "reasoning",
         name: "Reasoning",
-        provider: "managed:kimi-code",
+        provider: "managed:zimi-code",
         capabilities: ["thinking"],
         support_efforts: ["low", "high"],
       },
@@ -464,7 +464,7 @@ describe("Webview thinking effort parity with the TUI", () => {
     {
       id: "seeded",
       name: "Seeded",
-      provider: "managed:kimi-code",
+      provider: "managed:zimi-code",
       capabilities: ["thinking"],
       support_efforts: ["low", "medium"],
       default_effort: "medium",
@@ -472,7 +472,7 @@ describe("Webview thinking effort parity with the TUI", () => {
     {
       id: "max-default",
       name: "Max Default",
-      provider: "managed:kimi-code",
+      provider: "managed:zimi-code",
       capabilities: ["thinking"],
       support_efforts: ["low", "max"],
       default_effort: "max",
@@ -522,7 +522,7 @@ describe("Webview thinking effort parity with the TUI", () => {
       {
         id: "max-default-b",
         name: "Max Default B",
-        provider: "managed:kimi-code",
+        provider: "managed:zimi-code",
         capabilities: ["thinking"],
         support_efforts: ["low", "max"],
         default_effort: "max",

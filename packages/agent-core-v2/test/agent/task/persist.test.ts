@@ -47,7 +47,7 @@ function sample(overrides: Partial<Extract<AgentTaskInfo, { kind: 'process' }>> 
 beforeEach(async () => {
   sessionDir = join(
     tmpdir(),
-    `kimi-bg-persist-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    `zimi-bg-persist-${Date.now()}-${Math.random().toString(36).slice(2)}`,
   );
   await mkdir(sessionDir, { recursive: true });
 
@@ -290,17 +290,17 @@ describe('AgentTaskPersistence', () => {
     it('mirrors appended output into the spill target and reports the spill path', async () => {
       const writes: { path: string; data: string }[] = [];
       const fs = recordingAppendFs(writes);
-      const spill = spillPersistence(() => ({ fs, dir: '/remote/tmp/kimi-code/task-output' }));
+      const spill = spillPersistence(() => ({ fs, dir: '/remote/tmp/zimi-code/task-output' }));
 
       await spill.appendTaskOutput('bash-mirror01', 'chunk-one');
       await spill.appendTaskOutput('bash-mirror01', 'chunk-two');
 
       expect(writes).toEqual([
-        { path: '/remote/tmp/kimi-code/task-output/bash-mirror01.log', data: 'chunk-one' },
-        { path: '/remote/tmp/kimi-code/task-output/bash-mirror01.log', data: 'chunk-two' },
+        { path: '/remote/tmp/zimi-code/task-output/bash-mirror01.log', data: 'chunk-one' },
+        { path: '/remote/tmp/zimi-code/task-output/bash-mirror01.log', data: 'chunk-two' },
       ]);
       const snapshot = await spill.readTaskOutputSnapshot('bash-mirror01', 100);
-      expect(snapshot?.outputPath).toBe('/remote/tmp/kimi-code/task-output/bash-mirror01.log');
+      expect(snapshot?.outputPath).toBe('/remote/tmp/zimi-code/task-output/bash-mirror01.log');
       expect(snapshot?.outputSizeBytes).toBe('chunk-onechunk-two'.length);
     });
 

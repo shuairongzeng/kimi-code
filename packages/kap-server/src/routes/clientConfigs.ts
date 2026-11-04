@@ -1,4 +1,4 @@
-import { IBootstrapService, IOAuthService, type Scope } from '@moonshot-ai/agent-core-v2';
+import { IBootstrapService, IOAuthService, type Scope } from '@zimi-ai/agent-core-v2';
 import { z } from 'zod';
 
 import { okEnvelope } from '../envelope';
@@ -49,7 +49,7 @@ export function registerClientConfigsRoutes(app: RouteHost, core: Scope): void {
       const config = await fetchClientConfig(
         name,
         clientConfigsBaseUrl(
-          bootstrap.getEnv('KIMI_CODE_BASE_URL') ?? process.env['KIMI_CODE_BASE_URL'],
+          bootstrap.getEnv('ZIMI_CODE_BASE_URL') ?? process.env['ZIMI_CODE_BASE_URL'],
           core.accessor.get(IOAuthService).getRegion(),
         ),
       );

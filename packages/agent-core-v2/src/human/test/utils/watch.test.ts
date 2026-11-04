@@ -416,13 +416,13 @@ describe('watch chokidar mode', () => {
 
   it('does not emit sibling flood names when watching candidate paths', async () => {
     root = await mkdtemp(join(tmpdir(), 'watch-candidates-'));
-    const kimi = join(root, '.kimi-code');
-    const sessions = join(kimi, 'sessions', 's1.json');
-    await mkdir(join(kimi, 'sessions'), { recursive: true });
+    const zimi = join(root, '.zimi-code');
+    const sessions = join(zimi, 'sessions', 's1.json');
+    await mkdir(join(zimi, 'sessions'), { recursive: true });
     await writeFile(join(root, 'ck_0001'), 'x');
     await writeFile(sessions, 'old');
     const events: WatchChange[] = [];
-    const file = join(kimi, 'local.toml');
+    const file = join(zimi, 'local.toml');
     handle = watchCandidates(root, [file]);
     handle.onDidChange((e) => events.push(e));
     await handle.ready;
@@ -434,7 +434,7 @@ describe('watch chokidar mode', () => {
 
     await writeFile(file, 'hello');
     await expect.poll(() => events.some((e) => e.path === file), { timeout: 5000 }).toBe(true);
-    expect(events.some((e) => e.path === kimi || e.path === root || e.path.includes('sessions'))).toBe(
+    expect(events.some((e) => e.path === zimi || e.path === root || e.path.includes('sessions'))).toBe(
       false,
     );
   });

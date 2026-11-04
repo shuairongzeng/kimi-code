@@ -1,37 +1,37 @@
-import { resolveConfigPath } from '@moonshot-ai/agent-core-v2';
+import { resolveConfigPath } from '@zimi-ai/agent-core-v2';
 import { z } from 'zod';
 
 import { parseConfigString } from '#/config/index';
-import { ErrorCodes, KimiError } from '#/errors';
+import { ErrorCodes, ZimiError } from '#/errors';
 
-export type KimiConfigValidationPathSegment = string | number;
+export type ZimiConfigValidationPathSegment = string | number;
 
-export interface KimiConfigValidationIssue {
-  readonly path: readonly KimiConfigValidationPathSegment[];
+export interface ZimiConfigValidationIssue {
+  readonly path: readonly ZimiConfigValidationPathSegment[];
   readonly message: string;
 }
 
-export interface ResolveKimiConfigPathInput {
+export interface ResolveZimiConfigPathInput {
   readonly homeDir?: string | undefined;
   readonly configPath?: string | undefined;
 }
 
-export interface ValidateKimiConfigTomlInput {
+export interface ValidateZimiConfigTomlInput {
   readonly text: string;
   readonly filePath?: string | undefined;
 }
 
-export interface KimiConfigRpc {
-  resolveConfigPath(input?: ResolveKimiConfigPathInput): Promise<string>;
-  validateConfigToml(input: ValidateKimiConfigTomlInput): Promise<void>;
+export interface ZimiConfigRpc {
+  resolveConfigPath(input?: ResolveZimiConfigPathInput): Promise<string>;
+  validateConfigToml(input: ValidateZimiConfigTomlInput): Promise<void>;
 }
 
-export class KimiConfigRpcClient implements KimiConfigRpc {
-  async resolveConfigPath(input: ResolveKimiConfigPathInput = {}): Promise<string> {
+export class ZimiConfigRpcClient implements ZimiConfigRpc {
+  async resolveConfigPath(input: ResolveZimiConfigPathInput = {}): Promise<string> {
     return resolveConfigPath(input);
   }
 
-  async validateConfigToml(input: ValidateKimiConfigTomlInput): Promise<void> {
+  async validateConfigToml(input: ValidateZimiConfigTomlInput): Promise<void> {
     try {
       parseConfigString(input.text, input.filePath);
     } catch (error) {
@@ -44,28 +44,28 @@ export class KimiConfigRpcClient implements KimiConfigRpc {
   }
 }
 
-export function createKimiConfigRpc(): KimiConfigRpc {
-  return new KimiConfigRpcClient();
+export function createZimiConfigRpc(): ZimiConfigRpc {
+  return new ZimiConfigRpcClient();
 }
 
 function toConfigValidationError(
   error: unknown,
-  validationIssues: readonly KimiConfigValidationIssue[],
-): KimiError {
+  validationIssues: readonly ZimiConfigValidationIssue[],
+): ZimiError {
   const details =
-    error instanceof KimiError && error.details !== undefined
+    error instanceof ZimiError && error.details !== undefined
       ? { ...error.details, validationIssues }
       : { validationIssues };
 
-  if (error instanceof KimiError) {
-    return new KimiError(error.code, error.message, { details });
+  if (error instanceof ZimiError) {
+    return new ZimiError(error.code, error.message, { details });
   }
 
   const message = error instanceof Error ? error.message : String(error);
-  return new KimiError(ErrorCodes.CONFIG_INVALID, message, { details });
+  return new ZimiError(ErrorCodes.CONFIG_INVALID, message, { details });
 }
 
-function extractValidationIssues(error: unknown): readonly KimiConfigValidationIssue[] | undefined {
+function extractValidationIssues(error: unknown): readonly ZimiConfigValidationIssue[] | undefined {
   const zodError = findZodError(error);
   if (zodError === undefined) return undefined;
   return zodError.issues.map((issue) => ({

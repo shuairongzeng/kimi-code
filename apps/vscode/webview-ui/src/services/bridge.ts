@@ -4,7 +4,7 @@ import type {
   ContentPart,
   MCPServerConfig,
   SessionInfo,
-  KimiConfig,
+  ZimiConfig,
   MCPTestResult,
   LoginResult,
   UpdateMCPServerRequest,
@@ -48,9 +48,9 @@ class Bridge {
     if (typeof acquireVsCodeApi === "function") {
       this.vscode = acquireVsCodeApi();
     } else {
-      console.warn("[Kimi Bridge] Running outside VS Code, using mock");
+      console.warn("[Zimi Bridge] Running outside VS Code, using mock");
       this.vscode = {
-        postMessage: (msg) => console.log("[Kimi Mock]", msg),
+        postMessage: (msg) => console.log("[Zimi Mock]", msg),
         getState: () => undefined,
         setState: () => {},
       };
@@ -151,7 +151,7 @@ class Bridge {
   }
 
   getModels() {
-    return this.call<KimiConfig>(Methods.GetModels);
+    return this.call<ZimiConfig>(Methods.GetModels);
   }
 
   getMCPServers() {
@@ -207,12 +207,12 @@ class Bridge {
     return this.call<{ ok: boolean }>(Methods.RespondQuestion, { rpcRequestId, questionRequestId, answers });
   }
 
-  getKimiSessions() {
-    return this.call<SessionInfo[]>(Methods.GetKimiSessions);
+  getZimiSessions() {
+    return this.call<SessionInfo[]>(Methods.GetZimiSessions);
   }
 
-  getAllKimiSessions() {
-    return this.call<SessionInfo[]>(Methods.GetAllKimiSessions);
+  getAllZimiSessions() {
+    return this.call<SessionInfo[]>(Methods.GetAllZimiSessions);
   }
 
   getRegisteredWorkDirs() {
@@ -228,15 +228,15 @@ class Bridge {
   }
 
   loadSessionHistory(sessionId: string) {
-    return this.call<UIStreamEvent[]>(Methods.LoadKimiSessionHistory, { kimiSessionId: sessionId });
+    return this.call<UIStreamEvent[]>(Methods.LoadZimiSessionHistory, { zimiSessionId: sessionId });
   }
 
   deleteSession(sessionId: string) {
-    return this.call<{ ok: boolean }>(Methods.DeleteKimiSession, { sessionId });
+    return this.call<{ ok: boolean }>(Methods.DeleteZimiSession, { sessionId });
   }
 
   forkSession(sessionId: string, turnIndex: number) {
-    return this.call<{ sessionId: string } | null>(Methods.ForkKimiSession, { sessionId, turnIndex });
+    return this.call<{ sessionId: string } | null>(Methods.ForkZimiSession, { sessionId, turnIndex });
   }
 
   pickMedia(maxCount: number, includeVideo = true) {

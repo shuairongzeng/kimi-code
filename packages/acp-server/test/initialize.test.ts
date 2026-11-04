@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { PassThrough, Readable, Writable } from 'node:stream';
 
 import { ndJsonStream } from '@agentclientprotocol/sdk';
-import { IEnvironmentService } from '@moonshot-ai/agent-core-v2';
+import { IEnvironmentService } from '@zimi-ai/agent-core-v2';
 import { describe, expect, it } from 'vitest';
 
 import { runAcpServerWithStream } from '../src/start';
@@ -217,8 +217,8 @@ describe('acp-server initialize handshake', () => {
         const stream = ndJsonStream(Writable.toWeb(toClient), Readable.toWeb(toAgent));
         const server = await runAcpServerWithStream(stream, {
           homeDir,
-          terminalAuthEnv: { KIMI_CODE_HOME: '/tmp/sandbox' },
-          terminalAuthLegacyCommand: '/opt/kimi/bin/kimi',
+          terminalAuthEnv: { ZIMI_CODE_HOME: '/tmp/sandbox' },
+          terminalAuthLegacyCommand: '/opt/zimi/bin/zimi',
         });
 
         toAgent.write(
@@ -241,11 +241,11 @@ describe('acp-server initialize handshake', () => {
         };
         expect(method.type).toBe('terminal');
         expect(method.args).toEqual(['--login']);
-        expect(method.env).toEqual({ KIMI_CODE_HOME: '/tmp/sandbox' });
+        expect(method.env).toEqual({ ZIMI_CODE_HOME: '/tmp/sandbox' });
         expect(method._meta?.['terminal-auth']).toMatchObject({
-          command: '/opt/kimi/bin/kimi',
+          command: '/opt/zimi/bin/zimi',
           args: ['login'],
-          env: { KIMI_CODE_HOME: '/tmp/sandbox' },
+          env: { ZIMI_CODE_HOME: '/tmp/sandbox' },
         });
 
         await server.close();

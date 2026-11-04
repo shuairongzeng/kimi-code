@@ -1,17 +1,17 @@
 {
-  "name": "@moonshot-ai/transcript",
+  "name": "@zimi-ai/transcript",
   "version": "0.0.2",
   "private": true,
   "description": "Isomorphic transcript rendering data layer: agent-granular L1 store, idempotent L2 operations, granularity-gated L3 subscriptions, framework-free L4 view registry.",
   "license": "MIT",
-  "author": "Moonshot AI",
+  "author": "Zimi AI",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MoonshotAI/kimi-code.git",
+    "url": "git+https://github.com/ZimiAI/zimi-code.git",
     "directory": "packages/transcript"
   },
   "bugs": {
-    "url": "https://github.com/MoonshotAI/kimi-code/issues"
+    "url": "https://github.com/ZimiAI/zimi-code/issues"
   },
   "type": "module",
   "imports": {

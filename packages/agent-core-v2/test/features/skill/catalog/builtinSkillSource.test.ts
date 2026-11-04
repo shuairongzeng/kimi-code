@@ -20,7 +20,7 @@ const PRODUCT_SKILLS = [
   'import-from-cc-codex',
   'update-config',
   'custom-theme',
-  'check-kimi-code-docs',
+  'check-zimi-code-docs',
 ];
 const NEUTRAL_SKILLS = BUILTIN_SKILLS.map((s) => s.name).filter(
   (name) => !PRODUCT_SKILLS.includes(name),
@@ -126,7 +126,7 @@ describe('import-from-cc-codex prompt rendering', () => {
     expect(render('skills only')).toBe(
       `${IMPORT_FROM_CC_CODEX_SKILL.content}\n\nARGUMENTS: skills only`,
     );
-    expect(IMPORT_FROM_CC_CODEX_SKILL.content).toContain('KIMI_SKILL_DIR');
-    expect(IMPORT_FROM_CC_CODEX_SKILL.content).toContain('KIMI_SESSION_ID');
+    expect(IMPORT_FROM_CC_CODEX_SKILL.content).toContain('ZIMI_SKILL_DIR');
+    expect(IMPORT_FROM_CC_CODEX_SKILL.content).toContain('ZIMI_SESSION_ID');
   });
 });

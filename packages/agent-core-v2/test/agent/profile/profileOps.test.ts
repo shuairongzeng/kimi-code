@@ -74,7 +74,7 @@ function createTestModel(
 ): Model {
   const providerType = options.providerType;
   return {
-    id: options.id ?? 'kimi-code',
+    id: options.id ?? 'zimi-code',
     name: 'kimi-for-coding',
     aliases: [],
     protocol: options.protocol ?? 'openai',
@@ -89,11 +89,11 @@ function createTestModel(
       max_context_tokens: 1000,
     },
     maxContextSize: 1000,
-    supportEfforts: providerType === 'kimi' ? ['low', 'medium', 'high', 'max'] : undefined,
-    defaultEffort: providerType === 'kimi' ? 'high' : undefined,
+    supportEfforts: providerType === 'zimi' ? ['low', 'medium', 'high', 'max'] : undefined,
+    defaultEffort: providerType === 'zimi' ? 'high' : undefined,
     alwaysThinking: false,
     providerType,
-    providerName: 'kimi',
+    providerName: 'zimi',
   };
 }
 
@@ -128,14 +128,14 @@ function createProtocolRegistryStub(): IProtocolAdapterRegistry {
     resolveAdapterIdentity: (protocol: Protocol, providerType?: string) => ({
       baseId: protocol,
       traits:
-        providerType === 'kimi' && protocol === 'openai'
+        providerType === 'zimi' && protocol === 'openai'
           ? [
               {
                 trait: { withThinking: () => undefined, strictThinkingValidation: true },
                 context: {},
               },
             ]
-          : providerType === 'kimi' && protocol === 'anthropic'
+          : providerType === 'zimi' && protocol === 'anthropic'
             ? [{ trait: { withThinking: () => undefined }, context: {} }]
             : [],
     }),
@@ -343,7 +343,7 @@ describe('AgentProfileService (wire-backed config.update)', () => {
   it('persists the rendered prompt and disclosure snapshot in one bind record', async () => {
     const environment: EnvironmentDisclosureSnapshot = { cwd: '/work' };
     svc.applyBindingSnapshot({
-      modelAlias: 'kimi-code',
+      modelAlias: 'zimi-code',
       profileName: 'agent',
       thinkingLevel: 'off',
       systemPrompt: 'rendered prompt',
@@ -560,13 +560,13 @@ describe('AgentProfileService (wire-backed config.update)', () => {
 
   it('applies thinking.keep model override when thinking is enabled', () => {
     modelCatalog = createModelCatalogStub({
-      'kimi-code': createTestModel({ providerType: 'kimi' }),
+      'zimi-code': createTestModel({ providerType: 'zimi' }),
     });
     const host = buildHost('profile-thinking-keep');
     host.svc.configure({ emitStatusUpdated: () => undefined });
     configValues['modelOverrides'] = { temperature: 0.3, thinkingKeep: 'all' };
 
-    host.svc.update({ modelAlias: 'kimi-code', thinkingLevel: 'high' });
+    host.svc.update({ modelAlias: 'zimi-code', thinkingLevel: 'high' });
 
     expect(host.svc.resolveRequestParams()).toEqual({
       cacheKey: 'session-test',
@@ -578,15 +578,15 @@ describe('AgentProfileService (wire-backed config.update)', () => {
 
   it('exposes the provider type of the bound model, or nothing before a model binds', () => {
     modelCatalog = createModelCatalogStub({
-      'kimi-code': createTestModel({ providerType: 'kimi' }),
+      'zimi-code': createTestModel({ providerType: 'zimi' }),
       'claude-code': createTestModel({ id: 'claude-code', protocol: 'anthropic' }),
     });
     const host = buildHost('profile-provider-type');
     host.svc.configure({ emitStatusUpdated: () => undefined });
 
     expect(host.svc.getModelProviderType()).toBeUndefined();
-    host.svc.update({ modelAlias: 'kimi-code' });
-    expect(host.svc.getModelProviderType()).toBe('kimi');
+    host.svc.update({ modelAlias: 'zimi-code' });
+    expect(host.svc.getModelProviderType()).toBe('zimi');
     host.svc.update({ modelAlias: 'claude-code' });
     expect(host.svc.getModelProviderType()).toBeUndefined();
     host.svc.update({ modelAlias: 'unknown-model' });
@@ -595,34 +595,34 @@ describe('AgentProfileService (wire-backed config.update)', () => {
 
   it('resolves the provider type of another catalog model without rebinding', () => {
     modelCatalog = createModelCatalogStub({
-      'kimi-code': createTestModel({ providerType: 'kimi' }),
+      'zimi-code': createTestModel({ providerType: 'zimi' }),
       'claude-code': createTestModel({ id: 'claude-code', protocol: 'anthropic' }),
     });
     const host = buildHost('profile-provider-type-of-alias');
     host.svc.configure({ emitStatusUpdated: () => undefined });
     host.svc.update({ modelAlias: 'claude-code' });
 
-    expect(host.svc.getModelProviderType('kimi-code')).toBe('kimi');
+    expect(host.svc.getModelProviderType('zimi-code')).toBe('zimi');
     expect(host.svc.getModelProviderType('missing-model')).toBeUndefined();
     expect(host.svc.getModel()).toBe('claude-code');
   });
 
   it('falls back to the configured default model when nothing binds and no alias is given', () => {
     modelCatalog = createModelCatalogStub({
-      'kimi-code': createTestModel({ providerType: 'kimi' }),
+      'zimi-code': createTestModel({ providerType: 'zimi' }),
       'claude-code': createTestModel({ id: 'claude-code', protocol: 'anthropic' }),
     });
-    configValues['defaultModel'] = 'kimi-code';
+    configValues['defaultModel'] = 'zimi-code';
     const host = buildHost('profile-provider-type-default-fallback');
     host.svc.configure({ emitStatusUpdated: () => undefined });
 
-    expect(host.svc.getModelProviderType()).toBe('kimi');
+    expect(host.svc.getModelProviderType()).toBe('zimi');
     host.svc.update({ modelAlias: 'claude-code' });
     expect(host.svc.getModelProviderType()).toBeUndefined();
-    expect(host.svc.getModelProviderType('kimi-code')).toBe('kimi');
+    expect(host.svc.getModelProviderType('zimi-code')).toBe('zimi');
   });
 
-  it('stays undefined when the configured default model resolves outside the kimi set or nowhere', () => {
+  it('stays undefined when the configured default model resolves outside the zimi set or nowhere', () => {
     modelCatalog = createModelCatalogStub({
       'claude-code': createTestModel({ id: 'claude-code', protocol: 'anthropic' }),
     });
@@ -636,15 +636,15 @@ describe('AgentProfileService (wire-backed config.update)', () => {
     expect(host.svc.getModelProviderType()).toBeUndefined();
   });
 
-  it('uses the resolved Kimi effort instead of the configured default', () => {
+  it('uses the resolved Zimi effort instead of the configured default', () => {
     modelCatalog = createModelCatalogStub({
-      'kimi-code': createTestModel({ providerType: 'kimi' }),
+      'zimi-code': createTestModel({ providerType: 'zimi' }),
     });
     const host = buildHost('profile-thinking-effort-resolved');
     host.svc.configure({ emitStatusUpdated: () => undefined });
     configValues['thinking'] = { effort: ' max ' };
 
-    host.svc.update({ modelAlias: 'kimi-code', thinkingLevel: 'high' });
+    host.svc.update({ modelAlias: 'zimi-code', thinkingLevel: 'high' });
 
     expect(host.svc.resolveRequestParams()).toEqual({
       cacheKey: 'session-test',
@@ -653,15 +653,15 @@ describe('AgentProfileService (wire-backed config.update)', () => {
     });
   });
 
-  it('forces the environment Kimi effort instead of the resolved effort', () => {
+  it('forces the environment Zimi effort instead of the resolved effort', () => {
     modelCatalog = createModelCatalogStub({
-      'kimi-code': createTestModel({ providerType: 'kimi' }),
+      'zimi-code': createTestModel({ providerType: 'zimi' }),
     });
     const host = buildHost('profile-thinking-effort-force');
     host.svc.configure({ emitStatusUpdated: () => undefined });
     configValues['thinking'] = { effort: 'low', forcedEffort: ' max ' };
 
-    host.svc.update({ modelAlias: 'kimi-code', thinkingLevel: 'high' });
+    host.svc.update({ modelAlias: 'zimi-code', thinkingLevel: 'high' });
     expect(host.svc.data().thinkingLevel).toBe('high');
     expect(modelOf(host.agentState).thinkingLevel).toBe('high');
     expect(host.svc.resolveModelContext().thinkingLevel).toBe('max');
@@ -673,16 +673,16 @@ describe('AgentProfileService (wire-backed config.update)', () => {
     });
   });
 
-  it('does not leak a forced Kimi effort when switching to a non-Kimi model', () => {
+  it('does not leak a forced Zimi effort when switching to a non-Zimi model', () => {
     modelCatalog = createModelCatalogStub({
-      'kimi-code': createTestModel({ providerType: 'kimi' }),
+      'zimi-code': createTestModel({ providerType: 'zimi' }),
       'other-code': createTestModel({ id: 'other-code', protocol: 'anthropic' }),
     });
     const host = buildHost('profile-thinking-effort-force-switch');
     host.svc.configure({ emitStatusUpdated: () => undefined });
     configValues['thinking'] = { forcedEffort: 'max' };
 
-    host.svc.update({ modelAlias: 'kimi-code', thinkingLevel: 'high' });
+    host.svc.update({ modelAlias: 'zimi-code', thinkingLevel: 'high' });
     expect(host.svc.data().thinkingLevel).toBe('high');
     expect(host.svc.resolveModelContext().thinkingLevel).toBe('max');
     expect(host.svc.resolveRequestParams().thinkingEffort).toBe('max');
@@ -711,15 +711,15 @@ describe('AgentProfileService (wire-backed config.update)', () => {
     });
   });
 
-  it('forces Kimi effort through Anthropic without Kimi generation kwargs', () => {
+  it('forces Zimi effort through Anthropic without Zimi generation kwargs', () => {
     modelCatalog = createModelCatalogStub({
-      'kimi-code': createTestModel({ protocol: 'anthropic', providerType: 'kimi' }),
+      'zimi-code': createTestModel({ protocol: 'anthropic', providerType: 'zimi' }),
     });
     const host = buildHost('profile-thinking-effort-force-anthropic');
     host.svc.configure({ emitStatusUpdated: () => undefined });
     configValues['thinking'] = { forcedEffort: 'max' };
 
-    host.svc.update({ modelAlias: 'kimi-code', thinkingLevel: 'high' });
+    host.svc.update({ modelAlias: 'zimi-code', thinkingLevel: 'high' });
 
     expect(host.svc.resolveModelContext().thinkingLevel).toBe('max');
     expect(host.svc.resolveRequestParams()).toEqual({
@@ -729,14 +729,14 @@ describe('AgentProfileService (wire-backed config.update)', () => {
     });
   });
 
-  it('defaults thinking.keep to "all" when thinking is enabled on Kimi', () => {
+  it('defaults thinking.keep to "all" when thinking is enabled on Zimi', () => {
     modelCatalog = createModelCatalogStub({
-      'kimi-code': createTestModel({ providerType: 'kimi' }),
+      'zimi-code': createTestModel({ providerType: 'zimi' }),
     });
     const host = buildHost('profile-thinking-keep-default');
     host.svc.configure({ emitStatusUpdated: () => undefined });
 
-    host.svc.update({ modelAlias: 'kimi-code', thinkingLevel: 'high' });
+    host.svc.update({ modelAlias: 'zimi-code', thinkingLevel: 'high' });
 
     expect(host.svc.resolveRequestParams()).toEqual({
       cacheKey: 'session-test',
@@ -745,15 +745,15 @@ describe('AgentProfileService (wire-backed config.update)', () => {
     });
   });
 
-  it('treats an off env thinking.keep override as disabled on Kimi', () => {
+  it('treats an off env thinking.keep override as disabled on Zimi', () => {
     modelCatalog = createModelCatalogStub({
-      'kimi-code': createTestModel({ providerType: 'kimi' }),
+      'zimi-code': createTestModel({ providerType: 'zimi' }),
     });
     const host = buildHost('profile-thinking-keep-env-off');
     host.svc.configure({ emitStatusUpdated: () => undefined });
     configValues['modelOverrides'] = { thinkingKeep: 'off' };
 
-    host.svc.update({ modelAlias: 'kimi-code', thinkingLevel: 'high' });
+    host.svc.update({ modelAlias: 'zimi-code', thinkingLevel: 'high' });
 
     const params = host.svc.resolveRequestParams();
     expect(params.cacheKey).toBe('session-test');
@@ -780,14 +780,14 @@ describe('AgentProfileService (wire-backed config.update)', () => {
 
   it('does not apply thinking.keep model override when thinking is off', () => {
     modelCatalog = createModelCatalogStub({
-      'kimi-code': createTestModel({ providerType: 'kimi' }),
+      'zimi-code': createTestModel({ providerType: 'zimi' }),
     });
     const host = buildHost('profile-thinking-keep-off');
     host.svc.configure({ emitStatusUpdated: () => undefined });
     configValues['thinking'] = { forcedEffort: 'max' };
     configValues['modelOverrides'] = { temperature: 0.3, thinkingKeep: 'all' };
 
-    host.svc.update({ modelAlias: 'kimi-code', thinkingLevel: 'off' });
+    host.svc.update({ modelAlias: 'zimi-code', thinkingLevel: 'off' });
     expect(host.svc.resolveModelContext().thinkingLevel).toBe('off');
 
     expect(host.svc.resolveRequestParams()).toEqual({
@@ -798,14 +798,14 @@ describe('AgentProfileService (wire-backed config.update)', () => {
     });
   });
 
-  it('uses the session id as a Kimi prompt cache hint', () => {
+  it('uses the session id as a Zimi prompt cache hint', () => {
     modelCatalog = createModelCatalogStub({
-      'kimi-code': createTestModel({ providerType: 'kimi' }),
+      'zimi-code': createTestModel({ providerType: 'zimi' }),
     });
     const host = buildHost('profile-prompt-cache-key');
     host.svc.configure({ emitStatusUpdated: () => undefined });
 
-    host.svc.update({ modelAlias: 'kimi-code', thinkingLevel: 'high' });
+    host.svc.update({ modelAlias: 'zimi-code', thinkingLevel: 'high' });
 
     expect(host.svc.resolveRequestParams()).toEqual({
       cacheKey: 'session-test',
@@ -814,7 +814,7 @@ describe('AgentProfileService (wire-backed config.update)', () => {
     });
   });
 
-  it('resolves the session cache-key intent for non-Kimi protocols too', () => {
+  it('resolves the session cache-key intent for non-Zimi protocols too', () => {
     modelCatalog = createModelCatalogStub({
       'claude-sonnet': createTestModel({ id: 'claude-sonnet', protocol: 'anthropic' }),
     });

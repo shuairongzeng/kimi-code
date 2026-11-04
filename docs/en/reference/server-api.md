@@ -1,6 +1,6 @@
 # Server API
 
-The local server started by `kimi web` exposes two programmatic surfaces: a REST API (`/api/v1`, plus `/api/v2/sessions` and `/api/v2/mcp`) and a WebSocket event stream (`/api/v1/ws`). This page is the protocol reference for both. For how to start the server and its command-line options, see the [kimi command](./kimi-command.md#kimi-web) reference; for an end-to-end walkthrough, see [Drive a session over the API](#drive-a-session-over-the-api) below.
+The local server started by `zimi web` exposes two programmatic surfaces: a REST API (`/api/v1`, plus `/api/v2/sessions` and `/api/v2/mcp`) and a WebSocket event stream (`/api/v1/ws`). This page is the protocol reference for both. For how to start the server and its command-line options, see the [zimi command](./zimi-command.md#zimi-web) reference; for an end-to-end walkthrough, see [Drive a session over the API](#drive-a-session-over-the-api) below.
 
 This page is a curated, human-readable reference: it documents every endpoint's parameters, request bodies, and response shapes below. The precise machine-readable schema of every endpoint is owned by the server's live specification documents: `GET /openapi.json` (OpenAPI) and `GET /asyncapi.json` (AsyncAPI), both generated from the same validation schemas the server enforces at runtime. Both require authentication; when this page and the live spec ever disagree, the live spec wins.
 
@@ -12,7 +12,7 @@ The REST and WebSocket APIs described on this page are experimental: interface s
 
 ### Address
 
-The default address is `http://127.0.0.1:58627`. When the port is taken, the server retries with the next port (up to 100 times); use `--port` / `--host` to change the bind. Multiple instances can coexist under the same home directory; running instances register under `~/.kimi-code/server/instances/`.
+The default address is `http://127.0.0.1:58627`. When the port is taken, the server retries with the next port (up to 100 times); use `--port` / `--host` to change the bind. Multiple instances can coexist under the same home directory; running instances register under `~/.zimi-code/server/instances/`.
 
 ### Authentication
 
@@ -22,7 +22,7 @@ All `/api/*` paths (including `/openapi.json` and `/asyncapi.json`) require the 
 - `GET /api/v1/healthz` (liveness probe)
 - Static web assets (non-`/api/` paths)
 
-How to carry it: REST uses the `Authorization: Bearer <token>` header; the WebSocket upgrade accepts the same header or the subprotocol `kimi-code.bearer.<token>`. Token generation and rotation are covered in [Using Kimi Code in the browser: Getting started](../guides/web.md#getting-started).
+How to carry it: REST uses the `Authorization: Bearer <token>` header; the WebSocket upgrade accepts the same header or the subprotocol `zimi-code.bearer.<token>`. Token generation and rotation are covered in [Using Zimi Code in the browser: Getting started](../guides/web.md#getting-started).
 
 Failed authentication returns HTTP 401 with envelope code `40101`. On non-loopback binds, a source that fails authentication 10 times within 60 seconds is banned for 60 seconds, during which every request gets HTTP 429 (code `42901`).
 
@@ -72,7 +72,7 @@ Error codes are grouped by band:
 | `500xx` | Server internal error | `50001` uncaught exception, `50003` persistence failure |
 | `6xxxx` / `7xxxx` / `8xxxx` | Tool runtime / LLM provider / MCP passthrough errors; `msg` carries the upstream text | |
 
-`40931` and `40932` only appear when the same session is open in multiple clients. `40931` means another Kimi Code process is writing to the session right now; wait for it to go idle, then retry. If that process is known to be gone and the lock was left behind, call `POST /api/v1/sessions/{session_id}:takeover` and retry. When the session was updated by another client, prompt submission, skill activation, and compaction reload it on the server, push a fresh transcript to subscribers, and run the request again, so callers never see `40932` from them. Only undo returns `40932`: the server has already reloaded the session and nothing was undone; let the user review the refreshed history before undoing again.
+`40931` and `40932` only appear when the same session is open in multiple clients. `40931` means another Zimi Code process is writing to the session right now; wait for it to go idle, then retry. If that process is known to be gone and the lock was left behind, call `POST /api/v1/sessions/{session_id}:takeover` and retry. When the session was updated by another client, prompt submission, skill activation, and compaction reload it on the server, push a fresh transcript to subscribers, and run the request again, so callers never see `40932` from them. Only undo returns `40932`: the server has already reloaded the session and nothing was undone; let the user review the refreshed history before undoing again.
 
 ### Pagination
 
@@ -109,7 +109,7 @@ The returned `data.id` (shaped like `session_...`) is the session id used by eve
 ```js
 // subscribe.mjs — usage: TOKEN=... node subscribe.mjs session_...
 const ws = new WebSocket('ws://127.0.0.1:58627/api/v1/ws', [
-  `kimi-code.bearer.${process.env.TOKEN}`,
+  `zimi-code.bearer.${process.env.TOKEN}`,
 ]);
 ws.onmessage = (e) => console.log(e.data);
 ws.onopen = () =>
@@ -185,7 +185,7 @@ On success, `data` is `{ "ok": true }`.
 
 ### Login and usage
 
-These endpoints drive the managed Kimi OAuth login lifecycle and expose account-level information. The managed provider is named `managed:kimi-code`; the optional `provider` parameter on every endpoint below defaults to it.
+These endpoints drive the managed Zimi OAuth login lifecycle and expose account-level information. The managed provider is named `managed:zimi-code`; the optional `provider` parameter on every endpoint below defaults to it.
 
 | Method and path | Description |
 | --- | --- |
@@ -200,7 +200,7 @@ These endpoints drive the managed Kimi OAuth login lifecycle and expose account-
 
 #### `GET /api/v1/auth`
 
-Auth snapshot: whether the default model resolves to a usable provider configuration, plus the managed provider's login state. `models_ready` is `true` when the global `default_model` alias exists in the model table and resolves to a configured provider — including providerless flat models carrying their own `base_url` and models injected through `KIMI_MODEL_*` environment variables. It does not verify credentials, so a prompt can still fail afterwards with `40111` / `40112`.
+Auth snapshot: whether the default model resolves to a usable provider configuration, plus the managed provider's login state. `models_ready` is `true` when the global `default_model` alias exists in the model table and resolves to a configured provider — including providerless flat models carrying their own `base_url` and models injected through `ZIMI_MODEL_*` environment variables. It does not verify credentials, so a prompt can still fail afterwards with `40111` / `40112`.
 
 On success, `data` carries `models_ready` (boolean), `providers_count` (number of configured providers), and `managed_provider` (`null`, or `{ name, status }` with `status` one of `authenticated` / `expired` / `revoked` / `unauthenticated`). The global default model alias itself is read from `GET /api/v1/config` (`default_model`), not from this endpoint.
 
@@ -210,7 +210,7 @@ Starts an OAuth device-code login flow for the managed provider; starting a new 
 
 | Parameter | In | Type | Description |
 | --- | --- | --- | --- |
-| `provider` | body | string | Managed provider name. Default `managed:kimi-code` |
+| `provider` | body | string | Managed provider name. Default `managed:zimi-code` |
 | `region` | body | string | `mainland-cn` or `global`; overrides the region resolution described under `GET /api/v1/oauth/region` for this flow |
 
 On success, `data` has one of two shapes. A pending flow — `{ flow_id, provider, status: "pending", verification_uri, verification_uri_complete, user_code, expires_in, interval, expires_at }`: open `verification_uri_complete` (or `verification_uri` and enter `user_code`), then poll `GET /api/v1/oauth/login` every `interval` seconds until the flow resolves or `expires_at` passes (`expires_in` is the same deadline in seconds). The already-authenticated fast path — `{ flow_id, provider, status: "authenticated" }`.
@@ -221,7 +221,7 @@ Polls the login flow state for a provider. Returns `null` when no flow has been 
 
 | Parameter | In | Type | Description |
 | --- | --- | --- | --- |
-| `provider` | query | string | Managed provider name. Default `managed:kimi-code` |
+| `provider` | query | string | Managed provider name. Default `managed:zimi-code` |
 
 On success, `data` is `null` or a flow snapshot: `{ flow_id, provider, status, verification_uri, verification_uri_complete, user_code, expires_in, expires_at, interval }`, where `status` is `pending` / `authenticated` / `denied` / `expired` / `cancelled`. Once the flow leaves `pending`, `resolved_at` records when it reached its terminal state and `error_message` describes a failed flow.
 
@@ -231,7 +231,7 @@ Cancels the pending login flow for a provider. When no flow is pending, the call
 
 | Parameter | In | Type | Description |
 | --- | --- | --- | --- |
-| `provider` | query | string | Managed provider name. Default `managed:kimi-code` |
+| `provider` | query | string | Managed provider name. Default `managed:zimi-code` |
 
 On success, `data` is `{ cancelled, status }`: `cancelled` is `true` only when a `pending` flow was actually aborted, and `status` is the flow state after the call.
 
@@ -239,11 +239,11 @@ On success, `data` is `{ cancelled, status }`: `cancelled` is `true` only when a
 
 Logs out the managed provider: discards the stored OAuth credential, aborts any pending login flow, and removes the managed provider from the configuration. OAuth-managed providers reject manual edit and delete (see `PUT` / `DELETE /api/v1/providers/{provider_id}` below), so log out first to remove one.
 
-For the default Kimi provider (`managed:kimi-code`), logout also tears down this machine's Remote Control and clears cached Remote Control cloud sessions. When no tunnel is running or another process hosts it, logout first deactivates this machine's device and holds the machine lock so no process on this machine can start Remote Control again until the credential is discarded; a cleanup failure aborts the logout. When this server hosts the tunnel, the credential is discarded first and the tunnel is torn down right after the response is flushed, so a logout sent through the Remote Control link still receives its response. Logging out any other provider leaves Remote Control untouched.
+For the default Zimi provider (`managed:zimi-code`), logout also tears down this machine's Remote Control and clears cached Remote Control cloud sessions. When no tunnel is running or another process hosts it, logout first deactivates this machine's device and holds the machine lock so no process on this machine can start Remote Control again until the credential is discarded; a cleanup failure aborts the logout. When this server hosts the tunnel, the credential is discarded first and the tunnel is torn down right after the response is flushed, so a logout sent through the Remote Control link still receives its response. Logging out any other provider leaves Remote Control untouched.
 
 | Parameter | In | Type | Description |
 | --- | --- | --- | --- |
-| `provider` | body | string | Managed provider name. Default `managed:kimi-code` |
+| `provider` | body | string | Managed provider name. Default `managed:zimi-code` |
 
 On success, `data` is `{ logged_out: true, provider }`.
 
@@ -253,7 +253,7 @@ Plan quota and booster wallet of the managed account, fetched live from the acco
 
 | Parameter | In | Type | Description |
 | --- | --- | --- | --- |
-| `provider` | query | string | Managed provider name. Default `managed:kimi-code` |
+| `provider` | query | string | Managed provider name. Default `managed:zimi-code` |
 
 On success, `data` is `{ kind: "ok", quota }` or `{ kind: "error", message, status? }`, where `status` is the upstream HTTP status when one exists. In the `ok` shape, `quota` is `{ usages, extraUsage }`: `usages` carries one `{ usedRatio, resetAt? }` entry per quota window the account has — `limit5h`, `limit7d`, `monthTotal`, `monthCode` — with `usedRatio` as a 0–1 float and `resetAt` as an RFC3339 reset timestamp, and clients render whichever entries are present; `extraUsage` (nullable) is the pay-as-you-go wallet: `{ balanceCents, totalCents, monthlyChargeLimitEnabled, monthlyChargeLimitCents, monthlyUsedCents, currency }`.
 
@@ -263,21 +263,21 @@ Profile of the managed account, with the same in-band `kind: "error"` convention
 
 | Parameter | In | Type | Description |
 | --- | --- | --- | --- |
-| `provider` | query | string | Managed provider name. Default `managed:kimi-code` |
+| `provider` | query | string | Managed provider name. Default `managed:zimi-code` |
 
 On success, `data` is `{ kind: "ok", userInfo }` or `{ kind: "error", message, status? }`. `userInfo` always carries `userId`, `nickname`, `status`, `region`, `userLevel`, `userLevelName`, `domain`, and `domainName`, and may add `globalId`, `bio`, `avatar`, `username`, `email`, `phone` (`{ countryCode, number }`), `createdTime`, and `lastLoginTime`.
 
 #### `GET /api/v1/oauth/region`
 
-Resolves which Kimi region this client belongs to without probing over the network. An OAuth host pinned by environment or config wins first, then the configured OAuth key, then the install-channel marker in `<home>/region`.
+Resolves which Zimi region this client belongs to without probing over the network. An OAuth host pinned by environment or config wins first, then the configured OAuth key, then the install-channel marker in `<home>/region`.
 
-When the client is logged out and none of those inputs decides, it infers the region from the device time zone and locale. A successful inference is cached in `<home>/region.json` and invalidated when the login state changes; raw signal values are not uploaded. Missing or conflicting signals fall back to `mainland-cn` for the current process without persisting that fallback, so the next start tries again. Set `KIMI_CODE_REGION_MARKER=off` to disable both the install-channel marker and local inference.
+When the client is logged out and none of those inputs decides, it infers the region from the device time zone and locale. A successful inference is cached in `<home>/region.json` and invalidated when the login state changes; raw signal values are not uploaded. Missing or conflicting signals fall back to `mainland-cn` for the current process without persisting that fallback, so the next start tries again. Set `ZIMI_CODE_REGION_MARKER=off` to disable both the install-channel marker and local inference.
 
 On success, `data` is `{ region }` with `region` one of `mainland-cn` / `global`.
 
 ### Remote Control
 
-These endpoints manage the machine-wide Remote Control tunnel (see the [Remote Control guide](../guides/remote-control.md)) and the account's device registry. The tunnel state is per machine; the device registry is per account and lives in the cloud, so device endpoints require a Kimi login and proxy the relay with a server-side session — OAuth credentials never reach the caller.
+These endpoints manage the machine-wide Remote Control tunnel (see the [Remote Control guide](../guides/remote-control.md)) and the account's device registry. The tunnel state is per machine; the device registry is per account and lives in the cloud, so device endpoints require a Zimi login and proxy the relay with a server-side session — OAuth credentials never reach the caller.
 
 #### `GET /api/v1/remote-control`
 
@@ -432,7 +432,7 @@ On success, `data.items` is an array of `{ provider, model, display_name?, max_c
 
 #### `POST /api/v1/models/{model_id}:set_default`
 
-Sets the global `default_model` to an existing alias. `model_id` is the exact configured alias key — for a bare key like `turbo` the call is `POST /api/v1/models/turbo:set_default`; URL-encode the id when it contains `/`, as in `POST /api/v1/models/my-provider%2Fkimi-for-coding:set_default`.
+Sets the global `default_model` to an existing alias. `model_id` is the exact configured alias key — for a bare key like `turbo` the call is `POST /api/v1/models/turbo:set_default`; URL-encode the id when it contains `/`, as in `POST /api/v1/models/my-provider%2Fzimi-for-coding:set_default`.
 
 | Parameter | In | Type | Description |
 | --- | --- | --- | --- |
@@ -452,7 +452,7 @@ On success, `data.items` is an array of:
 | Field | Type | Description |
 | --- | --- | --- |
 | `id` | string | Provider id |
-| `type` | string | Wire protocol: `kimi` / `openai` / `openai_responses` / `anthropic` / `google-genai` / `vertexai` |
+| `type` | string | Wire protocol: `zimi` / `openai` / `openai_responses` / `anthropic` / `google-genai` / `vertexai` |
 | `base_url` | string | API base URL, when set |
 | `default_model` | string | The provider's default model alias, when set |
 | `has_api_key` | boolean | Whether a credential is stored |
@@ -466,7 +466,7 @@ Creates a provider and its model aliases in one save; the reply is HTTP 201 with
 | Parameter | In | Type | Description |
 | --- | --- | --- | --- |
 | `id` | body | string | **Required.** Provider id — letters, digits, `-`, `_`, and spaces; must start with a letter or digit |
-| `type` | body | string | **Required.** Wire protocol: `kimi` / `openai` / `openai_responses` / `anthropic` / `google-genai` / `vertexai` |
+| `type` | body | string | **Required.** Wire protocol: `zimi` / `openai` / `openai_responses` / `anthropic` / `google-genai` / `vertexai` |
 | `api_key` | body | string | API key, stored in `config.toml` |
 | `base_url` | body | string | API base URL; must not contain an environment variable placeholder (`${...}`) |
 | `default_model` | body | string | The provider's default model; must be one of `models[].model` |
@@ -508,7 +508,7 @@ Replaces a provider in one save: `type`, `base_url`, and the model list are rewr
 | --- | --- | --- | --- |
 | `provider_id` | path | string | **Required.** Current provider id |
 | `new_id` | body | string | Rename the provider; the providers key, model aliases, `default_provider`, a `default_model` pointing at an old alias, and the subagent secondary-model pool all migrate. Same id rules as `POST /api/v1/providers` |
-| `type` | body | string | **Required.** Wire protocol: `kimi` / `openai` / `openai_responses` / `anthropic` / `google-genai` / `vertexai` |
+| `type` | body | string | **Required.** Wire protocol: `zimi` / `openai` / `openai_responses` / `anthropic` / `google-genai` / `vertexai` |
 | `api_key` | body | string | Tri-state, see above |
 | `base_url` | body | string | API base URL; must not contain an environment variable placeholder (`${...}`) |
 | `default_model` | body | string | The provider's default model; must be one of `models[].model` |
@@ -846,7 +846,7 @@ On success, `data` is [the session object](#the-session-object).
 
 #### `POST /api/v1/sessions/{session_id}:takeover`
 
-Removes the lock another Kimi Code process holds on the session, so a request that failed with `40931` can be retried. Use it only when that process is gone and left its lock behind: if it is still running, both processes write to the session until it goes idle, and the session history can interleave.
+Removes the lock another Zimi Code process holds on the session, so a request that failed with `40931` can be retried. Use it only when that process is gone and left its lock behind: if it is still running, both processes write to the session until it goes idle, and the session history can interleave.
 
 On success, `data` is `{ taken_over: true }`.
 
@@ -949,7 +949,7 @@ On success, `data` is `{ environments }`. Each `environments` entry is `{ enviro
 
 #### `POST /api/v1/sessions/{session_id}/export`
 
-Exports the session together with diagnostic logs as a zip attachment (`kimi-session-<id>.zip`). The response is a binary stream, not a JSON envelope — capabilities and failure semantics are covered under [Binary and streaming endpoints](#binary-and-streaming-endpoints).
+Exports the session together with diagnostic logs as a zip attachment (`zimi-session-<id>.zip`). The response is a binary stream, not a JSON envelope — capabilities and failure semantics are covered under [Binary and streaming endpoints](#binary-and-streaming-endpoints).
 
 | Parameter | In | Type | Description |
 | --- | --- | --- | --- |
@@ -1384,7 +1384,7 @@ On success, `data` is `{ restarting: true }`.
 
 ### Capabilities and plugins
 
-Capabilities are built-in features with layered readiness — detection steps plus a background install; the current build registers `kimi-cu` (Kimi Computer Use) and `kimi-webbridge` (Kimi Browser Extension). Plugins are installed packages of skills, MCP servers, hooks, and commands. These endpoints report capability status and drive capability installs, and manage the plugin lifecycle from marketplace listing to removal.
+Capabilities are built-in features with layered readiness — detection steps plus a background install; the current build registers `zimi-cu` (Zimi Computer Use) and `zimi-webbridge` (Zimi Browser Extension). Plugins are installed packages of skills, MCP servers, hooks, and commands. These endpoints report capability status and drive capability installs, and manage the plugin lifecycle from marketplace listing to removal.
 
 | Method and path | Description |
 | --- | --- |
@@ -1452,11 +1452,11 @@ On success, `data` is the plugin summary documented under `GET /api/v1/plugins` 
 
 #### `GET /api/v1/plugins/marketplace`
 
-Lists the plugin marketplace catalog merged with live install state. The default catalog URL is derived from the current managed `baseURL` as `${baseURL}/plugins/marketplace`; built-in capability rows are no longer injected. Catalog `clients` filters entries to `desktop`, `cli`, or both; if omitted, both hosts are allowed. Web and Remote Control use the connected server's host identity. `platforms` independently filters by the daemon operating system: an entry remains visible when it includes the daemon platform or contains only `cloud`; a `cloud` entry for another local platform is filtered. Client and operating-system constraints must both match. Cloud-only entries cannot be installed locally. The legacy `kimi-webbridge` entry is not emitted, and Computer Use exposes only the wiring plugin for the current platform.
+Lists the plugin marketplace catalog merged with live install state. The default catalog URL is derived from the current managed `baseURL` as `${baseURL}/plugins/marketplace`; built-in capability rows are no longer injected. Catalog `clients` filters entries to `desktop`, `cli`, or both; if omitted, both hosts are allowed. Web and Remote Control use the connected server's host identity. `platforms` independently filters by the daemon operating system: an entry remains visible when it includes the daemon platform or contains only `cloud`; a `cloud` entry for another local platform is filtered. Client and operating-system constraints must both match. Cloud-only entries cannot be installed locally. The legacy `zimi-webbridge` entry is not emitted, and Computer Use exposes only the wiring plugin for the current platform.
 
 Installed records and managed files remain shared under the daemon's home directory. Entries unavailable to the current host are also hidden from its installed list and runtime capabilities. The daemon caches the last successful availability configuration in `plugins/availability.json`; after a successful catalog refresh, changed client rules hide or restore existing installations without reinstalling or deleting them.
 
-On success, `data` is `{ entries }` where each item includes `id`, `tier`, `classification`, `displayName`, `description?`, `shortDescription?`, `longDescription?`, `cliDescription?`, `homepage?`, `keywords?`, `version?`, `source`, `iconUrl?`, `sha256sum?`, `filename?`, `locale?`, `defaultLocale?`, `platforms?`, `distribution?`, `billing?`, `installed?`, `updateAvailable?`, and `capabilityId?`. `distribution.category` is `official` or `third_party`; `platforms` uses `darwin` / `win32` / `linux` / `cloud`. Marketplace installs use `marketplaceId`, `expectedVersion` when available, and `expectedSha256` for digest-bearing ZIPs rather than passing `source` directly; custom installs pass `source`. Capability rows are marked only by the daemon: `kimi-browser-extension` maps to the `kimi-webbridge` capability, and `kimi-cu` / `kimi-cu-win` maps to `kimi-cu`.
+On success, `data` is `{ entries }` where each item includes `id`, `tier`, `classification`, `displayName`, `description?`, `shortDescription?`, `longDescription?`, `cliDescription?`, `homepage?`, `keywords?`, `version?`, `source`, `iconUrl?`, `sha256sum?`, `filename?`, `locale?`, `defaultLocale?`, `platforms?`, `distribution?`, `billing?`, `installed?`, `updateAvailable?`, and `capabilityId?`. `distribution.category` is `official` or `third_party`; `platforms` uses `darwin` / `win32` / `linux` / `cloud`. Marketplace installs use `marketplaceId`, `expectedVersion` when available, and `expectedSha256` for digest-bearing ZIPs rather than passing `source` directly; custom installs pass `source`. Capability rows are marked only by the daemon: `zimi-browser-extension` maps to the `zimi-webbridge` capability, and `zimi-cu` / `zimi-cu-win` maps to `zimi-cu`.
 
 `defaultLocale` declares the language of the top-level `description` and `cliDescription`; `locale` holds per-language `displayName`, `shortDescription`, `longDescription`, and `cliDescription` translations.
 
@@ -1661,7 +1661,7 @@ Revokes the persisted workspace trust record. Unless a process or config overrid
 | --- | --- | --- | --- |
 | `workspace_id` | path | string | **Required.** Workspace id |
 
-On success, `data` is `{ trusted }`, containing the effective trust state after revocation. It is normally `{ trusted: false }`, but remains `true` when `KIMI_CODE_TRUST_WORKSPACE` or [`[workspace] require_trust = false`](../configuration/config-files.md#workspace-trust) applies.
+On success, `data` is `{ trusted }`, containing the effective trust state after revocation. It is normally `{ trusted: false }`, but remains `true` when `ZIMI_CODE_TRUST_WORKSPACE` or [`[workspace] require_trust = false`](../configuration/config-files.md#workspace-trust) applies.
 
 - `40410`: workspace not found
 
@@ -2486,5 +2486,5 @@ Error semantics differ as well: `GET /api/v1/files/{file_id}` answers lookup and
 
 ## Next steps
 
-- [Using Kimi Code in the browser](../guides/web.md) — start the server and use Kimi Code in a browser
-- [kimi command](./kimi-command.md#kimi-web) — all `kimi web` command-line options
+- [Using Zimi Code in the browser](../guides/web.md) — start the server and use Zimi Code in a browser
+- [zimi command](./zimi-command.md#zimi-web) — all `zimi web` command-line options

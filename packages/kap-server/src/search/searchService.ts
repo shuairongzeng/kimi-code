@@ -17,9 +17,9 @@ import {
   sessionDirOf,
   workspacePersistenceScope,
   type SessionSummary,
-} from '@moonshot-ai/agent-core-v2';
-import { normalizeLiteral, tokenize } from '@moonshot-ai/minidb';
-import type { TranscriptStore } from '@moonshot-ai/transcript';
+} from '@zimi-ai/agent-core-v2';
+import { normalizeLiteral, tokenize } from '@zimi-ai/minidb';
+import type { TranscriptStore } from '@zimi-ai/transcript';
 
 import {
   GlobalSearchError,
@@ -58,7 +58,7 @@ export type { GlobalSearchErrorReason } from './contract';
 const INDEX_DIR_NAME = 'search-index';
 const SESSION_PAGE_SIZE = 500;
 const GLOBAL_SEARCH_DISABLED_DETAIL =
-  'global search is disabled; set [database] global_search = true or KIMI_CODE_GLOBAL_SEARCH=1 to enable it';
+  'global search is disabled; set [database] global_search = true or ZIMI_CODE_GLOBAL_SEARCH=1 to enable it';
 
 const MAX_QUERY_TERMS = 32;
 const MAX_LITERAL_QUERY_CHARS = 1_024;

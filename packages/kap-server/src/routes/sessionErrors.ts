@@ -1,4 +1,4 @@
-import { ErrorCodes, isError2 } from '@moonshot-ai/agent-core-v2';
+import { ErrorCodes, isError2 } from '@zimi-ai/agent-core-v2';
 
 import { requestLog } from '../lib/requestLog';
 import { ErrorCode } from '../protocol/error-codes';

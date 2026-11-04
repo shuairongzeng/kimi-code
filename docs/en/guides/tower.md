@@ -26,7 +26,7 @@ Good candidates include:
 
 Tower is off by default. Enable the experiment in one of the following ways.
 
-For a persistent setting, add this to `config.toml` (by default, `~/.kimi-code/config.toml`; see [Config files](../configuration/config-files.md)):
+For a persistent setting, add this to `config.toml` (by default, `~/.zimi-code/config.toml`; see [Config files](../configuration/config-files.md)):
 
 ```toml
 [experimental]
@@ -36,10 +36,10 @@ tower = true
 You can also enable **Tower mode** in `/experiments` and apply the change for the same effect. To enable it only for the current process, set this environment variable before launch:
 
 ```sh
-KIMI_CODE_EXPERIMENTAL_TOWER=1 kimi
+ZIMI_CODE_EXPERIMENTAL_TOWER=1 zimi
 ```
 
-Set the environment variable before launch. If you modify `/experiments` or `config.toml` while Kimi Code is running, restart Kimi Code: Tower tools and the worker profile load only at process startup. `/tower` appears in the command list only after the experiment is enabled.
+Set the environment variable before launch. If you modify `/experiments` or `config.toml` while Zimi Code is running, restart Zimi Code: Tower tools and the worker profile load only at process startup. `/tower` appears in the command list only after the experiment is enabled.
 
 Before starting, check out the local branch that should receive the changes and inspect the worktree:
 
@@ -95,9 +95,9 @@ These actions clean up different things:
 | --- | --- | --- |
 | `/tower off` | Exits Tower mode in the current session without stopping background agents or cleaning up files | `.tower/`, mission branches, and worktrees |
 | `/tower teardown` | Asks the agent to remove eligible mission worktrees and report the result; worktrees with uncommitted changes or running agents are not removed | Mission branches and `.tower/comms/` audit records; Tower mode stays on |
-| Exit Kimi Code or close the session | Stops Tower workers and reviewers; they must be spawned again later | On-disk `.tower/` state, branches, and worktrees |
+| Exit Zimi Code or close the session | Stops Tower workers and reviewers; they must be spawned again later | On-disk `.tower/` state, branches, and worktrees |
 
-After Kimi Code restarts, if another session takes over the current project, the previous session's roster entries become inactive, but missions and worktrees are preserved. The new coordinator must spawn workers again. A project cannot have multiple tower coordinators at the same time.
+After Zimi Code restarts, if another session takes over the current project, the previous session's roster entries become inactive, but missions and worktrees are preserved. The new coordinator must spawn workers again. A project cannot have multiple tower coordinators at the same time.
 
 ## Mode exclusivity and secondary model
 
@@ -123,5 +123,5 @@ Each worker and reviewer has an independent model context and consumes tokens se
 ## Next steps
 
 - [Slash commands](../reference/slash-commands.md#modes-run-control) — `/tower` command forms
-- [Environment variables](../configuration/env-vars.md#runtime-switches) — `KIMI_CODE_EXPERIMENTAL_TOWER` and related runtime switches
+- [Environment variables](../configuration/env-vars.md#runtime-switches) — `ZIMI_CODE_EXPERIMENTAL_TOWER` and related runtime switches
 - [Agents and Sub-Agents](../customization/agents.md) — simpler delegation for focused subtasks

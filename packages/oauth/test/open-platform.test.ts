@@ -10,7 +10,7 @@ import {
   OPEN_PLATFORMS,
   OpenPlatformApiError,
   removeOpenPlatformConfig,
-  type ManagedKimiConfigShape,
+  type ManagedZimiConfigShape,
 } from '../src/open-platform';
 
 function makeModelsResponse(): Response {
@@ -23,7 +23,7 @@ function makeModelsResponse(): Response {
           supports_reasoning: true,
           supports_image_in: true,
           supports_video_in: true,
-          display_name: 'Kimi K2 0712 Preview',
+          display_name: 'Zimi K2 0712 Preview',
         },
         {
           id: 'kimi-k2-lite',
@@ -34,7 +34,7 @@ function makeModelsResponse(): Response {
           supports_tool_use: false,
         },
         {
-          id: 'non-kimi-model',
+          id: 'non-zimi-model',
           context_length: 1000,
           supports_reasoning: false,
         },
@@ -45,15 +45,15 @@ function makeModelsResponse(): Response {
 }
 
 describe('OPEN_PLATFORMS', () => {
-  it('contains moonshot.cn and moonshot.ai', () => {
-    expect(getOpenPlatformById('moonshot-cn')).toMatchObject({
-      name: 'Kimi Platform (API key · platform.kimi.com)',
+  it('contains zimi.cn and zimi.ai', () => {
+    expect(getOpenPlatformById('zimi-cn')).toMatchObject({
+      name: 'Zimi Platform (API key · platform.zimi.com)',
       baseUrl: 'https://api.moonshot.cn/v1',
       consoleUrl: 'https://platform.kimi.com',
       allowedPrefixes: ['kimi-k'],
     });
-    expect(getOpenPlatformById('moonshot-ai')).toMatchObject({
-      name: 'Kimi Platform (API key · platform.kimi.ai)',
+    expect(getOpenPlatformById('zimi-ai')).toMatchObject({
+      name: 'Zimi Platform (API key · platform.zimi.ai)',
       baseUrl: 'https://api.moonshot.ai/v1',
       consoleUrl: 'https://platform.kimi.ai',
       allowedPrefixes: ['kimi-k'],
@@ -62,16 +62,16 @@ describe('OPEN_PLATFORMS', () => {
   });
 
   it('isOpenPlatformId works', () => {
-    expect(isOpenPlatformId('moonshot-cn')).toBe(true);
-    expect(isOpenPlatformId('moonshot-ai')).toBe(true);
-    expect(isOpenPlatformId('kimi-code')).toBe(false);
+    expect(isOpenPlatformId('zimi-cn')).toBe(true);
+    expect(isOpenPlatformId('zimi-ai')).toBe(true);
+    expect(isOpenPlatformId('zimi-code')).toBe(false);
   });
 });
 
 describe('fetchOpenPlatformModels', () => {
   it('lists and parses models from the platform endpoint', async () => {
     const fetchMock = vi.fn(async () => makeModelsResponse());
-    const platform = getOpenPlatformById('moonshot-cn')!;
+    const platform = getOpenPlatformById('zimi-cn')!;
 
     const models = await fetchOpenPlatformModels(platform, 'sk-test', fetchMock as unknown as typeof fetch);
 
@@ -82,10 +82,10 @@ describe('fetchOpenPlatformModels', () => {
       supportsReasoning: true,
       supportsImageIn: true,
       supportsVideoIn: true,
-      displayName: 'Kimi K2 0712 Preview',
+      displayName: 'Zimi K2 0712 Preview',
     });
     expect(models[1]?.supportsToolUse).toBe(false);
-    expect(models[2]?.id).toBe('non-kimi-model');
+    expect(models[2]?.id).toBe('non-zimi-model');
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.moonshot.cn/v1/models',
@@ -103,7 +103,7 @@ describe('fetchOpenPlatformModels', () => {
       async () =>
         new Response(JSON.stringify({ error: { message: 'invalid API key' } }), { status: 401 }),
     );
-    const platform = getOpenPlatformById('moonshot-cn')!;
+    const platform = getOpenPlatformById('zimi-cn')!;
 
     const error = await fetchOpenPlatformModels(
       platform,
@@ -118,7 +118,7 @@ describe('fetchOpenPlatformModels', () => {
 
   it('throws on unexpected response shape', async () => {
     const fetchMock = vi.fn(async () => new Response(JSON.stringify({}), { status: 200 }));
-    const platform = getOpenPlatformById('moonshot-cn')!;
+    const platform = getOpenPlatformById('zimi-cn')!;
 
     await expect(
       fetchOpenPlatformModels(platform, 'sk-test', fetchMock as unknown as typeof fetch),
@@ -128,13 +128,13 @@ describe('fetchOpenPlatformModels', () => {
 
 describe('filterModelsByPrefix', () => {
   it('filters by allowedPrefixes when present', () => {
-    const platform = getOpenPlatformById('moonshot-cn')!;
+    const platform = getOpenPlatformById('zimi-cn')!;
     const models = [
       { id: 'kimi-k2-0712-preview', contextLength: 256000, supportsReasoning: true, supportsImageIn: true, supportsVideoIn: true },
       { id: 'gpt-4', contextLength: 1000, supportsReasoning: false, supportsImageIn: false, supportsVideoIn: false },
     ];
 
-    const filtered = filterModelsByPrefix(models as unknown as import('../src/managed-kimi-code').ManagedKimiCodeModelInfo[], platform);
+    const filtered = filterModelsByPrefix(models as unknown as import('../src/managed-zimi-code').ManagedZimiCodeModelInfo[], platform);
     expect(filtered).toHaveLength(1);
     expect(filtered[0]?.id).toBe('kimi-k2-0712-preview');
   });
@@ -150,7 +150,7 @@ describe('filterModelsByPrefix', () => {
       { id: 'model-b', contextLength: 2000, supportsReasoning: false, supportsImageIn: false, supportsVideoIn: false },
     ];
 
-    const filtered = filterModelsByPrefix(models as unknown as import('../src/managed-kimi-code').ManagedKimiCodeModelInfo[], platform);
+    const filtered = filterModelsByPrefix(models as unknown as import('../src/managed-zimi-code').ManagedZimiCodeModelInfo[], platform);
     expect(filtered).toHaveLength(2);
   });
 });
@@ -178,7 +178,7 @@ describe('fetchOpenPlatformModels supports_thinking_type', () => {
           { status: 200, headers: { 'Content-Type': 'application/json' } },
         ),
     );
-    const platform = getOpenPlatformById('moonshot-cn')!;
+    const platform = getOpenPlatformById('zimi-cn')!;
 
     const models = await fetchOpenPlatformModels(platform, 'sk-test', fetchMock as unknown as typeof fetch);
 
@@ -254,12 +254,12 @@ describe('capabilitiesForModel', () => {
 
 describe('applyOpenPlatformConfig', () => {
   it('writes provider, models, and defaults', () => {
-    const config: ManagedKimiConfigShape = {
+    const config: ManagedZimiConfigShape = {
       providers: {},
     };
-    const platform = getOpenPlatformById('moonshot-cn')!;
+    const platform = getOpenPlatformById('zimi-cn')!;
     const models = [
-      { id: 'kimi-k2-0712-preview', contextLength: 256000, supportsReasoning: true, supportsImageIn: true, supportsVideoIn: true, displayName: 'Kimi K2' },
+      { id: 'kimi-k2-0712-preview', contextLength: 256000, supportsReasoning: true, supportsImageIn: true, supportsVideoIn: true, displayName: 'Zimi K2' },
       { id: 'kimi-k2-lite', contextLength: 128000, supportsReasoning: false, supportsImageIn: false, supportsVideoIn: false },
     ];
 
@@ -272,38 +272,38 @@ describe('applyOpenPlatformConfig', () => {
     });
 
     expect(result).toEqual({
-      defaultModel: 'moonshot-cn/kimi-k2-0712-preview',
+      defaultModel: 'zimi-cn/kimi-k2-0712-preview',
       defaultThinking: true,
     });
 
-    expect(config.providers['moonshot-cn']).toMatchObject({
-      type: 'kimi',
+    expect(config.providers['zimi-cn']).toMatchObject({
+      type: 'zimi',
       baseUrl: 'https://api.moonshot.cn/v1',
       apiKey: 'sk-test',
     });
-    expect(config.models?.['moonshot-cn/kimi-k2-0712-preview']).toMatchObject({
-      provider: 'moonshot-cn',
+    expect(config.models?.['zimi-cn/kimi-k2-0712-preview']).toMatchObject({
+      provider: 'zimi-cn',
       model: 'kimi-k2-0712-preview',
       maxContextSize: 256000,
       capabilities: ['thinking', 'image_in', 'video_in', 'tool_use'],
-      displayName: 'Kimi K2',
+      displayName: 'Zimi K2',
     });
-    expect(config.defaultModel).toBe('moonshot-cn/kimi-k2-0712-preview');
+    expect(config.defaultModel).toBe('zimi-cn/kimi-k2-0712-preview');
     expect(config.thinking?.enabled).toBe(true);
     expect(config.services).toBeUndefined();
   });
 
   it('clears stale models for the same provider', () => {
-    const config: ManagedKimiConfigShape = {
+    const config: ManagedZimiConfigShape = {
       providers: {
-        'moonshot-cn': { type: 'kimi', baseUrl: 'https://api.moonshot.cn/v1', apiKey: 'sk-old' },
+        'zimi-cn': { type: 'zimi', baseUrl: 'https://api.moonshot.cn/v1', apiKey: 'sk-old' },
       },
       models: {
-        'moonshot-cn/stale': { provider: 'moonshot-cn', model: 'stale', maxContextSize: 1000 },
+        'zimi-cn/stale': { provider: 'zimi-cn', model: 'stale', maxContextSize: 1000 },
         'other/model': { provider: 'other', model: 'other-model', maxContextSize: 1000 },
       },
     };
-    const platform = getOpenPlatformById('moonshot-cn')!;
+    const platform = getOpenPlatformById('zimi-cn')!;
     const models = [
       { id: 'kimi-k2-0712-preview', contextLength: 256000, supportsReasoning: true, supportsImageIn: true, supportsVideoIn: true },
     ];
@@ -316,18 +316,18 @@ describe('applyOpenPlatformConfig', () => {
       credential: { apiKey: 'sk-new' },
     });
 
-    expect(config.models?.['moonshot-cn/stale']).toBeUndefined();
+    expect(config.models?.['zimi-cn/stale']).toBeUndefined();
     expect(config.models?.['other/model']).toBeDefined();
   });
 
   it('preserves hand-edited fields that upstream does not declare', () => {
-    const config: ManagedKimiConfigShape = {
+    const config: ManagedZimiConfigShape = {
       providers: {
-        'moonshot-cn': { type: 'kimi', baseUrl: 'https://api.moonshot.cn/v1', apiKey: 'sk-old' },
+        'zimi-cn': { type: 'zimi', baseUrl: 'https://api.moonshot.cn/v1', apiKey: 'sk-old' },
       },
       models: {
-        'moonshot-cn/kimi-k2-0712-preview': {
-          provider: 'moonshot-cn',
+        'zimi-cn/kimi-k2-0712-preview': {
+          provider: 'zimi-cn',
           model: 'kimi-k2-0712-preview',
           maxContextSize: 256000,
           maxOutputSize: 8192,
@@ -335,7 +335,7 @@ describe('applyOpenPlatformConfig', () => {
         } as Record<string, unknown>,
       },
     };
-    const platform = getOpenPlatformById('moonshot-cn')!;
+    const platform = getOpenPlatformById('zimi-cn')!;
     const models = [
       {
         id: 'kimi-k2-0712-preview',
@@ -354,26 +354,26 @@ describe('applyOpenPlatformConfig', () => {
       credential: { apiKey: 'sk-new' },
     });
 
-    const alias = config.models?.['moonshot-cn/kimi-k2-0712-preview'];
+    const alias = config.models?.['zimi-cn/kimi-k2-0712-preview'];
     expect(alias?.['maxOutputSize']).toBe(8192);
     expect(alias?.['supportEfforts']).toBeUndefined();
   });
 
   it('preserves open-platform overrides during refresh', () => {
-    const config: ManagedKimiConfigShape = {
+    const config: ManagedZimiConfigShape = {
       providers: {
-        'moonshot-cn': { type: 'kimi', baseUrl: 'https://api.moonshot.cn/v1', apiKey: 'sk-old' },
+        'zimi-cn': { type: 'zimi', baseUrl: 'https://api.moonshot.cn/v1', apiKey: 'sk-old' },
       },
       models: {
-        'moonshot-cn/kimi-k2-0712-preview': {
-          provider: 'moonshot-cn',
+        'zimi-cn/kimi-k2-0712-preview': {
+          provider: 'zimi-cn',
           model: 'kimi-k2-0712-preview',
           maxContextSize: 256000,
           overrides: { supportEfforts: ['low'] },
         } as Record<string, unknown>,
       },
     };
-    const platform = getOpenPlatformById('moonshot-cn')!;
+    const platform = getOpenPlatformById('zimi-cn')!;
     const models = [
       {
         id: 'kimi-k2-0712-preview',
@@ -393,14 +393,14 @@ describe('applyOpenPlatformConfig', () => {
       credential: { apiKey: 'sk-new' },
     });
 
-    const alias = config.models?.['moonshot-cn/kimi-k2-0712-preview'];
+    const alias = config.models?.['zimi-cn/kimi-k2-0712-preview'];
     expect(alias?.['supportEfforts']).toEqual(['low', 'high']);
     expect(alias?.['overrides']).toEqual({ supportEfforts: ['low'] });
   });
 
   it('writes a concrete effort into config.thinking when provided', () => {
-    const config: ManagedKimiConfigShape = { providers: {} };
-    const platform = getOpenPlatformById('moonshot-cn')!;
+    const config: ManagedZimiConfigShape = { providers: {} };
+    const platform = getOpenPlatformById('zimi-cn')!;
     const models = [
       {
         id: 'kimi-k2-0712-preview',
@@ -424,8 +424,8 @@ describe('applyOpenPlatformConfig', () => {
   });
 
   it('omits effort for a boolean on (no concrete effort)', () => {
-    const config: ManagedKimiConfigShape = { providers: {} };
-    const platform = getOpenPlatformById('moonshot-cn')!;
+    const config: ManagedZimiConfigShape = { providers: {} };
+    const platform = getOpenPlatformById('zimi-cn')!;
     const models = [
       {
         id: 'kimi-k2-0712-preview',
@@ -449,9 +449,9 @@ describe('applyOpenPlatformConfig', () => {
   });
 
   it('drops custom-registry provenance when materializing an open platform', () => {
-    const config: ManagedKimiConfigShape = {
+    const config: ManagedZimiConfigShape = {
       providers: {
-        'moonshot-cn': {
+        'zimi-cn': {
           type: 'openai',
           baseUrl: 'https://registry.example.test/v1',
           apiKey: 'sk-registry',
@@ -463,7 +463,7 @@ describe('applyOpenPlatformConfig', () => {
         },
       },
     };
-    const platform = getOpenPlatformById('moonshot-cn')!;
+    const platform = getOpenPlatformById('zimi-cn')!;
     const models = [
       {
         id: 'kimi-k2',
@@ -482,21 +482,21 @@ describe('applyOpenPlatformConfig', () => {
       credential: { apiKey: 'sk-registry' },
     });
 
-    expect(config.providers['moonshot-cn']).not.toHaveProperty('source');
+    expect(config.providers['zimi-cn']).not.toHaveProperty('source');
   });
 
   it('persists the apiKeyEnv declaration instead of a resolved secret and keeps hand-written fields', () => {
-    const config: ManagedKimiConfigShape = {
+    const config: ManagedZimiConfigShape = {
       providers: {
-        'moonshot-cn': {
-          type: 'kimi',
+        'zimi-cn': {
+          type: 'zimi',
           baseUrl: 'https://api.moonshot.cn/v1',
           apiKey: 'sk-resolved-secret',
           customHeaders: { 'X-Team': 'infra' },
         },
       },
     };
-    const platform = getOpenPlatformById('moonshot-cn')!;
+    const platform = getOpenPlatformById('zimi-cn')!;
     const models = [
       {
         id: 'kimi-k2',
@@ -512,13 +512,13 @@ describe('applyOpenPlatformConfig', () => {
       models,
       selectedModel: models[0]!,
       thinking: false,
-      credential: { apiKeyEnv: 'KIMI_TEST_OPEN_PLATFORM_KEY' },
+      credential: { apiKeyEnv: 'ZIMI_TEST_OPEN_PLATFORM_KEY' },
     });
 
-    expect(config.providers['moonshot-cn']).toEqual({
-      type: 'kimi',
+    expect(config.providers['zimi-cn']).toEqual({
+      type: 'zimi',
       baseUrl: 'https://api.moonshot.cn/v1',
-      apiKeyEnv: 'KIMI_TEST_OPEN_PLATFORM_KEY',
+      apiKeyEnv: 'ZIMI_TEST_OPEN_PLATFORM_KEY',
       customHeaders: { 'X-Team': 'infra' },
     });
   });
@@ -526,39 +526,39 @@ describe('applyOpenPlatformConfig', () => {
 
 describe('removeOpenPlatformConfig', () => {
   it('removes provider, its models, and defaultModel when matched', () => {
-    const config: ManagedKimiConfigShape = {
+    const config: ManagedZimiConfigShape = {
       providers: {
-        'moonshot-cn': { type: 'kimi', baseUrl: 'https://api.moonshot.cn/v1', apiKey: 'sk-test' },
-        'other': { type: 'kimi', baseUrl: 'https://other.test/v1', apiKey: 'sk-other' },
+        'zimi-cn': { type: 'zimi', baseUrl: 'https://api.moonshot.cn/v1', apiKey: 'sk-test' },
+        'other': { type: 'zimi', baseUrl: 'https://other.test/v1', apiKey: 'sk-other' },
       },
       models: {
-        'moonshot-cn/kimi-k2': { provider: 'moonshot-cn', model: 'kimi-k2', maxContextSize: 256000 },
+        'zimi-cn/kimi-k2': { provider: 'zimi-cn', model: 'kimi-k2', maxContextSize: 256000 },
         'other/model': { provider: 'other', model: 'other-model', maxContextSize: 1000 },
       },
-      defaultModel: 'moonshot-cn/kimi-k2',
+      defaultModel: 'zimi-cn/kimi-k2',
     };
 
-    removeOpenPlatformConfig(config, 'moonshot-cn');
+    removeOpenPlatformConfig(config, 'zimi-cn');
 
-    expect(config.providers['moonshot-cn']).toBeUndefined();
+    expect(config.providers['zimi-cn']).toBeUndefined();
     expect(config.providers['other']).toBeDefined();
-    expect(config.models?.['moonshot-cn/kimi-k2']).toBeUndefined();
+    expect(config.models?.['zimi-cn/kimi-k2']).toBeUndefined();
     expect(config.models?.['other/model']).toBeDefined();
     expect(config.defaultModel).toBeUndefined();
   });
 
   it('leaves defaultModel intact when it belongs to another provider', () => {
-    const config: ManagedKimiConfigShape = {
+    const config: ManagedZimiConfigShape = {
       providers: {
-        'moonshot-cn': { type: 'kimi', baseUrl: 'https://api.moonshot.cn/v1', apiKey: 'sk-test' },
+        'zimi-cn': { type: 'zimi', baseUrl: 'https://api.moonshot.cn/v1', apiKey: 'sk-test' },
       },
       models: {
-        'moonshot-cn/kimi-k2': { provider: 'moonshot-cn', model: 'kimi-k2', maxContextSize: 256000 },
+        'zimi-cn/kimi-k2': { provider: 'zimi-cn', model: 'kimi-k2', maxContextSize: 256000 },
       },
       defaultModel: 'other/model',
     };
 
-    removeOpenPlatformConfig(config, 'moonshot-cn');
+    removeOpenPlatformConfig(config, 'zimi-cn');
 
     expect(config.defaultModel).toBe('other/model');
   });

@@ -1526,17 +1526,17 @@ describe('WorkspaceFsService.suggest', () => {
 
   it('does not treat dot segments of an additional root itself as hidden', async () => {
     const fs = makeSession(
-      { '/x/.config/kimi/foo.ts': '' },
+      { '/x/.config/zimi/foo.ts': '' },
       rgMultiRootHandler({
         '/repo': [],
-        '/x/.config/kimi': ['foo.ts'],
+        '/x/.config/zimi': ['foo.ts'],
       }),
       [],
       defaultGitStub(),
       [],
       undefined,
       {},
-      ['/x/.config/kimi'],
+      ['/x/.config/zimi'],
     );
     const result = await fs.suggest({
       query: 'foo',
@@ -1544,7 +1544,7 @@ describe('WorkspaceFsService.suggest', () => {
       follow_gitignore: true,
       show_hidden: false,
     });
-    expect(result.items.map((i) => i.path)).toEqual(['/x/.config/kimi/foo.ts']);
+    expect(result.items.map((i) => i.path)).toEqual(['/x/.config/zimi/foo.ts']);
   });
 
   it('applies the limit to the merged ranking across roots', async () => {

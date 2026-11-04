@@ -2,8 +2,8 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { IConfigService } from '@moonshot-ai/agent-core-v2';
-import { authSummarySchema, type AuthSummary } from '@moonshot-ai/agent-core-v2/app/authLegacy/authLegacy';
+import { IConfigService } from '@zimi-ai/agent-core-v2';
+import { authSummarySchema, type AuthSummary } from '@zimi-ai/agent-core-v2/app/authLegacy/authLegacy';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { type RunningServer, startServer } from '../src/start';
@@ -23,7 +23,7 @@ describe('server-v2 GET /api/v1/auth', () => {
   let base: string;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-auth-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-auth-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -73,7 +73,7 @@ describe('server-v2 GET /api/v1/auth', () => {
         'default_model = "x"',
         '',
         '[providers.x]',
-        'type = "kimi"',
+        'type = "zimi"',
         'api_key = "sk-test"',
         '',
         '[models.x]',
@@ -94,7 +94,7 @@ describe('server-v2 GET /api/v1/auth', () => {
     await boot(
       [
         '[providers.x]',
-        'type = "kimi"',
+        'type = "zimi"',
         'api_key = "sk-test"',
         '',
         '[models.x]',
@@ -116,7 +116,7 @@ describe('server-v2 GET /api/v1/auth', () => {
         'default_model = "gone"',
         '',
         '[providers.x]',
-        'type = "kimi"',
+        'type = "zimi"',
         'api_key = "sk-test"',
         '',
         '[models.x]',
@@ -153,19 +153,19 @@ describe('server-v2 GET /api/v1/auth', () => {
   it('surfaces managed_provider.unauthenticated without a cached token', async () => {
     await boot(
       [
-        '[providers."managed:kimi-code"]',
-        'type = "kimi"',
+        '[providers."managed:zimi-code"]',
+        'type = "zimi"',
         'base_url = "https://example.test/v1"',
         '',
-        '[providers."managed:kimi-code".oauth]',
+        '[providers."managed:zimi-code".oauth]',
         'storage = "file"',
-        'key = "oauth/kimi-code"',
+        'key = "oauth/zimi-code"',
         '',
       ].join('\n'),
     );
     const summary = await getAuth();
     expect(summary.managed_provider).toEqual({
-      name: 'managed:kimi-code',
+      name: 'managed:zimi-code',
       status: 'unauthenticated',
     });
     expect(summary.models_ready).toBe(false);

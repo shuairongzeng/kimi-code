@@ -63,10 +63,10 @@ function testAgent(
 }
 
 const CATALOGUED_PROVIDER = {
-  type: 'kimi',
+  type: 'zimi',
   apiKey: 'test-key',
   baseUrl: 'https://api.example/v1',
-  model: 'kimi-code',
+  model: 'zimi-code',
 } as const;
 const CATALOGUED_MODEL_CAPABILITIES = {
   image_in: true,
@@ -361,8 +361,8 @@ describe('FullCompaction', () => {
   });
 
   it('keeps the active profile system prompt frozen after compaction without resetting active tools', async () => {
-    const homeDir = mkdtempSync(join(tmpdir(), 'kimi-compact-refresh-home-'));
-    const workDir = mkdtempSync(join(tmpdir(), 'kimi-compact-refresh-work-'));
+    const homeDir = mkdtempSync(join(tmpdir(), 'zimi-compact-refresh-home-'));
+    const workDir = mkdtempSync(join(tmpdir(), 'zimi-compact-refresh-work-'));
     try {
       writeFileSync(join(workDir, 'AGENTS.md'), 'old project instructions', 'utf-8');
       const ctx = testAgent(
@@ -492,7 +492,7 @@ describe('FullCompaction', () => {
       generate,
     });
     ctx.configure();
-    await ctx.rpc.setModel({ model: 'kimi-code' });
+    await ctx.rpc.setModel({ model: 'zimi-code' });
     ctx.newEvents();
     ctx.appendExchange(1, 'old user one', 'old assistant one', 20);
     ctx.appendExchange(2, 'recent user two', 'recent assistant two', 80);
@@ -544,7 +544,7 @@ describe('FullCompaction', () => {
   });
 
   it('fires PreCompact and PostCompact hooks from the compaction module', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'kimi-compact-hooks-'));
+    const dir = mkdtempSync(join(tmpdir(), 'zimi-compact-hooks-'));
     const hookLog = join(dir, 'hooks.jsonl');
     const hookCommand = hookPayloadLoggerCommand(hookLog);
     const ctx = testAgent({
@@ -677,8 +677,8 @@ describe('FullCompaction', () => {
     await ctx.expectResumeMatches();
   });
 
-  it('retries any compaction request error indefinitely when KIMI_CODE_INFINITE_RETRY is set', async () => {
-    vi.stubEnv('KIMI_CODE_INFINITE_RETRY', '1');
+  it('retries any compaction request error indefinitely when ZIMI_CODE_INFINITE_RETRY is set', async () => {
+    vi.stubEnv('ZIMI_CODE_INFINITE_RETRY', '1');
     let attempts = 0;
     const generate: GenerateFn = requesterFromGenerateFn(async () => {
       attempts += 1;
@@ -704,8 +704,8 @@ describe('FullCompaction', () => {
     await ctx.expectResumeMatches();
   });
 
-  it('lets context overflow reach compaction shrink instead of retrying when KIMI_CODE_INFINITE_RETRY is set', async () => {
-    vi.stubEnv('KIMI_CODE_INFINITE_RETRY', '1');
+  it('lets context overflow reach compaction shrink instead of retrying when ZIMI_CODE_INFINITE_RETRY is set', async () => {
+    vi.stubEnv('ZIMI_CODE_INFINITE_RETRY', '1');
     let attempts = 0;
     const generate: GenerateFn = requesterFromGenerateFn(async () => {
       attempts += 1;
@@ -1122,9 +1122,9 @@ describe('FullCompaction', () => {
         agent_id: 'main',
         from: 'compacting',
         mode: 'agent',
-        model: 'kimi-code',
+        model: 'zimi-code',
         protocol: 'openai',
-        provider_type: 'kimi',
+        provider_type: 'zimi',
       },
     });
     vi.useRealTimers();
@@ -3043,7 +3043,7 @@ describe('FullCompaction', () => {
   });
 
   it('honors completion budget env hard caps during compaction', async () => {
-    vi.stubEnv('KIMI_MODEL_MAX_COMPLETION_TOKENS', '8192');
+    vi.stubEnv('ZIMI_MODEL_MAX_COMPLETION_TOKENS', '8192');
     let callCount = 0;
     const compactionMaxCompletionTokens: unknown[] = [];
     const generate: GenerateFn = requesterFromGenerateFn(async (_provider, _system, _tools, _history, callbacks, options) => {
@@ -3079,7 +3079,7 @@ describe('FullCompaction', () => {
   it.each(['0', '-1'])(
     'honors completion budget env opt-out (%s) during compaction',
     async (maxCompletionTokens) => {
-      vi.stubEnv('KIMI_MODEL_MAX_COMPLETION_TOKENS', maxCompletionTokens);
+      vi.stubEnv('ZIMI_MODEL_MAX_COMPLETION_TOKENS', maxCompletionTokens);
       let callCount = 0;
       const compactionMaxCompletionTokens: unknown[] = [];
       const generate: GenerateFn = requesterFromGenerateFn(async (_provider, _system, _tools, _history, callbacks, options) => {
@@ -3136,7 +3136,7 @@ describe('FullCompaction', () => {
       provider: CATALOGUED_PROVIDER,
       modelCapabilities: CATALOGUED_MODEL_CAPABILITIES,
     });
-    const models = (ctx as unknown as MutableKimiConfig).kimiConfig.models;
+    const models = (ctx as unknown as MutableZimiConfig).zimiConfig.models;
     models![CATALOGUED_PROVIDER.model] = {
       ...models![CATALOGUED_PROVIDER.model]!,
       maxOutputSize: 64_000,
@@ -3496,7 +3496,7 @@ describe('FullCompaction', () => {
 });
 
 describe('FullCompaction context recovery pointer', () => {
-  const JOURNAL_HOME = '/home/user/.kimi-code';
+  const JOURNAL_HOME = '/home/user/.zimi-code';
 
   interface ApplyCompactionArgs {
     readonly summary?: string;
@@ -3735,17 +3735,17 @@ function oauthTestAgentOptions(
 } {
   return {
     initialConfig: {
-      defaultModel: 'kimi-code',
+      defaultModel: 'zimi-code',
       providers: {
-        'managed:kimi-code': {
+        'managed:zimi-code': {
           type: 'google-genai',
           baseUrl: 'https://api.example/v1',
-          oauth: { storage: 'file', key: 'oauth/kimi-code' },
+          oauth: { storage: 'file', key: 'oauth/zimi-code' },
         },
       },
       models: {
-        'kimi-code': {
-          provider: 'managed:kimi-code',
+        'zimi-code': {
+          provider: 'managed:zimi-code',
           model: 'kimi-for-coding',
           maxContextSize: 1_000_000,
         },
@@ -3762,8 +3762,8 @@ function oauthTestAgentOptions(
   };
 }
 
-type MutableKimiConfig = {
-  kimiConfig: {
+type MutableZimiConfig = {
+  zimiConfig: {
     models?: Record<string, { maxOutputSize?: number }>;
   };
 };
@@ -4202,7 +4202,7 @@ describe('FullCompaction cache probe', () => {
     expect(probes).toHaveLength(1);
     expect(probes[0]?.properties).toMatchObject({
       source: 'compaction',
-      provider_type: 'kimi',
+      provider_type: 'zimi',
       protocol: 'openai',
       input_tokens: 120,
       input_cache_read: 80,
@@ -4598,7 +4598,7 @@ describe('FullCompaction pre-shrink', () => {
       provider: CATALOGUED_PROVIDER,
       modelCapabilities: CATALOGUED_MODEL_CAPABILITIES,
     });
-    const models = (ctx as unknown as MutableKimiConfig).kimiConfig.models;
+    const models = (ctx as unknown as MutableZimiConfig).zimiConfig.models;
     models![CATALOGUED_PROVIDER.model] = {
       ...models![CATALOGUED_PROVIDER.model]!,
       maxOutputSize: 64_000,
@@ -4784,8 +4784,8 @@ describe('FullCompaction prompt-cache prefix', () => {
         await ctx.rpc.beginCompaction({});
         await completed;
       } else {
-        ctx.kimiConfig = {
-          ...ctx.kimiConfig,
+        ctx.zimiConfig = {
+          ...ctx.zimiConfig,
           loopControl: {
             reservedContextSize:
               CATALOGUED_MODEL_CAPABILITIES.max_context_tokens - AUTO_COMPACTION_HEADROOM,

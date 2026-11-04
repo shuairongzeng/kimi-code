@@ -2,9 +2,9 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { IConfigService } from '@moonshot-ai/agent-core-v2';
-import { IFeatureManager } from '@moonshot-ai/agent-core-v2/app/feature/featureManager';
-import { getFeatureRecipes } from '@moonshot-ai/agent-core-v2/features/featureRegistry';
+import { IConfigService } from '@zimi-ai/agent-core-v2';
+import { IFeatureManager } from '@zimi-ai/agent-core-v2/app/feature/featureManager';
+import { getFeatureRecipes } from '@zimi-ai/agent-core-v2/features/featureRegistry';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type RunningServer, startServer } from '../src/start';
@@ -21,7 +21,7 @@ describe('/api/v1/meta experimental_flags', () => {
   let home: string | undefined;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-meta-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-meta-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -32,8 +32,8 @@ describe('/api/v1/meta experimental_flags', () => {
   });
 
   beforeEach(() => {
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_FLAG', '0');
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_TOOL_SELECT', undefined);
+    vi.stubEnv('ZIMI_CODE_EXPERIMENTAL_FLAG', '0');
+    vi.stubEnv('ZIMI_CODE_EXPERIMENTAL_TOOL_SELECT', undefined);
   });
 
   afterEach(async () => {
@@ -78,8 +78,8 @@ describe('/api/v1/meta experimental_flags', () => {
     expect(flags['tool-select']).toBe(true);
   });
 
-  it('reflects a flag enabled via its KIMI_CODE_EXPERIMENTAL_* env var', async () => {
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_TOOL_SELECT', '1');
+  it('reflects a flag enabled via its ZIMI_CODE_EXPERIMENTAL_* env var', async () => {
+    vi.stubEnv('ZIMI_CODE_EXPERIMENTAL_TOOL_SELECT', '1');
     const base = await boot();
     const flags = await getMetaFlags(base);
     expect(flags['tool-select']).toBe(true);
@@ -100,7 +100,7 @@ describe('/api/v1/meta experimental_flags', () => {
   });
 
   it('keeps an env-forced flag on when the config section disables it', async () => {
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_TOOL_SELECT', '1');
+    vi.stubEnv('ZIMI_CODE_EXPERIMENTAL_TOOL_SELECT', '1');
     const base = await boot();
 
     const res = await authedFetch(server as RunningServer, base, '/api/v1/config', {
@@ -132,7 +132,7 @@ describe('/api/v1/meta web_title', () => {
   async function bootWithWebTitle(
     webTitle?: string,
   ): Promise<{ base: string; body: { data: { web_title?: string } } }> {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-meta-title-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-meta-title-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -171,7 +171,7 @@ describe('/api/v1/meta features', () => {
   }
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-meta-features-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-meta-features-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',

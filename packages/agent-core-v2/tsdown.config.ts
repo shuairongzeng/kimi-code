@@ -11,8 +11,8 @@ export default defineConfig({
   plugins: [rawTextPlugin()],
   deps: {
     neverBundle: [
-      '@moonshot-ai/kimi-code-oauth',
-      '@moonshot-ai/kimi-telemetry',
+      '@zimi-ai/zimi-code-oauth',
+      '@zimi-ai/zimi-telemetry',
     ],
   },
 });

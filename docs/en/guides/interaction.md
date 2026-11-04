@@ -1,6 +1,6 @@
 # Interaction and input
 
-Kimi Code CLI runs as an interactive TUI (terminal user interface) built around three components: the input box, the conversation view, and the status bar. This page covers how to enter text, paste media, navigate the approval flow, and switch between modes.
+Zimi Code CLI runs as an interactive TUI (terminal user interface) built around three components: the input box, the conversation view, and the status bar. This page covers how to enter text, paste media, navigate the approval flow, and switch between modes.
 
 ## Input box basics
 
@@ -10,16 +10,16 @@ The input box accepts free-form text. Press `Enter` to send, or `Shift-Enter` / 
 
 ## Pasting images and video
 
-Kimi Code CLI supports pasting images and video directly into the input box, so you can discuss screenshots, UI mockups, architecture diagrams, or code demos without uploading or converting files first.
+Zimi Code CLI supports pasting images and video directly into the input box, so you can discuss screenshots, UI mockups, architecture diagrams, or code demos without uploading or converting files first.
 
-**Video input is a distinctive Kimi Code capability** — you can paste a video clip and have the model analyze its content, UI flow, or code walkthrough.
+**Video input is a distinctive Zimi Code capability** — you can paste a video clip and have the model analyze its content, UI flow, or code walkthrough.
 
 How to paste:
 
 - **macOS / Linux**: `Ctrl-V`
 - **Windows**: `Alt-V`
 
-After pasting, the input box shows a placeholder that you can edit like normal text; on submit, the placeholder is replaced with the actual content. A plain-text clipboard falls back to ordinary paste. Media support depends on the current model's multimodal capabilities (`image_in` / `video_in`); it is enabled by default when you are logged in to a Kimi Code account.
+After pasting, the input box shows a placeholder that you can edit like normal text; on submit, the placeholder is replaced with the actual content. A plain-text clipboard falls back to ordinary paste. Media support depends on the current model's multimodal capabilities (`image_in` / `video_in`); it is enabled by default when you are logged in to a Zimi Code account.
 
 If a conversation accumulates more than 20 MB of media, the oldest images and videos are omitted from requests automatically, and a warning is shown when this happens.
 
@@ -47,7 +47,7 @@ Type `@` to trigger file-path completion; the selected path is inserted in relat
 
 - **Where it works**: both git and non-git directories; hidden paths are included, `.git` is excluded
 - **Folder suggestions**: end with `/`, so you can keep completing paths inside them
-- **Fallback**: while the fast search helper is still downloading, Kimi Code falls back to a basic filesystem scan
+- **Fallback**: while the fast search helper is still downloading, Zimi Code falls back to a basic filesystem scan
 - **Remote sessions**: when the session is bound to a [remote environment](../guides/remote-environment.md), completion candidates are served from the target's filesystem. Paths you type into a prompt also resolve on the target — the agent cannot read your local files by path, while pasted images and videos are unaffected (they travel as binary attachments)
 
 > `@` references and slash commands are two separate mechanisms: `@` gives the agent file context, while `/` invokes built-in features or Skills.
@@ -93,7 +93,7 @@ Shell mode lets you run terminal commands without leaving the conversation. The 
 - Recall previous commands: with the input box empty in shell mode, press `↑` to browse earlier shell commands; recalling one keeps you in shell mode so it runs as a command again.
 - Long output: when a finished command's output is too long, the output card collapses automatically; press `Ctrl-O` to expand or collapse it together with tool output.
 
-In shell mode the input box shows a `!` prompt on the left and the border turns violet. For example, you can run `!gh auth login` to sign in to the GitHub CLI without opening a new terminal, so Kimi can use `gh` afterward.
+In shell mode the input box shows a `!` prompt on the left and the border turns violet. For example, you can run `!gh auth login` to sign in to the GitHub CLI without opening a new terminal, so Zimi can use `gh` afterward.
 
 ### Goal mode
 
@@ -123,7 +123,7 @@ In the web UI, the goal bar below the conversation lets you pause, resume, or ca
 
 Use `/goal next <objective>` to line up follow-up work without interrupting the current goal — queued goals stay invisible to the agent until the current one completes, then the first starts automatically. `/goal next manage` opens an interactive manager to reorder, edit, or delete queued goals (arrow keys to browse, `Space` to select, `E` to edit, `D` to delete, `Esc` to cancel). Queued goals never start while the current goal is paused, cancelled, or blocked.
 
-> Tip: in `manual` permission mode a goal may stop at tool approvals; non-interactive mode only supports creating goals (`kimi -p "/goal ..."`) — exit code `0` on complete, `3` on blocked, `6` on paused.
+> Tip: in `manual` permission mode a goal may stop at tool approvals; non-interactive mode only supports creating goals (`zimi -p "/goal ..."`) — exit code `0` on complete, `3` on blocked, `6` on paused.
 
 ## During streaming output
 

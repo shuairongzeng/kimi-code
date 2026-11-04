@@ -121,19 +121,19 @@ export function useAppInit(): AppInitState {
         setExtensionConfig(extensionConfig);
         setWireSlashCommands(slashCommands);
 
-        const [loginStatus, kimiConfig] = await Promise.all([bridge.checkLoginStatus(), bridge.getModels()]);
+        const [loginStatus, zimiConfig] = await Promise.all([bridge.checkLoginStatus(), bridge.getModels()]);
         if (cancelled) {
           return;
         }
 
-        console.log("[AppInit] Login status:", loginStatus, "kimiConfig:", kimiConfig);
+        console.log("[AppInit] Login status:", loginStatus, "zimiConfig:", zimiConfig);
 
         setIsLoggedIn(loginStatus.loggedIn);
         initModels(
-          catalogApplied.current ? useSettingsStore.getState().models : kimiConfig.models,
-          kimiConfig.defaultModel,
-          kimiConfig.defaultThinking,
-          kimiConfig.defaultThinkingEffort,
+          catalogApplied.current ? useSettingsStore.getState().models : zimiConfig.models,
+          zimiConfig.defaultModel,
+          zimiConfig.defaultThinking,
+          zimiConfig.defaultThinkingEffort,
         );
 
         const modelsCount = useSettingsStore.getState().models.length;
@@ -148,7 +148,7 @@ export function useAppInit(): AppInitState {
           return;
         }
 
-        if (requiresManagedProviderLogin(kimiConfig.models, kimiConfig.defaultModel, loginStatus.loggedIn)) {
+        if (requiresManagedProviderLogin(zimiConfig.models, zimiConfig.defaultModel, loginStatus.loggedIn)) {
           setState({ status: "not-logged-in", errorMessage: null, modelsCount });
           return;
         }

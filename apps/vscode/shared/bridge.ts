@@ -39,14 +39,14 @@ export const Methods = {
   SteerChat: "steerChat",
   RespondApproval: "respondApproval",
 
-  GetKimiSessions: "getKimiSessions",
-  GetAllKimiSessions: "getAllKimiSessions",
+  GetZimiSessions: "getZimiSessions",
+  GetAllZimiSessions: "getAllZimiSessions",
   GetRegisteredWorkDirs: "getRegisteredWorkDirs",
   SetWorkDir: "setWorkDir",
   BrowseWorkDir: "browseWorkDir",
-  LoadKimiSessionHistory: "loadKimiSessionHistory",
-  DeleteKimiSession: "deleteKimiSession",
-  ForkKimiSession: "forkKimiSession",
+  LoadZimiSessionHistory: "loadZimiSessionHistory",
+  DeleteZimiSession: "deleteZimiSession",
+  ForkZimiSession: "forkZimiSession",
   GetProjectFiles: "getProjectFiles",
   PickMedia: "pickMedia",
   OpenFile: "openFile",
@@ -142,8 +142,8 @@ function validateParams(method: RpcMethod, params: unknown): boolean {
     case Methods.GetMCPServers:
     case Methods.AbortChat:
     case Methods.ResetSession:
-    case Methods.GetKimiSessions:
-    case Methods.GetAllKimiSessions:
+    case Methods.GetZimiSessions:
+    case Methods.GetAllZimiSessions:
     case Methods.GetRegisteredWorkDirs:
     case Methods.BrowseWorkDir:
     case Methods.ClearTrackedFiles:
@@ -193,11 +193,11 @@ function validateParams(method: RpcMethod, params: unknown): boolean {
       );
     case Methods.SetWorkDir:
       return isPlainObject(params) && (params["workDir"] === null || typeof params["workDir"] === "string");
-    case Methods.LoadKimiSessionHistory:
-      return hasNonEmptyString(params, "kimiSessionId");
-    case Methods.DeleteKimiSession:
+    case Methods.LoadZimiSessionHistory:
+      return hasNonEmptyString(params, "zimiSessionId");
+    case Methods.DeleteZimiSession:
       return hasNonEmptyString(params, "sessionId");
-    case Methods.ForkKimiSession:
+    case Methods.ForkZimiSession:
       return isPlainObject(params)
         && isNonEmptyString(params["sessionId"])
         && Number.isInteger(params["turnIndex"])

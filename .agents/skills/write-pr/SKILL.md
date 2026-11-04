@@ -1,6 +1,6 @@
 ---
 name: write-pr
-description: 在 kimi-code 仓库里创建或更新 PR 时使用：如何写出让 reviewer 只读描述就能从逻辑和架构上理解改动的 PR 描述，包括核心思路与结构图、"行为变化与受影响人群"表、可视化大纲，以及 UI/UX 变化的截图和录屏。
+description: 在 zimi-code 仓库里创建或更新 PR 时使用：如何写出让 reviewer 只读描述就能从逻辑和架构上理解改动的 PR 描述，包括核心思路与结构图、"行为变化与受影响人群"表、可视化大纲，以及 UI/UX 变化的截图和录屏。
 ---
 
 # 写 PR 描述
@@ -178,7 +178,7 @@ interface SessionEvents {
 
 ## UI/UX 变化的视觉证据
 
-用户看到的东西变了，就让 reviewer 直接看到改动前后的样子，不要只用文字描述。涉及范围：TUI（`apps/kimi-code/src/tui`、`packages/pi-tui`）、`apps/vis/web`、`apps/vscode/webview-ui`、`dist-web` 同步，以及用户可见的文本输出（print 模式输出、报错文案、命令行帮助）。
+用户看到的东西变了，就让 reviewer 直接看到改动前后的样子，不要只用文字描述。涉及范围：TUI（`apps/zimi-code/src/tui`、`packages/pi-tui`）、`apps/vis/web`、`apps/vscode/webview-ui`、`dist-web` 同步，以及用户可见的文本输出（print 模式输出、报错文案、命令行帮助）。
 
 选能说清变化的最低成本形式：
 
@@ -206,7 +206,7 @@ git push -q "$url" HEAD:refs/heads/pr-assets/<number>
 git rev-parse HEAD  # 链接里的 <sha>
 ```
 
-引用写成 `![说明](https://github.com/MoonshotAI/kimi-code/blob/<sha>/<file>?raw=true)`。
+引用写成 `![说明](https://github.com/ZimiAI/zimi-code/blob/<sha>/<file>?raw=true)`。
 
 - 链接用 `<sha>`，不要用分支名：追加的提交只含新文件，按分支名引用会让旧图失效。
 - 只推 `pr-assets/` 分支，不建 release。CI 只在 `main` 和 `release/*` 的 push 上触发，这类分支不会跑 CI。

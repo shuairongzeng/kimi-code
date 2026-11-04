@@ -11,7 +11,7 @@ import {
   type McpServerInspection,
   type McpServerLocator,
   type McpServerTestTarget,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type RunningServer, startServer } from '../src/start';
@@ -60,7 +60,7 @@ function makeMcpStub(): McpStub {
         name,
         config,
         source: 'global',
-        origin: '/home/user/.kimi-code/mcp.json',
+        origin: '/home/user/.zimi-code/mcp.json',
         mutable: true,
       };
     });
@@ -187,7 +187,7 @@ describe('server /api/v2/mcp', () => {
   });
 
   async function boot(stub: McpStub): Promise<void> {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-mcp-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-mcp-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -234,7 +234,7 @@ describe('server /api/v2/mcp', () => {
             env: { TOKEN: 'secret' },
           },
           source: 'global',
-          origin: '/home/user/.kimi-code/mcp.json',
+          origin: '/home/user/.zimi-code/mcp.json',
           mutable: true,
         },
       ]);
@@ -313,7 +313,7 @@ describe('server /api/v2/mcp', () => {
       stub.service.addServer = async () => {
         throw new Error2(
           ErrorCodes.CONFIG_INVALID,
-          'Invalid JSON in /home/user/.kimi-code/mcp.json: Unexpected token',
+          'Invalid JSON in /home/user/.zimi-code/mcp.json: Unexpected token',
         );
       };
       await boot(stub);

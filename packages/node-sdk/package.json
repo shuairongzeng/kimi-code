@@ -1,21 +1,21 @@
 {
-  "name": "@moonshot-ai/kimi-code-sdk",
+  "name": "@zimi-ai/zimi-code-sdk",
   "version": "0.23.0",
   "private": true,
-  "description": "TypeScript SDK for the Kimi Code Agent",
+  "description": "TypeScript SDK for the Zimi Code Agent",
   "license": "MIT",
-  "author": "Moonshot AI",
-  "homepage": "https://github.com/MoonshotAI/kimi-code/tree/main/packages/node-sdk#readme",
+  "author": "Zimi AI",
+  "homepage": "https://github.com/ZimiAI/zimi-code/tree/main/packages/node-sdk#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MoonshotAI/kimi-code.git",
+    "url": "git+https://github.com/ZimiAI/zimi-code.git",
     "directory": "packages/node-sdk"
   },
   "bugs": {
-    "url": "https://github.com/MoonshotAI/kimi-code/issues"
+    "url": "https://github.com/ZimiAI/zimi-code/issues"
   },
   "keywords": [
-    "kimi",
+    "zimi",
     "sdk",
     "typescript",
     "agent",
@@ -69,10 +69,10 @@
   "devDependencies": {
     "@anthropic-ai/sdk": "^0.95.2",
     "@google/genai": "^1.49.0",
-    "@moonshot-ai/agent-core-v2": "workspace:^",
-    "@moonshot-ai/kimi-code-oauth": "workspace:^",
-    "@moonshot-ai/kimi-code-product": "workspace:^",
-    "@moonshot-ai/klient": "workspace:^",
+    "@zimi-ai/agent-core-v2": "workspace:^",
+    "@zimi-ai/zimi-code-oauth": "workspace:^",
+    "@zimi-ai/zimi-code-product": "workspace:^",
+    "@zimi-ai/klient": "workspace:^",
     "@types/yazl": "^2.4.6",
     "jimp": "^1.6.1",
     "openai": "^6.34.0"

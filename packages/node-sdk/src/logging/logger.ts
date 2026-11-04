@@ -13,7 +13,7 @@ import {
   levelEnabled,
 } from './types';
 
-const ROOT_SYMBOL = Symbol.for('kimi.logger.root');
+const ROOT_SYMBOL = Symbol.for('zimi.logger.root');
 
 class RootLoggerImpl implements RootLogger {
   private config: LoggingConfig | undefined;
@@ -206,5 +206,5 @@ export async function __resetRootLoggerForTest(): Promise<void> {
 }
 
 export function resolveGlobalLogPath(homeDir: string): string {
-  return join(homeDir, 'logs', 'kimi-code.log');
+  return join(homeDir, 'logs', 'zimi-code.log');
 }

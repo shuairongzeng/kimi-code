@@ -1,6 +1,6 @@
 import { writeFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { TodoItem } from '@moonshot-ai/agent-core-v2/features/todo/todoItem';
+import type { TodoItem } from '@zimi-ai/agent-core-v2/features/todo/todoItem';
 import type { NormalizedMessage } from './translator.js';
 import { buildTurnRecords, splitIntoTurns, type WireRecord } from './turn-structure.js';
 
@@ -49,7 +49,7 @@ export async function writeMainAgentWire(sessionDir: string, input: WireWriteInp
       }),
     );
   }
-  // kimi-cli keeps the session todo list in state.json; v2 replays it from a
+  // zimi-cli keeps the session todo list in state.json; v2 replays it from a
   // durable tools.update_store wire record, so a migrated session must carry
   // its todos here or the todo panel shows up empty after resume.
   if (input.todoItems !== undefined && input.todoItems.length > 0) {

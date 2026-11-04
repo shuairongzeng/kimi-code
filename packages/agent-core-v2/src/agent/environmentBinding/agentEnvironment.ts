@@ -76,7 +76,7 @@ export function environmentTempTarget(
       environment.host?.tempDir ??
       (environment.identity.environmentId === LOCAL_ENVIRONMENT_ID ? localTempDir : undefined);
     if (fs === undefined || path === undefined || tempDir === undefined) return undefined;
-    return { fs, path, dir: path.join(tempDir, 'kimi-code', subdir) };
+    return { fs, path, dir: path.join(tempDir, 'zimi-code', subdir) };
   } finally {
     lease.dispose();
   }

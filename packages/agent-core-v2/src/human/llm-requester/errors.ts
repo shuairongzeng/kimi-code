@@ -191,7 +191,7 @@ const IMAGE_FORMAT_STATUS_MESSAGE_PATTERNS = [
 const MEDIA_TYPE_FIELD_PATTERN = /(?:media|mime)_?type/;
 
 const THINKING_EFFORT_CONFIG_DOCS_URL =
-  'https://moonshotai.github.io/kimi-code/en/configuration/config-files.html#thinking';
+  'https://zimia.github.io/zimi-code/en/configuration/config-files.html#thinking';
 
 const THINKING_EFFORT_STATUS_MESSAGE_PATTERNS = [
   /reasoning[_ .-]?effort/,
@@ -210,7 +210,7 @@ export function appendThinkingEffortConfigHint(statusCode: number, message: stri
   if (message.includes(THINKING_EFFORT_CONFIG_DOCS_URL)) return message;
   return `${message}
 
-The provider rejected the configured thinking effort. Non-Kimi providers receive effort strings without client-side mapping; choose an effort supported by the selected model. For Kimi models, check support_efforts and default_effort. See ${THINKING_EFFORT_CONFIG_DOCS_URL}`;
+The provider rejected the configured thinking effort. Non-Zimi providers receive effort strings without client-side mapping; choose an effort supported by the selected model. For Zimi models, check support_efforts and default_effort. See ${THINKING_EFFORT_CONFIG_DOCS_URL}`;
 }
 
 export interface LlmStatusErrorInput {

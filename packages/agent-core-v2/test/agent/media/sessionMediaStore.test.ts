@@ -240,7 +240,7 @@ describe('SessionMediaStoreService', () => {
     const path = /Original attachment saved at: ("[^\n]+")/.exec(text)?.[1];
     expect(path).toBeDefined();
     expect((await readFile(JSON.parse(path!) as string)).equals(bytes)).toBe(true);
-    expect(text).toContain('Attachment reference: "kimi-file://');
+    expect(text).toContain('Attachment reference: "zimi-file://');
   });
 
   it('provides a session-relative path for an original preserved during image compression', async () => {
@@ -393,7 +393,7 @@ describe('SessionMediaStoreService', () => {
       filename: 'clip.mp4',
     });
 
-    expect(reference).toMatch(/^kimi-file:\/\/f_/);
+    expect(reference).toMatch(/^zimi-file:\/\/f_/);
     const stored = await store.get(reference);
     expect(stored?.mimeType).toBe('video/mp4');
     expect(stored?.filename).toBe('clip.mp4');

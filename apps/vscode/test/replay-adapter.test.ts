@@ -11,7 +11,7 @@ import type {
   ResumedAgentState,
   ResumedSessionState,
   ToolCall,
-} from "@moonshot-ai/kimi-code-sdk";
+} from "@zimi-ai/zimi-code-sdk";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -61,7 +61,7 @@ function resumedAgent(
     type: options.type ?? "main",
     config: {
       cwd: "/workspace",
-      modelAlias: options.modelAlias ?? "kimi-test",
+      modelAlias: options.modelAlias ?? "zimi-test",
       modelCapabilities: {
         image_in: true,
         video_in: true,
@@ -93,7 +93,7 @@ describe("replay adapter (renders the public SDK resume state for the Webview)",
 
     expect(replayToWebviewEvents(agent, "session-1")[0]).toMatchObject({
       type: "StatusUpdate",
-      payload: { model: "kimi-test" },
+      payload: { model: "zimi-test" },
     });
   });
 

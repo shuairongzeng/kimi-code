@@ -2,7 +2,7 @@
  * Scenario: VSCode-owned file baselines for new, migrated, and forked sessions.
  * Responsibilities: capture originals, show changes, keep/undo, persist legacy tombstones, and reject unsafe paths.
  * Wiring: real temporary workspace/global-storage/legacy files; no stubbed collaborators.
- * Run: pnpm --filter kimi-code test -- baseline.manager.test.ts
+ * Run: pnpm --filter zimi-code test -- baseline.manager.test.ts
  */
 import { existsSync, writeFileSync } from 'node:fs';
 import { chmod, mkdir, mkdtemp, readFile, rm, symlink, unlink, writeFile } from 'node:fs/promises';
@@ -60,7 +60,7 @@ describe('file baselines (capture, compare, keep, and undo)', () => {
     );
   });
 
-  it('isolates the same session id between different Kimi homes', async () => {
+  it('isolates the same session id between different Zimi homes', async () => {
     const session = createSession();
     const filePath = join(workDir, 'app.ts');
     const firstHome = new BaselineManager(storageRoot, join(root, 'home-a'));
@@ -405,7 +405,7 @@ async function createLegacySession(
   await mkdir(join(legacySessionDir, 'baseline'), { recursive: true });
   await writeFile(baselinePath, content, 'utf-8');
   return {
-    session: createSession(id, { kimi_cli_source_path: legacySessionDir }),
+    session: createSession(id, { zimi_cli_source_path: legacySessionDir }),
     legacySessionDir,
     baselinePath,
   };

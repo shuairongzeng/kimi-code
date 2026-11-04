@@ -1,4 +1,4 @@
-import { IOAuthService, type Scope } from '@moonshot-ai/agent-core-v2';
+import { IOAuthService, type Scope } from '@zimi-ai/agent-core-v2';
 import {
   managedUsageResultSchema,
   managedUserInfoResultSchema,
@@ -7,13 +7,13 @@ import {
   oauthLoginCancelResponseSchema,
   oauthLogoutResponseSchema,
   oauthRegionResultSchema,
-} from '@moonshot-ai/agent-core-v2/app/auth/oauthProtocol';
-import { KIMI_CODE_PROVIDER_NAME } from '@moonshot-ai/kimi-code-oauth';
+} from '@zimi-ai/agent-core-v2/app/auth/oauthProtocol';
+import { ZIMI_CODE_PROVIDER_NAME } from '@zimi-ai/zimi-code-oauth';
 import {
   inspectRemoteControlLock,
   type RemoteControlDeviceClient,
   type RemoteControlManager,
-} from '@moonshot-ai/remote-control';
+} from '@zimi-ai/remote-control';
 import { z } from 'zod';
 
 import { errEnvelope, okEnvelope } from '../envelope';
@@ -139,7 +139,7 @@ export function registerOAuthRoutes(
     loginCancelRoute.handler as Parameters<RouteHost['delete']>[2],
   );
 
-  let kimiLogoutQueue: Promise<void> = Promise.resolve();
+  let zimiLogoutQueue: Promise<void> = Promise.resolve();
 
   const logoutRoute = defineRoute(
     {
@@ -151,14 +151,14 @@ export function registerOAuthRoutes(
       description: 'Logout the managed OAuth provider',
       tags: ['auth'],
     },    async (req, reply) => {
-      const provider = req.body.provider ?? KIMI_CODE_PROVIDER_NAME;
-      if (provider !== KIMI_CODE_PROVIDER_NAME) {
+      const provider = req.body.provider ?? ZIMI_CODE_PROVIDER_NAME;
+      if (provider !== ZIMI_CODE_PROVIDER_NAME) {
         const result = await core.accessor.get(IOAuthService).logout(req.body.provider);
         requestLog(req)?.info({ provider: req.body.provider, action: 'logout' }, 'oauth logout');
         reply.send(okEnvelope(result, req.id));
         return;
       }
-      const serialized = kimiLogoutQueue.then(async () => {
+      const serialized = zimiLogoutQueue.then(async () => {
         try {
           const status = remoteControl.status();
           if (status.state === 'on') {
@@ -248,7 +248,7 @@ export function registerOAuthRoutes(
           );
         }
       });
-      kimiLogoutQueue = serialized.then(
+      zimiLogoutQueue = serialized.then(
         () => undefined,
         () => undefined,
       );

@@ -34,10 +34,10 @@ import {
 import { openZipSource, type ZipSource } from './file-source';
 import { FILE_HISTORY_BLOB_PREFIX } from '#/features/fileHistory/fileHistoryService';
 
-const SESSION_LOG_REL = 'logs/kimi-code.log';
-const GLOBAL_LOG_REL = 'logs/global/kimi-code.log';
-const WEB_LOG_REL = 'logs/kimi-web.jsonl';
-const DESKTOP_LOG_REL = 'logs/kimi-desktop.log';
+const SESSION_LOG_REL = 'logs/zimi-code.log';
+const GLOBAL_LOG_REL = 'logs/global/zimi-code.log';
+const WEB_LOG_REL = 'logs/zimi-web.jsonl';
+const DESKTOP_LOG_REL = 'logs/zimi-desktop.log';
 
 export class SessionExportService implements ISessionExportService {
   declare readonly _serviceBrand: undefined;
@@ -86,7 +86,7 @@ export class SessionExportService implements ISessionExportService {
       globalLogPath: resolveGlobalLogPath(this.bootstrap.homeDir),
       desktopLogPath:
         input.includeDesktopLog === true
-          ? join(this.bootstrap.homeDir, 'logs', 'kimi-code-desktop.log')
+          ? join(this.bootstrap.homeDir, 'logs', 'zimi-code-desktop.log')
           : undefined,
       webLog: options.webLog,
       signal: options.signal,
@@ -281,7 +281,7 @@ export async function exportSessionDirectory(input: {
 function defaultExportZipName(sessionId: string, now: Date): string {
   const shortId = sessionId.slice(0, 8);
   const timestamp = now.toISOString().replaceAll(/[-:]/g, '').replace(/T/, '-').slice(0, 15);
-  return `kimi-debug-${shortId}-${timestamp}.zip`;
+  return `zimi-debug-${shortId}-${timestamp}.zip`;
 }
 
 function sessionZipEntryPath(entry: SessionZipEntry): string {

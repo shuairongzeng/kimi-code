@@ -7,18 +7,18 @@ import { promisify } from 'node:util';
 import { gzip } from 'node:zlib';
 
 import {
-  createKimiDeviceId,
+  createZimiDeviceId,
   FileTokenStorage,
-  resolveKimiRemoteControlAuth,
-  resolveKimiTokenStorageName,
-} from '@moonshot-ai/kimi-code-oauth';
+  resolveZimiRemoteControlAuth,
+  resolveZimiTokenStorageName,
+} from '@zimi-ai/zimi-code-oauth';
 import { WebSocket, type RawData } from 'ws';
 
 import { acquireRemoteControlLock } from './lock';
 
 export const REMOTE_CONTROL_RELAY_ORIGIN = 'https://code-rc.kimi.com';
 
-export const REMOTE_CONTROL_RELAY_URL_ENV = 'KIMI_CODE_REMOTE_CONTROL_RELAY_URL';
+export const REMOTE_CONTROL_RELAY_URL_ENV = 'ZIMI_CODE_REMOTE_CONTROL_RELAY_URL';
 
 export function resolveRemoteControlRelayOrigin(
   env: Readonly<Record<string, string | undefined>> = process.env,
@@ -268,7 +268,7 @@ export function rewriteRemoteControlResponse(
   const normalizedPrefix = publicPrefix.replace(/\/+$/, '');
   if (contentType.toLowerCase().includes('text/html')) {
     const prefixLiteral = JSON.stringify(normalizedPrefix);
-    const injected = `<script>(function(){var p=${prefixLiteral};try{sessionStorage.setItem('kimi-desktop-server-origin',location.origin+p)}catch(e){}var w=function(f){return function(s,t,u){if(typeof u==='string'&&u.charAt(0)==='/'&&u.indexOf(p)!==0)u=p+u;return f.apply(this,[s,t,u])}};history.pushState=w(history.pushState);history.replaceState=w(history.replaceState)})();</script>`;
+    const injected = `<script>(function(){var p=${prefixLiteral};try{sessionStorage.setItem('zimi-desktop-server-origin',location.origin+p)}catch(e){}var w=function(f){return function(s,t,u){if(typeof u==='string'&&u.charAt(0)==='/'&&u.indexOf(p)!==0)u=p+u;return f.apply(this,[s,t,u])}};history.pushState=w(history.pushState);history.replaceState=w(history.replaceState)})();</script>`;
     let text = body.toString('utf8');
     const headMatch = /<head(?:\s[^>]*)?>/i.exec(text);
     text =
@@ -348,19 +348,19 @@ export async function startRemoteControl(
   }
   const httpTunnelLimits = { ...DEFAULT_HTTP_TUNNEL_LIMITS, ...options.httpTunnelLimits };
   validateHttpTunnelLimits(httpTunnelLimits);
-  const auth = resolveKimiRemoteControlAuth({
+  const auth = resolveZimiRemoteControlAuth({
     configuredOAuthHost: options.configuredOAuthHost,
     configuredOAuthKey: options.configuredOAuthKey,
     homeDir: options.homeDir,
   });
   const storage = new FileTokenStorage(join(options.homeDir, 'credentials'));
-  const token = await storage.load(resolveKimiTokenStorageName({ oauthKey: auth.oauthKey }));
+  const token = await storage.load(resolveZimiTokenStorageName({ oauthKey: auth.oauthKey }));
   if (token?.refreshToken === undefined || token.refreshToken.length === 0) {
-    throw new Error('Remote Control requires a Kimi login. Run `kimi login` first.');
+    throw new Error('Remote Control requires a Zimi login. Run `zimi login` first.');
   }
   const relayOrigin =
     options.relayOrigin ?? resolveRemoteControlRelayOrigin(process.env, auth.relayOrigin);
-  const deviceId = createKimiDeviceId(options.homeDir);
+  const deviceId = createZimiDeviceId(options.homeDir);
   const deviceName = hostname();
   const url = buildRemoteControlUrl(deviceId, undefined, relayOrigin, options.urlSource);
   const lock = await acquireRemoteControlLock(options.homeDir, {
@@ -368,10 +368,10 @@ export async function startRemoteControl(
     deviceId,
     url,
   });
-  const tokenAfterLock = await storage.load(resolveKimiTokenStorageName({ oauthKey: auth.oauthKey }));
+  const tokenAfterLock = await storage.load(resolveZimiTokenStorageName({ oauthKey: auth.oauthKey }));
   if (tokenAfterLock?.refreshToken !== token.refreshToken) {
     await lock.release();
-    throw new Error('Remote Control requires a Kimi login. Run `kimi login` first.');
+    throw new Error('Remote Control requires a Zimi login. Run `zimi login` first.');
   }
   const client = new RemoteControlClient({
     ...options,
@@ -988,7 +988,7 @@ async function connectWebSocket(
   pendingSockets?: Set<WebSocket>,
   isStopped?: () => boolean,
 ): Promise<WebSocket> {
-  const protocol = `kimi-code.bearer.${token}`;
+  const protocol = `zimi-code.bearer.${token}`;
   if (isWebSocketProtocolToken(protocol)) {
     try {
       return await connectWebSocketAttempt(url, [protocol], headers, earlyFrames, pendingSockets);

@@ -14,7 +14,7 @@ export async function saveEffectiveHistory(
 ): Promise<string> {
   function* lines(): Generator<string> {
     const { turns, ...header } = history;
-    yield JSON.stringify({ type: 'session', format: 'kimi-import-history', version: 1, ...header, issues }) + '\n';
+    yield JSON.stringify({ type: 'session', format: 'zimi-import-history', version: 1, ...header, issues }) + '\n';
     for (const turn of turns) yield JSON.stringify({ type: 'turn', ...turn }) + '\n';
   }
   const hash = createHash('sha256');

@@ -24,7 +24,7 @@
  *
  *   pnpm -C packages/klient stress:kosong-config
  *
- * Env: KIMI_MODEL_NAME is unset for the run (it would pin `defaultModel` and
+ * Env: ZIMI_MODEL_NAME is unset for the run (it would pin `defaultModel` and
  * break the pointer assertions); restored on exit.
  */
 import { mkdtemp, rm } from 'node:fs/promises';
@@ -34,11 +34,11 @@ import { join } from 'node:path';
 import { EXAMPLE_CLIENT_IDENTITY } from './identity.js';
 
 
-import { bootstrap, logSeed, resolveLoggingConfig } from '@moonshot-ai/agent-core-v2';
-import { IConfigService } from '@moonshot-ai/agent-core-v2/app/config/config';
-import { IKosongConfigService } from '@moonshot-ai/agent-core-v2/app/kosongConfig/kosongConfig';
-import { type Klient } from '@moonshot-ai/klient';
-import { createKlient } from '@moonshot-ai/klient/memory';
+import { bootstrap, logSeed, resolveLoggingConfig } from '@zimi-ai/agent-core-v2';
+import { IConfigService } from '@zimi-ai/agent-core-v2/app/config/config';
+import { IKosongConfigService } from '@zimi-ai/agent-core-v2/app/kosongConfig/kosongConfig';
+import { type Klient } from '@zimi-ai/klient';
+import { createKlient } from '@zimi-ai/klient/memory';
 
 function assert(cond: boolean, message: string): asserts cond {
   if (!cond) throw new Error(`assertion failed: ${message}`);
@@ -257,13 +257,13 @@ async function main(): Promise<void> {
   console.log('kosong-config stress: OK');
 }
 
-const pinnedModelEnv = process.env['KIMI_MODEL_NAME'];
-delete process.env['KIMI_MODEL_NAME'];
+const pinnedModelEnv = process.env['ZIMI_MODEL_NAME'];
+delete process.env['ZIMI_MODEL_NAME'];
 try {
   await main();
 } catch (error) {
   console.error(error);
   process.exit(1);
 } finally {
-  if (pinnedModelEnv !== undefined) process.env['KIMI_MODEL_NAME'] = pinnedModelEnv;
+  if (pinnedModelEnv !== undefined) process.env['ZIMI_MODEL_NAME'] = pinnedModelEnv;
 }

@@ -2,7 +2,7 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    name: 'kimi-telemetry',
+    name: 'zimi-telemetry',
     include: ['test/**/*.test.ts'],
   },
 });

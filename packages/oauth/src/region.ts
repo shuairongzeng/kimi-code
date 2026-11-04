@@ -1,6 +1,6 @@
 /**
  * Region profiles for the mainland-China (.com) and global (.ai)
- * Kimi Code deployments, plus the resolver that decides which region a
+ * Zimi Code deployments, plus the resolver that decides which region a
  * client belongs to.
  *
  * A region is a bundle of endpoints (OAuth host, managed API base URL, CDN,
@@ -9,10 +9,10 @@
  * `./constants`.
  *
  * Resolution order (first match wins):
- *   1. env override (`KIMI_CODE_OAUTH_HOST` / `KIMI_OAUTH_HOST`)
+ *   1. env override (`ZIMI_CODE_OAUTH_HOST` / `ZIMI_OAUTH_HOST`)
  *   2. persisted login (the `oauthHost` stored in config.toml's oauth ref)
  *   3. persisted default-slot login (the oauth ref's key equals
- *      `KIMI_CODE_OAUTH_KEY` — a mainland-China login persists no
+ *      `ZIMI_CODE_OAUTH_KEY` — a mainland-China login persists no
  *      `oauthHost`, so the default slot's presence is an explicit-mainland-cn
  *      signal that outranks the marker)
  *   4. install-channel marker file (`<home>/region`, written by install
@@ -26,21 +26,21 @@ import { join } from 'node:path';
 
 import { z } from 'zod';
 
-import { DEFAULT_KIMI_CODE_OAUTH_HOST } from './constants';
-import { DEFAULT_KIMI_CODE_BASE_URL } from './managed-usage';
+import { DEFAULT_ZIMI_CODE_OAUTH_HOST } from './constants';
+import { DEFAULT_ZIMI_CODE_BASE_URL } from './managed-usage';
 import {
-  kimiCodeEnvBaseUrl,
-  kimiCodeEnvOAuthHost,
-  KIMI_CODE_OAUTH_KEY,
-  resolveKimiCodeOAuthRef,
-} from './managed-kimi-code';
+  zimiCodeEnvBaseUrl,
+  zimiCodeEnvOAuthHost,
+  ZIMI_CODE_OAUTH_KEY,
+  resolveZimiCodeOAuthRef,
+} from './managed-zimi-code';
 
-export type KimiRegion = 'mainland-cn' | 'global';
+export type ZimiRegion = 'mainland-cn' | 'global';
 
-/** Zod schema for the wire/domain contract; parses to {@link KimiRegion}. */
-export const kimiRegionSchema = z.enum(['mainland-cn', 'global']);
+/** Zod schema for the wire/domain contract; parses to {@link ZimiRegion}. */
+export const zimiRegionSchema = z.enum(['mainland-cn', 'global']);
 
-export interface KimiRegionProfile {
+export interface ZimiRegionProfile {
   /** OAuth host the device flow talks to (authorize/token derive from it). */
   readonly oauthHost: string;
   /** Managed API base (`/coding/v1`): usages, userinfo, models, feedback... */
@@ -54,14 +54,14 @@ export interface KimiRegionProfile {
    * must skip the send instead of falling back to another region's host.
    */
   readonly telemetryEndpoint?: string;
-  /** Remote Control relay origin (`kimi rc` / `/web` public URL). */
+  /** Remote Control relay origin (`zimi rc` / `/web` public URL). */
   readonly relayOrigin: string;
 }
 
-export const KIMI_REGION_PROFILES: Record<KimiRegion, KimiRegionProfile> = {
+export const ZIMI_REGION_PROFILES: Record<ZimiRegion, ZimiRegionProfile> = {
   'mainland-cn': {
-    oauthHost: DEFAULT_KIMI_CODE_OAUTH_HOST,
-    baseUrl: DEFAULT_KIMI_CODE_BASE_URL,
+    oauthHost: DEFAULT_ZIMI_CODE_OAUTH_HOST,
+    baseUrl: DEFAULT_ZIMI_CODE_BASE_URL,
     cdnBase: 'https://code.kimi.com/kimi-code',
     siteBase: 'https://www.kimi.com',
     telemetryEndpoint: 'https://telemetry-logs.kimi.com/v1/event',
@@ -77,66 +77,66 @@ export const KIMI_REGION_PROFILES: Record<KimiRegion, KimiRegionProfile> = {
   },
 };
 
-export function kimiRegionProfile(region: KimiRegion): KimiRegionProfile {
-  return KIMI_REGION_PROFILES[region];
+export function zimiRegionProfile(region: ZimiRegion): ZimiRegionProfile {
+  return ZIMI_REGION_PROFILES[region];
 }
 
 /**
  * Content-CDN URL builder (tips banner, WebBridge / Computer-Use binaries).
- * International mirror coverage of cdn.kimi.ai for these payloads is still
+ * International mirror coverage of cdn.zimi.ai for these payloads is still
  * being confirmed, so both regions currently share the .com host — funnel
  * every content URL through here so flipping later touches one function.
  */
-export function kimiCdnContentUrl(path: string): string {
+export function zimiCdnContentUrl(path: string): string {
   return `https://cdn.kimi.com/${path.replace(/^\/+/, '')}`;
 }
 
 /**
  * Login hosts for an explicit region choice, or `undefined` when an env
- * override (`KIMI_CODE_OAUTH_HOST` / `KIMI_OAUTH_HOST` / `KIMI_CODE_BASE_URL`)
+ * override (`ZIMI_CODE_OAUTH_HOST` / `ZIMI_OAUTH_HOST` / `ZIMI_CODE_BASE_URL`)
  * is in play — env keeps full control of endpoints, so a region pick must not
  * smuggle profile hosts past it (requested hosts outrank env in
- * `resolveKimiCodeLoginAuth`).
+ * `resolveZimiCodeLoginAuth`).
  *
  * When returned, both hosts are always set — including for 'mainland-cn',
  * whose values equal the defaults. Passing them explicitly is what lets
  * "switch back to mainland China" override a previously persisted global
  * login in config.toml.
  */
-export function kimiRegionLoginHosts(
-  region: KimiRegion,
+export function zimiRegionLoginHosts(
+  region: ZimiRegion,
   env: NodeJS.ProcessEnv = process.env,
 ): { readonly oauthHost: string; readonly baseUrl: string } | undefined {
-  if (kimiCodeEnvOAuthHost(env) !== undefined || kimiCodeEnvBaseUrl(env) !== undefined) {
+  if (zimiCodeEnvOAuthHost(env) !== undefined || zimiCodeEnvBaseUrl(env) !== undefined) {
     return undefined;
   }
-  const profile = kimiRegionProfile(region);
+  const profile = zimiRegionProfile(region);
   return { oauthHost: profile.oauthHost, baseUrl: profile.baseUrl };
 }
 
 /**
- * Marker file name under the Kimi home dir. Install scripts write a single
+ * Marker file name under the Zimi home dir. Install scripts write a single
  * line (`mainland-cn` or `global`) here so a fresh client can default to the
  * region matching the channel it was installed from. It is only consulted
  * while the user has never logged in; a persisted login (config.toml) always
  * wins.
  */
-export const KIMI_REGION_MARKER_FILENAME = 'region';
+export const ZIMI_REGION_MARKER_FILENAME = 'region';
 
-export interface ResolveKimiRegionOptions {
+export interface ResolveZimiRegionOptions {
   /** Defaults to `process.env`. */
   readonly env?: NodeJS.ProcessEnv;
   /** The `oauthHost` persisted in config.toml's oauth ref, if any. */
   readonly configuredOAuthHost?: string;
   /**
    * The credential key persisted in config.toml's oauth ref, if any. The
-   * default slot ({@link KIMI_CODE_OAUTH_KEY}) only ever holds a
+   * default slot ({@link ZIMI_CODE_OAUTH_KEY}) only ever holds a
    * mainland-China login — mainland-cn persists no `oauthHost` — so its
    * presence is an explicit-mainland-cn signal that outranks the
    * install-channel marker.
    */
   readonly configuredOAuthKey?: string;
-  /** Kimi home dir; defaults to `KIMI_CODE_HOME` or `~/.kimi-code`. */
+  /** Zimi home dir; defaults to `ZIMI_CODE_HOME` or `~/.zimi-code`. */
   readonly homeDir?: string;
   /**
    * Set false to skip the install-channel marker (e.g. the desktop app's
@@ -150,18 +150,18 @@ function normalizeHost(value: string): string {
   return value.trim().replace(/\/+$/, '');
 }
 
-function regionForOAuthHost(oauthHost: string): KimiRegion | undefined {
+function regionForOAuthHost(oauthHost: string): ZimiRegion | undefined {
   const normalized = normalizeHost(oauthHost);
-  for (const region of Object.keys(KIMI_REGION_PROFILES) as KimiRegion[]) {
-    if (normalizeHost(KIMI_REGION_PROFILES[region].oauthHost) === normalized) return region;
+  for (const region of Object.keys(ZIMI_REGION_PROFILES) as ZimiRegion[]) {
+    if (normalizeHost(ZIMI_REGION_PROFILES[region].oauthHost) === normalized) return region;
   }
   return undefined;
 }
 
-export function readKimiRegionMarker(homeDir: string): KimiRegion | undefined {
+export function readZimiRegionMarker(homeDir: string): ZimiRegion | undefined {
   let raw: string;
   try {
-    raw = readFileSync(join(homeDir, KIMI_REGION_MARKER_FILENAME), 'utf-8');
+    raw = readFileSync(join(homeDir, ZIMI_REGION_MARKER_FILENAME), 'utf-8');
   } catch {
     return undefined;
   }
@@ -169,15 +169,15 @@ export function readKimiRegionMarker(homeDir: string): KimiRegion | undefined {
   return value === 'mainland-cn' || value === 'global' ? value : undefined;
 }
 
-// Mirrors `defaultKimiHome` in ./toolkit; keep the two in sync so the marker
+// Mirrors `defaultZimiHome` in ./toolkit; keep the two in sync so the marker
 // always lands next to the credentials dir it describes.
 function defaultHomeDir(env: NodeJS.ProcessEnv): string {
-  const override = env['KIMI_CODE_HOME'];
+  const override = env['ZIMI_CODE_HOME'];
   if (override !== undefined && override.length > 0) return override;
-  return join(homedir(), '.kimi-code');
+  return join(homedir(), '.zimi-code');
 }
 
-export type KimiRegionSource =
+export type ZimiRegionSource =
   | 'env'
   | 'login'
   | 'marker'
@@ -185,12 +185,12 @@ export type KimiRegionSource =
   | 'fallback'
   | 'default';
 
-export interface KimiRegionResolution {
-  readonly region: KimiRegion;
-  readonly source: KimiRegionSource;
+export interface ZimiRegionResolution {
+  readonly region: ZimiRegion;
+  readonly source: ZimiRegionSource;
 }
 
-export interface ResolveKimiRegionParts {
+export interface ResolveZimiRegionParts {
   /** Defaults to `process.env`. */
   readonly env?: NodeJS.ProcessEnv;
   /** The `oauthHost` persisted in config.toml's oauth ref, if any. */
@@ -198,20 +198,20 @@ export interface ResolveKimiRegionParts {
   /** The credential key persisted in config.toml's oauth ref, if any. */
   readonly configuredOAuthKey?: string;
   /** The install-channel marker value already read from `<home>/region`. */
-  readonly marker?: KimiRegion;
+  readonly marker?: ZimiRegion;
 }
 
 /**
  * The env → login → marker → default resolution prefix as a pure function:
  * every input arrives as a value, so callers that read files themselves
  * (the stat-gated resolver) share exactly this chain with the I/O wrapper
- * {@link resolveKimiRegionDetailed}.
+ * {@link resolveZimiRegionDetailed}.
  */
-export function resolveKimiRegionFromParts(
-  parts: ResolveKimiRegionParts,
-): KimiRegionResolution {
+export function resolveZimiRegionFromParts(
+  parts: ResolveZimiRegionParts,
+): ZimiRegionResolution {
   const env = parts.env ?? process.env;
-  const envHost = env['KIMI_CODE_OAUTH_HOST'] ?? env['KIMI_OAUTH_HOST'];
+  const envHost = env['ZIMI_CODE_OAUTH_HOST'] ?? env['ZIMI_OAUTH_HOST'];
   if (envHost !== undefined && envHost.length > 0) {
     return { region: regionForOAuthHost(envHost) ?? 'mainland-cn', source: 'env' };
   }
@@ -220,22 +220,22 @@ export function resolveKimiRegionFromParts(
     const configuredRegion = regionForOAuthHost(configured);
     if (configuredRegion !== undefined) return { region: configuredRegion, source: 'login' };
   }
-  if (parts.configuredOAuthKey === KIMI_CODE_OAUTH_KEY) {
+  if (parts.configuredOAuthKey === ZIMI_CODE_OAUTH_KEY) {
     return { region: 'mainland-cn', source: 'login' };
   }
   if (parts.marker !== undefined) return { region: parts.marker, source: 'marker' };
   return { region: 'mainland-cn', source: 'default' };
 }
 
-export function resolveKimiRegionDetailed(
-  options: ResolveKimiRegionOptions = {},
-): KimiRegionResolution {
+export function resolveZimiRegionDetailed(
+  options: ResolveZimiRegionOptions = {},
+): ZimiRegionResolution {
   const env = options.env ?? process.env;
   const marker =
     options.readMarker === false
       ? undefined
-      : readKimiRegionMarker(options.homeDir ?? defaultHomeDir(env));
-  return resolveKimiRegionFromParts({
+      : readZimiRegionMarker(options.homeDir ?? defaultHomeDir(env));
+  return resolveZimiRegionFromParts({
     env,
     configuredOAuthHost: options.configuredOAuthHost,
     configuredOAuthKey: options.configuredOAuthKey,
@@ -243,12 +243,12 @@ export function resolveKimiRegionDetailed(
   });
 }
 
-export function resolveKimiRegion(options: ResolveKimiRegionOptions = {}): KimiRegion {
-  return resolveKimiRegionDetailed(options).region;
+export function resolveZimiRegion(options: ResolveZimiRegionOptions = {}): ZimiRegion {
+  return resolveZimiRegionDetailed(options).region;
 }
 
-export interface KimiRemoteControlAuth {
-  readonly region: KimiRegion;
+export interface ZimiRemoteControlAuth {
+  readonly region: ZimiRegion;
   readonly oauthKey: string;
   readonly relayOrigin: string;
 }
@@ -257,26 +257,26 @@ export interface KimiRemoteControlAuth {
  * One region judgment for Remote Control: credential slot + relay origin.
  *
  * `oauthKey` is the persisted login slot when `configuredOAuthKey` is set
- * (including custom `kimi-code-env-*` environments); otherwise the official
+ * (including custom `zimi-code-env-*` environments); otherwise the official
  * slot for the resolved region. `relayOrigin` follows the resolved region
  * profile, except that a custom-env login — a scoped slot outside the two
  * official ones, without a recognized `configuredOAuthHost` — keeps the
  * mainland relay: an install-channel marker must not flip a custom
  * environment to `.ai`.
  */
-export function resolveKimiRemoteControlAuth(
-  options: ResolveKimiRegionOptions = {},
-): KimiRemoteControlAuth {
-  const region = resolveKimiRegion(options);
-  const profile = kimiRegionProfile(region);
+export function resolveZimiRemoteControlAuth(
+  options: ResolveZimiRegionOptions = {},
+): ZimiRemoteControlAuth {
+  const region = resolveZimiRegion(options);
+  const profile = zimiRegionProfile(region);
   const configuredKey = options.configuredOAuthKey;
   const customSlot =
     configuredKey !== undefined &&
-    configuredKey !== KIMI_CODE_OAUTH_KEY &&
+    configuredKey !== ZIMI_CODE_OAUTH_KEY &&
     configuredKey !==
-      resolveKimiCodeOAuthRef({
-        oauthHost: KIMI_REGION_PROFILES.global.oauthHost,
-        baseUrl: KIMI_REGION_PROFILES.global.baseUrl,
+      resolveZimiCodeOAuthRef({
+        oauthHost: ZIMI_REGION_PROFILES.global.oauthHost,
+        baseUrl: ZIMI_REGION_PROFILES.global.baseUrl,
       }).key;
   const hostPinned =
     options.configuredOAuthHost !== undefined &&
@@ -285,13 +285,13 @@ export function resolveKimiRemoteControlAuth(
     region,
     oauthKey:
       configuredKey ??
-      resolveKimiCodeOAuthRef({
+      resolveZimiCodeOAuthRef({
         oauthHost: profile.oauthHost,
         baseUrl: profile.baseUrl,
       }).key,
     relayOrigin:
       customSlot && !hostPinned
-        ? KIMI_REGION_PROFILES['mainland-cn'].relayOrigin
+        ? ZIMI_REGION_PROFILES['mainland-cn'].relayOrigin
         : profile.relayOrigin,
   };
 }

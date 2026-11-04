@@ -36,13 +36,13 @@ function expectedPathSuffix(launcher: LauncherSpec): string {
 function executorAction(launcher: LauncherSpec): string {
   const remoteBin = launcherRemoteBin(launcher);
   if (remoteBin !== undefined && isBareRemoteBin(remoteBin)) {
-    return `download the \`kimi\` binary for the target platform from the Kimi Code release CDN and install it as \`${remoteBin}\` on the target's PATH`;
+    return `download the \`zimi\` binary for the target platform from the Zimi Code release CDN and install it as \`${remoteBin}\` on the target's PATH`;
   }
   const location =
     remoteBin === undefined
       ? 'the absolute path your launcher command invokes'
       : `the executor path (${remoteBin})`;
-  return `download the \`kimi\` binary for the target platform from the Kimi Code release CDN and install it at ${location}`;
+  return `download the \`zimi\` binary for the target platform from the Zimi Code release CDN and install it at ${location}`;
 }
 
 function missingExecutorGuidance(launcher: LauncherSpec, failure: 'missing' | 'timeout'): string {
@@ -50,7 +50,7 @@ function missingExecutorGuidance(launcher: LauncherSpec, failure: 'missing' | 't
   const intro =
     failure === 'timeout'
       ? `The remote executor on ${label} did not answer the handshake in time — it may be missing or unable to start${expectedPathSuffix(launcher)}.`
-      : `The remote executor (kimi exec-server) was not found on ${label}${expectedPathSuffix(launcher)}.`;
+      : `The remote executor (zimi exec-server) was not found on ${label}${expectedPathSuffix(launcher)}.`;
   return `${intro}\n\nInstall the executor manually: ${executorAction(launcher)}.\n\nThen reconnect the environment.`;
 }
 

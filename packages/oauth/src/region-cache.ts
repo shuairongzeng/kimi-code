@@ -1,22 +1,22 @@
 import { mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import type { KimiRegion } from './region';
+import type { ZimiRegion } from './region';
 
-export const KIMI_REGION_CACHE_FILENAME = 'region.json';
+export const ZIMI_REGION_CACHE_FILENAME = 'region.json';
 
-export interface KimiRegionCacheRecord {
+export interface ZimiRegionCacheRecord {
   readonly version: 1;
   readonly authState: 'logged-out';
-  readonly region: KimiRegion;
+  readonly region: ZimiRegion;
   readonly source: 'local-signals';
 }
 
 function cachePath(homeDir: string): string {
-  return join(homeDir, KIMI_REGION_CACHE_FILENAME);
+  return join(homeDir, ZIMI_REGION_CACHE_FILENAME);
 }
 
-function parseCache(raw: string): KimiRegionCacheRecord | undefined {
+function parseCache(raw: string): ZimiRegionCacheRecord | undefined {
   try {
     const value = JSON.parse(raw) as Record<string, unknown>;
     if (
@@ -36,7 +36,7 @@ function parseCache(raw: string): KimiRegionCacheRecord | undefined {
   return undefined;
 }
 
-export function readKimiRegionCache(homeDir: string): KimiRegionCacheRecord | undefined {
+export function readZimiRegionCache(homeDir: string): ZimiRegionCacheRecord | undefined {
   let raw: string;
   try {
     raw = readFileSync(cachePath(homeDir), 'utf-8');
@@ -44,12 +44,12 @@ export function readKimiRegionCache(homeDir: string): KimiRegionCacheRecord | un
     return undefined;
   }
   const cached = parseCache(raw);
-  if (cached === undefined) clearKimiRegionCache(homeDir);
+  if (cached === undefined) clearZimiRegionCache(homeDir);
   return cached;
 }
 
-export function writeKimiRegionCache(homeDir: string, region: KimiRegion): void {
-  const record: KimiRegionCacheRecord = {
+export function writeZimiRegionCache(homeDir: string, region: ZimiRegion): void {
+  const record: ZimiRegionCacheRecord = {
     version: 1,
     authState: 'logged-out',
     region,
@@ -64,7 +64,7 @@ export function writeKimiRegionCache(homeDir: string, region: KimiRegion): void 
   } catch {}
 }
 
-export function clearKimiRegionCache(homeDir: string): void {
+export function clearZimiRegionCache(homeDir: string): void {
   try {
     unlinkSync(cachePath(homeDir));
   } catch {}

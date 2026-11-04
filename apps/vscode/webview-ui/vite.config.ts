@@ -24,7 +24,7 @@ export default defineConfig({
     emptyOutDir: false,
     lib: {
       entry: resolve(webviewRoot, "src/main.tsx"),
-      name: "KimiWebview",
+      name: "ZimiWebview",
       fileName: () => "webview.js",
       formats: ["iife"],
     },

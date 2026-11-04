@@ -9,6 +9,6 @@ export default defineConfig({
   clean: true,
   plugins: [rawTextPlugin()],
   deps: {
-    alwaysBundle: [/^@moonshot-ai\/agent-core-v2/],
+    alwaysBundle: [/^@zimi-ai\/agent-core-v2/],
   },
 });

@@ -1,8 +1,8 @@
 import {
-  KIMI_CODE_PROVIDER_NAME,
-  kimiCodeBaseUrl,
+  ZIMI_CODE_PROVIDER_NAME,
+  zimiCodeBaseUrl,
   type BearerTokenProvider,
-} from '@moonshot-ai/kimi-code-oauth';
+} from '@zimi-ai/zimi-code-oauth';
 import { LifecycleScope } from '#/app/scopes';
 import { ScopeActivation, registerScopedService } from '#/_base/di/scope';
 import { IOAuthService } from '#/app/auth/auth';
@@ -13,7 +13,7 @@ import { IProviderService, type ProviderConfig } from '#/llm-adapter/provider/pr
 import { isOAuthCatalogVendor } from '#/llm-adapter/provider/provider-definition';
 
 import { SERVICES_SECTION, type ServicesConfig } from '../configSection';
-import { MoonshotWebSearchProvider } from './providers/moonshot-web-search';
+import { ZimiWebSearchProvider } from './providers/zimi-web-search';
 import type { WebSearchProvider } from '#/agent/tools/web-search/web-search';
 import { IWebSearchProviderService } from './webSearch';
 
@@ -36,21 +36,21 @@ export class WebSearchProviderService implements IWebSearchProviderService {
     return this.configuredSearch() !== undefined || this.managedTokenProvider() !== undefined;
   }
 
-  private configuredSearch(): (ServicesConfig['moonshotSearch'] & { baseUrl: string }) | undefined {
-    const search = this.config.get<ServicesConfig>(SERVICES_SECTION)?.moonshotSearch;
+  private configuredSearch(): (ServicesConfig['zimiSearch'] & { baseUrl: string }) | undefined {
+    const search = this.config.get<ServicesConfig>(SERVICES_SECTION)?.zimiSearch;
     if (search?.baseUrl === undefined) return undefined;
-    return search as ServicesConfig['moonshotSearch'] & { baseUrl: string };
+    return search as ServicesConfig['zimiSearch'] & { baseUrl: string };
   }
 
   private managedTokenProvider():
     | { provider: ProviderConfig; tokenProvider: BearerTokenProvider }
     | undefined {
-    const provider = this.providers.get(KIMI_CODE_PROVIDER_NAME);
+    const provider = this.providers.get(ZIMI_CODE_PROVIDER_NAME);
     if (provider === undefined || !isOAuthCatalogVendor(provider.type) || provider.oauth === undefined) {
       return undefined;
     }
     const tokenProvider = this.oauth.resolveTokenProvider(
-      KIMI_CODE_PROVIDER_NAME,
+      ZIMI_CODE_PROVIDER_NAME,
       provider.oauth,
     );
     if (tokenProvider === undefined) return undefined;
@@ -63,8 +63,8 @@ export class WebSearchProviderService implements IWebSearchProviderService {
     const tokenProvider =
       search.oauth === undefined
         ? undefined
-        : this.oauth.resolveTokenProvider(KIMI_CODE_PROVIDER_NAME, search.oauth);
-    return new MoonshotWebSearchProvider({
+        : this.oauth.resolveTokenProvider(ZIMI_CODE_PROVIDER_NAME, search.oauth);
+    return new ZimiWebSearchProvider({
       baseUrl: search.baseUrl,
       tokenProvider,
       apiKey: nonEmptyString(search.apiKey),
@@ -77,8 +77,8 @@ export class WebSearchProviderService implements IWebSearchProviderService {
     const managed = this.managedTokenProvider();
     if (managed === undefined) return undefined;
     const { provider, tokenProvider } = managed;
-    const baseUrl = `${(provider.baseUrl ?? kimiCodeBaseUrl()).replace(/\/+$/, '')}/search`;
-    return new MoonshotWebSearchProvider({
+    const baseUrl = `${(provider.baseUrl ?? zimiCodeBaseUrl()).replace(/\/+$/, '')}/search`;
+    return new ZimiWebSearchProvider({
       baseUrl,
       tokenProvider,
       defaultHeaders: { ...this.bootstrap.args.requestHeaders },

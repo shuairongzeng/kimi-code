@@ -1,7 +1,7 @@
 import {
   installGlobalProxyDispatcher as v2InstallGlobalProxyDispatcher,
   type InstallProxyDeps,
-} from '@moonshot-ai/agent-core-v2/_base/utils/proxy';
+} from '@zimi-ai/agent-core-v2/_base/utils/proxy';
 
 type Env = Readonly<Record<string, string | undefined>>;
 

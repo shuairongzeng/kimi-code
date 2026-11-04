@@ -45,7 +45,7 @@ describe('client metadata in transcript user origins', () => {
   });
 
   it('keeps opening prompt metadata when rebuilding history turns', () => {
-    const clientMetadata = [{ kimi_code_composer: { version: 1, doc: { type: 'doc' } } }];
+    const clientMetadata = [{ zimi_code_composer: { version: 1, doc: { type: 'doc' } } }];
     const origin = { kind: 'user', clientMetadata };
     const snapshot = groupMessagesIntoSnapshot([
       { role: 'user', content: [{ type: 'text', text: 'visible prompt' }], toolCalls: [], origin },
@@ -58,8 +58,8 @@ describe('client metadata in transcript user origins', () => {
 
   it('projects and validates independent document snapshots without losing their nested fields', () => {
     const clientMetadata = [
-      { kimi_code_composer: { version: 1, doc: { type: 'doc', content: [{ type: 'paragraph' }] }, captureIds: ['capture-a'] } },
-      { kimi_code_composer: { version: 1, captureIds: ['capture-b'] } },
+      { zimi_code_composer: { version: 1, doc: { type: 'doc', content: [{ type: 'paragraph' }] }, captureIds: ['capture-a'] } },
+      { zimi_code_composer: { version: 1, captureIds: ['capture-b'] } },
     ];
     const projected = projectTranscriptUserOrigin({ kind: 'user', clientMetadata });
     expect(transcriptUserOriginSchema.parse(projected)).toEqual({ kind: 'user', clientMetadata });
@@ -1038,14 +1038,14 @@ describe('groupMessagesIntoSnapshot (cold path)', () => {
     expect(turn.attachmentIds).toEqual(['att_1']);
   });
 
-  it('maps persisted kimi-file media refs to attachments', () => {
+  it('maps persisted zimi-file media refs to attachments', () => {
     const snapshot = groupMessagesIntoSnapshot([
       {
         role: 'user',
         content: [
           {
             type: 'video_url',
-            videoUrl: { url: 'kimi-file://file_1', name: 'clip.mp4' },
+            videoUrl: { url: 'zimi-file://file_1', name: 'clip.mp4' },
           } as HistoryContentPart,
         ],
         toolCalls: [],
@@ -1057,7 +1057,7 @@ describe('groupMessagesIntoSnapshot (cold path)', () => {
           { type: 'text', text: 'what is this?' },
           {
             type: 'image_url',
-            imageUrl: { url: 'kimi-file://file_2?path=%2Fcache%2Fshot.png', name: 'shot.png' },
+            imageUrl: { url: 'zimi-file://file_2?path=%2Fcache%2Fshot.png', name: 'shot.png' },
           } as HistoryContentPart,
         ],
         toolCalls: [],
@@ -1098,7 +1098,7 @@ describe('groupMessagesIntoSnapshot (cold path)', () => {
           { type: 'text', text: '/gen-docs ' },
           {
             type: 'image_url',
-            imageUrl: { url: 'kimi-file://file_4?path=%2Fcache%2Fshot.png' },
+            imageUrl: { url: 'zimi-file://file_4?path=%2Fcache%2Fshot.png' },
           } as HistoryContentPart,
         ],
         toolCalls: [],
@@ -1125,12 +1125,12 @@ describe('groupMessagesIntoSnapshot (cold path)', () => {
     expect(turn.attachmentIds).toEqual(['att_1']);
   });
 
-  it('keeps a kimi-file ref as a nameless attachment and inline tags as user text', () => {
+  it('keeps a zimi-file ref as a nameless attachment and inline tags as user text', () => {
     const snapshot = snapshotOf(
       { type: 'text', text: 'open <image path="/tmp/other.png"></image> please' },
       {
         type: 'image_url',
-        imageUrl: { url: 'kimi-file://file_3' },
+        imageUrl: { url: 'zimi-file://file_3' },
       } as HistoryContentPart,
     );
 
@@ -1152,7 +1152,7 @@ describe('groupMessagesIntoSnapshot (cold path)', () => {
       { type: 'text', text: '<image path="/cache/shot.png"></image>' },
       {
         type: 'image_url',
-        imageUrl: { url: 'kimi-file://file_5?path=%2Fcache%2Fshot.png' },
+        imageUrl: { url: 'zimi-file://file_5?path=%2Fcache%2Fshot.png' },
       } as HistoryContentPart,
     );
 

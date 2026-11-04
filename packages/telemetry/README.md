@@ -1,8 +1,8 @@
-# @moonshot-ai/kimi-telemetry
+# @zimi-ai/zimi-telemetry
 
-Shared telemetry infrastructure for Kimi Code.
+Shared telemetry infrastructure for Zimi Code.
 
-Part of the [Kimi Code](https://github.com/MoonshotAI/kimi-code) monorepo.
+Part of the [Zimi Code](https://github.com/ZimiAI/zimi-code) monorepo.
 
 See the main repository for documentation, issues, and contribution guidelines.
 

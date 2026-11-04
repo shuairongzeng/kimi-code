@@ -14,9 +14,9 @@ const apiExtractorBinPath = packageBinPath('@microsoft/api-extractor', 'bin/api-
 
 const packageDirs = new Set(['agent-core-v2', 'klient', 'node-sdk', 'oauth']);
 const workspacePackages = new Map([
-  ['@moonshot-ai/agent-core-v2', 'agent-core-v2'],
-  ['@moonshot-ai/kimi-code-oauth', 'oauth'],
-  ['@moonshot-ai/klient', 'klient'],
+  ['@zimi-ai/agent-core-v2', 'agent-core-v2'],
+  ['@zimi-ai/zimi-code-oauth', 'oauth'],
+  ['@zimi-ai/klient', 'klient'],
 ]);
 
 try {
@@ -112,7 +112,7 @@ async function rewriteWorkspaceSpecifiers() {
           `import type { GoogleGenAI as GenAIClient } from '${providerClientSpecifier}';`,
         );
       const updated = providerClientText.replaceAll(
-        /(["'])(#(?:human)?\/[^"']+|@moonshot-ai\/(?:agent-core-v2|kimi-code-oauth|klient)(?:\/[^"']+)?)\1/g,
+        /(["'])(#(?:human)?\/[^"']+|@zimi-ai\/(?:agent-core-v2|zimi-code-oauth|klient)(?:\/[^"']+)?)\1/g,
         (_match, quote, specifier) => {
           const resolved = resolveSpecifier({
             currentFile: file,

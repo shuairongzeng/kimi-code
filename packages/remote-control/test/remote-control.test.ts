@@ -9,11 +9,11 @@ import { gunzipSync } from 'node:zlib';
 
 import {
   FileTokenStorage,
-  KIMI_CODE_PROVIDER_NAME,
-  resolveKimiCodeOAuthRef,
-  resolveKimiTokenStorageName,
+  ZIMI_CODE_PROVIDER_NAME,
+  resolveZimiCodeOAuthRef,
+  resolveZimiTokenStorageName,
   type TokenInfo,
-} from '@moonshot-ai/kimi-code-oauth';
+} from '@zimi-ai/zimi-code-oauth';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { WebSocketServer, type RawData, type WebSocket } from 'ws';
 
@@ -32,7 +32,7 @@ import { RemoteControlDeviceClient } from '../src/device-client';
 import { remoteControlLockPath } from '../src/lock';
 import { createRemoteControlManager } from '../src/manager';
 
-const CLIENT_VERSION = 'kimi-code/test';
+const CLIENT_VERSION = 'zimi-code/test';
 
 const TOKEN: TokenInfo = {
   accessToken: 'access-token',
@@ -56,7 +56,7 @@ describe('Remote Control URLs', () => {
       'device/one',
       undefined,
       'https://code-rc.kimi.com',
-      'kimi_code_cli',
+      'zimi_code_cli',
     );
     expect(url).toBe(
       'https://code-rc.kimi.com/devices/device%2Fone/?rc=1&from=kimi_code_cli',
@@ -66,7 +66,7 @@ describe('Remote Control URLs', () => {
 
   it('builds an encoded session deep link before the query', () => {
     expect(
-      buildRemoteControlUrl('device-1', 'session/a b', 'https://code-rc.kimi.com', 'kimi_code_cli'),
+      buildRemoteControlUrl('device-1', 'session/a b', 'https://code-rc.kimi.com', 'zimi_code_cli'),
     ).toBe(
       'https://code-rc.kimi.com/devices/device-1/sessions/session%2Fa%20b?rc=1&from=kimi_code_cli',
     );
@@ -78,7 +78,7 @@ describe('Remote Control URLs', () => {
         'device-1',
         undefined,
         'https://code-rc.kimi.com',
-        'kimi_code_desktop',
+        'zimi_code_desktop',
       ),
     ).toBe('https://code-rc.kimi.com/devices/device-1/?rc=1&from=kimi_code_desktop');
   });
@@ -86,7 +86,7 @@ describe('Remote Control URLs', () => {
   it('falls back to the default relay origin when the env is unset or blank', () => {
     expect(resolveRemoteControlRelayOrigin({})).toBe('https://code-rc.kimi.com');
     expect(
-      resolveRemoteControlRelayOrigin({ KIMI_CODE_REMOTE_CONTROL_RELAY_URL: '  ' }),
+      resolveRemoteControlRelayOrigin({ ZIMI_CODE_REMOTE_CONTROL_RELAY_URL: '  ' }),
     ).toBe('https://code-rc.kimi.com');
     expect(resolveRemoteControlRelayOrigin({}, 'https://code-rc.kimi.ai')).toBe(
       'https://code-rc.kimi.ai',
@@ -94,10 +94,10 @@ describe('Remote Control URLs', () => {
   });
 
   it('builds device URLs from the relay origin env override', () => {
-    vi.stubEnv('KIMI_CODE_REMOTE_CONTROL_RELAY_URL', 'https://rc.example.test/coding-relay/');
+    vi.stubEnv('ZIMI_CODE_REMOTE_CONTROL_RELAY_URL', 'https://rc.example.test/coding-relay/');
     expect(resolveRemoteControlRelayOrigin()).toBe('https://rc.example.test/coding-relay/');
     expect(
-      buildRemoteControlUrl('device-1', undefined, resolveRemoteControlRelayOrigin(), 'kimi_code_cli'),
+      buildRemoteControlUrl('device-1', undefined, resolveRemoteControlRelayOrigin(), 'zimi_code_cli'),
     ).toBe(
       'https://rc.example.test/coding-relay/devices/device-1/?rc=1&from=kimi_code_cli',
     );
@@ -143,7 +143,7 @@ describe('Remote Control HTTP forwarding', () => {
     ).toString();
     expect(html).toContain(`src="${prefix}/boot.js"`);
     expect(html).toContain(`href="${prefix}/x"`);
-    expect(html).toContain("sessionStorage.setItem('kimi-desktop-server-origin',location.origin+p)");
+    expect(html).toContain("sessionStorage.setItem('zimi-desktop-server-origin',location.origin+p)");
     expect(html).toContain('history.pushState=w(history.pushState)');
 
     const js = rewriteRemoteControlResponse(
@@ -168,10 +168,10 @@ describe('Remote Control HTTP forwarding', () => {
 
 describe('Remote Control tunnel', () => {
   it('surfaces register_nak details', async () => {
-    const homeDir = mkdtempSync(join(tmpdir(), 'kimi-rc-nak-'));
+    const homeDir = mkdtempSync(join(tmpdir(), 'zimi-rc-nak-'));
     cleanups.push(() => rmSync(homeDir, { recursive: true, force: true }));
     await new FileTokenStorage(join(homeDir, 'credentials')).save(
-      resolveKimiTokenStorageName({ providerName: KIMI_CODE_PROVIDER_NAME }),
+      resolveZimiTokenStorageName({ providerName: ZIMI_CODE_PROVIDER_NAME }),
       TOKEN,
     );
     const managementServer = new WebSocketServer({ noServer: true });
@@ -203,7 +203,7 @@ describe('Remote Control tunnel', () => {
         localOrigin: 'http://127.0.0.1:1',
         localServerToken: 'local-server-token',
         clientVersion: CLIENT_VERSION,
-        urlSource: 'kimi_code_cli',
+        urlSource: 'zimi_code_cli',
         relayOrigin: `http://127.0.0.1:${relayPort}/coding-relay`,
         stderr: { write: () => true },
       }),
@@ -211,14 +211,14 @@ describe('Remote Control tunnel', () => {
   });
 
   it('uses only Authorization when the refresh token is not a valid subprotocol token', async () => {
-    const homeDir = mkdtempSync(join(tmpdir(), 'kimi-rc-auth-'));
+    const homeDir = mkdtempSync(join(tmpdir(), 'zimi-rc-auth-'));
     cleanups.push(() => rmSync(homeDir, { recursive: true, force: true }));
-    const oauthRef = resolveKimiCodeOAuthRef({
+    const oauthRef = resolveZimiCodeOAuthRef({
       oauthHost: 'https://auth.kimi.ai',
       baseUrl: 'https://api.kimi.ai/coding/v1',
     });
     await new FileTokenStorage(join(homeDir, 'credentials')).save(
-      resolveKimiTokenStorageName({ oauthKey: oauthRef.key }),
+      resolveZimiTokenStorageName({ oauthKey: oauthRef.key }),
       { ...TOKEN, refreshToken: 'invalid/token=' },
     );
     const relay = await startAuthRelay();
@@ -230,7 +230,7 @@ describe('Remote Control tunnel', () => {
       localOrigin: 'http://127.0.0.1:1',
       localServerToken: 'local-server-token',
       clientVersion: CLIENT_VERSION,
-      urlSource: 'kimi_code_cli',
+      urlSource: 'zimi_code_cli',
       configuredOAuthKey: oauthRef.key,
       configuredOAuthHost: oauthRef.oauthHost,
       relayOrigin: `http://127.0.0.1:${relay.port}/coding-relay`,
@@ -255,12 +255,12 @@ describe('Remote Control tunnel', () => {
       localOrigin: 'http://127.0.0.1:1',
       localServerToken: 'local-server-token',
       clientVersion: CLIENT_VERSION,
-      urlSource: 'kimi_code_cli',
+      urlSource: 'zimi_code_cli',
       relayOrigin: `http://127.0.0.1:${relay.port}/coding-relay`,
       stderr: { write: () => true },
     });
 
-    expect(relay.requests.some((request) => request.protocol?.startsWith('kimi-code.bearer.'))).toBe(
+    expect(relay.requests.some((request) => request.protocol?.startsWith('zimi-code.bearer.'))).toBe(
       true,
     );
     expect(
@@ -283,13 +283,13 @@ describe('Remote Control tunnel', () => {
       localOrigin: 'http://127.0.0.1:1',
       localServerToken: 'local-server-token',
       clientVersion: CLIENT_VERSION,
-      urlSource: 'kimi_code_cli',
+      urlSource: 'zimi_code_cli',
       relayOrigin: `http://127.0.0.1:${relay.port}/coding-relay`,
       stderr: { write: () => true },
     });
 
     expect(relay.requests.length).toBeGreaterThanOrEqual(4);
-    expect(handle.url).toContain('?rc=1&from=kimi_code_cli');
+    expect(handle.url).toContain('?rc=1&from=zimi_code_cli');
   }, 6000);
 
   it('reconnects when management closes during the HTTP tunnel handshake', async () => {
@@ -303,7 +303,7 @@ describe('Remote Control tunnel', () => {
       localOrigin: 'http://127.0.0.1:1',
       localServerToken: 'local-server-token',
       clientVersion: CLIENT_VERSION,
-      urlSource: 'kimi_code_cli',
+      urlSource: 'zimi_code_cli',
       relayOrigin: `http://127.0.0.1:${relay.port}/coding-relay`,
       stderr: { write: () => true },
     });
@@ -320,7 +320,7 @@ describe('Remote Control tunnel', () => {
       (scenario.registrations[0] as { payload?: Record<string, unknown> }).payload,
     ).not.toHaveProperty('capabilities');
     expect(scenario.handle.url).toContain('/coding-relay/devices/');
-    expect(scenario.handle.url).toContain('?rc=1&from=kimi_code_cli');
+    expect(scenario.handle.url).toContain('?rc=1&from=zimi_code_cli');
 
     const rawRequest = probeRawRequest();
     const splitAt = Math.floor(rawRequest.length / 2);
@@ -686,7 +686,7 @@ describe('Remote Control tunnel', () => {
         localOrigin: 'http://127.0.0.1:1',
         localServerToken: 'local-server-token',
         clientVersion: CLIENT_VERSION,
-        urlSource: 'kimi_code_cli',
+        urlSource: 'zimi_code_cli',
         relayOrigin: 'http://127.0.0.1:1/coding-relay',
         stderr: { write: () => true },
         httpTunnelLimits: { responseChunkBytes: 0 },
@@ -800,7 +800,7 @@ describe('Remote Control tunnel', () => {
     );
     await waitFor(() => scenario.streamConnections.length === 1 && scenario.state.localWs !== undefined);
     expect(scenario.state.localWsRequest?.headers['sec-websocket-protocol']).toBe(
-      'kimi-code.bearer.local-server-token',
+      'zimi-code.bearer.local-server-token',
     );
     expect(scenario.state.localWsRequest?.headers.authorization).toBeUndefined();
     expect(scenario.state.localWsRequest?.headers.cookie).toBeUndefined();
@@ -880,7 +880,7 @@ describe('Remote Control tunnel', () => {
       localOrigin: 'http://127.0.0.1:1',
       localServerToken: 'local-server-token',
       clientVersion: CLIENT_VERSION,
-      urlSource: 'kimi_code_cli',
+      urlSource: 'zimi_code_cli',
       relayOrigin: `http://127.0.0.1:${relay.port}/coding-relay`,
       stderr: { write: (text) => ((logs += String(text)), true) },
       pingIntervalMs: 50,
@@ -909,7 +909,7 @@ describe('Remote Control tunnel', () => {
       localOrigin: 'http://127.0.0.1:1',
       localServerToken: 'local-server-token',
       clientVersion: CLIENT_VERSION,
-      urlSource: 'kimi_code_cli',
+      urlSource: 'zimi_code_cli',
       relayOrigin: `http://127.0.0.1:${relay.port}/coding-relay`,
       stderr: { write: (text) => ((logs += String(text)), true) },
     });
@@ -924,7 +924,7 @@ describe('Remote Control tunnel', () => {
         relay.httpSockets.some((socket) => socket.readyState === 1),
     );
     expect(logs).toContain('DEPLOYING');
-    expect(handle.url).toContain('?rc=1&from=kimi_code_cli');
+    expect(handle.url).toContain('?rc=1&from=zimi_code_cli');
   }, 15_000);
 });
 
@@ -945,7 +945,7 @@ describe('Remote Control single-instance lock', () => {
       localOrigin: 'http://127.0.0.1:58627',
       localServerToken: 'local-server-token',
       clientVersion: CLIENT_VERSION,
-      urlSource: 'kimi_code_cli',
+      urlSource: 'zimi_code_cli',
       relayOrigin: `http://127.0.0.1:${relay.port}`,
       stderr: { write: () => true },
     });
@@ -956,7 +956,7 @@ describe('Remote Control single-instance lock', () => {
         localOrigin: 'http://127.0.0.1:58628',
         localServerToken: 'local-server-token',
         clientVersion: CLIENT_VERSION,
-        urlSource: 'kimi_code_cli',
+        urlSource: 'zimi_code_cli',
         relayOrigin: `http://127.0.0.1:${relay.port}`,
         stderr: { write: () => true },
       }),
@@ -987,7 +987,7 @@ describe('Remote Control single-instance lock', () => {
       localOrigin: 'http://127.0.0.1:58627',
       localServerToken: 'local-server-token',
       clientVersion: CLIENT_VERSION,
-      urlSource: 'kimi_code_cli',
+      urlSource: 'zimi_code_cli',
       relayOrigin: `http://127.0.0.1:${relay.port}`,
       stderr: { write: () => true },
     });
@@ -1006,7 +1006,7 @@ describe('Remote Control single-instance lock', () => {
       localOrigin: 'http://127.0.0.1:58627',
       localServerToken: 'local-server-token',
       clientVersion: CLIENT_VERSION,
-      urlSource: 'kimi_code_cli',
+      urlSource: 'zimi_code_cli',
       relayOrigin: `http://127.0.0.1:${relay.port}`,
       stderr: { write: () => true },
     };
@@ -1037,7 +1037,7 @@ describe('Remote Control single-instance lock', () => {
       localOrigin: 'http://127.0.0.1:58627',
       localServerToken: 'local-server-token',
       clientVersion: CLIENT_VERSION,
-      urlSource: 'kimi_code_cli',
+      urlSource: 'zimi_code_cli',
       relayOrigin: `http://127.0.0.1:${relay.port}`,
       stderr: { write: () => true },
       onStatus: (status) => statuses.push(status),
@@ -1057,7 +1057,7 @@ describe('Remote Control single-instance lock', () => {
       localOrigin: 'http://127.0.0.1:58627',
       localServerToken: 'local-server-token',
       clientVersion: CLIENT_VERSION,
-      urlSource: 'kimi_code_cli',
+      urlSource: 'zimi_code_cli',
       relayOrigin: `http://127.0.0.1:${relay.port}`,
       stderr: { write: () => true },
       onStatus: (status) => localStatuses.push(status),
@@ -1076,7 +1076,7 @@ describe('Remote Control single-instance lock', () => {
       localOrigin: 'http://127.0.0.1:58627',
       localServerToken: 'local-server-token',
       clientVersion: CLIENT_VERSION,
-      urlSource: 'kimi_code_cli',
+      urlSource: 'zimi_code_cli',
       relayOrigin: `http://127.0.0.1:${relay.port}`,
       stderr: { write: () => true },
     });
@@ -1108,7 +1108,7 @@ describe('Remote Control device client', () => {
     alias: 'Workstation',
     status: 'online',
     platform: 'darwin',
-    client_version: 'kimi-code/1.0.0',
+    client_version: 'zimi-code/1.0.0',
     local_base_url: 'http://127.0.0.1:58627',
     created_at: '2026-01-01T00:00:00.000Z',
     updated_at: '2026-01-01T00:00:00.000Z',
@@ -1312,16 +1312,16 @@ describe('Remote Control device client', () => {
   });
 
   it('uses the configured OAuth slot when exchanging a session', async () => {
-    const homeDir = mkdtempSync(join(tmpdir(), 'kimi-rc-device-slot-'));
+    const homeDir = mkdtempSync(join(tmpdir(), 'zimi-rc-device-slot-'));
     cleanups.push(() => {
       rmSync(homeDir, { recursive: true, force: true });
     });
-    const oauthRef = resolveKimiCodeOAuthRef({
+    const oauthRef = resolveZimiCodeOAuthRef({
       oauthHost: 'https://auth.kimi.ai',
       baseUrl: 'https://api.kimi.ai/coding/v1',
     });
     await new FileTokenStorage(join(homeDir, 'credentials')).save(
-      resolveKimiTokenStorageName({ oauthKey: oauthRef.key }),
+      resolveZimiTokenStorageName({ oauthKey: oauthRef.key }),
       { ...TOKEN, accessToken: 'custom-access', refreshToken: 'custom-refresh' },
     );
     let exchangedBody = '';
@@ -1436,7 +1436,7 @@ describe('Remote Control device client', () => {
 
     await client.listDevices();
     await new FileTokenStorage(join(homeDir, 'credentials')).save(
-      resolveKimiTokenStorageName({ providerName: KIMI_CODE_PROVIDER_NAME }),
+      resolveZimiTokenStorageName({ providerName: ZIMI_CODE_PROVIDER_NAME }),
       { ...TOKEN, refreshToken: 'second-account-refresh' },
     );
     await client.listDevices();
@@ -1490,7 +1490,7 @@ describe('Remote Control manager', () => {
       localOrigin: () => 'http://127.0.0.1:58627',
       localServerToken: () => 'local-server-token',
       clientVersion: CLIENT_VERSION,
-      urlSource: 'kimi_code_cli',
+      urlSource: 'zimi_code_cli',
       relayOrigin: `http://127.0.0.1:${port}`,
       stderr: { write: () => true },
     });
@@ -1540,7 +1540,7 @@ describe('Remote Control manager', () => {
       localOrigin: () => 'http://127.0.0.1:58627',
       localServerToken: () => 'local-server-token',
       clientVersion: CLIENT_VERSION,
-      urlSource: 'kimi_code_cli',
+      urlSource: 'zimi_code_cli',
       relayOrigin: `http://127.0.0.1:${port}`,
       stderr: { write: () => true },
     });
@@ -1588,7 +1588,7 @@ describe('Remote Control manager', () => {
       localOrigin: () => 'http://127.0.0.1:58627',
       localServerToken: () => 'local-server-token',
       clientVersion: CLIENT_VERSION,
-      urlSource: 'kimi_code_cli',
+      urlSource: 'zimi_code_cli',
       relayOrigin: `http://127.0.0.1:${port}`,
       stderr: { write: () => true },
     });
@@ -1635,7 +1635,7 @@ describe('Remote Control manager', () => {
       localOrigin: () => 'http://127.0.0.1:58627',
       localServerToken: () => 'local-server-token',
       clientVersion: CLIENT_VERSION,
-      urlSource: 'kimi_code_cli',
+      urlSource: 'zimi_code_cli',
       relayOrigin: `http://127.0.0.1:${port}`,
       stderr: { write: () => true },
     });
@@ -1673,7 +1673,7 @@ describe('Remote Control manager', () => {
       localOrigin: () => 'http://127.0.0.1:58627',
       localServerToken: () => 'local-server-token',
       clientVersion: CLIENT_VERSION,
-      urlSource: 'kimi_code_cli',
+      urlSource: 'zimi_code_cli',
       relayOrigin: `http://127.0.0.1:${port}`,
       stderr: { write: () => true },
     });
@@ -1713,7 +1713,7 @@ describe('Remote Control manager', () => {
       localOrigin: () => 'http://127.0.0.1:58627',
       localServerToken: () => 'local-server-token',
       clientVersion: CLIENT_VERSION,
-      urlSource: 'kimi_code_cli',
+      urlSource: 'zimi_code_cli',
       relayOrigin: `http://127.0.0.1:${port}`,
       stderr: { write: () => true },
     });
@@ -1758,11 +1758,11 @@ describe('Remote Control manager', () => {
           localOrigin: 'http://127.0.0.1:58627',
           localServerToken: 'local-server-token',
           clientVersion: CLIENT_VERSION,
-          urlSource: 'kimi_code_cli',
+          urlSource: 'zimi_code_cli',
           relayOrigin: `http://127.0.0.1:${relay.port}`,
           stderr: { write: () => true },
         }),
-      ).rejects.toThrow('Remote Control requires a Kimi login');
+      ).rejects.toThrow('Remote Control requires a Zimi login');
       expect(existsSync(remoteControlLockPath(homeDir))).toBe(false);
     } finally {
       vi.restoreAllMocks();
@@ -1780,7 +1780,7 @@ describe('Remote Control manager', () => {
         localOrigin: 'http://127.0.0.1:58627',
         localServerToken: 'local-server-token',
         clientVersion: CLIENT_VERSION,
-        urlSource: 'kimi_code_cli',
+        urlSource: 'zimi_code_cli',
         relayOrigin: 'http://127.0.0.1:1',
         stderr: { write: () => true },
         signal: controller.signal,
@@ -1796,7 +1796,7 @@ describe('Remote Control manager', () => {
       localOrigin: () => 'http://127.0.0.1:58627',
       localServerToken: () => 'local-server-token',
       clientVersion: CLIENT_VERSION,
-      urlSource: 'kimi_code_cli',
+      urlSource: 'zimi_code_cli',
       relayOrigin: `http://127.0.0.1:${relay.port}`,
       stderr: { write: () => true },
     });
@@ -2056,7 +2056,7 @@ async function startTunnelScenario(
     localOrigin: `http://127.0.0.1:${localPort}`,
     localServerToken: options.localServerToken ?? 'local-server-token',
     clientVersion: CLIENT_VERSION,
-    urlSource: 'kimi_code_cli',
+    urlSource: 'zimi_code_cli',
     relayOrigin: `http://127.0.0.1:${relayPort}/coding-relay`,
     stderr: { write: (text) => ((logs += String(text)), true) },
     httpTunnelLimits: options.limits,
@@ -2082,10 +2082,10 @@ async function startTunnelScenario(
 }
 
 async function createRemoteControlHome(refreshToken: string): Promise<string> {
-  const homeDir = mkdtempSync(join(tmpdir(), 'kimi-rc-auth-'));
+  const homeDir = mkdtempSync(join(tmpdir(), 'zimi-rc-auth-'));
   cleanups.push(() => rmSync(homeDir, { recursive: true, force: true }));
   await new FileTokenStorage(join(homeDir, 'credentials')).save(
-    resolveKimiTokenStorageName({ providerName: KIMI_CODE_PROVIDER_NAME }),
+    resolveZimiTokenStorageName({ providerName: ZIMI_CODE_PROVIDER_NAME }),
     {
       ...TOKEN,
       refreshToken,

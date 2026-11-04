@@ -4,7 +4,7 @@ import { mkdir, mkdtemp, readdir, readFile, realpath, rm, writeFile } from 'node
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
-import { KIMI_CODE_PROVIDER_NAME } from '@moonshot-ai/kimi-code-oauth';
+import { ZIMI_CODE_PROVIDER_NAME } from '@zimi-ai/zimi-code-oauth';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -151,7 +151,7 @@ function deferred<T>(): {
 async function makePluginDir(name: string, manifest: Record<string, unknown>): Promise<string> {
   const root = await mkdtemp(path.join(tmpdir(), `plugin-${name}-`));
   await writeFile(
-    path.join(root, 'kimi.plugin.json'),
+    path.join(root, 'zimi.plugin.json'),
     JSON.stringify({ name, ...manifest }),
     'utf8',
   );
@@ -162,7 +162,7 @@ describe('PluginService (plugin boundary)', () => {
   const createdDirs: string[] = [];
 
   async function makeHome(): Promise<string> {
-    const home = await mkdtemp(path.join(tmpdir(), 'kimi-home-'));
+    const home = await mkdtemp(path.join(tmpdir(), 'zimi-home-'));
     createdDirs.push(home);
     return home;
   }
@@ -324,7 +324,7 @@ describe('PluginService (plugin boundary)', () => {
     const sourceRoot = path.join(fixtureDir, 'source');
     await mkdir(sourceRoot);
     await writeFile(
-      path.join(sourceRoot, 'kimi.plugin.json'),
+      path.join(sourceRoot, 'zimi.plugin.json'),
       JSON.stringify({ name: 'resolved-demo', version: '2.0.0' }),
       'utf8',
     );
@@ -866,7 +866,7 @@ describe('PluginService (plugin boundary)', () => {
         expect.objectContaining({ root: previous.root, version: '1.0.0' }),
       );
       await expect(
-        readFile(path.join(previous.root, 'kimi.plugin.json'), 'utf8'),
+        readFile(path.join(previous.root, 'zimi.plugin.json'), 'utf8'),
       ).resolves.toContain('"version":"1.0.0"');
       await expect(readdir(path.join(home, 'plugins', 'managed'))).resolves.toEqual(['demo']);
     } finally {
@@ -998,15 +998,15 @@ describe('PluginService (plugin boundary)', () => {
     }
   });
 
-  it('injects the managed Kimi endpoint env into stdio plugin MCP servers only', async () => {
+  it('injects the managed Zimi endpoint env into stdio plugin MCP servers only', async () => {
     const home = await makeHome();
     await writeValidInstalledFile(home);
     const host = makeHost(
       home,
       stubProviderService({
-        [KIMI_CODE_PROVIDER_NAME]: {
+        [ZIMI_CODE_PROVIDER_NAME]: {
           baseUrl: 'https://api.example.test/',
-          oauth: { storage: 'file', key: 'kimi', oauthHost: 'https://auth.example.test' },
+          oauth: { storage: 'file', key: 'zimi', oauthHost: 'https://auth.example.test' },
         },
       }),
     );
@@ -1026,29 +1026,29 @@ describe('PluginService (plugin boundary)', () => {
       expect(servers['plugin-demo:finance']).toEqual(
         expect.objectContaining({
           env: expect.objectContaining({
-            KIMI_CODE_BASE_URL: 'https://api.example.test/',
-            KIMI_CODE_OAUTH_HOST: 'https://auth.example.test',
+            ZIMI_CODE_BASE_URL: 'https://api.example.test/',
+            ZIMI_CODE_OAUTH_HOST: 'https://auth.example.test',
             CUSTOM: '1',
-            KIMI_CODE_HOME: home,
-            KIMI_PLUGIN_ROOT: await realpath(managedRoot),
+            ZIMI_CODE_HOME: home,
+            ZIMI_PLUGIN_ROOT: await realpath(managedRoot),
           }),
         }),
       );
-      expect(JSON.stringify(servers['plugin-demo:docs'])).not.toContain('KIMI_CODE_BASE_URL');
+      expect(JSON.stringify(servers['plugin-demo:docs'])).not.toContain('ZIMI_CODE_BASE_URL');
     } finally {
       host.dispose();
     }
   });
 
-  it('merges the managed Kimi endpoint env into stdio MCP server entries with provenance', async () => {
+  it('merges the managed Zimi endpoint env into stdio MCP server entries with provenance', async () => {
     const home = await makeHome();
     await writeValidInstalledFile(home);
     const host = makeHost(
       home,
       stubProviderService({
-        [KIMI_CODE_PROVIDER_NAME]: {
+        [ZIMI_CODE_PROVIDER_NAME]: {
           baseUrl: 'https://api.example.test/',
-          oauth: { storage: 'file', key: 'kimi', oauthHost: 'https://auth.example.test' },
+          oauth: { storage: 'file', key: 'zimi', oauthHost: 'https://auth.example.test' },
         },
       }),
     );
@@ -1072,18 +1072,18 @@ describe('PluginService (plugin boundary)', () => {
         expect.objectContaining({
           enabled: false,
           env: expect.objectContaining({
-            KIMI_CODE_BASE_URL: 'https://api.example.test/',
-            KIMI_CODE_OAUTH_HOST: 'https://auth.example.test',
+            ZIMI_CODE_BASE_URL: 'https://api.example.test/',
+            ZIMI_CODE_OAUTH_HOST: 'https://auth.example.test',
             CUSTOM: '1',
-            KIMI_CODE_HOME: home,
-            KIMI_PLUGIN_ROOT: managedRoot,
+            ZIMI_CODE_HOME: home,
+            ZIMI_PLUGIN_ROOT: managedRoot,
           }),
         }),
       );
       const docs = entries.find((entry) => entry.name === 'plugin-demo:docs');
       expect(docs).toEqual(expect.objectContaining({ pluginId: 'demo', serverName: 'docs' }));
       expect(docs?.config.enabled).toBe(true);
-      expect(JSON.stringify(docs?.config)).not.toContain('KIMI_CODE_BASE_URL');
+      expect(JSON.stringify(docs?.config)).not.toContain('ZIMI_CODE_BASE_URL');
     } finally {
       host.dispose();
     }
@@ -1113,17 +1113,17 @@ describe('PluginService (plugin boundary)', () => {
 
       const servers = svc.enabledMcpServers();
       await readyAccessed.promise;
-      providerConfigs[KIMI_CODE_PROVIDER_NAME] = {
+      providerConfigs[ZIMI_CODE_PROVIDER_NAME] = {
         baseUrl: 'https://ready.example.test/',
-        oauth: { storage: 'file', key: 'kimi', oauthHost: 'https://auth.ready.example.test' },
+        oauth: { storage: 'file', key: 'zimi', oauthHost: 'https://auth.ready.example.test' },
       };
       readyGate.resolve(undefined);
 
       await expect(servers).resolves.toMatchObject({
         'plugin-ready-demo:finance': {
           env: {
-            KIMI_CODE_BASE_URL: 'https://ready.example.test/',
-            KIMI_CODE_OAUTH_HOST: 'https://auth.ready.example.test',
+            ZIMI_CODE_BASE_URL: 'https://ready.example.test/',
+            ZIMI_CODE_OAUTH_HOST: 'https://auth.ready.example.test',
           },
         },
       });
@@ -1132,20 +1132,20 @@ describe('PluginService (plugin boundary)', () => {
     }
   });
 
-  it('prefers explicit KIMI_CODE_BASE_URL / KIMI_OAUTH_HOST env over the persisted provider', async () => {
+  it('prefers explicit ZIMI_CODE_BASE_URL / ZIMI_OAUTH_HOST env over the persisted provider', async () => {
     const home = await makeHome();
     await writeValidInstalledFile(home);
     const host = makeHost(
       home,
       stubProviderService({
-        [KIMI_CODE_PROVIDER_NAME]: {
+        [ZIMI_CODE_PROVIDER_NAME]: {
           baseUrl: 'https://api.example.test',
-          oauth: { storage: 'file', key: 'kimi', oauthHost: 'https://auth.example.test' },
+          oauth: { storage: 'file', key: 'zimi', oauthHost: 'https://auth.example.test' },
         },
       }),
       {
-        KIMI_CODE_BASE_URL: 'https://env.example.test/',
-        KIMI_OAUTH_HOST: 'https://legacy.example.test',
+        ZIMI_CODE_BASE_URL: 'https://env.example.test/',
+        ZIMI_OAUTH_HOST: 'https://legacy.example.test',
       },
     );
     try {
@@ -1160,8 +1160,8 @@ describe('PluginService (plugin boundary)', () => {
       expect(servers['plugin-demo:finance']).toEqual(
         expect.objectContaining({
           env: expect.objectContaining({
-            KIMI_CODE_BASE_URL: 'https://env.example.test',
-            KIMI_CODE_OAUTH_HOST: 'https://legacy.example.test',
+            ZIMI_CODE_BASE_URL: 'https://env.example.test',
+            ZIMI_CODE_OAUTH_HOST: 'https://legacy.example.test',
           }),
         }),
       );
@@ -1170,7 +1170,7 @@ describe('PluginService (plugin boundary)', () => {
     }
   });
 
-  it('does not inject managed env when neither env nor the kimi provider supplies it', async () => {
+  it('does not inject managed env when neither env nor the zimi provider supplies it', async () => {
     const home = await makeHome();
     await writeValidInstalledFile(home);
     const host = makeHost(home);
@@ -1185,8 +1185,8 @@ describe('PluginService (plugin boundary)', () => {
       const servers = await svc.enabledMcpServers();
       const env = (servers['plugin-demo:finance'] as { env?: Record<string, string> }).env ?? {};
       expect(env['CUSTOM']).toBe('1');
-      expect(env).not.toHaveProperty('KIMI_CODE_BASE_URL');
-      expect(env).not.toHaveProperty('KIMI_CODE_OAUTH_HOST');
+      expect(env).not.toHaveProperty('ZIMI_CODE_BASE_URL');
+      expect(env).not.toHaveProperty('ZIMI_CODE_OAUTH_HOST');
     } finally {
       host.dispose();
     }

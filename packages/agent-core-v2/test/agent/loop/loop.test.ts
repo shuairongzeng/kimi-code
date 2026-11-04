@@ -1230,7 +1230,7 @@ describe('Agent loop', () => {
     expect(prompts).toEqual(['scan the repo']);
   });
 
-  it('carries kimi-file prompt attachments on turn.started, falling back to the URL file id', async () => {
+  it('carries zimi-file prompt attachments on turn.started, falling back to the URL file id', async () => {
     const payloads: Array<TurnStarted['promptAttachments']> = [];
     const subscription = ctx.get(IEventBus).subscribe(TurnStarted, (event) => {
       payloads.push(event.promptAttachments);
@@ -1242,16 +1242,16 @@ describe('Agent loop', () => {
             content: [
               {
                 type: 'image_url',
-                imageUrl: { url: 'kimi-file://file_1', id: 'file_1', name: 'photo.png' },
+                imageUrl: { url: 'zimi-file://file_1', id: 'file_1', name: 'photo.png' },
               },
               {
                 type: 'video_url',
-                videoUrl: { url: 'kimi-file://file_2', id: 'file_2', name: 'clip.mp4' },
+                videoUrl: { url: 'zimi-file://file_2', id: 'file_2', name: 'clip.mp4' },
               },
-              { type: 'image_url', imageUrl: { url: 'kimi-file://file_3' } },
+              { type: 'image_url', imageUrl: { url: 'zimi-file://file_3' } },
               {
                 type: 'image_url',
-                imageUrl: { url: 'kimi-file://file_4', id: 'other' },
+                imageUrl: { url: 'zimi-file://file_4', id: 'other' },
               },
               { type: 'image_url', imageUrl: { url: 'https://example.com/no-id.png' } },
               {
@@ -1283,7 +1283,7 @@ describe('Agent loop', () => {
     const turn = submitPromptTurn(loop, { message: {
             role: 'user',
             content: [
-              { type: 'image_url', imageUrl: { url: 'kimi-file://file_1', id: 'file_1' } },
+              { type: 'image_url', imageUrl: { url: 'zimi-file://file_1', id: 'file_1' } },
               { type: 'text', text: 'summarize' },
             ],
           }, meta: { origin: {
@@ -1382,7 +1382,7 @@ describe('turn telemetry', () => {
           agent_id: 'main',
           mode: 'agent',
           model: 'mock-model',
-          provider_type: 'kimi',
+          provider_type: 'zimi',
           protocol: 'openai',
           thinking_effort: 'off',
           enabled_plugins: '',
@@ -1395,7 +1395,7 @@ describe('turn telemetry', () => {
           reason: 'completed',
           duration_ms: expect.any(Number),
           mode: 'agent',
-          provider_type: 'kimi',
+          provider_type: 'zimi',
           protocol: 'openai',
           thinking_effort: 'off',
         }),
@@ -1579,7 +1579,7 @@ describe('turn telemetry', () => {
           at_step: 1,
           mode: 'agent',
           interrupt_reason: 'filtered',
-          provider_type: 'kimi',
+          provider_type: 'zimi',
           protocol: 'openai',
           request_id: 'trace-turn-2',
         }),

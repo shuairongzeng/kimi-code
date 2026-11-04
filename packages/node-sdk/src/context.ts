@@ -1,5 +1,5 @@
-import type { ToolInputDisplay } from '@moonshot-ai/agent-core-v2/tool/toolInputDisplay';
-import type { ContentPart, Message } from '@moonshot-ai/agent-core-v2';
+import type { ToolInputDisplay } from '@zimi-ai/agent-core-v2/tool/toolInputDisplay';
+import type { ContentPart, Message } from '@zimi-ai/agent-core-v2';
 
 import type { BackgroundTaskStatus } from '#/task';
 

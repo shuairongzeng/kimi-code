@@ -4,13 +4,13 @@
  * editor mentions use relative paths inside the working directory and absolute paths outside.
  * Wiring: real temporary local files plus the public handler/bridge surfaces;
  * VS Code host APIs are the only stubbed boundary.
- * Run: pnpm --filter kimi-code exec vitest run --config vitest.config.ts test/workspace-paths.test.ts
+ * Run: pnpm --filter zimi-code exec vitest run --config vitest.config.ts test/workspace-paths.test.ts
  */
 import { mkdtemp, mkdir, readFile, rm, stat, symlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Event, Session } from "@moonshot-ai/kimi-code-sdk";
+import type { Event, Session } from "@zimi-ai/zimi-code-sdk";
 import type * as vscode from "vscode";
 import { Methods } from "../shared/bridge";
 import { BridgeHandler } from "../src/bridge-handler";
@@ -133,12 +133,12 @@ vi.mock("vscode", () => ({
   },
 }));
 
-vi.mock("@moonshot-ai/kimi-code-sdk", async (importOriginal) => {
-  const original = await importOriginal<typeof import("@moonshot-ai/kimi-code-sdk")>();
+vi.mock("@zimi-ai/zimi-code-sdk", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@zimi-ai/zimi-code-sdk")>();
   return {
     ...original,
-    createKimiHarness: () => ({
-      homeDir: "/tmp/kimi-code-test-home",
+    createZimiHarness: () => ({
+      homeDir: "/tmp/zimi-code-test-home",
       close: vi.fn(),
     }),
   };
@@ -151,7 +151,7 @@ let sessionRuntimes: SessionRuntime[];
 let extraRoots: string[];
 
 beforeEach(async () => {
-  root = await mkdtemp(join(tmpdir(), "kimi-vscode-workspace-paths-"));
+  root = await mkdtemp(join(tmpdir(), "zimi-vscode-workspace-paths-"));
   vscodeHost.workspaceFolders.splice(0, vscodeHost.workspaceFolders.length, { uri: vscodeHost.Uri.file(root) });
   vscodeHost.stat.mockImplementation((uri: { fsPath: string }) => stat(uri.fsPath));
   vscodeHost.readFile.mockImplementation((uri: { fsPath: string }) => readFile(uri.fsPath));
@@ -238,7 +238,7 @@ describe("Webview workspace paths (selected-directory containment)", () => {
 
   it("omits an outside symlink when an SDK Write event requests baseline capture", async () => {
     const workDir = join(root, "project");
-    const outsideRoot = await mkdtemp(join(tmpdir(), "kimi-vscode-baseline-outside-"));
+    const outsideRoot = await mkdtemp(join(tmpdir(), "zimi-vscode-baseline-outside-"));
     extraRoots.push(outsideRoot);
     const outside = join(outsideRoot, "outside.txt");
     const linkedFile = join(workDir, "linked.txt");
@@ -318,7 +318,7 @@ describe("Webview workspace paths (selected-directory containment)", () => {
   });
 
   it("builds an absolute editor mention when the file is outside the workspace root", async () => {
-    const otherRoot = await mkdtemp(join(tmpdir(), "kimi-vscode-mention-outside-"));
+    const otherRoot = await mkdtemp(join(tmpdir(), "zimi-vscode-mention-outside-"));
     extraRoots.push(otherRoot);
     const outside = join(otherRoot, "App.java");
     await writeFile(outside, "class App {}");
@@ -334,7 +334,7 @@ describe("Webview workspace paths (selected-directory containment)", () => {
   });
 
   it("quotes an absolute editor mention whose path contains spaces", async () => {
-    const otherRoot = await mkdtemp(join(tmpdir(), "kimi vscode mention space-"));
+    const otherRoot = await mkdtemp(join(tmpdir(), "zimi vscode mention space-"));
     extraRoots.push(otherRoot);
     const outside = join(otherRoot, "App.java");
     await writeFile(outside, "class App {}");
@@ -380,7 +380,7 @@ describe("Webview workspace paths (selected-directory containment)", () => {
   });
 
   it("rejects a selected working directory whose symlink target leaves the workspace", async () => {
-    const outside = await mkdtemp(join(tmpdir(), "kimi-vscode-outside-"));
+    const outside = await mkdtemp(join(tmpdir(), "zimi-vscode-outside-"));
     extraRoots.push(outside);
     const linkedWorkDir = join(root, "linked-project");
     await symlink(outside, linkedWorkDir);

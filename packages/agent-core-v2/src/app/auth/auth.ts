@@ -1,14 +1,14 @@
-import { apiKeyEnvMissingMessage } from '@moonshot-ai/kimi-code-oauth/provider-credential';
+import { apiKeyEnvMissingMessage } from '@zimi-ai/zimi-code-oauth/provider-credential';
 import type {
   AuthManagedUsageResult,
   AuthManagedUserInfoResult,
   BearerTokenProvider,
-  KimiOAuthLoginOptions,
-  KimiOAuthLoginResult,
-  KimiOAuthLogoutResult,
-  KimiOAuthTokenRef,
-  KimiRegion,
-} from '@moonshot-ai/kimi-code-oauth';
+  ZimiOAuthLoginOptions,
+  ZimiOAuthLoginResult,
+  ZimiOAuthLogoutResult,
+  ZimiOAuthTokenRef,
+  ZimiRegion,
+} from '@zimi-ai/zimi-code-oauth';
 import { createDecorator, type ServiceIdentifier } from '#/_base/di/instantiation';
 import { Error2 } from '#/_base/errors/errors';
 
@@ -30,7 +30,7 @@ export interface AuthStatus {
 }
 
 export interface OAuthLoginOptions {
-  readonly region?: KimiRegion;
+  readonly region?: ZimiRegion;
 }
 
 export interface IOAuthService {
@@ -46,8 +46,8 @@ export interface IOAuthService {
   getManagedUserInfo(provider?: string): Promise<AuthManagedUserInfoResult>;
   resolveTokenProvider(provider: string, oauthRef?: OAuthRef): BearerTokenProvider | undefined;
   getCachedAccessToken(provider: string, oauthRef?: OAuthRef): Promise<string | undefined>;
-  getRegion(): KimiRegion;
-  getRegionAsync(): Promise<KimiRegion>;
+  getRegion(): ZimiRegion;
+  getRegionAsync(): Promise<ZimiRegion>;
 }
 
 export const IOAuthService: ServiceIdentifier<IOAuthService> =
@@ -56,20 +56,20 @@ export const IOAuthService: ServiceIdentifier<IOAuthService> =
 export interface IOAuthToolkit {
   readonly _serviceBrand: undefined;
 
-  login(providerName?: string, options?: KimiOAuthLoginOptions): Promise<KimiOAuthLoginResult>;
-  logout(providerName?: string, oauthRef?: KimiOAuthTokenRef): Promise<KimiOAuthLogoutResult>;
+  login(providerName?: string, options?: ZimiOAuthLoginOptions): Promise<ZimiOAuthLoginResult>;
+  logout(providerName?: string, oauthRef?: ZimiOAuthTokenRef): Promise<ZimiOAuthLogoutResult>;
   getCachedAccessToken(
     providerName?: string,
-    oauthRef?: KimiOAuthTokenRef,
+    oauthRef?: ZimiOAuthTokenRef,
   ): Promise<string | undefined>;
-  tokenProvider(providerName?: string, oauthRef?: KimiOAuthTokenRef): BearerTokenProvider;
+  tokenProvider(providerName?: string, oauthRef?: ZimiOAuthTokenRef): BearerTokenProvider;
   getManagedUsage(
     providerName?: string,
-    options?: { readonly oauthRef?: KimiOAuthTokenRef; readonly baseUrl?: string },
+    options?: { readonly oauthRef?: ZimiOAuthTokenRef; readonly baseUrl?: string },
   ): Promise<AuthManagedUsageResult>;
   getManagedUserInfo(
     providerName?: string,
-    options?: { readonly oauthRef?: KimiOAuthTokenRef; readonly baseUrl?: string },
+    options?: { readonly oauthRef?: ZimiOAuthTokenRef; readonly baseUrl?: string },
   ): Promise<AuthManagedUserInfoResult>;
 }
 

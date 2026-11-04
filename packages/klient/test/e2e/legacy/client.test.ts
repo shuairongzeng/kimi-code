@@ -1,6 +1,6 @@
 /**
  * Self-tests for `DaemonClient` against a live server at
- * `process.env.KIMI_SERVER_URL ?? http://127.0.0.1:58627`.
+ * `process.env.ZIMI_SERVER_URL ?? http://127.0.0.1:58627`.
  *
  * Every test gates on a `daemonReachable()` check so CI / dev machines
  * without a running server stay green. Run a server (`pnpm dev:server` from
@@ -15,20 +15,20 @@
  */
 import { afterEach, describe, expect, it } from 'vitest';
 
-import type { FileMeta } from '@moonshot-ai/agent-core-v2/app/file/fileService';
+import type { FileMeta } from '@zimi-ai/agent-core-v2/app/file/fileService';
 import type {
   ModelCatalogItem,
   ProviderCatalogItem,
-} from '@moonshot-ai/agent-core-v2/llm-adapter/model/catalog';
-import { ErrorCode } from '@moonshot-ai/kap-server/protocol/error-codes';
-import type { Message } from '@moonshot-ai/kap-server/protocol/message';
-import type { Session } from '@moonshot-ai/kap-server/protocol/session';
+} from '@zimi-ai/agent-core-v2/llm-adapter/model/catalog';
+import { ErrorCode } from '@zimi-ai/kap-server/protocol/error-codes';
+import type { Message } from '@zimi-ai/kap-server/protocol/message';
+import type { Session } from '@zimi-ai/kap-server/protocol/session';
 
 import { DaemonClient, EnvelopeError } from '../harness/index.js';
 import { fetchWithReport } from '../harness/report.js';
 import { createCaseLogger, errorForLog } from './log.js';
 
-const BASE_URL = process.env['KIMI_SERVER_URL'] ?? 'http://127.0.0.1:58627';
+const BASE_URL = process.env['ZIMI_SERVER_URL'] ?? 'http://127.0.0.1:58627';
 const PROMPT_TIMEOUT_MS = 120_000;
 
 async function daemonReachable(): Promise<boolean> {
@@ -426,8 +426,8 @@ describe('DaemonClient session action helpers', () => {
   it('model catalog helpers call the catalog and action-suffix routes', async () => {
     const log = createCaseLogger('client helper: model catalog');
     const calls: FetchCall[] = [];
-    const model = testModel({ model: 'kimi-code/kimi-for-coding' });
-    const provider = testProvider({ id: 'kimi', models: [model.model] });
+    const model = testModel({ model: 'zimi-code/kimi-for-coding' });
+    const provider = testProvider({ id: 'zimi', models: [model.model] });
     const client = new DaemonClient({
       baseUrl: 'http://server.example.test',
       fetchImpl: recordingFetchSequence(
@@ -453,15 +453,15 @@ describe('DaemonClient session action helpers', () => {
       model,
     });
     await expect(client.listProviders()).resolves.toEqual({ items: [provider] });
-    await expect(client.getProvider('kimi')).resolves.toEqual(provider);
+    await expect(client.getProvider('zimi')).resolves.toEqual(provider);
 
     log('fetch calls', calls);
     expect(calls.map((call) => [call.init.method, call.url])).toEqual([
       ['GET', 'http://server.example.test/api/v1/auth'],
       ['GET', 'http://server.example.test/api/v1/models'],
-      ['POST', 'http://server.example.test/api/v1/models/kimi-code%2Fkimi-for-coding:set_default'],
+      ['POST', 'http://server.example.test/api/v1/models/zimi-code%2Fkimi-for-coding:set_default'],
       ['GET', 'http://server.example.test/api/v1/providers'],
-      ['GET', 'http://server.example.test/api/v1/providers/kimi'],
+      ['GET', 'http://server.example.test/api/v1/providers/zimi'],
     ]);
     expect(parseRecordedJsonBody(calls[2])).toEqual({});
   });
@@ -649,9 +649,9 @@ function testSession(overrides: Partial<Session> = {}): Session {
 
 function testModel(overrides: Partial<ModelCatalogItem> = {}): ModelCatalogItem {
   return {
-    provider: 'kimi',
+    provider: 'zimi',
     model: 'k2',
-    display_name: 'Kimi K2',
+    display_name: 'Zimi K2',
     max_context_size: 131_072,
     ...overrides,
   };
@@ -659,8 +659,8 @@ function testModel(overrides: Partial<ModelCatalogItem> = {}): ModelCatalogItem 
 
 function testProvider(overrides: Partial<ProviderCatalogItem> = {}): ProviderCatalogItem {
   return {
-    id: 'kimi',
-    type: 'kimi',
+    id: 'zimi',
+    type: 'zimi',
     base_url: 'https://api.example.test/v1',
     default_model: 'k2',
     has_api_key: true,

@@ -20,8 +20,8 @@ import type {
   QuestionRequest,
   SessionApprovalRequest as ApprovalRequest,
   SessionApprovalResponse as ApprovalResponse,
-} from '@moonshot-ai/agent-core-v2';
-import type { IDisposable, SessionHandle } from '@moonshot-ai/klient';
+} from '@zimi-ai/agent-core-v2';
+import type { IDisposable, SessionHandle } from '@zimi-ai/klient';
 
 import type { AcpClient } from './acp-client';
 

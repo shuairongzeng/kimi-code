@@ -55,7 +55,7 @@ If a `keep` card has no matching behavior left, mark it `absorbed` (do not delet
 
 Done when all of the following hold:
 
-1. The behavior cannot live in `apps/kimi-code/src/tui`.
+1. The behavior cannot live in `apps/zimi-code/src/tui`.
 2. A new intent card is in this file (decision / why not in the app).
 3. A test fails without the change and passes with it.
 4. Reconstructing the fork shows a per-file diff this card explains.
@@ -70,7 +70,7 @@ Done when all of the following hold:
 2. Files are ported, not wholesale-copied. New upstream files are added explicitly and read.
 3. `package.json` `name`, `exports`, `imports`, and the `test` script stay ours.
 4. The fork is reconstructed against the **new** Last Sync Point. Every `keep` intent still has a matching per-file diff, or is marked `absorbed`.
-5. `pnpm --filter @moonshot-ai/pi-tui test` passes.
+5. `pnpm --filter @zimi-ai/pi-tui test` passes.
 6. The Last Sync Point section is updated to the new commit. Do not reuse the previous range.
 
 When upstream reworked a module (new abstractions, renamed concepts, changed data flow), port by behavior against the intent cards. Do not merge by file identity.

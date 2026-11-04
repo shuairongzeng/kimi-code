@@ -68,24 +68,24 @@ describe('resolveSwarmMaxConcurrency', () => {
 
   it('returns undefined for empty or whitespace-only values', () => {
     expect(
-      resolveSwarmMaxConcurrency({ KIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY: '' }),
+      resolveSwarmMaxConcurrency({ ZIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY: '' }),
     ).toBeUndefined();
     expect(
-      resolveSwarmMaxConcurrency({ KIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY: '   ' }),
+      resolveSwarmMaxConcurrency({ ZIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY: '   ' }),
     ).toBeUndefined();
   });
 
   it('throws for non-positive, non-integer, or non-numeric values', () => {
     for (const raw of ['0', '-1', '2.5', 'abc']) {
       expect(() =>
-        resolveSwarmMaxConcurrency({ KIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY: raw }),
-      ).toThrow(/KIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY.*positive integer/);
+        resolveSwarmMaxConcurrency({ ZIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY: raw }),
+      ).toThrow(/ZIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY.*positive integer/);
     }
   });
 
   it('returns the integer for a positive integer value', () => {
-    expect(resolveSwarmMaxConcurrency({ KIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY: '3' })).toBe(3);
-    expect(resolveSwarmMaxConcurrency({ KIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY: ' 8 ' })).toBe(8);
+    expect(resolveSwarmMaxConcurrency({ ZIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY: '3' })).toBe(3);
+    expect(resolveSwarmMaxConcurrency({ ZIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY: ' 8 ' })).toBe(8);
   });
 });
 
@@ -1207,7 +1207,7 @@ describe('SessionSwarmService metadata compatibility', () => {
 
     expect(spawnAgent).toHaveBeenCalledWith({
       callerAgentId: 'main',
-      plan: { profileName: 'coder', model: 'kimi-test', thinking: 'medium', fork: false },
+      plan: { profileName: 'coder', model: 'zimi-test', thinking: 'medium', fork: false },
       labels: { parentAgentId: 'main', swarmItem: 'src/a.ts' },
       prompt: 'Review the file',
     });
@@ -1558,7 +1558,7 @@ describe('SessionSwarmService metadata compatibility', () => {
         agentId: 'agent-rl',
         parentToolCallId: 'call_swarm',
         swarmIndex: 1,
-        model: 'kimi-test',
+        model: 'zimi-test',
         thinkingEffort: 'medium',
         resultSummary: 'recovered summary',
       });
@@ -1630,7 +1630,7 @@ describe('SessionSwarmService metadata compatibility', () => {
   });
 
   it('settles a stopped member that is still queued without waiting for a free slot', async () => {
-    vi.stubEnv('KIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY', '1');
+    vi.stubEnv('ZIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY', '1');
     try {
       agents['agent-run'] = { labels: { parentAgentId: 'main' } };
       agents['agent-queued'] = { labels: { parentAgentId: 'main' } };
@@ -1688,7 +1688,7 @@ describe('SessionSwarmService metadata compatibility', () => {
   });
 
   it('rejects an invalid concurrency setting before registering any member task', async () => {
-    vi.stubEnv('KIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY', 'many');
+    vi.stubEnv('ZIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY', 'many');
     try {
       const registerTask = vi.fn(() => 'task-0');
       handles.set(
@@ -1707,7 +1707,7 @@ describe('SessionSwarmService metadata compatibility', () => {
           callerAgentId: 'main',
           tasks: [resumeSessionTask('agent-one')],
         }),
-      ).toThrow(/KIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY/);
+      ).toThrow(/ZIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY/);
       expect(registerTask).not.toHaveBeenCalled();
     } finally {
       vi.unstubAllEnvs();
@@ -2053,7 +2053,7 @@ describe('SessionSwarmService metadata compatibility', () => {
         'agent-new',
         agentHandle('agent-new', lifecycle, eventBus, {
           profileName: 'coder',
-          modelAlias: 'kimi-test',
+          modelAlias: 'zimi-test',
         }),
       );
       spawnAgent.mockReturnValueOnce(spawnDeferred);
@@ -2086,7 +2086,7 @@ describe('SessionSwarmService metadata compatibility', () => {
       spawnDeferred.resolve({
         agentId: 'agent-new',
         profileName: 'coder',
-        model: 'kimi-test',
+        model: 'zimi-test',
         promptText: 'Review the file',
       });
       await vi.advanceTimersByTimeAsync(0);
@@ -2353,7 +2353,7 @@ function spawnSessionTask(swarmItem?: string): SessionSwarmSpawnTask {
     swarmIndex: 1,
     swarmItem,
     runInBackground: false,
-    plan: { profileName: 'coder', model: 'kimi-test', thinking: 'medium', fork: false },
+    plan: { profileName: 'coder', model: 'zimi-test', thinking: 'medium', fork: false },
   };
 }
 
@@ -2389,7 +2389,7 @@ function lifecycleStub(
       const id = opts.agentId ?? 'agent-new';
       const handle = agentHandle(id, lifecycle as IAgentLifecycleService, eventBus, {
         profileName: opts.binding?.profile ?? 'coder',
-        modelAlias: opts.binding?.model ?? 'kimi-test',
+        modelAlias: opts.binding?.model ?? 'zimi-test',
         thinkingLevel: opts.binding?.thinking ?? 'medium',
       });
       handles.set(id, handle);
@@ -2425,7 +2425,7 @@ function subagentStub(
     })),
     planSpawn: vi.fn(async (input: SubagentSpawnPlanInput) => ({
       profileName: input.profileName ?? 'coder',
-      model: input.model ?? 'kimi-test',
+      model: input.model ?? 'zimi-test',
       fork: input.fork === true,
     })),
     spawn: vi.fn(async (opts: SpawnSubagentOptions) => {
@@ -2453,7 +2453,7 @@ function agentHandle(
   services: ReadonlyMap<unknown, unknown> = new Map(),
 ): IAgentScopeHandle {
   const profile = profileService({
-    modelAlias: 'kimi-test',
+    modelAlias: 'zimi-test',
     modelCapabilities: {} as never,
     profileName: 'agent',
     thinkingLevel: 'medium',

@@ -11,7 +11,7 @@ on:
         default: manual
 
 concurrency:
-  group: kimi-code-canary-release
+  group: zimi-code-canary-release
   cancel-in-progress: false
 
 permissions:
@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   prepare:
-    if: github.repository_owner == 'MoonshotAI'
+    if: github.repository_owner == 'ZimiAI'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -59,7 +59,7 @@ jobs:
     if: needs.prepare.outputs.skip == 'false'
     uses: ./.github/workflows/_native-build.yml
     with:
-      upload-artifact-prefix: kimi-code-canary
+      upload-artifact-prefix: zimi-code-canary
       retention-days: 7
       sign-macos: true
       sign-windows: true
@@ -103,27 +103,27 @@ jobs:
         run: node scripts/canary-release.mjs guard
       - name: Publish to npm (canary dist-tag)
         run: |
-          if npm view "@moonshot-ai/kimi-code@$CANARY_VERSION" version >/dev/null 2>&1; then
-            echo "@moonshot-ai/kimi-code@$CANARY_VERSION is already on npm"
+          if npm view "@zimi-ai/zimi-code@$CANARY_VERSION" version >/dev/null 2>&1; then
+            echo "@zimi-ai/zimi-code@$CANARY_VERSION is already on npm"
             exit 0
           fi
           npm install -g npm@11
           pnpm install --frozen-lockfile
-          (cd apps/kimi-code && npm pkg set version="$CANARY_VERSION")
-          CATALOG_FILE="$RUNNER_TEMP/kimi-code-built-in-catalog.json"
-          node apps/kimi-code/scripts/update-catalog.mjs --out "$CATALOG_FILE"
-          export KIMI_CODE_BUILT_IN_CATALOG_FILE="$CATALOG_FILE"
+          (cd apps/zimi-code && npm pkg set version="$CANARY_VERSION")
+          CATALOG_FILE="$RUNNER_TEMP/zimi-code-built-in-catalog.json"
+          node apps/zimi-code/scripts/update-catalog.mjs --out "$CATALOG_FILE"
+          export ZIMI_CODE_BUILT_IN_CATALOG_FILE="$CATALOG_FILE"
           pnpm build
-          cd apps/kimi-code
+          cd apps/zimi-code
           pnpm publish --tag canary --access public --no-git-checks
       - name: Download native artifacts
         uses: actions/download-artifact@v8
         with:
-          pattern: kimi-code-canary-*
+          pattern: zimi-code-canary-*
           path: dist-canary
           merge-multiple: true
       - name: Produce manifest.json
-        run: node apps/kimi-code/scripts/native/produce-manifest.mjs dist-canary "$CANARY_TAG"
+        run: node apps/zimi-code/scripts/native/produce-manifest.mjs dist-canary "$CANARY_TAG"
       - name: Write canary.json
         run: |
           mkdir -p "$RUNNER_TEMP/canary-release"

@@ -26,7 +26,7 @@ Tower 还会安排独立 review 检查 worker 完成情况。每个 mission 都�
 
 Tower 默认关闭，可以通过以下方式启用实验功能。
 
-如需长期启用，在 `config.toml`（默认位于 `~/.kimi-code/config.toml`，详见 [配置文件](../configuration/config-files.md)）中加入：
+如需长期启用，在 `config.toml`（默认位于 `~/.zimi-code/config.toml`，详见 [配置文件](../configuration/config-files.md)）中加入：
 
 ```toml
 [experimental]
@@ -36,10 +36,10 @@ tower = true
 也可以在 `/experiments` 中启用 **Tower mode** 并应用修改，效果相同。若只想在当前进程中启用，可在启动前设置环境变量：
 
 ```sh
-KIMI_CODE_EXPERIMENTAL_TOWER=1 kimi
+ZIMI_CODE_EXPERIMENTAL_TOWER=1 zimi
 ```
 
-环境变量必须在启动前设置。运行过程中修改 `/experiments` 或 `config.toml` 后，需要重启 Kimi Code，因为 Tower 的工具和 worker profile 只在进程启动时加载。启用实验功能后，`/tower` 才会出现在命令列表中。
+环境变量必须在启动前设置。运行过程中修改 `/experiments` 或 `config.toml` 后，需要重启 Zimi Code，因为 Tower 的工具和 worker profile 只在进程启动时加载。启用实验功能后，`/tower` 才会出现在命令列表中。
 
 开始之前，先切换到最终接收改动的本地 branch，并检查工作区状态：
 
@@ -95,9 +95,9 @@ base 更新后，如果 worker 空闲且 worktree 干净，Tower 可以在对应
 | --- | --- | --- |
 | `/tower off` | 退出当前会话的 Tower 模式，不停止已在后台运行的 Agent，也不清理文件 | `.tower/`、mission branch 和 worktree |
 | `/tower teardown` | 让 Agent 移除符合条件的 mission worktree 并报告结果；有未提交改动或仍有 Agent 运行的 worktree 不会被删除 | mission branch 和 `.tower/comms/` 审计记录；Tower 模式保持开启 |
-| 退出 Kimi Code 或关闭会话 | 停止 Tower worker 和 reviewer，之后需要重新派发 | 磁盘上的 `.tower/` 状态、branch 和 worktree |
+| 退出 Zimi Code 或关闭会话 | 停止 Tower worker 和 reviewer，之后需要重新派发 | 磁盘上的 `.tower/` 状态、branch 和 worktree |
 
-kimi-code 重启后，如果改由另一个会话接管当前项目，原会话的 roster 条目会失效，但 mission 和 worktree 会保留；新的主控需要重新派发 worker。一个项目不能同时存在多个 Tower 主控。
+zimi-code 重启后，如果改由另一个会话接管当前项目，原会话的 roster 条目会失效，但 mission 和 worktree 会保留；新的主控需要重新派发 worker。一个项目不能同时存在多个 Tower 主控。
 
 ## 模式互斥与 secondary model
 
@@ -123,5 +123,5 @@ worker 和 reviewer 都有独立的模型上下文，也会分别消耗 token。
 ## 下一步
 
 - [斜杠命令](../reference/slash-commands.md#模式与运行控制) — `/tower` 的各种用法
-- [环境变量](../configuration/env-vars.md#运行时开关) — `KIMI_CODE_EXPERIMENTAL_TOWER` 及相关运行时开关
+- [环境变量](../configuration/env-vars.md#运行时开关) — `ZIMI_CODE_EXPERIMENTAL_TOWER` 及相关运行时开关
 - [Agent 与 subagent](../customization/agents.md) — 适合聚焦子任务的简单委派方式

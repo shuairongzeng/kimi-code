@@ -15,8 +15,8 @@ import {
   type IAgentScopeHandle,
   type Interaction,
   type ISessionScopeHandle,
-} from '@moonshot-ai/agent-core-v2';
-import type { AgentDescriptor, TranscriptChangeEvent, TranscriptStore } from '@moonshot-ai/transcript';
+} from '@zimi-ai/agent-core-v2';
+import type { AgentDescriptor, TranscriptChangeEvent, TranscriptStore } from '@zimi-ai/transcript';
 
 import {
   AgentTranscriptProjector,

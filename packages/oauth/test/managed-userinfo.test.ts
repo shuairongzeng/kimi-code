@@ -2,7 +2,7 @@ import { afterEach, describe, it, expect, vi } from 'vitest';
 
 import {
   fetchManagedUserInfo,
-  kimiCodeUserInfoUrl,
+  zimiCodeUserInfoUrl,
   managedUserInfoResultSchema,
   managedUserInfoSchema,
   parseManagedUserInfoPayload,
@@ -13,10 +13,10 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
-describe('kimiCodeUserInfoUrl', () => {
-  it('follows the KIMI_CODE_BASE_URL override', () => {
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'https://gw.example.com/');
-    expect(kimiCodeUserInfoUrl()).toBe('https://gw.example.com/me');
+describe('zimiCodeUserInfoUrl', () => {
+  it('follows the ZIMI_CODE_BASE_URL override', () => {
+    vi.stubEnv('ZIMI_CODE_BASE_URL', 'https://gw.example.com/');
+    expect(zimiCodeUserInfoUrl()).toBe('https://gw.example.com/me');
   });
 });
 
@@ -274,7 +274,7 @@ describe('fetchManagedUserInfo', () => {
     expect(result.kind).toBe('error');
     if (result.kind !== 'error') return;
     expect(result.status).toBe(404);
-    expect(result.message).toBe('Profile endpoint not available. Try Kimi For Coding.');
+    expect(result.message).toBe('Profile endpoint not available. Try Zimi For Coding.');
   });
 
   it('treats a payload without user_id as malformed', async () => {

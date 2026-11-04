@@ -111,9 +111,9 @@ function migrateAvailabilityEntry(value: unknown): PluginAvailabilityEntry {
   };
 }
 
-async function readAvailability(kimiHomeDir: string): Promise<PluginAvailabilityFile> {
+async function readAvailability(zimiHomeDir: string): Promise<PluginAvailabilityFile> {
   try {
-    const text = await readFile(path.join(kimiHomeDir, 'plugins', 'availability.json'), 'utf8');
+    const text = await readFile(path.join(zimiHomeDir, 'plugins', 'availability.json'), 'utf8');
     const parsed = availabilityObject(JSON.parse(text));
     if (parsed['version'] !== 1) throw new Error('Invalid plugin availability cache');
     const sources = availabilityObject(parsed['sources']);
@@ -140,8 +140,8 @@ export class PluginAvailabilityStore {
   private current: PluginAvailabilityFile = EMPTY;
   private generationValue = 0;
 
-  constructor(kimiHomeDir: string) {
-    this.filePath = path.join(kimiHomeDir, 'plugins', 'availability.json');
+  constructor(zimiHomeDir: string) {
+    this.filePath = path.join(zimiHomeDir, 'plugins', 'availability.json');
   }
 
   get generation(): number {

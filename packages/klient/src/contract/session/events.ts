@@ -10,8 +10,8 @@ import { z } from 'zod';
 import type {
   Interaction,
   InteractionResolution,
-} from '@moonshot-ai/agent-core-v2/human/interaction/interaction';
-import type { SessionMetadataChangedEvent } from '@moonshot-ai/agent-core-v2/session/sessionMetadata/sessionMetadata';
+} from '@zimi-ai/agent-core-v2/human/interaction/interaction';
+import type { SessionMetadataChangedEvent } from '@zimi-ai/agent-core-v2/session/sessionMetadata/sessionMetadata';
 
 import type { EventRegistration } from '../types.js';
 import {

@@ -11,7 +11,7 @@ import {
   type InteractionTags,
   type QuestionRequest,
   type QuestionResult,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { type RunningServer, startServer } from '../src/start';
@@ -37,7 +37,7 @@ describe('server-v2 /api/v1/sessions/{sid}/interactions (question)', () => {
   let base: string;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-questions-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-questions-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',

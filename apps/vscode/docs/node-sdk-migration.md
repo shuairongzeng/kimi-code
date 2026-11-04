@@ -6,13 +6,13 @@ Last updated: 2026-07-16
 
 ## Context
 
-The `0.5.x` VS Code extension launched a separately installed Python Kimi CLI
+The `0.5.x` VS Code extension launched a separately installed Python Zimi CLI
 and communicated with it over stdio. That architecture duplicated runtime
 installation, configuration, authentication, and session behavior between the
-editor and Kimi Code.
+editor and Zimi Code.
 
 Version `0.6.0` moves the extension into this monorepo under `apps/vscode` and
-runs the stable TypeScript v1 engine through `@moonshot-ai/kimi-code-sdk` in the
+runs the stable TypeScript v1 engine through `@zimi-ai/zimi-code-sdk` in the
 VS Code Extension Host. The migration preserves the existing extension ID,
 commands, Webview, and user-visible workflows. It does not redesign the UI or
 introduce unrelated TUI features.
@@ -22,13 +22,13 @@ is not a release checklist or a transcript of the implementation process.
 
 ## Goals
 
-- Keep the extension ID `moonshot-ai.kimi-code` so `0.6.0` upgrades existing
+- Keep the extension ID `zimi-ai.zimi-code` so `0.6.0` upgrades existing
   installations.
 - Preserve the existing VS Code commands, shortcuts, Webview workflows, editor
   integration, session management, MCP management, and file changes panel.
 - Replace the Python/stdio host with the in-process v1 Node SDK.
-- Share Kimi Code configuration, authentication, MCP configuration, and
-  sessions with the TUI when both processes resolve the same Kimi Code home.
+- Share Zimi Code configuration, authentication, MCP configuration, and
+  sessions with the TUI when both processes resolve the same Zimi Code home.
 - Reuse the shared legacy migration package instead of maintaining a VS
   Code-specific session translator.
 - Add only the smallest SDK/core APIs needed to preserve existing VS Code
@@ -58,9 +58,9 @@ capabilities exposed by the v1 configuration.
 flowchart LR
   UI["React Webview<br/>browser sandbox"]
   Host["VS Code Extension Host<br/>Node process"]
-  SDK["@moonshot-ai/kimi-code-sdk<br/>KimiHarness and Session"]
+  SDK["@zimi-ai/zimi-code-sdk<br/>ZimiHarness and Session"]
   Core["agent-core-v2"]
-  Home["Kimi Code home<br/>config, auth, MCP, sessions"]
+  Home["Zimi Code home<br/>config, auth, MCP, sessions"]
 
   UI <-->|"postMessage RPC and events"| Host
   Host -->|"in-process calls"| SDK
@@ -80,17 +80,17 @@ stay in the trusted Extension Host.
 
 The runtime constructs the SDK client with:
 
-- `productName: "kimi-code-vscode"`
+- `productName: "zimi-code-vscode"`
 - `version` from `apps/vscode/package.json`
 - `uiMode: "vscode"`
 
 For `0.6.0`, the normal HTTP User-Agent product is therefore
-`kimi-code-vscode/0.6.0`. The version has one source of truth and is not copied
+`zimi-code-vscode/0.6.0`. The version has one source of truth and is not copied
 into runtime code or packaging scripts.
 
 ### Package boundaries
 
-- `apps/vscode` depends on `@moonshot-ai/kimi-code-sdk`.
+- `apps/vscode` depends on `@zimi-ai/zimi-code-sdk`.
 - `apps/vscode` must not depend directly on engine packages.
 - Core capabilities needed by released clients are exposed through the Node SDK
   and tested at that public boundary.
@@ -102,9 +102,9 @@ into runtime code or packaging scripts.
 | Area | Primary implementation |
 |---|---|
 | Activation and VS Code commands | `apps/vscode/src/extension.ts` |
-| Webview lifecycle | `apps/vscode/src/KimiWebviewProvider.ts` |
+| Webview lifecycle | `apps/vscode/src/ZimiWebviewProvider.ts` |
 | Webview RPC boundary | `apps/vscode/src/bridge-handler.ts`, `apps/vscode/src/handlers` |
-| SDK host | `apps/vscode/src/runtime/kimi-runtime.ts` |
+| SDK host | `apps/vscode/src/runtime/zimi-runtime.ts` |
 | Session lifecycle and event routing | `apps/vscode/src/runtime/session-runtime.ts` |
 | SDK-to-Webview event conversion | `apps/vscode/src/runtime/event-adapter.ts` |
 | Session replay | `apps/vscode/src/runtime/replay-adapter.ts` |
@@ -115,14 +115,14 @@ into runtime code or packaging scripts.
 
 ## Data ownership
 
-### Shared Kimi Code home
+### Shared Zimi Code home
 
-The SDK resolves the home directory using the normal Kimi Code rules:
+The SDK resolves the home directory using the normal Zimi Code rules:
 
-1. system-level `KIMI_CODE_HOME`, when set;
-2. otherwise `~/.kimi-code`.
+1. system-level `ZIMI_CODE_HOME`, when set;
+2. otherwise `~/.zimi-code`.
 
-The extension does not add a separate `kimi.homeDir` setting and does not pass
+The extension does not add a separate `zimi.homeDir` setting and does not pass
 its own default home to the SDK. VS Code and the TUI share the following data
 only when they resolve the same home:
 
@@ -131,11 +131,11 @@ only when they resolve the same home:
 - authentication state
 - `sessions/`
 - `session_index.jsonl`
-- other SDK-owned Kimi Code data
+- other SDK-owned Zimi Code data
 
 Remote SSH, WSL, and Dev Container installations use the environment and home
 of the remote Extension Host. They do not automatically share the local
-machine's Kimi Code home.
+machine's Zimi Code home.
 
 ### VS Code-owned state
 
@@ -153,14 +153,14 @@ effort.
 
 ### Environment variables
 
-The old `kimi.environmentVariables` setting existed to populate the environment
+The old `zimi.environmentVariables` setting existed to populate the environment
 of the Python child process. It was removed with that process model.
 
 - Provider-specific environment variables remain in `config.toml`.
 - MCP server environment variables remain in `mcp.json`.
 - proxy and other process-level variables are inherited from the Extension
   Host environment.
-- a legacy `KIMI_SHARE_DIR` in the removed setting is consulted only as an
+- a legacy `ZIMI_SHARE_DIR` in the removed setting is consulted only as an
   additional migration source.
 - other values from the removed global environment map are not migrated.
 
@@ -234,16 +234,16 @@ and may require authorization after upgrade.
 
 ## Legacy migration
 
-Migration is opt-in and uses `@moonshot-ai/migration-legacy` for detection and
+Migration is opt-in and uses `@zimi-ai/migration-legacy` for detection and
 translation. The extension coordinates prompts and reports but does not
 maintain another config/session translator.
 
 ### Sources and target
 
-- default source: `~/.kimi`;
-- optional additional source: a valid legacy `KIMI_SHARE_DIR` from the removed
+- default source: `~/.zimi`;
+- optional additional source: a valid legacy `ZIMI_SHARE_DIR` from the removed
   VS Code setting;
-- target: the SDK-resolved Kimi Code home.
+- target: the SDK-resolved Zimi Code home.
 
 Migration covers the shared config, MCP config, user history, supported skills,
 and sessions. Existing target data wins according to the shared migration
@@ -252,11 +252,11 @@ legacy source.
 
 On first launch, the extension detects work without mutating either home and
 offers **Migrate now** or **Later**. The command
-`Kimi Code: Migrate Legacy Data` remains available for manual runs and retries.
+`Zimi Code: Migrate Legacy Data` remains available for manual runs and retries.
 
-The shared marker `.migrated-to-kimi-code` can contain multiple target homes.
+The shared marker `.migrated-to-zimi-code` can contain multiple target homes.
 This prevents duplicate migration when the TUI migrated the same source first,
-while still allowing a different `KIMI_CODE_HOME` to be migrated later.
+while still allowing a different `ZIMI_CODE_HOME` to be migrated later.
 
 Migrated sessions keep source metadata in `state.json.custom`, including the
 legacy source path and session identity. This metadata also supports legacy
@@ -276,7 +276,7 @@ feature.
 ### New sessions
 
 Baselines are stored under the extension's `globalStorage`, namespaced by the
-resolved Kimi Code home and session ID. The home namespace prevents sessions
+resolved Zimi Code home and session ID. The home namespace prevents sessions
 with the same ID in different homes from sharing baseline state.
 
 The session runtime observes `tool.call.started` for the explicit `Write` and
@@ -385,7 +385,7 @@ replaces them:
 
 1. The Webview never imports the Node SDK or gains direct Node/file/auth access.
 2. `apps/vscode` never imports engine packages directly.
-3. Shared config and sessions live in the SDK-resolved Kimi Code home; editor
+3. Shared config and sessions live in the SDK-resolved Zimi Code home; editor
    preferences and baselines remain VS Code-owned.
 4. Legacy migration translation stays in `packages/migration-legacy`.
 5. Session storage is accessed through SDK/core APIs, not parsed or mutated by

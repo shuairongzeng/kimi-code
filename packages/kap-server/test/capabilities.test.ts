@@ -35,28 +35,28 @@ describe('server-v2 /api/v1 capabilities', () => {
     expect(body.code).toBe(0);
     const parsed = listCapabilitiesResponseSchema.parse(body.data);
     const ids = parsed.capabilities.map((c) => c.id).toSorted();
-    expect(ids).toEqual(['kimi-cu', 'kimi-webbridge']);
+    expect(ids).toEqual(['zimi-cu', 'zimi-webbridge']);
     for (const capability of parsed.capabilities) {
       expect(capabilityStatusSchema.parse(capability)).toBeTruthy();
       expect(capability.install.running).toBe(false);
     }
-    const kimiCu = parsed.capabilities.find((c) => c.id === 'kimi-cu');
+    const zimiCu = parsed.capabilities.find((c) => c.id === 'zimi-cu');
     if (process.platform === 'darwin' || (process.platform === 'win32' && process.arch === 'x64')) {
-      expect(kimiCu?.supported).toBe(true);
+      expect(zimiCu?.supported).toBe(true);
     } else {
-      expect(kimiCu?.supported).toBe(false);
-      expect(kimiCu?.state).toBe('unsupported');
+      expect(zimiCu?.supported).toBe(false);
+      expect(zimiCu?.state).toBe('unsupported');
     }
-    const webbridge = parsed.capabilities.find((c) => c.id === 'kimi-webbridge');
+    const webbridge = parsed.capabilities.find((c) => c.id === 'zimi-webbridge');
     expect(webbridge?.supported).toBe(true);
     expect(webbridge?.steps.find((s) => s.id === 'skill')?.state).toBe('missing');
     expect(webbridge?.steps.find((s) => s.id === 'extension')?.optional).toBe(true);
   });
 
   it('gets a single capability and 40418s on an unknown id', async () => {
-    const { body } = await getJson<unknown>('/api/v1/capabilities/kimi-webbridge');
+    const { body } = await getJson<unknown>('/api/v1/capabilities/zimi-webbridge');
     expect(body.code).toBe(0);
-    expect(capabilityStatusSchema.parse(body.data).id).toBe('kimi-webbridge');
+    expect(capabilityStatusSchema.parse(body.data).id).toBe('zimi-webbridge');
 
     const missing = await getJson<unknown>('/api/v1/capabilities/nope');
     expect(missing.body.code).toBe(40418);
@@ -76,16 +76,16 @@ describe('server-v2 /api/v1 capabilities', () => {
   });
 
   it('rejects bare ids and unknown actions with 40001', async () => {
-    const bare = await postJson<unknown>('/api/v1/capabilities/kimi-cu');
+    const bare = await postJson<unknown>('/api/v1/capabilities/zimi-cu');
     expect(bare.body.code).toBe(40001);
-    const bogus = await postJson<unknown>('/api/v1/capabilities/kimi-cu:uninstall');
+    const bogus = await postJson<unknown>('/api/v1/capabilities/zimi-cu:uninstall');
     expect(bogus.body.code).toBe(40001);
   });
 
   it.skipIf(process.platform === 'darwin' || (process.platform === 'win32' && process.arch === 'x64'))(
-    'rejects kimi-cu install on unsupported platforms with 40925',
+    'rejects zimi-cu install on unsupported platforms with 40925',
     async () => {
-      const { body } = await postJson<unknown>('/api/v1/capabilities/kimi-cu:install');
+      const { body } = await postJson<unknown>('/api/v1/capabilities/zimi-cu:install');
       expect(body.code).toBe(40925);
     },
   );

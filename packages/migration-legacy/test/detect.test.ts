@@ -28,7 +28,7 @@ describe('detectMigration', () => {
       '{"mcpServers":{"server-1":{"url":"https://example.test/mcp","auth":"oauth"},"server-2":{"command":"npx"}}}',
     );
     await mkdir(join(src, 'credentials'), { recursive: true });
-    await writeFile(join(src, 'credentials', 'kimi-code.json'), '{}');
+    await writeFile(join(src, 'credentials', 'zimi-code.json'), '{}');
     await mkdir(join(src, 'user-history'), { recursive: true });
     await mkdir(join(src, 'plugins', 'p1'), { recursive: true });
     await mkdir(join(src, 'mcp-oauth'), { recursive: true });
@@ -38,7 +38,7 @@ describe('detectMigration', () => {
     expect(plan.hasConfig).toBe(true);
     expect(plan.hasMcp).toBe(true);
     expect(plan.hasUserHistory).toBe(true);
-    expect(plan.oauthCredentials).toEqual(['kimi-code']);
+    expect(plan.oauthCredentials).toEqual(['zimi-code']);
     expect(plan.detectedPlugins).toEqual(['p1']);
     expect(plan.detectedMcpOauthServers).toEqual(['server-1']);
   });
@@ -46,11 +46,11 @@ describe('detectMigration', () => {
   it('derives OAuth relogin notices from config oauth refs even without credential files', async () => {
     await writeFile(
       join(src, 'config.toml'),
-      '[providers."managed:kimi-code"]\ntype = "kimi"\nbase_url = "https://api.example.test/v1"\n\n[providers."managed:kimi-code".oauth]\nstorage = "keyring"\nkey = "oauth/kimi-code"\n',
+      '[providers."managed:zimi-code"]\ntype = "zimi"\nbase_url = "https://api.example.test/v1"\n\n[providers."managed:zimi-code".oauth]\nstorage = "keyring"\nkey = "oauth/zimi-code"\n',
     );
 
     const plan = await detectMigration({ sourcePath: src });
-    expect(plan.oauthCredentials).toEqual(['kimi-code']);
+    expect(plan.oauthCredentials).toEqual(['zimi-code']);
   });
 
   it('treats a config.json-only source as having config', async () => {
@@ -64,7 +64,7 @@ describe('detectMigration', () => {
     const workdir = '/workspace/flat-proj';
     const bucket = join(src, 'sessions', oldMd5BucketName(workdir));
     await mkdir(join(bucket, 'titled'), { recursive: true });
-    await writeFile(join(src, 'kimi.json'), JSON.stringify({ work_dirs: [{ path: workdir }] }));
+    await writeFile(join(src, 'zimi.json'), JSON.stringify({ work_dirs: [{ path: workdir }] }));
     await writeFile(join(bucket, 'flat-1.jsonl'), '{"role":"user","content":"hi"}\n');
     await writeFile(join(bucket, 'titled', 'context.jsonl'), '');
     await writeFile(
@@ -99,7 +99,7 @@ describe('detectMigration', () => {
     }
   });
 
-  it('reports an unknown workdir bucket when kimi.json cannot map it', async () => {
+  it('reports an unknown workdir bucket when zimi.json cannot map it', async () => {
     const bucket = join(src, 'sessions', oldMd5BucketName('/workspace/example'));
     await mkdir(join(bucket, 'legacy-session'), { recursive: true });
     await writeFile(
@@ -113,7 +113,7 @@ describe('detectMigration', () => {
     expect(plan.sessionScanFailures).toEqual([
       {
         sourcePath: bucket,
-        reason: expect.stringMatching(/workdir.*kimi\.json/i),
+        reason: expect.stringMatching(/workdir.*zimi\.json/i),
       },
     ]);
   });

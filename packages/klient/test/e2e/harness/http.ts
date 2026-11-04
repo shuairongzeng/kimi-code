@@ -5,31 +5,31 @@
 import type {
   FsBrowseResponse,
   FsHomeResponse,
-} from '@moonshot-ai/agent-core-v2/app/hostFolderBrowser/hostFolderBrowser';
-import type { AuthSummary } from '@moonshot-ai/agent-core-v2/app/authLegacy/authLegacy';
-import type { FileMeta } from '@moonshot-ai/agent-core-v2/app/file/fileService';
-import type { UpdateSessionProfileRequest as SessionUpdate } from '@moonshot-ai/agent-core-v2/app/sessionLegacy/sessionProtocol';
+} from '@zimi-ai/agent-core-v2/app/hostFolderBrowser/hostFolderBrowser';
+import type { AuthSummary } from '@zimi-ai/agent-core-v2/app/authLegacy/authLegacy';
+import type { FileMeta } from '@zimi-ai/agent-core-v2/app/file/fileService';
+import type { UpdateSessionProfileRequest as SessionUpdate } from '@zimi-ai/agent-core-v2/app/sessionLegacy/sessionProtocol';
 import type {
   ProviderCatalogItem,
   SetDefaultModelResponse,
-} from '@moonshot-ai/agent-core-v2/llm-adapter/model/catalog';
-import type { Envelope } from '@moonshot-ai/kap-server/protocol/envelope';
-import type { Message } from '@moonshot-ai/kap-server/protocol/message';
+} from '@zimi-ai/agent-core-v2/llm-adapter/model/catalog';
+import type { Envelope } from '@zimi-ai/kap-server/protocol/envelope';
+import type { Message } from '@zimi-ai/kap-server/protocol/message';
 import type {
   InteractionRespondRequest,
   InteractionRespondResult,
-} from '@moonshot-ai/kap-server/protocol/interaction';
+} from '@zimi-ai/kap-server/protocol/interaction';
 import type {
   ListModelsResponse,
   ListProvidersResponse,
-} from '@moonshot-ai/kap-server/protocol/rest-modelCatalog';
+} from '@zimi-ai/kap-server/protocol/rest-modelCatalog';
 import type {
   PromptAbortResponse,
   PromptListResponse,
   PromptSubmission,
   PromptSteerResult,
   PromptSubmitResult,
-} from '@moonshot-ai/kap-server/protocol/rest-prompt';
+} from '@zimi-ai/kap-server/protocol/rest-prompt';
 import type {
   CompactSessionRequest,
   CompactSessionResponse,
@@ -37,17 +37,17 @@ import type {
   SessionAbortResponse,
   UndoSessionRequest,
   UndoSessionResponse,
-} from '@moonshot-ai/kap-server/protocol/rest-session';
+} from '@zimi-ai/kap-server/protocol/rest-session';
 import type {
   Session,
   SessionChildCreate,
   SessionCreate,
-} from '@moonshot-ai/kap-server/protocol/session';
+} from '@zimi-ai/kap-server/protocol/session';
 import type {
   Workspace,
   WorkspaceCreate,
   WorkspaceUpdate,
-} from '@moonshot-ai/kap-server/protocol/workspace';
+} from '@zimi-ai/kap-server/protocol/workspace';
 
 import { unwrap } from './envelope.js';
 import { fetchWithReport, recordReportEvent } from './report.js';

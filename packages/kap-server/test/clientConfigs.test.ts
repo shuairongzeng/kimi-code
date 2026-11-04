@@ -4,7 +4,7 @@ import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { KIMI_REGION_PROFILES } from '@moonshot-ai/kimi-code-oauth';
+import { ZIMI_REGION_PROFILES } from '@zimi-ai/zimi-code-oauth';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -41,9 +41,9 @@ describe('clientConfigsBaseUrl', () => {
 
   it('falls back to the region profile when the override is missing or blank', () => {
     expect(clientConfigsBaseUrl(undefined, 'mainland-cn')).toBe(
-      KIMI_REGION_PROFILES['mainland-cn'].baseUrl,
+      ZIMI_REGION_PROFILES['mainland-cn'].baseUrl,
     );
-    expect(clientConfigsBaseUrl('   ', 'global')).toBe(KIMI_REGION_PROFILES.global.baseUrl);
+    expect(clientConfigsBaseUrl('   ', 'global')).toBe(ZIMI_REGION_PROFILES.global.baseUrl);
   });
 });
 
@@ -198,7 +198,7 @@ describe('server-v2 POST /api/v1/client_configs', () => {
   let cloudBehavior: { status: number; body: unknown };
 
   beforeEach(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-client-configs-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-client-configs-'));
     cloudBehavior = { status: 200, body: {} };
   });
 
@@ -245,7 +245,7 @@ describe('server-v2 POST /api/v1/client_configs', () => {
       port: 0,
       homeDir: home,
       logLevel: 'silent',
-      env: { ...process.env, KIMI_CODE_BASE_URL: `http://127.0.0.1:${cloudPort}` },
+      env: { ...process.env, ZIMI_CODE_BASE_URL: `http://127.0.0.1:${cloudPort}` },
     });
     base = `http://127.0.0.1:${server.port}`;
   }

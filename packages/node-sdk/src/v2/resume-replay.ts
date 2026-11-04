@@ -8,11 +8,11 @@ import {
   type AgentReplayRecord as V2AgentReplayRecord,
   type ContextMessage as V2ContextMessage,
   type WireRecord,
-} from '@moonshot-ai/agent-core-v2';
-import { fromCoreMessage } from '@moonshot-ai/agent-core-v2/human/message';
-import { fromPersistentWireRecord } from '@moonshot-ai/agent-core-v2/wire/wireService';
+} from '@zimi-ai/agent-core-v2';
+import { fromCoreMessage } from '@zimi-ai/agent-core-v2/human/message';
+import { fromPersistentWireRecord } from '@zimi-ai/agent-core-v2/wire/wireService';
 
-import { SurveyTurnCounter } from '@moonshot-ai/kimi-code-product/session-rating/node';
+import { SurveyTurnCounter } from '@zimi-ai/zimi-code-product/session-rating/node';
 
 import type { ContextMessage } from '#/context';
 import {

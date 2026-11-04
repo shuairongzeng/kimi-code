@@ -170,14 +170,14 @@ describe('StdioMcpClient', () => {
         transport: 'stdio',
         command: process.execPath,
         args: [stdioFixture],
-        env: { KIMI_TEST_LITERAL: 'literal' },
+        env: { ZIMI_TEST_LITERAL: 'literal' },
       },
       { environmentId: 'dev-box' },
     );
     try {
       await harness.client.connect();
-      expect(harness.spawnEnvs).toEqual([{ KIMI_TEST_LITERAL: 'literal' }]);
-      const result = await harness.client.callTool('read_env', { name: 'KIMI_TEST_LITERAL' });
+      expect(harness.spawnEnvs).toEqual([{ ZIMI_TEST_LITERAL: 'literal' }]);
+      const result = await harness.client.callTool('read_env', { name: 'ZIMI_TEST_LITERAL' });
       expect(result.content).toEqual([{ type: 'text', text: 'literal' }]);
     } finally {
       await harness.client.close();
@@ -185,7 +185,7 @@ describe('StdioMcpClient', () => {
   }, 15000);
 
   it('uses defaultCwd when config.cwd is omitted', async () => {
-    const cwd = mkdtempSync(join(tmpdir(), 'kimi-mcp-default-cwd-'));
+    const cwd = mkdtempSync(join(tmpdir(), 'zimi-mcp-default-cwd-'));
     const client = createClient(
       {
         transport: 'stdio',
@@ -206,7 +206,7 @@ describe('StdioMcpClient', () => {
   }, 15000);
 
   it('prefers explicit config.cwd over defaultCwd', async () => {
-    const defaultCwd = mkdtempSync(join(tmpdir(), 'kimi-mcp-default-cwd-'));
+    const defaultCwd = mkdtempSync(join(tmpdir(), 'zimi-mcp-default-cwd-'));
     const configuredCwd = join(defaultCwd, 'configured');
     mkdirSync(configuredCwd);
     const client = createClient(
@@ -231,7 +231,7 @@ describe('StdioMcpClient', () => {
   }, 15000);
 
   it('resolves relative config.cwd from defaultCwd', async () => {
-    const defaultCwd = mkdtempSync(join(tmpdir(), 'kimi-mcp-relative-cwd-'));
+    const defaultCwd = mkdtempSync(join(tmpdir(), 'zimi-mcp-relative-cwd-'));
     const configuredCwd = join(defaultCwd, 'tools', 'mcp');
     mkdirSync(configuredCwd, { recursive: true });
     const client = createClient(
@@ -255,8 +255,8 @@ describe('StdioMcpClient', () => {
   }, 15000);
 
   it('allows explicit config.cwd outside defaultCwd', async () => {
-    const defaultCwd = mkdtempSync(join(tmpdir(), 'kimi-mcp-default-cwd-'));
-    const outsideCwd = mkdtempSync(join(tmpdir(), 'kimi-mcp-outside-cwd-'));
+    const defaultCwd = mkdtempSync(join(tmpdir(), 'zimi-mcp-default-cwd-'));
+    const outsideCwd = mkdtempSync(join(tmpdir(), 'zimi-mcp-outside-cwd-'));
     const client = createClient(
       {
         transport: 'stdio',
@@ -279,7 +279,7 @@ describe('StdioMcpClient', () => {
   }, 15000);
 
   it('roots a remote server at the target environment cwd instead of defaultCwd', async () => {
-    const base = mkdtempSync(join(tmpdir(), 'kimi-mcp-remote-cwd-'));
+    const base = mkdtempSync(join(tmpdir(), 'zimi-mcp-remote-cwd-'));
     const remoteCwd = join(base, 'target');
     const remoteHome = join(base, 'remote-home');
     const explicitCwd = join(base, 'explicit');
@@ -356,11 +356,11 @@ describe('StdioMcpClient', () => {
       transport: 'stdio',
       command: process.execPath,
       args: [stdioFixture],
-      env: { KIMI_TEST_ENV: 'forwarded-value' },
+      env: { ZIMI_TEST_ENV: 'forwarded-value' },
     });
     try {
       await client.connect();
-      const result = await client.callTool('read_env', { name: 'KIMI_TEST_ENV' });
+      const result = await client.callTool('read_env', { name: 'ZIMI_TEST_ENV' });
       expect(result.content).toEqual([{ type: 'text', text: 'forwarded-value' }]);
     } finally {
       await client.close();
@@ -368,8 +368,8 @@ describe('StdioMcpClient', () => {
   }, 15000);
 
   it('inherits parent process env so PATH/HOME survive; config.env overrides on conflict', async () => {
-    const parentOnly = `KIMI_TEST_PARENT_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    const shared = `KIMI_TEST_SHARED_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const parentOnly = `ZIMI_TEST_PARENT_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const shared = `ZIMI_TEST_SHARED_${Date.now()}_${Math.random().toString(36).slice(2)}`;
     process.env[parentOnly] = 'from-parent';
     process.env[shared] = 'from-parent';
     const client = createClient({
@@ -392,12 +392,12 @@ describe('StdioMcpClient', () => {
   }, 15000);
 
   it('captures recent stderr into a snapshot the manager can attach to errors', async () => {
-    const banner = `kimi-test-stderr-${Date.now()}`;
+    const banner = `zimi-test-stderr-${Date.now()}`;
     const client = createClient({
       transport: 'stdio',
       command: process.execPath,
       args: [stderrThenExitFixture],
-      env: { KIMI_TEST_MCP_STDERR: banner },
+      env: { ZIMI_TEST_MCP_STDERR: banner },
     });
     try {
       await expect(client.connect()).rejects.toThrow();
@@ -423,12 +423,12 @@ describe('StdioMcpClient', () => {
   }, 15000);
 
   it('notifies a session-evidence listener with hard evidence when the child exits after connect', async () => {
-    const banner = `kimi-test-crash-${Date.now()}`;
+    const banner = `zimi-test-crash-${Date.now()}`;
     const client = createClient({
       transport: 'stdio',
       command: process.execPath,
       args: [crashAfterConnectFixture],
-      env: { KIMI_TEST_MCP_EXIT_AFTER_MS: '50', KIMI_TEST_MCP_STDERR: banner },
+      env: { ZIMI_TEST_MCP_EXIT_AFTER_MS: '50', ZIMI_TEST_MCP_STDERR: banner },
     });
     const closes: Array<{ kind?: string; stderr?: string; error?: string }> = [];
     client.onSessionEvidence((evidence) => {
@@ -453,12 +453,12 @@ describe('StdioMcpClient', () => {
   }, 15000);
 
   it('buffers an early close and replays it on listener registration', async () => {
-    const banner = `kimi-test-early-${Date.now()}`;
+    const banner = `zimi-test-early-${Date.now()}`;
     const client = createClient({
       transport: 'stdio',
       command: process.execPath,
       args: [crashAfterConnectFixture],
-      env: { KIMI_TEST_MCP_STDERR: banner, KIMI_TEST_MCP_EXIT_CODE: '0' },
+      env: { ZIMI_TEST_MCP_STDERR: banner, ZIMI_TEST_MCP_EXIT_CODE: '0' },
     });
     try {
       await client.connect();
@@ -594,7 +594,7 @@ describe('mergeStdioEnv', () => {
   });
 
   it('does not depend on a filesystem cwd fixture for env merging', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'kimi-mcp-env-'));
+    const dir = mkdtempSync(join(tmpdir(), 'zimi-mcp-env-'));
     await rm(dir, { recursive: true, force: true });
     expect(mergeStdioEnv(undefined, { PATH: dir })['PATH']).toBe(dir);
   });

@@ -47,7 +47,7 @@ const RATE_LIMIT_CAPACITY_RECOVERY_INTERVAL_MS = 3 * 60 * 1000;
 const RATE_LIMIT_SUSPENDED_REASON = 'Provider rate limit; subagent requeued for retry.';
 const MEMBER_STOPPED_MESSAGE = 'The user stopped this subagent.';
 
-const AGENT_SWARM_MAX_CONCURRENCY_ENV = 'KIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY';
+const AGENT_SWARM_MAX_CONCURRENCY_ENV = 'ZIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY';
 
 export type QueuedAgentRunTask<T = unknown> = SessionSwarmTask<T>;
 

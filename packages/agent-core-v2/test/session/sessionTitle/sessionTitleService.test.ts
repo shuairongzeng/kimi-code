@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
-import { OAuthConnectionError, OAuthUnauthorizedError } from '@moonshot-ai/kimi-code-oauth';
+import { OAuthConnectionError, OAuthUnauthorizedError } from '@zimi-ai/zimi-code-oauth';
 
 import { DisposableStore, type IDisposable } from '#/_base/di/lifecycle';
 import { type IAgentScopeHandle } from '#/_base/di/scope';
@@ -42,9 +42,9 @@ import { stubProviderService } from '../../app/provider/stubs';
 
 const SESSION_ID = 'sess-1';
 const MANAGED_PROVIDER: ProviderConfig = {
-  type: 'kimi',
+  type: 'zimi',
   baseUrl: 'https://api.example.test/coding/v1',
-  oauth: { storage: 'file', key: 'kimi-code' },
+  oauth: { storage: 'file', key: 'zimi-code' },
 };
 
 class FakeEventService implements IEventService {
@@ -164,7 +164,7 @@ describe('SessionTitleService', () => {
     turnExcerpt = {};
     digestExcerpt = { turns: [] };
     tokenCalls = [];
-    providers = { 'managed:kimi-code': MANAGED_PROVIDER };
+    providers = { 'managed:zimi-code': MANAGED_PROVIDER };
     metadata = new FakeSessionMetadata();
     events = new FakeEventService();
     fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(
@@ -297,7 +297,7 @@ describe('SessionTitleService', () => {
   });
 
   it('does nothing without a managed OAuth provider', async () => {
-    delete providers['managed:kimi-code'];
+    delete providers['managed:zimi-code'];
     titlePrompts = ['hello'];
 
     await expect(ix.get(ISessionTitleService).generateTitle()).resolves.toBeUndefined();
@@ -551,7 +551,7 @@ describe('SessionTitleService', () => {
   });
 
   it('includes environment custom headers', async () => {
-    vi.stubEnv('KIMI_CODE_CUSTOM_HEADERS', 'X-Proxy-Header: from-env\n');
+    vi.stubEnv('ZIMI_CODE_CUSTOM_HEADERS', 'X-Proxy-Header: from-env\n');
     titlePrompts = ['hello'];
 
     await ix.get(ISessionTitleService).generateTitle();
@@ -563,8 +563,8 @@ describe('SessionTitleService', () => {
   });
 
   it('pairs the environment endpoint with its credential slot when it overrides persisted config', async () => {
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'https://api.env.example.test/coding/v1');
-    vi.stubEnv('KIMI_CODE_OAUTH_HOST', 'https://auth.env.example.test');
+    vi.stubEnv('ZIMI_CODE_BASE_URL', 'https://api.env.example.test/coding/v1');
+    vi.stubEnv('ZIMI_CODE_OAUTH_HOST', 'https://auth.env.example.test');
     titlePrompts = ['hello'];
 
     await ix.get(ISessionTitleService).generateTitle();

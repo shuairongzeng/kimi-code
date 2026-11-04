@@ -1,4 +1,4 @@
-import { ErrorCodes, Error2 } from '@moonshot-ai/agent-core-v2';
+import { ErrorCodes, Error2 } from '@zimi-ai/agent-core-v2';
 
 import { errEnvelope } from '../protocol/envelope';
 import { ErrorCode } from '../protocol/error-codes';
@@ -22,7 +22,7 @@ export function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   }) as Promise<T>;
 }
 
-const KIMI_TO_PROTOCOL: Record<string, ErrorCode> = {
+const ZIMI_TO_PROTOCOL: Record<string, ErrorCode> = {
   [ErrorCodes.SESSION_NOT_FOUND]: ErrorCode.SESSION_NOT_FOUND,
   [ErrorCodes.AGENT_NOT_FOUND]: ErrorCode.SESSION_NOT_FOUND,
   [ErrorCodes.SESSION_UNDO_UNAVAILABLE]: ErrorCode.SESSION_UNDO_UNAVAILABLE,
@@ -67,7 +67,7 @@ const PUBLIC_DETAIL_CODES: ReadonlySet<string> = new Set([
 
 export function mapError(err: unknown, requestId: string): ReturnType<typeof errEnvelope> {
   if (err instanceof Error2) {
-    const code = KIMI_TO_PROTOCOL[err.code] ?? ErrorCode.INTERNAL_ERROR;
+    const code = ZIMI_TO_PROTOCOL[err.code] ?? ErrorCode.INTERNAL_ERROR;
     const details = PUBLIC_DETAIL_CODES.has(err.code) ? err.details : undefined;
     return errEnvelope(code, err.message, requestId, err.stack, details);
   }

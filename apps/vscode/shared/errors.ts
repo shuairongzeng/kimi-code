@@ -49,10 +49,10 @@ export const PREFLIGHT_CODES = new Set<string>([
 // User-friendly error messages
 export const ERROR_MESSAGES: Record<string, string> = {
   // Pre-flight
-  [LEGACY.CLI_NOT_FOUND]: "Kimi Code CLI not found.",
-  [LEGACY.SPAWN_FAILED]: "Failed to start Kimi Code CLI.",
+  [LEGACY.CLI_NOT_FOUND]: "Zimi Code CLI not found.",
+  [LEGACY.SPAWN_FAILED]: "Failed to start Zimi Code CLI.",
   [LEGACY.ALREADY_STARTED]: "A session is already running.",
-  [LEGACY.STDIN_NOT_WRITABLE]: "Failed to communicate with Kimi Code CLI.",
+  [LEGACY.STDIN_NOT_WRITABLE]: "Failed to communicate with Zimi Code CLI.",
   [LEGACY.HANDSHAKE_TIMEOUT]: "Connection timed out.",
   [LEGACY.PROCESS_CRASHED]: "Process connection lost.",
 
@@ -73,7 +73,7 @@ export const ERROR_MESSAGES: Record<string, string> = {
   [LEGACY.INVALID_PARAMS]: "Invalid parameters.",
   [LEGACY.INTERNAL_ERROR]: "Internal error occurred.",
 
-  "config.invalid": "Kimi Code configuration is invalid.",
+  "config.invalid": "Zimi Code configuration is invalid.",
   "model.not_configured": "No model is configured. Please sign in or configure a provider.",
   "auth.login_required": "Authentication failed. Please sign in.",
   "session.not_found": "Session was not found.",
@@ -83,7 +83,7 @@ export const ERROR_MESSAGES: Record<string, string> = {
   "session.closed": "Session was closed.",
   "session.fork_active_turn": "Another session history operation is in progress. Try again shortly.",
   "session.occupied":
-    "This session is in use by another Kimi Code process. Stop the session in that process or exit it, then try again.",
+    "This session is in use by another Zimi Code process. Stop the session in that process or exit it, then try again.",
   "session.stale": "Session was updated by another client. Reopen the session to load the latest updates.",
   "turn.agent_busy": "A message is being sent. Please wait.",
   "provider.api_error": "Service temporarily unavailable.",

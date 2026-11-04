@@ -273,9 +273,9 @@ describe('modelsDevProviderModels', () => {
     expect(fable?.supportEfforts).toBeUndefined();
     expect(fable?.alwaysThinking).toBeUndefined();
     expect(anthropic.get('claude-latest')?.supportEfforts).toBeUndefined();
-    const kimi = anthropic.get('kimi-k3');
-    expect(kimi?.supportEfforts).toEqual(['low', 'high']);
-    expect(kimi?.alwaysThinking).toBeUndefined();
+    const zimi = anthropic.get('kimi-k3');
+    expect(zimi?.supportEfforts).toEqual(['low', 'high']);
+    expect(zimi?.alwaysThinking).toBeUndefined();
     const glm = anthropic.get('glm-5');
     expect(glm?.supportEfforts).toBeUndefined();
     expect(glm?.capability.thinking).toBe(false);

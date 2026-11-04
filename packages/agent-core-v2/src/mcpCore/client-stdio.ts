@@ -12,8 +12,8 @@ import type { EnvironmentResolver } from '#/app/environment/environment';
 
 import {
   buildRequestOptions,
-  KIMI_MCP_CLIENT_NAME,
-  KIMI_MCP_CLIENT_VERSION,
+  ZIMI_MCP_CLIENT_NAME,
+  ZIMI_MCP_CLIENT_VERSION,
   MCP_LIVENESS_PROBE_TIMEOUT_MS,
   McpClassifiedStartupError,
   toMcpToolDefinition,
@@ -57,8 +57,8 @@ export class StdioMcpClient implements MCPClient {
   constructor(config: McpServerStdioConfig, options: StdioMcpClientOptions) {
     this.transport = new EnvironmentStdioTransport(config, options, this.stderrBuffer);
     this.client = new Client({
-      name: options.clientName ?? KIMI_MCP_CLIENT_NAME,
-      version: options.clientVersion ?? KIMI_MCP_CLIENT_VERSION,
+      name: options.clientName ?? ZIMI_MCP_CLIENT_NAME,
+      version: options.clientVersion ?? ZIMI_MCP_CLIENT_VERSION,
     });
     this.startupTimeoutMs = options.startupTimeoutMs;
     this.toolCallTimeoutMs = options.toolCallTimeoutMs;

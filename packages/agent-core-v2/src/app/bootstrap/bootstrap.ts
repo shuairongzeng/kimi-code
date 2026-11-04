@@ -3,7 +3,7 @@ import { homedir } from 'node:os';
 
 import { join } from 'pathe';
 
-import type { KimiHostIdentity } from '@moonshot-ai/kimi-code-oauth';
+import type { ZimiHostIdentity } from '@zimi-ai/zimi-code-oauth';
 
 import { SyncDescriptor } from '#/_base/di/descriptors';
 import { createDecorator, type ServiceIdentifier } from '#/_base/di/instantiation';
@@ -57,7 +57,7 @@ export interface IBootstrapOptions {
   readonly arch: string;
   readonly cwd: string;
   readonly env: NodeJS.ProcessEnv;
-  readonly clientIdentity: KimiHostIdentity;
+  readonly clientIdentity: ZimiHostIdentity;
   readonly args: HostArgs;
 }
 
@@ -82,7 +82,7 @@ export interface IBootstrapService {
   readonly osHomeDir: string;
   readonly homeDir: string;
   readonly configPath: string;
-  readonly clientIdentity: KimiHostIdentity;
+  readonly clientIdentity: ZimiHostIdentity;
   readonly args: HostArgs;
   readonly sessionsDir: string;
   readonly blobsDir: string;
@@ -105,14 +105,14 @@ export interface BootstrapInput {
   readonly platform?: NodeJS.Platform;
   readonly arch?: string;
   readonly cwd?: string;
-  readonly clientIdentity: KimiHostIdentity;
+  readonly clientIdentity: ZimiHostIdentity;
   readonly args?: HostArgsInput;
 }
 
 export function resolveBootstrapOptions(input: BootstrapInput): IBootstrapOptions {
   const env = input.env ?? process.env;
   const osHomeDir = input.osHomeDir ?? homedir();
-  const homeDir = resolveKimiHome(input.homeDir, env, osHomeDir);
+  const homeDir = resolveZimiHome(input.homeDir, env, osHomeDir);
   const configPath = input.configPath ?? join(homeDir, 'config.toml');
   return {
     homeDir,
@@ -165,21 +165,21 @@ function skillSeed(): ScopeSeed {
   ];
 }
 
-export function resolveKimiHome(
+export function resolveZimiHome(
   homeDir?: string,
   env: NodeJS.ProcessEnv = process.env,
   osHomeDir: string = homedir(),
 ): string {
-  return homeDir ?? env['KIMI_CODE_HOME'] ?? join(osHomeDir, '.kimi-code');
+  return homeDir ?? env['ZIMI_CODE_HOME'] ?? join(osHomeDir, '.zimi-code');
 }
 
 export function resolveConfigPath(input: {
   readonly homeDir?: string;
   readonly configPath?: string;
 }): string {
-  return input.configPath ?? join(resolveKimiHome(input.homeDir), 'config.toml');
+  return input.configPath ?? join(resolveZimiHome(input.homeDir), 'config.toml');
 }
 
-export function ensureKimiHome(homeDir: string): void {
+export function ensureZimiHome(homeDir: string): void {
   mkdirSync(homeDir, { recursive: true, mode: 0o700 });
 }

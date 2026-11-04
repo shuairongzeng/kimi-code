@@ -9,7 +9,7 @@ import {
   type ConfigSectionChangedEvent,
   type Event2,
   type Scope,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import { configResponseSchema, type ConfigResponse } from '../src/protocol/rest-config';
 import { ErrorCode } from '../src/protocol/error-codes';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -33,7 +33,7 @@ describe('server-v2 /api/v1/config', () => {
   let base: string;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-config-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-config-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -209,13 +209,13 @@ describe('server-v2 /api/v1/config', () => {
   });
 
   it('GET reports has_api_key for an api_key_env provider only while the variable is set', async () => {
-    await boot('[providers.acme]\ntype = "openai"\napi_key_env = "KIMI_TEST_CONFIG_ROUTE_KEY"\n');
+    await boot('[providers.acme]\ntype = "openai"\napi_key_env = "ZIMI_TEST_CONFIG_ROUTE_KEY"\n');
     try {
-      vi.stubEnv('KIMI_TEST_CONFIG_ROUTE_KEY', 'sk-live');
+      vi.stubEnv('ZIMI_TEST_CONFIG_ROUTE_KEY', 'sk-live');
       const live = await getConfig();
       expect(live.providers['acme']).toMatchObject({ has_api_key: true });
 
-      vi.stubEnv('KIMI_TEST_CONFIG_ROUTE_KEY', '');
+      vi.stubEnv('ZIMI_TEST_CONFIG_ROUTE_KEY', '');
       const empty = await getConfig();
       expect(empty.providers['acme']).toMatchObject({ has_api_key: false });
     } finally {
@@ -243,7 +243,7 @@ describe('server-v2 config changed WS notifications', () => {
   const sockets: WebSocket[] = [];
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-config-ws-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-config-ws-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -296,7 +296,7 @@ describe('server-v2 config changed WS notifications', () => {
   async function openWs(): Promise<ConfigChangedFrame[]> {
     const live = server as RunningServer;
     const ws = new WebSocket(`ws://127.0.0.1:${live.port}/api/v1/ws`, [
-      `kimi-code.bearer.${bearerToken(live)}`,
+      `zimi-code.bearer.${bearerToken(live)}`,
     ]);
     sockets.push(ws);
     const frames: ConfigChangedFrame[] = [];
@@ -491,7 +491,7 @@ describe('configChangedPublisher', () => {
     setBacking({
       providers: {},
       services: {
-        moonshotSearch: {
+        zimiSearch: {
           baseUrl: 'https://s.test',
           apiKey: 'sk-svc',
           customHeaders: { Authorization: 'Bearer abc', 'x-team': 'core' },
@@ -505,7 +505,7 @@ describe('configChangedPublisher', () => {
     expect(published).toHaveLength(1);
     const config = published[0]?.payload.config as Record<string, unknown>;
     const services = config['services'] as Record<string, Record<string, unknown>>;
-    expect(services['moonshotSearch']).toEqual({
+    expect(services['zimiSearch']).toEqual({
       baseUrl: 'https://s.test',
       has_api_key: true,
       custom_header_keys: ['Authorization', 'x-team'],

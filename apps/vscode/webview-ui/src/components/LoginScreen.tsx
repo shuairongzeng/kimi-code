@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { IconLoader2, IconCopy, IconCheck, IconExternalLink, IconArrowRight } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
-import { KimiMascot } from "./KimiMascot";
+import { ZimiMascot } from "./ZimiMascot";
 import { bridge, Events } from "@/services";
 import {
   AlertDialog,
@@ -96,7 +96,7 @@ export function LoginScreen({ onLoginSuccess, onSkip }: LoginScreenProps) {
     return (
       <div className="h-full flex items-center justify-center p-6">
         <div className="max-w-sm w-full text-center space-y-6">
-          <KimiMascot className="h-12 mx-auto" />
+          <ZimiMascot className="h-12 mx-auto" />
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 text-blue-500">
               <IconLoader2 className="size-5 animate-spin" />
@@ -135,11 +135,11 @@ export function LoginScreen({ onLoginSuccess, onSkip }: LoginScreenProps) {
     <>
       <div className="h-full flex items-center justify-center p-6">
         <div className="max-w-sm w-full text-center space-y-6">
-          <KimiMascot className="h-12 mx-auto" />
+          <ZimiMascot className="h-12 mx-auto" />
           <div className="space-y-2">
-            <h1 className="text-lg font-semibold">Welcome to Kimi Code</h1>
+            <h1 className="text-lg font-semibold">Welcome to Zimi Code</h1>
             <div className="text-left space-y-2">
-              <p className="text-xs leading-5">Use Kimi Code with your Kimi account subscription or your existing API setup.</p>
+              <p className="text-xs leading-5">Use Zimi Code with your Zimi account subscription or your existing API setup.</p>
             </div>
           </div>
 
@@ -157,9 +157,9 @@ export function LoginScreen({ onLoginSuccess, onSkip }: LoginScreenProps) {
                 }}
                 className="w-full justify-center gap-2"
               >
-                Sign in with Kimi Account
+                Sign in with Zimi Account
               </Button>
-              <p className="text-[11px] text-muted-foreground leading-4">Use your Kimi account and Kimi Code subscription.</p>
+              <p className="text-[11px] text-muted-foreground leading-4">Use your Zimi account and Zimi Code subscription.</p>
             </div>
 
             <div className="text-left space-y-1">
@@ -178,7 +178,7 @@ export function LoginScreen({ onLoginSuccess, onSkip }: LoginScreenProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Subscription Required</AlertDialogTitle>
             <AlertDialogDescription>
-              Your account does not have an active Kimi Code subscription. Please subscribe to continue using Kimi Code with your account.
+              Your account does not have an active Zimi Code subscription. Please subscribe to continue using Zimi Code with your account.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

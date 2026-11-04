@@ -46,8 +46,8 @@ import { ITelemetryService } from '#/app/telemetry/telemetry';
 import {
   ErrorCodes,
   Error2,
-  toKimiErrorPayload,
-  type KimiErrorPayload,
+  toZimiErrorPayload,
+  type ZimiErrorPayload,
 } from '#/errors';
 import { IAgentLifecycleService, MAIN_AGENT_ID } from '#/session/agentLifecycle/agentLifecycle';
 import { Forked } from '#/session/agentLifecycle/forked';
@@ -1133,8 +1133,8 @@ function goalFailurePauseReason(error: unknown): string {
   }
 }
 
-function normalizeGoalErrorPayload(error: unknown): KimiErrorPayload {
-  const payload = toKimiErrorPayload(error);
+function normalizeGoalErrorPayload(error: unknown): ZimiErrorPayload {
+  const payload = toZimiErrorPayload(error);
   if (payload.code === ErrorCodes.MODEL_NOT_CONFIGURED) {
     return { ...payload, message: LLM_NOT_SET_MESSAGE };
   }

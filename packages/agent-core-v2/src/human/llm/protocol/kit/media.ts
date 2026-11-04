@@ -45,13 +45,13 @@ const BASELINE_IMAGE_POLICY: ProviderImagePolicy = {
   inlineByteBudget: DEFAULT_INLINE_IMAGE_BYTE_BUDGET,
 };
 
-const KIMI_IMAGE_POLICY: ProviderImagePolicy = {
+const ZIMI_IMAGE_POLICY: ProviderImagePolicy = {
   acceptedMimes: new Set([...BASELINE_IMAGE_MIMES, 'image/bmp', 'image/heic', 'image/heif']),
   inlineByteBudget: 5 * 1024 * 1024,
 };
 
 export function providerImagePolicy(provider?: string): ProviderImagePolicy {
-  return provider === 'kimi' ? KIMI_IMAGE_POLICY : BASELINE_IMAGE_POLICY;
+  return provider === 'zimi' ? ZIMI_IMAGE_POLICY : BASELINE_IMAGE_POLICY;
 }
 
 export function mediaUrlOf(part: MediaPart): string {

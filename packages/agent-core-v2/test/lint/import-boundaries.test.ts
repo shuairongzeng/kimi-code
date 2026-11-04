@@ -7,7 +7,7 @@ const atHuman = (sub: string, file: string): string => `${SRC_ROOT}/human/${sub}
 const atAdapter = (sub: string, file: string): string => `${SRC_ROOT}/llm-adapter/${sub}/${file}`;
 
 const KOSONG_IMPORT = ['#', 'kosong', 'contract', 'message'].join('/');
-const KOSONG_SELF_IMPORT = ['@moonshot-ai/agent-core-v2', 'kosong', 'contract', 'message'].join('/');
+const KOSONG_SELF_IMPORT = ['@zimi-ai/agent-core-v2', 'kosong', 'contract', 'message'].join('/');
 
 describe('check-import-boundaries', () => {
   it('flags a literal #/kosong/ import (the deleted kernel)', () => {
@@ -90,7 +90,7 @@ describe('check-import-boundaries', () => {
 
   it('allows llm-adapter to import the human implementation', () => {
     const violations = checkSource(
-      `import { createOpenAIRequester } from '#human/llm-requester/factories';\nimport { kimiRequesters } from '#human/llm/builtin/provider/kimi/index';`,
+      `import { createOpenAIRequester } from '#human/llm-requester/factories';\nimport { zimiRequesters } from '#human/llm/builtin/provider/zimi/index';`,
       atAdapter('protocol', 'protocolAdapterRegistry.ts'),
     );
     expect(violations).toHaveLength(0);
@@ -98,7 +98,7 @@ describe('check-import-boundaries', () => {
 
   it('flags a package-self human implementation import outside llm-adapter', () => {
     const violations = checkSource(
-      `import { createOpenAIRequester } from '@moonshot-ai/agent-core-v2/human/llm-requester/factories';`,
+      `import { createOpenAIRequester } from '@zimi-ai/agent-core-v2/human/llm-requester/factories';`,
       at('agent', 'loop.ts'),
     );
     expect(violations).toHaveLength(1);
@@ -108,7 +108,7 @@ describe('check-import-boundaries', () => {
   it('allows a built-in provider importing a protocol lower module', () => {
     const violations = checkSource(
       `import { lowerMessage } from '#/llm/builtin/protocol/anthropic/lower';`,
-      atHuman('llm/builtin/provider/kimi', 'protocol.ts'),
+      atHuman('llm/builtin/provider/zimi', 'protocol.ts'),
     );
     expect(violations).toHaveLength(0);
   });
@@ -116,7 +116,7 @@ describe('check-import-boundaries', () => {
   it('allows a built-in provider importing a protocol lower module via a relative path', () => {
     const violations = checkSource(
       `import { lowerMessage } from '../../protocol/openai/lower';`,
-      atHuman('llm/builtin/provider/kimi', 'protocol.ts'),
+      atHuman('llm/builtin/provider/zimi', 'protocol.ts'),
     );
     expect(violations).toHaveLength(0);
   });
@@ -133,7 +133,7 @@ describe('check-import-boundaries', () => {
   it('allows a built-in provider importing the protocol contract', () => {
     const violations = checkSource(
       `import type { OpenAIWireToolCall } from '#/llm/builtin/protocol/openai/contract';`,
-      atHuman('llm/builtin/provider/kimi', 'protocol.ts'),
+      atHuman('llm/builtin/provider/zimi', 'protocol.ts'),
     );
     expect(violations).toHaveLength(0);
   });
@@ -182,7 +182,7 @@ describe('check-import-boundaries', () => {
 
   it('allows sibling-package imports outside kosong', () => {
     const violations = checkSource(
-      `import { something } from '@moonshot-ai/minidb';`,
+      `import { something } from '@zimi-ai/minidb';`,
       at('log', 'log.ts'),
     );
     expect(violations).toHaveLength(0);

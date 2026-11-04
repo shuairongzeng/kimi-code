@@ -1,8 +1,8 @@
 /**
- * Scenario: VS Code discovers and runs legacy kimi-cli migration without touching a real home.
+ * Scenario: VS Code discovers and runs legacy zimi-cli migration without touching a real home.
  * Responsibilities: source selection, shared-marker suppression, real migration, retry, and clear reports.
  * Wiring: real temporary files and the public migration package; no stubbed collaborators.
- * Run: pnpm --filter kimi-code test -- legacy-migration.manager.test.ts
+ * Run: pnpm --filter zimi-code test -- legacy-migration.manager.test.ts
  */
 import { createHash } from "node:crypto";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
@@ -74,14 +74,14 @@ describe("legacy migration manager (discovery and migration coordination)", () =
     await writeLegacyConfig(rig.sourceHome);
     const existingSession = join(rig.targetHome, "sessions", "existing", "state.json");
     await mkdir(join(existingSession, ".."), { recursive: true });
-    await writeFile(existingSession, '{"custom":{"imported_from_kimi_cli":true}}');
+    await writeFile(existingSession, '{"custom":{"imported_from_zimi_cli":true}}');
     await writeSharedMarker(rig.sourceHome, rig.targetHome);
 
     const result = await rig.manager.migrateNow();
 
     expect(result.status).toBe("nothing-to-migrate");
     await expect(readFile(existingSession, "utf-8")).resolves.toContain(
-      "imported_from_kimi_cli",
+      "imported_from_zimi_cli",
     );
     await expect(readFile(join(rig.targetHome, "config.toml"), "utf-8")).rejects.toThrow();
   });
@@ -89,7 +89,7 @@ describe("legacy migration manager (discovery and migration coordination)", () =
   it("conservatively suppresses the prompt when the shared marker is corrupt", async () => {
     const rig = await createRig();
     await writeLegacyConfig(rig.sourceHome);
-    await writeFile(join(rig.sourceHome, ".migrated-to-kimi-code"), "not-json");
+    await writeFile(join(rig.sourceHome, ".migrated-to-zimi-code"), "not-json");
 
     const discovery = await rig.manager.discover();
 
@@ -97,11 +97,11 @@ describe("legacy migration manager (discovery and migration coordination)", () =
     expect(discovery.suppressedSources).toHaveLength(1);
   });
 
-  it("discovers a relative legacy KIMI_SHARE_DIR from the workspace and warns about its resolution", async () => {
+  it("discovers a relative legacy ZIMI_SHARE_DIR from the workspace and warns about its resolution", async () => {
     const rig = await createRig({
-      legacyEnvironmentVariables: { KIMI_SHARE_DIR: "legacy-kimi" },
+      legacyEnvironmentVariables: { ZIMI_SHARE_DIR: "legacy-zimi" },
     });
-    const shareHome = join(rig.workspaceRoot, "legacy-kimi");
+    const shareHome = join(rig.workspaceRoot, "legacy-zimi");
     await writeLegacyConfig(shareHome);
 
     const discovery = await rig.manager.discover();
@@ -117,12 +117,12 @@ describe("legacy migration manager (discovery and migration coordination)", () =
     ]);
   });
 
-  it("migrates both the default home and the extra legacy KIMI_SHARE_DIR source", async () => {
+  it("migrates both the default home and the extra legacy ZIMI_SHARE_DIR source", async () => {
     const rig = await createRig({
-      legacyEnvironmentVariables: { KIMI_SHARE_DIR: "legacy-kimi" },
+      legacyEnvironmentVariables: { ZIMI_SHARE_DIR: "legacy-zimi" },
     });
     await writeLegacyConfig(rig.sourceHome);
-    const shareHome = join(rig.workspaceRoot, "legacy-kimi");
+    const shareHome = join(rig.workspaceRoot, "legacy-zimi");
     await mkdir(join(shareHome, "skills", "example-skill"), { recursive: true });
     await writeFile(
       join(shareHome, "skills", "example-skill", "SKILL.md"),
@@ -139,10 +139,10 @@ describe("legacy migration manager (discovery and migration coordination)", () =
     ).resolves.toContain("example-skill");
   });
 
-  it("ignores legacy environment variables other than KIMI_SHARE_DIR", async () => {
+  it("ignores legacy environment variables other than ZIMI_SHARE_DIR", async () => {
     const rig = await createRig({
       legacyEnvironmentVariables: {
-        KIMI_CODE_HOME: join(tmpdir(), "must-not-be-read"),
+        ZIMI_CODE_HOME: join(tmpdir(), "must-not-be-read"),
         PATH: join(tmpdir(), "must-not-be-used"),
       },
     });
@@ -152,9 +152,9 @@ describe("legacy migration manager (discovery and migration coordination)", () =
     expect(discovery).toMatchObject({ prompt: null, warnings: [] });
   });
 
-  it("ignores a non-string legacy KIMI_SHARE_DIR with a clear warning", async () => {
+  it("ignores a non-string legacy ZIMI_SHARE_DIR with a clear warning", async () => {
     const rig = await createRig({
-      legacyEnvironmentVariables: { KIMI_SHARE_DIR: 42, HTTPS_PROXY: "https://example.test" },
+      legacyEnvironmentVariables: { ZIMI_SHARE_DIR: 42, HTTPS_PROXY: "https://example.test" },
     });
 
     const discovery = await rig.manager.discover();
@@ -168,10 +168,10 @@ describe("legacy migration manager (discovery and migration coordination)", () =
     ]);
   });
 
-  it("ignores a relative legacy KIMI_SHARE_DIR when no workspace can resolve it", async () => {
+  it("ignores a relative legacy ZIMI_SHARE_DIR when no workspace can resolve it", async () => {
     const rig = await createRig({
       workspaceRoot: null,
-      legacyEnvironmentVariables: { KIMI_SHARE_DIR: "legacy-kimi" },
+      legacyEnvironmentVariables: { ZIMI_SHARE_DIR: "legacy-zimi" },
     });
 
     const discovery = await rig.manager.discover();
@@ -274,7 +274,7 @@ describe("legacy migration manager (discovery and migration coordination)", () =
     const workDir = rig.workspaceRoot;
     await mkdir(rig.sourceHome, { recursive: true });
     await writeFile(
-      join(rig.sourceHome, "kimi.json"),
+      join(rig.sourceHome, "zimi.json"),
       JSON.stringify({ work_dirs: [{ path: workDir, kaos: "local" }] }),
     );
     const bucket = join(
@@ -381,13 +381,13 @@ describe("legacy migration manager (discovery and migration coordination)", () =
   it("reports legacy OAuth login as requiring a new login without treating it as migratable data", async () => {
     const rig = await createRig();
     await mkdir(join(rig.sourceHome, "credentials"), { recursive: true });
-    await writeFile(join(rig.sourceHome, "credentials", "kimi-code.json"), "{}");
+    await writeFile(join(rig.sourceHome, "credentials", "zimi-code.json"), "{}");
 
     const discovery = await rig.manager.discover();
 
     expect(discovery.prompt).toBeNull();
     expect(discovery.notices.oauthLoginsRequiringRelogin).toEqual([
-      { sourceHome: rig.sourceHome, name: "kimi-code" },
+      { sourceHome: rig.sourceHome, name: "zimi-code" },
     ]);
   });
 
@@ -442,8 +442,8 @@ async function createRig(options: RigOptions = {}): Promise<{
 }> {
   const root = await mkdtemp(join(tmpdir(), "vscode-legacy-migration-"));
   temporaryRoots.push(root);
-  const sourceHome = join(root, ".kimi");
-  const targetHome = join(root, ".kimi-code");
+  const sourceHome = join(root, ".zimi");
+  const targetHome = join(root, ".zimi-code");
   const workspaceRoot = join(root, "workspace");
   await mkdir(options.workspaceRoot === null ? root : workspaceRoot, { recursive: true });
   const manager = new LegacyMigrationManager({
@@ -464,7 +464,7 @@ async function writeLegacyConfig(sourceHome: string): Promise<void> {
 async function writeSharedMarker(sourceHome: string, targetHome: string): Promise<void> {
   await mkdir(sourceHome, { recursive: true });
   await writeFile(
-    join(sourceHome, ".migrated-to-kimi-code"),
+    join(sourceHome, ".migrated-to-zimi-code"),
     JSON.stringify({ version: 1, target_path: targetHome, runs: [] }),
   );
 }
@@ -475,7 +475,7 @@ async function writeCorruptLegacySession(
 ): Promise<void> {
   await mkdir(sourceHome, { recursive: true });
   await writeFile(
-    join(sourceHome, "kimi.json"),
+    join(sourceHome, "zimi.json"),
     JSON.stringify({ work_dirs: [{ path: workDir, kaos: "local" }] }),
   );
   const bucket = createHash("md5").update(workDir).digest("hex");

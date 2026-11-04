@@ -2,8 +2,8 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { IModelCatalog } from '@moonshot-ai/agent-core-v2';
-import { createActor, setup } from '@moonshot-ai/agent-core-v2/human/xstate2';
+import { IModelCatalog } from '@zimi-ai/agent-core-v2';
+import { createActor, setup } from '@zimi-ai/agent-core-v2/human/xstate2';
 import { afterEach, describe, expect, it } from 'vitest';
 import { WebSocket, type RawData } from 'ws';
 
@@ -88,15 +88,15 @@ describe('WS upgrade auth', () => {
 
     it('accepts a valid bearer subprotocol and echoes it', async () => {
       const { ws, firstFrame } = await openConn(url(), {
-        protocols: [`kimi-code.bearer.${token()}`],
+        protocols: [`zimi-code.bearer.${token()}`],
       });
       sockets.push(ws);
-      expect(ws.protocol).toBe(`kimi-code.bearer.${token()}`);
+      expect(ws.protocol).toBe(`zimi-code.bearer.${token()}`);
       expect(firstFrame).toMatchObject({ type: firstType });
     });
 
     it('rejects a wrong bearer token', async () => {
-      await expectRejected(url(), { protocols: ['kimi-code.bearer.wrong'] });
+      await expectRejected(url(), { protocols: ['zimi-code.bearer.wrong'] });
     });
 
     it('rejects a connection with no token', async () => {
@@ -159,8 +159,8 @@ describe('WS upgrade auth', () => {
 
   it('rejects upgrades to a non-WS path', async () => {
     const badUrl = `${v1Url().replace('/api/v1/ws', '/api/v1/other')}`;
-    await expectRejected(badUrl, { protocols: [`kimi-code.bearer.${token()}`] });
+    await expectRejected(badUrl, { protocols: [`zimi-code.bearer.${token()}`] });
     const debugUrl = `${v1Url().replace('/api/v1/ws', '/api/v1/debug/ws')}`;
-    await expectRejected(debugUrl, { protocols: [`kimi-code.bearer.${token()}`] });
+    await expectRejected(debugUrl, { protocols: [`zimi-code.bearer.${token()}`] });
   });
 });

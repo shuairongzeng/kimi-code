@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { ConfigRegistry } from '#/app/config/configService';
 import { ErrorCodes, Error2 } from '#/errors';
-import { kimiModelEnvOverlay, ENV_MODEL_ALIAS_KEY } from '#/app/kosongConfig/envOverlay';
+import { zimiModelEnvOverlay, ENV_MODEL_ALIAS_KEY } from '#/app/kosongConfig/envOverlay';
 import {
   ENV_MODEL_PROVIDER_KEY,
   MODELS_SECTION,
@@ -54,7 +54,7 @@ describe('effectiveModelConfig', () => {
     });
   });
 
-  it('infers Anthropic effort metadata for an unknown Claude-marked model on a non-Kimi Anthropic provider', () => {
+  it('infers Anthropic effort metadata for an unknown Claude-marked model on a non-Zimi Anthropic provider', () => {
     expect(
       effectiveModelConfig(
         {
@@ -72,7 +72,7 @@ describe('effectiveModelConfig', () => {
     });
   });
 
-  it('infers Anthropic effort metadata for a bare Claude family alias on a non-Kimi Anthropic provider', () => {
+  it('infers Anthropic effort metadata for a bare Claude family alias on a non-Zimi Anthropic provider', () => {
     expect(
       effectiveModelConfig(
         {
@@ -90,7 +90,7 @@ describe('effectiveModelConfig', () => {
     });
   });
 
-  it('does not infer Anthropic effort metadata for a clearly non-Claude model on a non-Kimi Anthropic provider', () => {
+  it('does not infer Anthropic effort metadata for a clearly non-Claude model on a non-Zimi Anthropic provider', () => {
     expect(
       effectiveModelConfig(
         {
@@ -109,9 +109,9 @@ describe('effectiveModelConfig', () => {
     });
   });
 
-  it('does not infer Anthropic effort metadata for a Kimi provider routed through the Anthropic protocol', () => {
+  it('does not infer Anthropic effort metadata for a Zimi provider routed through the Anthropic protocol', () => {
     const model: ModelRecord = {
-      provider: 'managed:kimi-code',
+      provider: 'managed:zimi-code',
       model: 'kimi-for-coding',
       maxContextSize: 262144,
       capabilities: ['thinking', 'always_thinking'],
@@ -119,7 +119,7 @@ describe('effectiveModelConfig', () => {
       adaptiveThinking: true,
     };
 
-    expect(effectiveModelConfig(model, 'kimi')).toEqual(model);
+    expect(effectiveModelConfig(model, 'zimi')).toEqual(model);
   });
 
   it('does not infer the fallback profile without provider context', () => {
@@ -189,7 +189,7 @@ describe('models TOML transforms', () => {
   it('camelCases nested model overrides from TOML', () => {
     expect(
       modelsFromToml({
-        kimi: {
+        zimi: {
           provider: 'p',
           model: 'm',
           max_context_size: 1000,
@@ -201,7 +201,7 @@ describe('models TOML transforms', () => {
         },
       }),
     ).toEqual({
-      kimi: {
+      zimi: {
         provider: 'p',
         model: 'm',
         maxContextSize: 1000,
@@ -218,7 +218,7 @@ describe('models TOML transforms', () => {
     expect(
       modelsToToml(
         {
-          kimi: {
+          zimi: {
             provider: 'p',
             model: 'm',
             maxContextSize: 1000,
@@ -231,7 +231,7 @@ describe('models TOML transforms', () => {
         {},
       ),
     ).toEqual({
-      kimi: {
+      zimi: {
         provider: 'p',
         model: 'm',
         max_context_size: 1000,
@@ -247,7 +247,7 @@ describe('models TOML transforms', () => {
     expect(
       modelsToToml(
         {
-          kimi: {
+          zimi: {
             provider: 'p',
             model: 'm',
             maxContextSize: 1000,
@@ -256,7 +256,7 @@ describe('models TOML transforms', () => {
           },
         },
         {
-          kimi: {
+          zimi: {
             provider: 'p',
             model: 'm',
             max_context_size: 128000,
@@ -267,7 +267,7 @@ describe('models TOML transforms', () => {
         },
       ),
     ).toEqual({
-      kimi: {
+      zimi: {
         provider: 'p',
         model: 'm',
         max_context_size: 1000,
@@ -279,11 +279,11 @@ describe('models TOML transforms', () => {
 
 type EnvMap = Readonly<Record<string, string | undefined>>;
 
-function applyKimiModelEnvOverlay(
+function applyZimiModelEnvOverlay(
   env: EnvMap,
   effective: Record<string, unknown> = {},
 ): { readonly changed: readonly string[]; readonly effective: Record<string, unknown> } {
-  const changed = kimiModelEnvOverlay.apply(
+  const changed = zimiModelEnvOverlay.apply(
     effective,
     (name) => env[name],
     (domain, value) => {
@@ -305,8 +305,8 @@ function expectConfigInvalid(fn: () => unknown): void {
   throw new Error('expected config.invalid');
 }
 
-describe('kimiModelEnvOverlay', () => {
-  it('does nothing when KIMI_MODEL_NAME is absent', () => {
+describe('zimiModelEnvOverlay', () => {
+  it('does nothing when ZIMI_MODEL_NAME is absent', () => {
     const effective = {
       models: {
         existing: { provider: 'p', model: 'm', maxContextSize: 1000 },
@@ -314,16 +314,16 @@ describe('kimiModelEnvOverlay', () => {
       defaultModel: 'existing',
     };
 
-    const result = applyKimiModelEnvOverlay({}, effective);
+    const result = applyZimiModelEnvOverlay({}, effective);
 
     expect(result.changed).toEqual([]);
     expect(result.effective).toEqual(effective);
   });
 
-  it('applies request overrides when KIMI_MODEL_NAME is absent', () => {
-    const { changed, effective } = applyKimiModelEnvOverlay({
-      KIMI_MODEL_TEMPERATURE: '0.3',
-      KIMI_MODEL_THINKING_KEEP: 'all',
+  it('applies request overrides when ZIMI_MODEL_NAME is absent', () => {
+    const { changed, effective } = applyZimiModelEnvOverlay({
+      ZIMI_MODEL_TEMPERATURE: '0.3',
+      ZIMI_MODEL_THINKING_KEEP: 'all',
     });
 
     expect(changed).toEqual(['modelOverrides']);
@@ -334,8 +334,8 @@ describe('kimiModelEnvOverlay', () => {
   });
 
   it('synthesizes an env model alias and default model from the minimal env set', () => {
-    const { changed, effective } = applyKimiModelEnvOverlay({
-      KIMI_MODEL_NAME: 'kimi-for-coding',
+    const { changed, effective } = applyZimiModelEnvOverlay({
+      ZIMI_MODEL_NAME: 'kimi-for-coding',
     });
 
     expect(changed).toEqual(['models', 'providers', 'defaultModel']);
@@ -349,13 +349,13 @@ describe('kimiModelEnvOverlay', () => {
       },
     });
     expect(effective['providers']).toEqual({
-      [ENV_MODEL_PROVIDER_KEY]: { type: 'kimi', baseUrl: 'https://api.moonshot.ai/v1' },
+      [ENV_MODEL_PROVIDER_KEY]: { type: 'zimi', baseUrl: 'https://api.moonshot.ai/v1' },
     });
   });
 
   it('omits baseUrl for openai so the base SDK default applies at construction', () => {
-    const { effective } = applyKimiModelEnvOverlay(
-      { KIMI_MODEL_NAME: 'env-model' },
+    const { effective } = applyZimiModelEnvOverlay(
+      { ZIMI_MODEL_NAME: 'env-model' },
       { providers: { [ENV_MODEL_PROVIDER_KEY]: { type: 'openai' } } },
     );
 
@@ -365,8 +365,8 @@ describe('kimiModelEnvOverlay', () => {
   });
 
   it('omits baseUrl for anthropic so the SDK picks its default', () => {
-    const { effective } = applyKimiModelEnvOverlay(
-      { KIMI_MODEL_NAME: 'env-model' },
+    const { effective } = applyZimiModelEnvOverlay(
+      { ZIMI_MODEL_NAME: 'env-model' },
       { providers: { [ENV_MODEL_PROVIDER_KEY]: { type: 'anthropic' } } },
     );
 
@@ -376,8 +376,8 @@ describe('kimiModelEnvOverlay', () => {
   });
 
   it('honors an explicit baseUrl over the type default', () => {
-    const { effective } = applyKimiModelEnvOverlay(
-      { KIMI_MODEL_NAME: 'env-model' },
+    const { effective } = applyZimiModelEnvOverlay(
+      { ZIMI_MODEL_NAME: 'env-model' },
       {
         providers: {
           [ENV_MODEL_PROVIDER_KEY]: { type: 'openai', baseUrl: 'https://api.example.com/v1' },
@@ -390,9 +390,9 @@ describe('kimiModelEnvOverlay', () => {
     });
   });
 
-  it('keeps an explicit env provider type instead of the kimi default', () => {
-    const { changed, effective } = applyKimiModelEnvOverlay(
-      { KIMI_MODEL_NAME: 'env-model' },
+  it('keeps an explicit env provider type instead of the zimi default', () => {
+    const { changed, effective } = applyZimiModelEnvOverlay(
+      { ZIMI_MODEL_NAME: 'env-model' },
       { providers: { [ENV_MODEL_PROVIDER_KEY]: { type: 'openai', baseUrl: 'http://x' } } },
     );
 
@@ -404,8 +404,8 @@ describe('kimiModelEnvOverlay', () => {
 
   it('preserves configured aliases while adding the env alias', () => {
     const existing = { provider: 'p', model: 'm', maxContextSize: 1000 };
-    const { effective } = applyKimiModelEnvOverlay(
-      { KIMI_MODEL_NAME: 'env-model' },
+    const { effective } = applyZimiModelEnvOverlay(
+      { ZIMI_MODEL_NAME: 'env-model' },
       { models: { existing } },
     );
 
@@ -416,19 +416,19 @@ describe('kimiModelEnvOverlay', () => {
   });
 
   it('maps extended model metadata and request overrides', () => {
-    const { changed, effective } = applyKimiModelEnvOverlay({
-      KIMI_MODEL_NAME: 'env-model',
-      KIMI_MODEL_MAX_CONTEXT_SIZE: '1000000',
-      KIMI_MODEL_MAX_OUTPUT_SIZE: '8192',
-      KIMI_MODEL_CAPABILITIES: 'Image_In, thinking , tool_use',
-      KIMI_MODEL_DISPLAY_NAME: 'Custom Model',
-      KIMI_MODEL_REASONING_KEY: 'reasoning',
-      KIMI_MODEL_ADAPTIVE_THINKING: 'true',
-      KIMI_MODEL_TEMPERATURE: '0.3',
-      KIMI_MODEL_TOP_P: ' 0.95 ',
-      KIMI_MODEL_THINKING_KEEP: 'all',
-      KIMI_MODEL_MAX_COMPLETION_TOKENS: '4096',
-      KIMI_MODEL_MAX_TOKENS: '2048',
+    const { changed, effective } = applyZimiModelEnvOverlay({
+      ZIMI_MODEL_NAME: 'env-model',
+      ZIMI_MODEL_MAX_CONTEXT_SIZE: '1000000',
+      ZIMI_MODEL_MAX_OUTPUT_SIZE: '8192',
+      ZIMI_MODEL_CAPABILITIES: 'Image_In, thinking , tool_use',
+      ZIMI_MODEL_DISPLAY_NAME: 'Custom Model',
+      ZIMI_MODEL_REASONING_KEY: 'reasoning',
+      ZIMI_MODEL_ADAPTIVE_THINKING: 'true',
+      ZIMI_MODEL_TEMPERATURE: '0.3',
+      ZIMI_MODEL_TOP_P: ' 0.95 ',
+      ZIMI_MODEL_THINKING_KEEP: 'all',
+      ZIMI_MODEL_MAX_COMPLETION_TOKENS: '4096',
+      ZIMI_MODEL_MAX_TOKENS: '2048',
     });
 
     expect(changed).toEqual(['models', 'providers', 'defaultModel', 'modelOverrides']);
@@ -452,32 +452,32 @@ describe('kimiModelEnvOverlay', () => {
     });
   });
 
-  it('falls back to legacy KIMI_MODEL_MAX_TOKENS for completion overrides', () => {
-    const { effective } = applyKimiModelEnvOverlay({
-      KIMI_MODEL_NAME: 'env-model',
-      KIMI_MODEL_MAX_TOKENS: '2048',
+  it('falls back to legacy ZIMI_MODEL_MAX_TOKENS for completion overrides', () => {
+    const { effective } = applyZimiModelEnvOverlay({
+      ZIMI_MODEL_NAME: 'env-model',
+      ZIMI_MODEL_MAX_TOKENS: '2048',
     });
 
     expect(effective['modelOverrides']).toEqual({ maxCompletionTokens: 2048 });
   });
 
   it.each([
-    ['KIMI_MODEL_MAX_CONTEXT_SIZE', '0'],
-    ['KIMI_MODEL_MAX_CONTEXT_SIZE', '1.5'],
-    ['KIMI_MODEL_MAX_OUTPUT_SIZE', 'nope'],
-    ['KIMI_MODEL_ADAPTIVE_THINKING', 'maybe'],
-    ['KIMI_MODEL_TEMPERATURE', 'abc'],
-    ['KIMI_MODEL_TEMPERATURE', '1.2.3'],
-    ['KIMI_MODEL_TOP_P', 'NaN'],
+    ['ZIMI_MODEL_MAX_CONTEXT_SIZE', '0'],
+    ['ZIMI_MODEL_MAX_CONTEXT_SIZE', '1.5'],
+    ['ZIMI_MODEL_MAX_OUTPUT_SIZE', 'nope'],
+    ['ZIMI_MODEL_ADAPTIVE_THINKING', 'maybe'],
+    ['ZIMI_MODEL_TEMPERATURE', 'abc'],
+    ['ZIMI_MODEL_TEMPERATURE', '1.2.3'],
+    ['ZIMI_MODEL_TOP_P', 'NaN'],
   ])('throws config.invalid for invalid %s=%s', (key, value) => {
     expectConfigInvalid(() =>
-      applyKimiModelEnvOverlay({ KIMI_MODEL_NAME: 'env-model', [key]: value }),
+      applyZimiModelEnvOverlay({ ZIMI_MODEL_NAME: 'env-model', [key]: value }),
     );
   });
 
   it('strips env-only model values before write-back', () => {
     expect(
-      kimiModelEnvOverlay.strip?.(
+      zimiModelEnvOverlay.strip?.(
         'models',
         {
           user: { provider: 'p', model: 'm', maxContextSize: 1000 },
@@ -494,15 +494,15 @@ describe('kimiModelEnvOverlay', () => {
     });
 
     expect(
-      kimiModelEnvOverlay.strip?.('defaultModel', ENV_MODEL_ALIAS_KEY, {
+      zimiModelEnvOverlay.strip?.('defaultModel', ENV_MODEL_ALIAS_KEY, {
         default_model: 'user',
       }),
     ).toBe('user');
-    expect(kimiModelEnvOverlay.strip?.('modelOverrides', { temperature: 0.3 }, {})).toBeUndefined();
+    expect(zimiModelEnvOverlay.strip?.('modelOverrides', { temperature: 0.3 }, {})).toBeUndefined();
   });
 
   it('self-registers into ConfigRegistry without ModelService instantiation', () => {
     const freshRegistry = new ConfigRegistry();
-    expect(freshRegistry.listEffectiveOverlays()).toContain(kimiModelEnvOverlay);
+    expect(freshRegistry.listEffectiveOverlays()).toContain(zimiModelEnvOverlay);
   });
 });

@@ -1,8 +1,8 @@
 import type { WebSocket } from 'ws';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { AgentTaskOutputChunk, IAgentTaskService } from '@moonshot-ai/agent-core-v2';
-import type { AgentTaskInfo } from '@moonshot-ai/agent-core-v2/agent/task/types';
+import type { AgentTaskOutputChunk, IAgentTaskService } from '@zimi-ai/agent-core-v2';
+import type { AgentTaskInfo } from '@zimi-ai/agent-core-v2/agent/task/types';
 
 import { TASK_OUTPUT_DEFAULT_TAIL_BYTES, TASK_OUTPUT_MAX_TAIL_BYTES } from '../src/protocol/ws-task';
 import type { IConnectionRegistry } from '../src/transport/ws/connectionRegistry';

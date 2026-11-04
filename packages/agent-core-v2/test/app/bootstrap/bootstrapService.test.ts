@@ -28,18 +28,18 @@ describe('BootstrapService (scoped)', () => {
 
   it('resolves homeDir/configPath from the seeded context token', () => {
     const host = createScopedTestHost(
-      bootstrapSeed({ homeDir: '/tmp/kimi-home', clientIdentity: stubClientIdentity }),
+      bootstrapSeed({ homeDir: '/tmp/zimi-home', clientIdentity: stubClientIdentity }),
     );
     const svc = host.app.accessor.get(IBootstrapService);
-    expect(svc.homeDir).toBe('/tmp/kimi-home');
-    expect(svc.configPath).toBe('/tmp/kimi-home/config.toml');
+    expect(svc.homeDir).toBe('/tmp/zimi-home');
+    expect(svc.configPath).toBe('/tmp/zimi-home/config.toml');
     expect(svc.scope('sessions')).toBe('sessions');
     host.dispose();
   });
 
   it('exposes the seeded client identity', () => {
     const host = createScopedTestHost(
-      bootstrapSeed({ homeDir: '/tmp/kimi-home', clientIdentity: stubClientIdentity }),
+      bootstrapSeed({ homeDir: '/tmp/zimi-home', clientIdentity: stubClientIdentity }),
     );
     const svc = host.app.accessor.get(IBootstrapService);
     expect(svc.clientIdentity).toEqual(stubClientIdentity);
@@ -58,7 +58,7 @@ describe('BootstrapService (scoped)', () => {
 });
 
 describe('resolveBootstrapOptions', () => {
-  it('prefers explicit homeDir over KIMI_CODE_HOME over osHomeDir', () => {
+  it('prefers explicit homeDir over ZIMI_CODE_HOME over osHomeDir', () => {
     expect(
       resolveBootstrapOptions({ homeDir: '/a', osHomeDir: '/b', env: {}, clientIdentity: stubClientIdentity })
         .homeDir,
@@ -66,13 +66,13 @@ describe('resolveBootstrapOptions', () => {
     expect(
       resolveBootstrapOptions({
         osHomeDir: '/b',
-        env: { KIMI_CODE_HOME: '/c' },
+        env: { ZIMI_CODE_HOME: '/c' },
         clientIdentity: stubClientIdentity,
       }).homeDir,
     ).toBe('/c');
     expect(
       resolveBootstrapOptions({ osHomeDir: '/b', env: {}, clientIdentity: stubClientIdentity }).homeDir,
-    ).toBe('/b/.kimi-code');
+    ).toBe('/b/.zimi-code');
   });
 
   it('passes through an explicit clientIdentity', () => {
@@ -84,7 +84,7 @@ describe('resolveBootstrapOptions', () => {
 
 describe('bootstrap() storage seeding', () => {
   it('seeds IFileSystemStorageService as a FileStorageService instance', () => {
-    const { app } = bootstrap({ homeDir: '/tmp/kimi-home', clientIdentity: stubClientIdentity });
+    const { app } = bootstrap({ homeDir: '/tmp/zimi-home', clientIdentity: stubClientIdentity });
     try {
       const storage = app.accessor.get(IFileSystemStorageService);
       expect(storage).toBeInstanceOf(FileStorageService);

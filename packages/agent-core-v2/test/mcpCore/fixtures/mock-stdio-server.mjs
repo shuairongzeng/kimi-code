@@ -4,12 +4,12 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 
-const delayMs = Number.parseInt(process.env['KIMI_TEST_MCP_START_DELAY_MS'] ?? '0', 10);
+const delayMs = Number.parseInt(process.env['ZIMI_TEST_MCP_START_DELAY_MS'] ?? '0', 10);
 if (delayMs > 0) {
   await sleep(delayMs);
 }
 
-if (process.env['KIMI_TEST_MCP_IGNORE_SIGTERM'] === '1') {
+if (process.env['ZIMI_TEST_MCP_IGNORE_SIGTERM'] === '1') {
   process.on('SIGTERM', () => {});
 }
 

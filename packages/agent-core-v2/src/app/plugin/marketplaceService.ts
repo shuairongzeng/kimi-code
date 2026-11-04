@@ -1,11 +1,11 @@
 import {
-  KIMI_CODE_PROVIDER_NAME,
-  KimiOAuthToolkit,
-  kimiCodeBaseUrl,
-  kimiRegionProfile,
-  resolveKimiCodeRuntimeAuth,
+  ZIMI_CODE_PROVIDER_NAME,
+  ZimiOAuthToolkit,
+  zimiCodeBaseUrl,
+  zimiRegionProfile,
+  resolveZimiCodeRuntimeAuth,
   type BearerTokenProvider,
-} from '@moonshot-ai/kimi-code-oauth';
+} from '@zimi-ai/zimi-code-oauth';
 
 import { ScopeActivation, registerScopedService } from '#/_base/di/scope';
 import { createDecorator, type ServiceIdentifier } from '#/_base/di/instantiation';
@@ -18,7 +18,7 @@ import { IProviderService } from '#/llm-adapter/provider/provider';
 import { PluginAvailabilityStore, pluginAvailabilitySourceKey } from './availability';
 import {
   isMissingMarketplaceTokenError,
-  KIMI_CODE_PLUGIN_MARKETPLACE_URL_ENV,
+  ZIMI_CODE_PLUGIN_MARKETPLACE_URL_ENV,
   marketplaceEntryInstallableOnHost,
   parsePluginMarketplace,
   pluginClientForIdentity,
@@ -83,9 +83,9 @@ export class PluginMarketplaceService implements IPluginMarketplaceService {
   }
 
   async isDefaultMarketplace(): Promise<boolean> {
-    const configured = this.bootstrap.getEnv(KIMI_CODE_PLUGIN_MARKETPLACE_URL_ENV);
+    const configured = this.bootstrap.getEnv(ZIMI_CODE_PLUGIN_MARKETPLACE_URL_ENV);
     if (configured !== undefined) {
-      return this.bootstrap.getEnv('KIMI_CODE_PLUGIN_MARKETPLACE_FROM_DEV_SERVER') === '1';
+      return this.bootstrap.getEnv('ZIMI_CODE_PLUGIN_MARKETPLACE_FROM_DEV_SERVER') === '1';
     }
     return true;
   }
@@ -96,11 +96,11 @@ export class PluginMarketplaceService implements IPluginMarketplaceService {
     expectedSha256?: string,
     marketplaceSource?: string,
   ): Promise<MarketplacePluginInstall> {
-    if (marketplaceId === 'kimi-webbridge') {
+    if (marketplaceId === 'zimi-webbridge') {
       throw new Error2(
         ErrorCodes.VALIDATION_FAILED,
-        'Marketplace plugin "kimi-webbridge" is legacy; install "kimi-browser-extension" instead',
-        { details: { marketplaceId, replacementId: 'kimi-browser-extension' } },
+        'Marketplace plugin "zimi-webbridge" is legacy; install "zimi-browser-extension" instead',
+        { details: { marketplaceId, replacementId: 'zimi-browser-extension' } },
       );
     }
     const { marketplace, context } = await this.load(marketplaceSource);
@@ -175,25 +175,25 @@ export class PluginMarketplaceService implements IPluginMarketplaceService {
   }
 
   private async context(): Promise<MarketplaceContext> {
-    const configuredSource = this.bootstrap.getEnv(KIMI_CODE_PLUGIN_MARKETPLACE_URL_ENV);
+    const configuredSource = this.bootstrap.getEnv(ZIMI_CODE_PLUGIN_MARKETPLACE_URL_ENV);
     if (configuredSource !== undefined) return { source: configuredSource, managed: false };
     await this.providers.ready;
-    const provider = this.providers.get(KIMI_CODE_PROVIDER_NAME);
-    const regionBaseUrl = kimiRegionProfile(this.regions.current().region).baseUrl;
-    const envBaseUrl = this.bootstrap.getEnv('KIMI_CODE_BASE_URL');
+    const provider = this.providers.get(ZIMI_CODE_PROVIDER_NAME);
+    const regionBaseUrl = zimiRegionProfile(this.regions.current().region).baseUrl;
+    const envBaseUrl = this.bootstrap.getEnv('ZIMI_CODE_BASE_URL');
     const envOAuthHost =
-      this.bootstrap.getEnv('KIMI_CODE_OAUTH_HOST') ?? this.bootstrap.getEnv('KIMI_OAUTH_HOST');
-    const auth = resolveKimiCodeRuntimeAuth({
+      this.bootstrap.getEnv('ZIMI_CODE_OAUTH_HOST') ?? this.bootstrap.getEnv('ZIMI_OAUTH_HOST');
+    const auth = resolveZimiCodeRuntimeAuth({
       configuredBaseUrl: provider?.baseUrl ?? regionBaseUrl,
       configuredOAuthRef: provider?.oauth,
       env: {
-        KIMI_CODE_BASE_URL: envBaseUrl,
-        KIMI_CODE_OAUTH_HOST: envOAuthHost,
+        ZIMI_CODE_BASE_URL: envBaseUrl,
+        ZIMI_CODE_OAUTH_HOST: envOAuthHost,
       },
     });
-    const baseUrl = (auth.baseUrl ?? kimiCodeBaseUrl()).trim().replace(/\/+$/, '');
-    const tokenProvider = new KimiOAuthToolkit({ homeDir: this.bootstrap.homeDir }).tokenProvider(
-      KIMI_CODE_PROVIDER_NAME,
+    const baseUrl = (auth.baseUrl ?? zimiCodeBaseUrl()).trim().replace(/\/+$/, '');
+    const tokenProvider = new ZimiOAuthToolkit({ homeDir: this.bootstrap.homeDir }).tokenProvider(
+      ZIMI_CODE_PROVIDER_NAME,
       auth.oauthRef,
     );
     return {

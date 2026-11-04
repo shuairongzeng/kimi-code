@@ -1,4 +1,4 @@
-import { isManagedKimiCodeBaseUrl } from '@moonshot-ai/kimi-code-oauth';
+import { isManagedZimiCodeBaseUrl } from '@zimi-ai/zimi-code-oauth';
 
 export interface RatingModelRoute {
   readonly modelId: string | undefined;
@@ -6,6 +6,6 @@ export interface RatingModelRoute {
 }
 
 export function kfcModelIdOf(route: RatingModelRoute): string | undefined {
-  if (route.modelId === undefined || !isManagedKimiCodeBaseUrl(route.baseUrl)) return undefined;
+  if (route.modelId === undefined || !isManagedZimiCodeBaseUrl(route.baseUrl)) return undefined;
   return route.modelId;
 }

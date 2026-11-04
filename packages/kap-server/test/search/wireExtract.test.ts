@@ -103,7 +103,7 @@ describe('extractFromWireLine', () => {
   it('indexes only the real text of an upload-carrying user message', () => {
     const uploadRef = {
       type: 'image_url',
-      imageUrl: { url: 'kimi-file://f_1?path=%2FUsers%2Falice%2Fmedia%2Ff_1.png' },
+      imageUrl: { url: 'zimi-file://f_1?path=%2FUsers%2Falice%2Fmedia%2Ff_1.png' },
     };
     const record = (content: unknown[]): string =>
       line({
@@ -123,7 +123,7 @@ describe('extractFromWireLine', () => {
       { type: 'text', text: '<image path="/Users/alice/media/f_1.png"></image>' },
       {
         type: 'image_url',
-        imageUrl: { url: 'kimi-file://f_1?path=%2FUsers%2Falice%2Fmedia%2Ff_1.png' },
+        imageUrl: { url: 'zimi-file://f_1?path=%2FUsers%2Falice%2Fmedia%2Ff_1.png' },
       },
     ];
     const record = (content: unknown[]): string =>

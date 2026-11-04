@@ -19,7 +19,7 @@ import type { AuthMethod } from '@agentclientprotocol/sdk';
  *
  * Optional inputs:
  *  - `env`: extra env vars forwarded to the spawned login subprocess (e.g.
- *    `{ KIMI_CODE_HOME: '/tmp/sandbox' }` so the token lands under the same
+ *    `{ ZIMI_CODE_HOME: '/tmp/sandbox' }` so the token lands under the same
  *    data root the server reads from).
  *  - `legacyCommand`: absolute path of the agent binary, used to populate
  *    `_meta['terminal-auth'].command` so legacy clients can spawn it directly.
@@ -35,7 +35,7 @@ export function buildTerminalAuthMethod(
   const method: AuthMethod = {
     id: 'login',
     type: 'terminal',
-    name: 'Login with Kimi account',
+    name: 'Login with Zimi account',
     description: 'Open the device-code login flow in a terminal.',
     args: ['--login'],
     env: { ...env },
@@ -44,7 +44,7 @@ export function buildTerminalAuthMethod(
     (method as AuthMethod & { _meta: { 'terminal-auth': unknown } })._meta = {
       'terminal-auth': {
         type: 'terminal',
-        label: 'Login with Kimi account',
+        label: 'Login with Zimi account',
         command: opts.legacyCommand,
         args: ['login'],
         env: { ...env },

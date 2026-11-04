@@ -14,17 +14,17 @@ export type {
   PermissionMode,
   PromptOrigin,
   CronTask,
-} from '@moonshot-ai/agent-core-v2';
-export type { ContentPart as CoreContentPart } from '@moonshot-ai/agent-core-v2/human/llm/message';
-export { mediaUrlOf } from '@moonshot-ai/agent-core-v2/human/llm/protocol/kit/media';
-export { WIRE_PROTOCOL_VERSION } from '@moonshot-ai/agent-core-v2/wire/migration/migration';
+} from '@zimi-ai/agent-core-v2';
+export type { ContentPart as CoreContentPart } from '@zimi-ai/agent-core-v2/human/llm/message';
+export { mediaUrlOf } from '@zimi-ai/agent-core-v2/human/llm/protocol/kit/media';
+export { WIRE_PROTOCOL_VERSION } from '@zimi-ai/agent-core-v2/wire/migration/migration';
 export type {
   AgentTaskInfo as BackgroundTaskInfo,
   AgentTaskStatus as BackgroundTaskStatus,
-} from '@moonshot-ai/agent-core-v2';
-export type { SubagentTaskInfo as AgentBackgroundTaskInfo } from '@moonshot-ai/agent-core-v2';
-export type { ProcessTaskInfo as ProcessBackgroundTaskInfo } from '@moonshot-ai/agent-core-v2/agent/tools/os/bash/process-task';
-export type { QuestionTaskInfo as QuestionBackgroundTaskInfo } from '@moonshot-ai/agent-core-v2/agent/tools/ask-user-question/question-background-task';
+} from '@zimi-ai/agent-core-v2';
+export type { SubagentTaskInfo as AgentBackgroundTaskInfo } from '@zimi-ai/agent-core-v2';
+export type { ProcessTaskInfo as ProcessBackgroundTaskInfo } from '@zimi-ai/agent-core-v2/agent/tools/os/bash/process-task';
+export type { QuestionTaskInfo as QuestionBackgroundTaskInfo } from '@zimi-ai/agent-core-v2/agent/tools/ask-user-question/question-background-task';
 
 import type {
   AgentTaskInfo as BackgroundTaskInfo,
@@ -74,31 +74,31 @@ import type {
   ToolSelectToolsChanged,
   ToolsRegisterUserTool,
   ToolsUnregisterUserTool,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import type {
   ContextAppendLoopEvent,
   ContextAppendMessage,
   ContextApplyCompactionPayload,
   ContextClear,
   ContextUndo,
-} from '@moonshot-ai/agent-core-v2/agent/contextMemory/contextEvents';
-import type { TurnCancel, TurnEnded, TurnPrompt, TurnSteer } from '@moonshot-ai/agent-core-v2/agent/loop/turnOps';
-import type { TurnStepInterrupted } from '@moonshot-ai/agent-core-v2/agent/loop/turnEvents';
-import type { TurnStepRetrying } from '@moonshot-ai/agent-core-v2/agent/loop/turnEvents';
-import type { UsageRecord } from '@moonshot-ai/agent-core-v2/agent/usage/usageOps';
+} from '@zimi-ai/agent-core-v2/agent/contextMemory/contextEvents';
+import type { TurnCancel, TurnEnded, TurnPrompt, TurnSteer } from '@zimi-ai/agent-core-v2/agent/loop/turnOps';
+import type { TurnStepInterrupted } from '@zimi-ai/agent-core-v2/agent/loop/turnEvents';
+import type { TurnStepRetrying } from '@zimi-ai/agent-core-v2/agent/loop/turnEvents';
+import type { UsageRecord } from '@zimi-ai/agent-core-v2/agent/usage/usageOps';
 import type {
   ConfigUpdate,
   ProfileBind,
   ToolsResetActiveTools,
   ToolsSetActiveTools,
-} from '@moonshot-ai/agent-core-v2/agent/profile/profileOps';
-import type { ChangeNotifierSnapshotEvent } from '@moonshot-ai/agent-core-v2/agent/changeNotifier/changeNotifierOps';
-import type { PermissionSetMode } from '@moonshot-ai/agent-core-v2/agent/permissionMode/permissionModeOps';
-import type { PermissionRecordApprovalResult } from '@moonshot-ai/agent-core-v2/agent/permissionRules/permissionRulesOps';
-import type { EnvironmentSetBinding } from '@moonshot-ai/agent-core-v2/agent/environmentBinding/environmentBindingOps';
-import type { SwarmModeEnter, SwarmModeExit } from '@moonshot-ai/agent-core-v2/features/swarm/swarmOps';
-import type { TowerModeEnter, TowerModeExit } from '@moonshot-ai/agent-core-v2/features/tower/towerOps';
-import type { ToolsUpdateStore } from '@moonshot-ai/agent-core-v2/features/todo/todoOps';
+} from '@zimi-ai/agent-core-v2/agent/profile/profileOps';
+import type { ChangeNotifierSnapshotEvent } from '@zimi-ai/agent-core-v2/agent/changeNotifier/changeNotifierOps';
+import type { PermissionSetMode } from '@zimi-ai/agent-core-v2/agent/permissionMode/permissionModeOps';
+import type { PermissionRecordApprovalResult } from '@zimi-ai/agent-core-v2/agent/permissionRules/permissionRulesOps';
+import type { EnvironmentSetBinding } from '@zimi-ai/agent-core-v2/agent/environmentBinding/environmentBindingOps';
+import type { SwarmModeEnter, SwarmModeExit } from '@zimi-ai/agent-core-v2/features/swarm/swarmOps';
+import type { TowerModeEnter, TowerModeExit } from '@zimi-ai/agent-core-v2/features/tower/towerOps';
+import type { ToolsUpdateStore } from '@zimi-ai/agent-core-v2/features/todo/todoOps';
 
 /** A wire record with v2's literal `type` discriminant restored. v2 declares
  *  records as Event2 class + payload interface mergings whose `type` field is
@@ -254,7 +254,7 @@ export type AgentRecordOf<K extends AgentRecord['type']> = Extract<
 /**
  * `manifest.json` shape inside a `/export-debug-zip` bundle. Structural
  * current engine manifest with every field optional because the bundle may
- * come from another machine or an older kimi-code version.
+ * come from another machine or an older zimi-code version.
  */
 export type ImportManifest = Partial<ExportSessionManifest>;
 

@@ -16,7 +16,7 @@ import {
   type ContextMessage,
   type Event2,
   type ScopeSeed,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { type RunningServer, startServer } from '../src/start';
@@ -124,7 +124,7 @@ describe('server-v2 /api/v1/sessions/{sid}/transcript', () => {
   let seeds: ScopeSeed | undefined;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-transcript-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-transcript-'));
     const modelCatalog: IModelCatalog = {
       _serviceBrand: undefined,
       get: () => {
@@ -342,7 +342,7 @@ describe('server-v2 /api/v1/sessions/{sid}/transcript', () => {
         userMessageId: 'p2',
         status: 'queued',
         content: [{ type: 'text', text: 'second' }],
-        clientMetadata: [{ display_text: 'Second display', kimi_code_composer: { version: 1 } }],
+        clientMetadata: [{ display_text: 'Second display', zimi_code_composer: { version: 1 } }],
         createdAt: '2026-01-01T00:00:01.000Z',
       }),
     );
@@ -356,7 +356,7 @@ describe('server-v2 /api/v1/sessions/{sid}/transcript', () => {
         content: [{ type: 'text', text: 'first' }],
       }),
     );
-    expect(body.data.prompts).toContainEqual(expect.objectContaining({ promptId: 'p2', status: 'queued', clientMetadata: [{ display_text: 'Second display', kimi_code_composer: { version: 1 } }] }));
+    expect(body.data.prompts).toContainEqual(expect.objectContaining({ promptId: 'p2', status: 'queued', clientMetadata: [{ display_text: 'Second display', zimi_code_composer: { version: 1 } }] }));
 
     bus.publish(serverEvent({ type: 'prompt.started', promptId: 'p2' }));
     ({ body } = await getJson<TranscriptContract>(`/api/v1/sessions/${id}/transcript?agent_id=main`));
@@ -465,12 +465,12 @@ describe('server-v2 /api/v1/sessions/{sid}/transcript', () => {
       `/api/v1/sessions/${id}/transcript?agent_id=main`,
     );
     expect(incompatible.body.code).toBe(40930);
-    expect(incompatible.body.msg).toContain('Upgrade Kimi Code');
+    expect(incompatible.body.msg).toContain('Upgrade Zimi Code');
     const userMessages = await getJson<UserMessagesContract>(
       `/api/v1/sessions/${id}/transcript/user-messages`,
     );
     expect(userMessages.body.code).toBe(40930);
-    expect(userMessages.body.msg).toContain('Upgrade Kimi Code');
+    expect(userMessages.body.msg).toContain('Upgrade Zimi Code');
   });
 
   it('backfills a resumed live session from the wire records, then continues live', async () => {
@@ -1156,7 +1156,7 @@ describe('server-v2 /api/v1/sessions/{sid}/transcript', () => {
       {
         role: 'user',
         content: [
-          { type: 'image_url', imageUrl: { url: 'kimi-file://f_upload?path=%2Ftmp%2Fcache%2Ff_upload.png' } },
+          { type: 'image_url', imageUrl: { url: 'zimi-file://f_upload?path=%2Ftmp%2Fcache%2Ff_upload.png' } },
         ],
       } as ContextMessage,
       { role: 'assistant', content: [{ type: 'text', text: 'done' }], toolCalls: [] },

@@ -27,8 +27,8 @@ export class PluginPackageCache {
   private readonly root: string;
   private readonly loads = new Map<string, Promise<Buffer>>();
 
-  constructor(kimiHomeDir: string) {
-    this.root = path.join(kimiHomeDir, 'plugins', 'cache', 'archives');
+  constructor(zimiHomeDir: string) {
+    this.root = path.join(zimiHomeDir, 'plugins', 'cache', 'archives');
   }
 
   async load(source: string, options: ArchiveLoadOptions): Promise<Buffer> {

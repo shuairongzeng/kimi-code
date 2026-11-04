@@ -36,7 +36,7 @@ export interface DeviceAuthorization {
 
 /** OAuth flow endpoint + client configuration. */
 export interface OAuthFlowConfig {
-  /** Logical provider name for storage (e.g. "kimi-code"). */
+  /** Logical provider name for storage (e.g. "zimi-code"). */
   readonly name: string;
   /** Base URL of the OAuth server, no trailing slash. */
   readonly oauthHost: string;

@@ -13,8 +13,8 @@ import {
   type Scope,
   type ScopeSeed,
   TelemetryService,
-} from '@moonshot-ai/agent-core-v2';
-import { readKimiDeviceId } from '@moonshot-ai/kimi-code-oauth';
+} from '@zimi-ai/agent-core-v2';
+import { readZimiDeviceId } from '@zimi-ai/zimi-code-oauth';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { initializeServerTelemetry, shutdownServerTelemetry } from '../src/services/telemetry';
@@ -24,7 +24,7 @@ describe('server telemetry', () => {
   let core: Scope | undefined;
 
   beforeEach(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-telemetry-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-telemetry-'));
   });
 
   afterEach(async () => {
@@ -44,7 +44,7 @@ describe('server telemetry', () => {
   ): Promise<Scope> {
     const resolvedEnv = env ?? {
       ...process.env,
-      KIMI_DISABLE_TELEMETRY: undefined,
+      ZIMI_DISABLE_TELEMETRY: undefined,
     };
     if (toml !== undefined) {
       await writeFile(join(home as string, 'config.toml'), toml, 'utf-8');
@@ -73,7 +73,7 @@ describe('server telemetry', () => {
     const app = await bootCore();
     const telemetry = await initializeServerTelemetry(app, home as string);
     expect(telemetry.appender).toBeDefined();
-    expect(readKimiDeviceId(home as string)).not.toBeNull();
+    expect(readZimiDeviceId(home as string)).not.toBeNull();
     await shutdownServerTelemetry(telemetry);
   });
 
@@ -122,15 +122,15 @@ describe('server telemetry', () => {
   });
 
   it.each(['1', 'true', 't', 'yes', 'y', ' TRUE '])(
-    'keeps the null appender when KIMI_DISABLE_TELEMETRY=%s',
+    'keeps the null appender when ZIMI_DISABLE_TELEMETRY=%s',
     async (value) => {
       const app = await bootCore(undefined, {
         ...process.env,
-        KIMI_DISABLE_TELEMETRY: value,
+        ZIMI_DISABLE_TELEMETRY: value,
       });
       const telemetry = await initializeServerTelemetry(app, home as string);
       expect(telemetry.appender).toBeUndefined();
-      expect(readKimiDeviceId(home as string)).toBeNull();
+      expect(readZimiDeviceId(home as string)).toBeNull();
       await shutdownServerTelemetry(telemetry);
     },
   );

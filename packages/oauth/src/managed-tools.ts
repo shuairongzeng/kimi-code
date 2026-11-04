@@ -1,6 +1,6 @@
 /**
  * Managed-platform `/tools` dispatch: POSTs `{method, params}` to
- * `{kimiCodeBaseUrl}/tools` with a Bearer access token, the same wire
+ * `{zimiCodeBaseUrl}/tools` with a Bearer access token, the same wire
  * shape the backend tool surface expects (see `chat_title` below).
  *
  * `chat_title` generates a short session title from a chat excerpt:
@@ -10,7 +10,7 @@
  */
 
 import { readApiErrorMessage } from './api-error';
-import { kimiCodeBaseUrl } from './managed-usage';
+import { zimiCodeBaseUrl } from './managed-usage';
 import { isRecord } from './utils';
 
 export interface FetchChatTitleOk {
@@ -26,8 +26,8 @@ export interface FetchChatTitleError {
 
 export type FetchChatTitleResult = FetchChatTitleOk | FetchChatTitleError;
 
-export function kimiCodeToolsUrl(baseUrl?: string): string {
-  return `${(baseUrl ?? kimiCodeBaseUrl()).replace(/\/+$/, '')}/tools`;
+export function zimiCodeToolsUrl(baseUrl?: string): string {
+  return `${(baseUrl ?? zimiCodeBaseUrl()).replace(/\/+$/, '')}/tools`;
 }
 
 export async function fetchChatTitle(

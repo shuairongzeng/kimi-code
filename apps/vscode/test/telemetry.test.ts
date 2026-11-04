@@ -2,7 +2,7 @@
  * Scenario: the extension host joins the shared v1 telemetry pipeline under a three-layer consent gate.
  * Responsibilities: initialize the shared client with extension identity, apply the VS Code global
  * telemetry switch dynamically, emit first_launch on device-id minting, and shut down with a short timeout.
- * Wiring: the real composition root; VS Code, kimi-telemetry, oauth, and SDK config/auth boundaries are mocked.
+ * Wiring: the real composition root; VS Code, zimi-telemetry, oauth, and SDK config/auth boundaries are mocked.
  * Run: pnpm exec vitest run --config apps/vscode/vitest.config.ts test/telemetry.test.ts
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -19,7 +19,7 @@ const host = vi.hoisted(() => {
   };
   return {
     state,
-    createKimiDeviceId: vi.fn((_homeDir: string, options?: { onFirstLaunch?: () => void }) => {
+    createZimiDeviceId: vi.fn((_homeDir: string, options?: { onFirstLaunch?: () => void }) => {
       if (state.deviceIdFirstLaunch) options?.onFirstLaunch?.();
       return "device-1";
     }),
@@ -31,7 +31,7 @@ const host = vi.hoisted(() => {
     installCrashHandlers: vi.fn(),
     currentRegion: vi.fn(() => ({ region: "global" as const, source: "login" as const })),
     refreshRegion: vi.fn(() => ({ region: "global" as const, source: "login" as const })),
-    createKimiRegionResolver: vi.fn(() => ({
+    createZimiRegionResolver: vi.fn(() => ({
       current: host.currentRegion,
       refresh: host.refreshRegion,
     })),
@@ -40,12 +40,12 @@ const host = vi.hoisted(() => {
         telemetry: host.state.configTelemetry,
         defaultModel: host.state.configModel,
         providers: {
-          "managed:kimi-code": { oauth: { key: "oauth/kimi-code-global", oauthHost: "https://auth.kimi.ai" } },
+          "managed:zimi-code": { oauth: { key: "oauth/zimi-code-global", oauthHost: "https://auth.kimi.ai" } },
         },
       },
     })),
-    resolveConfigPath: vi.fn(() => "/kimi-home/config.toml"),
-    resolveKimiHome: vi.fn(() => "/kimi-home"),
+    resolveConfigPath: vi.fn(() => "/zimi-home/config.toml"),
+    resolveZimiHome: vi.fn(() => "/zimi-home"),
     getCachedAccessToken: vi.fn(async () => host.state.accessToken),
   };
 });
@@ -63,7 +63,7 @@ vi.mock("vscode", () => ({
   },
 }));
 
-vi.mock("@moonshot-ai/kimi-telemetry", () => ({
+vi.mock("@zimi-ai/zimi-telemetry", () => ({
   initializeTelemetry: host.initializeTelemetry,
   setTelemetryEnabled: host.setTelemetryEnabled,
   shouldEnableTelemetry: host.shouldEnableTelemetry,
@@ -72,23 +72,23 @@ vi.mock("@moonshot-ai/kimi-telemetry", () => ({
   installCrashHandlers: host.installCrashHandlers,
 }));
 
-vi.mock("@moonshot-ai/kimi-code-oauth", () => ({
-  createKimiDeviceId: host.createKimiDeviceId,
-  KIMI_CODE_PROVIDER_NAME: "managed:kimi-code",
-  KIMI_REGION_PROFILES: {
+vi.mock("@zimi-ai/zimi-code-oauth", () => ({
+  createZimiDeviceId: host.createZimiDeviceId,
+  ZIMI_CODE_PROVIDER_NAME: "managed:zimi-code",
+  ZIMI_REGION_PROFILES: {
     "mainland-cn": { telemetryEndpoint: "https://telemetry-logs.example.com/v1/event" },
     global: { telemetryEndpoint: "https://telemetry-logs.example.net/v1/event" },
   },
-  createKimiRegionResolver: host.createKimiRegionResolver,
+  createZimiRegionResolver: host.createZimiRegionResolver,
 }));
 
-vi.mock("@moonshot-ai/kimi-code-sdk", () => ({
-  KimiAuthFacade: class {
+vi.mock("@zimi-ai/zimi-code-sdk", () => ({
+  ZimiAuthFacade: class {
     getCachedAccessToken = host.getCachedAccessToken;
   },
   loadRuntimeConfigSafe: host.loadRuntimeConfigSafe,
   resolveConfigPath: host.resolveConfigPath,
-  resolveKimiHome: host.resolveKimiHome,
+  resolveZimiHome: host.resolveZimiHome,
 }));
 
 import {
@@ -125,11 +125,11 @@ describe("extension telemetry composition root", () => {
 
     const options = initializeOptions();
     expect(options).toMatchObject({
-      homeDir: "/kimi-home",
+      homeDir: "/zimi-home",
       deviceId: "device-1",
       enabled: true,
       initiallyEnabled: true,
-      appName: "kimi-code-vscode",
+      appName: "zimi-code-vscode",
       version: "1.2.3",
       uiMode: "vscode",
       model: "kimi-k2",
@@ -160,9 +160,9 @@ describe("extension telemetry composition root", () => {
     expect(host.currentRegion).toHaveBeenCalled();
     const endpoint = options["endpoint"] as () => string;
     expect(endpoint()).toBe("https://telemetry-logs.example.net/v1/event");
-    expect(host.createKimiRegionResolver).toHaveBeenCalledWith(
+    expect(host.createZimiRegionResolver).toHaveBeenCalledWith(
       expect.objectContaining({
-        homeDir: "/kimi-home",
+        homeDir: "/zimi-home",
         allowLocalInference: true,
         readAuth: expect.any(Function),
       }),

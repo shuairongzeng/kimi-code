@@ -1,14 +1,14 @@
 # Plugins
 
-Plugins 把可复用的 Kimi Code CLI 能力打包成可安装单元：可以添加 [Agent Skills](./skills.md)、自定义 [Agent](./agents.md)，可以指定会话启动时自动加载的 Skill、提供系统提示词指令，也可以声明 MCP servers 提供真实工具能力。适合把工作流共享给团队、连接外部服务，或从 [官方插件](#官方插件)安装扩展。
+Plugins 把可复用的 Zimi Code CLI 能力打包成可安装单元：可以添加 [Agent Skills](./skills.md)、自定义 [Agent](./agents.md)，可以指定会话启动时自动加载的 Skill、提供系统提示词指令，也可以声明 MCP servers 提供真实工具能力。适合把工作流共享给团队、连接外部服务，或从 [官方插件](#官方插件)安装扩展。
 
 ## 安装与管理
 
 在 TUI 中运行 `/plugins` 打开 plugin 管理器，面板内有四个 tab：
 
 - **Installed**：管理已安装的 plugin
-- **Official**：Kimi 官方 marketplace plugin
-- **Curated**：默认 marketplace 中来自 Kimi 合作伙伴的第三方 plugin
+- **Official**：Zimi 官方 marketplace plugin
+- **Curated**：默认 marketplace 中来自 Zimi 合作伙伴的第三方 plugin
 - **Custom**：从 URL 安装
 
 面板内按键：
@@ -54,13 +54,13 @@ Plugins 把可复用的 Kimi Code CLI 能力打包成可安装单元：可以添
 ### 注意事项
 
 - 安装、启用/禁用、移除 plugin 后，当前会话不会更新，运行 `/reload` 或 `/new` 后生效。
-- 本地安装会被拷贝到 `$KIMI_CODE_HOME/plugins/managed/<id>/`，CLI 始终从这份托管副本运行。安装后编辑原始源目录不会生效，需重新安装。
+- 本地安装会被拷贝到 `$ZIMI_CODE_HOME/plugins/managed/<id>/`，CLI 始终从这份托管副本运行。安装后编辑原始源目录不会生效，需重新安装。
 - 移除 plugin 只会删除安装记录，托管副本和原始源文件仍保留在磁盘上。
 - Plugin 目前按用户安装，对所有项目生效，暂不支持项目级安装范围。
 
 ### 自定义 marketplace JSON
 
-浏览自定义目录时，把 JSON 路径或 URL 传给 `/plugins marketplace <source>`，或通过 [`KIMI_CODE_PLUGIN_MARKETPLACE_URL`](../configuration/env-vars.md) 覆盖默认 marketplace。`plugins` 数组中每个条目需要 `id` 和 `source` 两个字段，`source` 支持本地路径、zip URL 和 GitHub URL：
+浏览自定义目录时，把 JSON 路径或 URL 传给 `/plugins marketplace <source>`，或通过 [`ZIMI_CODE_PLUGIN_MARKETPLACE_URL`](../configuration/env-vars.md) 覆盖默认 marketplace。`plugins` 数组中每个条目需要 `id` 和 `source` 两个字段，`source` 支持本地路径、zip URL 和 GitHub URL：
 
 ```json
 {
@@ -77,15 +77,15 @@ Plugins 把可复用的 Kimi Code CLI 能力打包成可安装单元：可以添
 
 Marketplace 条目还可以通过 `clients`（`desktop`、`cli` 或两者）和 `platforms`（`macos`、`windows`、`linux` 或 `cloud`）限制可用范围。`clients` 选择产品宿主，`platforms` 选择 server 操作系统，两个条件必须同时满足。未声明 `clients` 时，条目对两种宿主均可用。Web 和 Remote Control 跟随所连接 server 的宿主，不使用浏览器所在设备的操作系统判断。
 
-安装记录仍共享在 `$KIMI_CODE_HOME` 下。某个宿主不可见的条目也不会出现在该宿主的已安装列表和运行能力中。最近一次成功获取的可用性配置缓存在 `$KIMI_CODE_HOME/plugins/availability.json`；目录配置变化后，成功刷新即可隐藏或恢复已有安装，无需重新安装，也不会删除插件文件。
+安装记录仍共享在 `$ZIMI_CODE_HOME` 下。某个宿主不可见的条目也不会出现在该宿主的已安装列表和运行能力中。最近一次成功获取的可用性配置缓存在 `$ZIMI_CODE_HOME/plugins/availability.json`；目录配置变化后，成功刷新即可隐藏或恢复已有安装，无需重新安装，也不会删除插件文件。
 
 ## 官方插件
 
-官方插件是 Kimi 官方维护的 plugin 和内置产品能力，目前有以下三种：
+官方插件是 Zimi 官方维护的 plugin 和内置产品能力，目前有以下三种：
 
-- **[Kimi Datasource](#kimi-datasource)**：用自然语言查询金融行情、财经资讯、宏观经济、企业工商、学术文献、法律法规和国际组织官方数据
-- **[Kimi Browser Extension](#kimi-browser-extension)**：让 AI 直接操控你自己的浏览器，完成各类网页操作
-- **[Kimi Computer Use](#kimi-computer-use)**：让 AI 操作你的桌面应用（macOS 和 Windows）
+- **[Zimi Datasource](#zimi-datasource)**：用自然语言查询金融行情、财经资讯、宏观经济、企业工商、学术文献、法律法规和国际组织官方数据
+- **[Zimi Browser Extension](#zimi-browser-extension)**：让 AI 直接操控你自己的浏览器，完成各类网页操作
+- **[Zimi Computer Use](#zimi-computer-use)**：让 AI 操作你的桌面应用（macOS 和 Windows）
 
 ### 安装与升级
 
@@ -96,23 +96,23 @@ Marketplace 条目还可以通过 `clients`（`desktop`、`cli` 或两者）和 
 3. 安装完成后运行 `/reload` 或 `/new` 激活
 
 ::: info 说明
-Kimi Browser Extension 分两步安装：完成上述步骤后，还需要[安装浏览器扩展](#install-the-browser-extension)才能使用。
+Zimi Browser Extension 分两步安装：完成上述步骤后，还需要[安装浏览器扩展](#install-the-browser-extension)才能使用。
 :::
 
 官方插件不会自动更新，使用旧版时会提示更新。升级到新版本只需重复上述安装步骤。
 
-### Kimi Datasource <Badge type="tip" text="v3.4.0" />
+### Zimi Datasource <Badge type="tip" text="v3.4.0" />
 
-Kimi Datasource 是 Kimi Code 官方数据插件。用自然语言直接查询金融行情、财经资讯、宏观经济、企业工商、学术文献、中国法律法规和国际组织官方数据，无需手动调用接口或申请数据账号。
+Zimi Datasource 是 Zimi Code 官方数据插件。用自然语言直接查询金融行情、财经资讯、宏观经济、企业工商、学术文献、中国法律法规和国际组织官方数据，无需手动调用接口或申请数据账号。
 
 数据来源包括世界银行、IMF、OECD、FRED、WHO、FAO、国家统计局、Wind、S&P Capital IQ、SEC EDGAR、财新、新华财经、恒生聚源等权威机构与知名数据库，信源可溯源。
 
-> 使用前需先通过 `/login` 完成 Kimi Code 账号 OAuth 登录。数据查询会消耗 Kimi Code 套餐额度。
+> 使用前需先通过 `/login` 完成 Zimi Code 账号 OAuth 登录。数据查询会消耗 Zimi Code 套餐额度。
 
 #### 使用方式
 
-1. 直接用自然语言描述需求，Kimi Code 会自动调用数据能力
-2. 通过 `/skill:kimi-datasource:kimi-datasource` 明确触发数据查询 Skill
+1. 直接用自然语言描述需求，Zimi Code 会自动调用数据能力
+2. 通过 `/skill:zimi-datasource:zimi-datasource` 明确触发数据查询 Skill
 
 #### 能做什么
 
@@ -163,43 +163,43 @@ Kimi Datasource 是 Kimi Code 官方数据插件。用自然语言直接查询�
 
 #### 计费与限制
 
-- 数据查询按次计费，消耗 Kimi Code 账号额度
+- 数据查询按次计费，消耗 Zimi Code 账号额度
 - 插件为只读查询，不提供任何写入或交易功能
 - 技术指标（MACD、KDJ 等）及实时行情仅在交易时段内可用
 - AI 输出内容仅供参考，不构成任何投资或商业决策建议
 
-<a id="kimi-webbridge"></a>
+<a id="zimi-webbridge"></a>
 
-### Kimi Browser Extension <Badge type="tip" text="v2.0.11" />
+### Zimi Browser Extension <Badge type="tip" text="v2.0.11" />
 
-Kimi Browser Extension 让 AI 直接操控你的浏览器，带着你的登录状态和 Cookie 打开网页、阅读内容、点击按钮、填写表单、截图保存，把重复的网页操作交给它完成。产品介绍见 [Kimi Browser Extension 官网](https://www.kimi.com/products/kimi-browser-extension)。
+Zimi Browser Extension 让 AI 直接操控你的浏览器，带着你的登录状态和 Cookie 打开网页、阅读内容、点击按钮、填写表单、截图保存，把重复的网页操作交给它完成。产品介绍见 [Zimi Browser Extension 官网](https://www.kimi.com/products/kimi-browser-extension)。
 
 <a id="install-the-browser-extension"></a>
 
 #### 安装浏览器扩展
 
-通过 `/plugins` 安装后，还需要在浏览器中安装 Kimi Browser Extension 扩展才能使用。有两种安装方式：
+通过 `/plugins` 安装后，还需要在浏览器中安装 Zimi Browser Extension 扩展才能使用。有两种安装方式：
 
 **方式一：应用商店安装（推荐）**
 
-打开 [Chrome 应用商店](https://chromewebstore.google.com/detail/kimi-webbridge/fldmhceldgbpfpkbgopacenieobmligc) 或 [Edge 应用商店](https://microsoftedge.microsoft.com/addons/detail/kimi-webbridge/bnlffdbcfnanfbknnlaflhlhkocccckg)，点击添加即可。
+打开 [Chrome 应用商店](https://chromewebstore.google.com/detail/zimi-webbridge/fldmhceldgbpfpkbgopacenieobmligc) 或 [Edge 应用商店](https://microsoftedge.microsoft.com/addons/detail/zimi-webbridge/bnlffdbcfnanfbknnlaflhlhkocccckg)，点击添加即可。
 
 **方式二：手动安装**
 
 无法访问应用商店时使用这种方式，按以下步骤操作：
 
-1. [下载扩展安装包](https://kimi-web-img.moonshot.cn/webbridge/latest/extension/kimi-webbridge-extension.zip) 并解压
+1. [下载扩展安装包](https://zimi-web-img.zimi.cn/webbridge/latest/extension/zimi-webbridge-extension.zip) 并解压
 2. 在浏览器地址栏输入 `chrome://extensions/` 打开扩展管理页，开启右上角的**开发者模式**
 
    ![开启开发者模式](../../media/webbridge-dev-mode.jpeg)
 
-3. 点击左上角的**加载未打包的扩展程序**，选择解压后的 `kimi-webbridge-extension` 文件夹
+3. 点击左上角的**加载未打包的扩展程序**，选择解压后的 `zimi-webbridge-extension` 文件夹
 
    ![加载未打包的扩展程序](../../media/webbridge-load-unpacked.jpeg)
 
-4. 安装完成后，浏览器工具栏会出现 Kimi Browser Extension 图标，即表示安装成功
+4. 安装完成后，浏览器工具栏会出现 Zimi Browser Extension 图标，即表示安装成功
 
-   ![工具栏出现 Kimi Browser Extension 图标](../../media/webbridge-install-success.jpeg)
+   ![工具栏出现 Zimi Browser Extension 图标](../../media/webbridge-install-success.jpeg)
 
 #### 能做什么
 
@@ -209,20 +209,20 @@ Kimi Browser Extension 让 AI 直接操控你的浏览器，带着你的登录�
 - **竞品分析**：自动在多个 AI 产品间批量发问并采集回答，生成横向对比报告
 - **机票比价**：在多个旅行平台查询同一行程，按价格排序记录航司、起降时间和原始链接，给出推荐方案
 
-### Kimi Computer Use <Badge type="tip" text="v0.5.4" />
+### Zimi Computer Use <Badge type="tip" text="v0.5.4" />
 
-Kimi Computer Use 让 AI 直接操作你的桌面应用，可以完成点击、拖拽、滚动、输入等操作。macOS 版全程在后台静默运行，不抢占你的鼠标；少量弹窗操作仍会唤起前台 App。Windows 版的差异见 [Windows 版注意事项](#windows-版注意事项)。
+Zimi Computer Use 让 AI 直接操作你的桌面应用，可以完成点击、拖拽、滚动、输入等操作。macOS 版全程在后台静默运行，不抢占你的鼠标；少量弹窗操作仍会唤起前台 App。Windows 版的差异见 [Windows 版注意事项](#windows-版注意事项)。
 
 #### 授权（macOS）
 
-安装后首次使用时，Kimi Computer Use 会弹出授权窗口，按照提示操作即可：
+安装后首次使用时，Zimi Computer Use 会弹出授权窗口，按照提示操作即可：
 
 1. 点击**辅助功能**和**屏幕录制**右侧的**去授权**，在系统设置中开启这两项权限。前者用于执行点击、输入与滚动，后者用于读取屏幕内容、识别需要操作的位置。
-2. 在**接入本地 Agent**中打开 **Kimi Code** 开关，重启 Kimi Code 后生效。
+2. 在**接入本地 Agent**中打开 **Zimi Code** 开关，重启 Zimi Code 后生效。
 
 <div style="max-width: 380px; margin: 0 auto;">
 
-![Kimi Computer Use 授权窗口](../../media/kimi-computer-use-auth.jpeg)
+![Zimi Computer Use 授权窗口](../../media/zimi-computer-use-auth.jpeg)
 
 </div>
 
@@ -231,7 +231,7 @@ Kimi Computer Use 让 AI 直接操作你的桌面应用，可以完成点击、�
 - **会短暂占用键鼠**：Windows 版无法像 macOS 版那样稳定地全程后台输入，执行操作时可能短暂激活目标窗口并使用你的鼠标键盘
 - **系统要求**：Windows 10 version 1903（Build 18362）或更新版本 / Windows 11，x64；需要真实交互式桌面会话，Windows Server 需要 Desktop Experience
 - **无需额外授权**：Windows 不需要 macOS 那样的**辅助功能**和**屏幕录制**权限
-- **权限对等**：目标应用以管理员权限运行时，KimiCU 也需要以同等权限运行
+- **权限对等**：目标应用以管理员权限运行时，ZimiCU 也需要以同等权限运行
 
 #### 能做什么
 
@@ -249,26 +249,26 @@ Kimi Computer Use 让 AI 直接操作你的桌面应用，可以完成点击、�
 Plugin 是一个带 manifest 的目录或 zip 文件。Manifest 可以放在以下任一位置：
 
 ```text
-<plugin_root>/kimi.plugin.json
-<plugin_root>/.kimi-plugin/plugin.json
+<plugin_root>/zimi.plugin.json
+<plugin_root>/.zimi-plugin/plugin.json
 ```
 
-两个文件同时存在时，以 `kimi.plugin.json` 为准。
+两个文件同时存在时，以 `zimi.plugin.json` 为准。
 
 示例：
 
 ```json
 {
-  "name": "kimi-finance",
+  "name": "zimi-finance",
   "version": "1.0.0",
-  "description": "Finance data and analysis workflows for Kimi Code CLI",
+  "description": "Finance data and analysis workflows for Zimi Code CLI",
   "skills": "./skills/",
   "systemPromptPath": "./SYSTEM.md",
   "sessionStart": {
     "skill": "using-finance"
   },
   "interface": {
-    "displayName": "Kimi Finance",
+    "displayName": "Zimi Finance",
     "shortDescription": "Market data and financial analysis workflows"
   }
 }
@@ -322,7 +322,7 @@ Plugin 通过 `systemPrompt` 和 `systemPromptPath` 两个字段向 Agent 的系
 
 ### 两个引擎的差异
 
-系统提示词贡献在 Kimi Code 的所有界面上都生效：交互式 TUI、`kimi -p` 和 `kimi web` 都运行在 v2 引擎上。
+系统提示词贡献在 Zimi Code 的所有界面上都生效：交互式 TUI、`zimi -p` 和 `zimi web` 都运行在 v2 引擎上。
 
 新会话和新建 Agent 会读取当前已启用 plugin 的指令，正在进行的请求继续使用已有的系统提示词。`/plugins reload` 会刷新 plugin Skill 列表，并请求重建活跃 Agent 的提示词；需要让变更在下一轮前明确收敛时使用该命令。切换 plugin 的 MCP server 不会改变系统提示词指令。
 
@@ -340,17 +340,17 @@ Plugin 通过 `systemPrompt` 和 `systemPromptPath` 两个字段向 Agent 的系
 下面是一个最小完整例子，插件目录结构：
 
 ```text
-kimi-finance/
-  kimi.plugin.json
+zimi-finance/
+  zimi.plugin.json
   commands/
     report.md
 ```
 
-manifest（`kimi.plugin.json`）用 `commands` 字段指出命令文件的位置：
+manifest（`zimi.plugin.json`）用 `commands` 字段指出命令文件的位置：
 
 ```json
 {
-  "name": "kimi-finance",
+  "name": "zimi-finance",
   "version": "1.0.0",
   "commands": "./commands/"
 }
@@ -369,10 +369,10 @@ description: 拉取指定股票的财报并总结
 安装并启用后，在对话里输入：
 
 ```text
-/kimi-finance:report TSLA
+/zimi-finance:report TSLA
 ```
 
-Kimi 会把正文里的 `$ARGUMENTS` 替换成 `TSLA`，再执行这段提示词。三处细节分述如下。
+Zimi 会把正文里的 `$ARGUMENTS` 替换成 `TSLA`，再执行这段提示词。三处细节分述如下。
 
 ### 声明命令（`commands` 字段）
 
@@ -391,7 +391,7 @@ Kimi 会把正文里的 `$ARGUMENTS` 替换成 `TSLA`，再执行这段提示词
 
 ### 调用命令与传参
 
-命令自动以插件 id 作前缀注册成 `<插件名>:<命令名>`，所以上面的命令实际叫 `/kimi-finance:report`，不同插件的同名命令因此不会冲突。
+命令自动以插件 id 作前缀注册成 `<插件名>:<命令名>`，所以上面的命令实际叫 `/zimi-finance:report`，不同插件的同名命令因此不会冲突。
 
 命令后输入的文字会替换正文里的 `$ARGUMENTS`。若正文没写 `$ARGUMENTS` 却传了参数，参数不会丢弃，而是以 `ARGUMENTS: <你输入的内容>` 追加到正文末尾。
 
@@ -401,7 +401,7 @@ Plugin Skills 使用与普通 [Agent Skills](./skills.md) 相同的 `SKILL.md` �
 
 ```text
 my-plugin/
-  kimi.plugin.json
+  zimi.plugin.json
   skills/
     using-my-plugin/
       SKILL.md
@@ -409,7 +409,7 @@ my-plugin/
       SKILL.md
 ```
 
-`sessionStart.skill` 在会话启动时把一个 plugin Skill 加载到 main agent，适合放置初始化说明、工作流规则，或把其他工具中的术语映射到 Kimi Code CLI。它只注入文本，不执行代码。字段值是插件内 Skill frontmatter 中声明的名字，不带 `<plugin-id>:` 前缀。
+`sessionStart.skill` 在会话启动时把一个 plugin Skill 加载到 main agent，适合放置初始化说明、工作流规则，或把其他工具中的术语映射到 Zimi Code CLI。它只注入文本，不执行代码。字段值是插件内 Skill frontmatter 中声明的名字，不带 `<plugin-id>:` 前缀。
 
 Plugin Skill 以全限定名 `<plugin-id>:<skill-name>` 列出和调用（例如 `/skill:my-plugin:using-my-plugin`），与[插件斜杠命令](#插件斜杠命令)的命名方式一致：不同插件的同名 Skill 互不冲突，裸名不会解析到 plugin Skill。当插件命令与插件 Skill 同名时，`/plugin-id:name` 执行命令；调用 Skill 需使用显式形态 `/skill:plugin-id:name`。
 
@@ -421,7 +421,7 @@ Plugin 可以携带自定义 Agent：在 manifest 的 `agents` 字段里声明�
 
 ```text
 my-plugin/
-  kimi.plugin.json
+  zimi.plugin.json
   agents/
     reviewer.md
 ```
@@ -439,7 +439,7 @@ Stdio server（本地命令）：
   "mcpServers": {
     "finance": {
       "command": "uvx",
-      "args": ["kimi-finance-mcp"]
+      "args": ["zimi-finance-mcp"]
     }
   }
 }
@@ -462,10 +462,10 @@ HTTP server（远程服务）：
 Plugin MCP servers 会在 `/reload` 后或新会话中启动。启用或禁用某个 server：
 
 ```sh
-/plugins mcp disable kimi-finance finance
+/plugins mcp disable zimi-finance finance
 /reload
 
-/plugins mcp enable kimi-finance finance
+/plugins mcp enable zimi-finance finance
 /reload
 ```
 
@@ -490,7 +490,7 @@ plugin hooks 复用与全局 hooks 相同的机制。事件列表、stdin JSON �
 
 - plugin 的 hooks 仅在 plugin **启用**期间生效；禁用 plugin 后其 hooks 停止运行。
 - 每条 hook 的工作目录为 plugin 根目录，`command` 可以使用 plugin 内的 `./` 路径。
-- hook 进程会额外收到两个环境变量：`KIMI_CODE_HOME` 和 `KIMI_PLUGIN_ROOT`（plugin 根目录）。
+- hook 进程会额外收到两个环境变量：`ZIMI_CODE_HOME` 和 `ZIMI_PLUGIN_ROOT`（plugin 根目录）。
 
 仅安装 plugin 本身不会运行其 hooks；它们只在 plugin 启用期间、匹配的事件触发时运行。
 

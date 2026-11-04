@@ -20,16 +20,16 @@ import { createMediaRefResolver } from '#/media/resolver';
 import { createMemoryMediaSource } from '#/media/source';
 import type { LlmModel } from '#/llm-requester/model';
 import { createProviderCatalog, type CatalogProviderHandle } from '#/provider-catalog/catalog';
-import { KimiFiles, kimiFilesBaseUrl } from '#/media/kimi/files';
-import { kimiMediaContribution } from '#/media/kimi/media';
+import { ZimiFiles, zimiFilesBaseUrl } from '#/media/zimi/files';
+import { zimiMediaContribution } from '#/media/zimi/media';
 import {
-  KIMI_DEFAULT_BASE_URL,
-  kimiAnthropicRequester,
-  kimiRequester,
-  kimiRequesters,
-  kimiResponsesRequester,
-} from '#/llm/builtin/provider/kimi/index';
-import { classifyKimiQuotaError } from '#/llm/builtin/provider/kimi/errors';
+  ZIMI_DEFAULT_BASE_URL,
+  zimiAnthropicRequester,
+  zimiRequester,
+  zimiRequesters,
+  zimiResponsesRequester,
+} from '#/llm/builtin/provider/zimi/index';
+import { classifyZimiQuotaError } from '#/llm/builtin/provider/zimi/errors';
 import type { Pattern } from '#/llm/protocol/pattern';
 import { anthropicProvider, openaiProvider } from '#/provider-catalog/provider/providers/standard';
 import type { LlmClientContext, LlmRequester, LlmRequestEvent } from '#/llm-requester/requester';
@@ -43,15 +43,15 @@ import { openAIProtocol } from '#/llm/builtin/protocol/openai/index';
 import {
   createAnthropicRequester,
   createGoogleGenAIRequester,
-  createKimiAnthropicRequester,
-  createKimiOpenAIRequester,
-  createKimiResponsesRequester,
+  createZimiAnthropicRequester,
+  createZimiOpenAIRequester,
+  createZimiResponsesRequester,
   createOpenAIRequester,
   createOpenAIResponsesRequester,
   googleGenAIEndpoint,
-  KIMI_API_KEY_ENV,
-  KIMI_BASE_URL_ENV,
-  kimiEndpoint,
+  ZIMI_API_KEY_ENV,
+  ZIMI_BASE_URL_ENV,
+  zimiEndpoint,
 } from '#/llm-requester/factories';
 import { createRunRequester } from '#/llm-requester/run';
 import { createRequester as createCoreRequester } from '#/llm/requester';
@@ -67,14 +67,14 @@ const model: LlmModel = {
 };
 const messages: readonly Message[] = [createUserMessage('hi')];
 
-const kimiOpenAI = {
-  endpoint: kimiEndpoint,
-  classifyError: classifyKimiQuotaError,
+const zimiOpenAI = {
+  endpoint: zimiEndpoint,
+  classifyError: classifyZimiQuotaError,
 } as const;
 
-const kimiAnthropic = {
-  endpoint: kimiEndpoint,
-  classifyError: classifyKimiQuotaError,
+const zimiAnthropic = {
+  endpoint: zimiEndpoint,
+  classifyError: classifyZimiQuotaError,
 } as const;
 
 function openAIRequesterWithPatch(
@@ -438,7 +438,7 @@ describe('media', () => {
 
   it('rejects a non-video mime type', async () => {
     await expect(
-      kimiMediaContribution.uploadVideo!(
+      zimiMediaContribution.uploadVideo!(
         { data: new Uint8Array([1]), mimeType: 'image/png' },
         { model },
       ),
@@ -446,40 +446,40 @@ describe('media', () => {
   });
 
   it('rejects a non-image mime type', async () => {
-    const files = new KimiFiles({ apiKey: 'sk-test', baseUrl: 'https://example.test/v1' });
+    const files = new ZimiFiles({ apiKey: 'sk-test', baseUrl: 'https://example.test/v1' });
     await expect(
       files.uploadImage({ data: new Uint8Array([1]), mimeType: 'video/mp4' }),
     ).rejects.toThrow('Expected an image mime type');
   });
 
   it('requires an api key', async () => {
-    const files = new KimiFiles({ baseUrl: 'https://example.test/v1' });
+    const files = new ZimiFiles({ baseUrl: 'https://example.test/v1' });
     await expect(
       files.uploadVideo({ data: new Uint8Array([1]), mimeType: 'video/mp4' }),
     ).rejects.toThrow('apiKey is required');
   });
 
   it('requires an api key for image uploads', async () => {
-    const files = new KimiFiles({ baseUrl: 'https://example.test/v1' });
+    const files = new ZimiFiles({ baseUrl: 'https://example.test/v1' });
     await expect(
       files.uploadImage({ data: new Uint8Array([1]), mimeType: 'image/png' }),
     ).rejects.toThrow('apiKey is required');
   });
 
-  it('restores the stripped /v1 for anthropic-routed kimi models', () => {
+  it('restores the stripped /v1 for anthropic-routed zimi models', () => {
     const anthropic: LlmModel = { ...mediaModel, provider: 'anthropic' };
-    expect(kimiFilesBaseUrl({ ...anthropic, baseUrl: 'https://api.example.test' })).toBe(
+    expect(zimiFilesBaseUrl({ ...anthropic, baseUrl: 'https://api.example.test' })).toBe(
       'https://api.example.test/v1',
     );
-    expect(kimiFilesBaseUrl({ ...anthropic, baseUrl: 'https://api.example.test/v1' })).toBe(
+    expect(zimiFilesBaseUrl({ ...anthropic, baseUrl: 'https://api.example.test/v1' })).toBe(
       'https://api.example.test/v1',
     );
-    expect(kimiFilesBaseUrl({ ...anthropic, baseUrl: 'https://api.example.test/' })).toBe(
+    expect(zimiFilesBaseUrl({ ...anthropic, baseUrl: 'https://api.example.test/' })).toBe(
       'https://api.example.test/v1',
     );
-    expect(kimiFilesBaseUrl(anthropic)).toBe(KIMI_DEFAULT_BASE_URL);
+    expect(zimiFilesBaseUrl(anthropic)).toBe(ZIMI_DEFAULT_BASE_URL);
     const openai: LlmModel = { ...mediaModel, provider: 'openai', baseUrl: 'https://api.example.test' };
-    expect(kimiFilesBaseUrl(openai)).toBe('https://api.example.test');
+    expect(zimiFilesBaseUrl(openai)).toBe('https://api.example.test');
   });
 
   it('uploads a video ref once and serves later requests from the cache', async () => {
@@ -556,26 +556,26 @@ describe('endpoint', () => {
     vi.unstubAllEnvs();
   });
 
-  const kimiModel: LlmModel = {
-    provider: 'kimi',
+  const zimiModel: LlmModel = {
+    provider: 'zimi',
     model: 'kimi-k3',
     capability: UNKNOWN_CAPABILITY,
   };
 
   it('resolves default and explicit endpoints at request time', async () => {
-    vi.stubEnv(KIMI_BASE_URL_ENV, '');
-    vi.stubEnv(KIMI_API_KEY_ENV, 'env-key');
+    vi.stubEnv(ZIMI_BASE_URL_ENV, '');
+    vi.stubEnv(ZIMI_API_KEY_ENV, 'env-key');
     const seen: LlmModel[] = [];
     const track = (client: ClientStub) => (request: LlmClientContext) => {
       seen.push(request.model);
       return client.clientFactory(request);
     };
     const openAI = stubOpenAIClient(chatCompletionChunks);
-    const openAIRequester = createKimiOpenAIRequester({ clientFactory: track(openAI) });
+    const openAIRequester = createZimiOpenAIRequester({ clientFactory: track(openAI) });
     const requesters = [
       openAIRequester,
-      createKimiAnthropicRequester({ clientFactory: track(stubAnthropicClient(anthropicStreamEvents)) }),
-      createKimiResponsesRequester({
+      createZimiAnthropicRequester({ clientFactory: track(stubAnthropicClient(anthropicStreamEvents)) }),
+      createZimiResponsesRequester({
         clientFactory: track(
           stubResponsesClient([
             { type: 'response.output_text.delta', delta: 'hi' },
@@ -587,25 +587,25 @@ describe('endpoint', () => {
     const signal = new AbortController().signal;
 
     for (const requester of requesters) {
-      await requester.generate({ model: kimiModel }, { messages }, { signal });
+      await requester.generate({ model: zimiModel }, { messages }, { signal });
     }
-    vi.stubEnv(KIMI_BASE_URL_ENV, 'https://example.test/v9');
-    await openAIRequester.generate({ model: kimiModel }, { messages }, { signal });
+    vi.stubEnv(ZIMI_BASE_URL_ENV, 'https://example.test/v9');
+    await openAIRequester.generate({ model: zimiModel }, { messages }, { signal });
     await openAIRequester.generate(
-      { model: { ...kimiModel, baseUrl: 'https://explicit.test/v1', apiKey: 'model-key' } },
+      { model: { ...zimiModel, baseUrl: 'https://explicit.test/v1', apiKey: 'model-key' } },
       { messages },
       { signal },
     );
-    const customRequester = createKimiOpenAIRequester({
+    const customRequester = createZimiOpenAIRequester({
       endpoint: { defaultBaseUrl: 'https://endpoint.test/v1' },
       clientFactory: track(stubOpenAIClient(chatCompletionChunks)),
     });
-    await customRequester.generate({ model: kimiModel }, { messages }, { signal });
+    await customRequester.generate({ model: zimiModel }, { messages }, { signal });
 
     expect(seen.map((entry) => entry.baseUrl)).toEqual([
-      KIMI_DEFAULT_BASE_URL,
-      KIMI_DEFAULT_BASE_URL,
-      KIMI_DEFAULT_BASE_URL,
+      ZIMI_DEFAULT_BASE_URL,
+      ZIMI_DEFAULT_BASE_URL,
+      ZIMI_DEFAULT_BASE_URL,
       'https://example.test/v9',
       'https://explicit.test/v1',
       'https://endpoint.test/v1',
@@ -621,23 +621,23 @@ describe('endpoint', () => {
   });
 
   it('routes protocols by name and preserves model connection fields', () => {
-    expect(Object.keys(kimiRequesters)).toEqual(['openai', 'anthropic', 'openai_responses']);
-    expect(kimiRequesters.openai).toBe(kimiRequester);
-    expect(kimiRequesters.anthropic).toBe(kimiAnthropicRequester);
-    expect(kimiRequesters.openai_responses).toBe(kimiResponsesRequester);
-    expect('google-genai' in kimiRequesters).toBe(false);
+    expect(Object.keys(zimiRequesters)).toEqual(['openai', 'anthropic', 'openai_responses']);
+    expect(zimiRequesters.openai).toBe(zimiRequester);
+    expect(zimiRequesters.anthropic).toBe(zimiAnthropicRequester);
+    expect(zimiRequesters.openai_responses).toBe(zimiResponsesRequester);
+    expect('google-genai' in zimiRequesters).toBe(false);
 
     const resolved = resolveModelConnection(
       {
-        ...kimiModel,
+        ...zimiModel,
         baseUrl: 'https://example.test/v1',
         apiKey: 'k',
         defaultHeaders: { 'x-h': 'v' },
       },
-      kimiEndpoint,
+      zimiEndpoint,
     );
     expect(resolved).toEqual({
-      provider: 'kimi',
+      provider: 'zimi',
       model: 'kimi-k3',
       capability: resolved.capability,
       baseUrl: 'https://example.test/v1',
@@ -750,8 +750,8 @@ describe('convertTool', () => {
 
   it('maps $-prefixed tools to builtin_function', async () => {
     const client = stubOpenAIClient(chatCompletionChunks);
-    const requester = createKimiOpenAIRequester({
-      ...kimiOpenAI,
+    const requester = createZimiOpenAIRequester({
+      ...zimiOpenAI,
       clientFactory: client.clientFactory,
     });
     await requester.generate(
@@ -766,10 +766,10 @@ describe('convertTool', () => {
     });
   });
 
-  it('normalizes tool schemas for kimi', async () => {
+  it('normalizes tool schemas for zimi', async () => {
     const client = stubOpenAIClient(chatCompletionChunks);
-    const requester = createKimiOpenAIRequester({
-      ...kimiOpenAI,
+    const requester = createZimiOpenAIRequester({
+      ...zimiOpenAI,
       clientFactory: client.clientFactory,
     });
     await requester.generate(
@@ -809,10 +809,10 @@ describe('message-level tools', () => {
     { name: 'get_weather', description: 'get weather', parameters: { type: 'object' } },
   ];
 
-  it('serializes system message tools for kimi', async () => {
+  it('serializes system message tools for zimi', async () => {
     const client = stubOpenAIClient(chatCompletionChunks);
-    const requester = createKimiOpenAIRequester({
-      ...kimiOpenAI,
+    const requester = createZimiOpenAIRequester({
+      ...zimiOpenAI,
       clientFactory: client.clientFactory,
     });
     await requester.generate(
@@ -829,7 +829,7 @@ describe('message-level tools', () => {
     ]);
   });
 
-  it('drops tool-declaration-only system messages without the kimi protocol', async () => {
+  it('drops tool-declaration-only system messages without the zimi protocol', async () => {
     const client = stubOpenAIClient(chatCompletionChunks);
     const requester = createOpenAIRequester({ clientFactory: client.clientFactory });
     await requester.generate(
@@ -843,10 +843,10 @@ describe('message-level tools', () => {
 });
 
 describe('withMaxCompletionTokens', () => {
-  it('encodes max completion tokens via the kimi protocol', async () => {
+  it('encodes max completion tokens via the zimi protocol', async () => {
     const client = stubOpenAIClient(chatCompletionChunks);
-    const requester = createKimiOpenAIRequester({
-      ...kimiOpenAI,
+    const requester = createZimiOpenAIRequester({
+      ...zimiOpenAI,
       clientFactory: client.clientFactory,
     });
     await requester.generate(
@@ -1037,8 +1037,8 @@ describe('extractUsage', () => {
           ],
         },
       ]);
-      const requester = createKimiOpenAIRequester({
-        ...kimiOpenAI,
+      const requester = createZimiOpenAIRequester({
+        ...zimiOpenAI,
         clientFactory: client.clientFactory,
       });
       return generateAndCollectUsage(requester);
@@ -1066,8 +1066,8 @@ describe('extractUsage', () => {
       { id: 'c1', object: 'chat.completion.chunk', created: 0, model: 'test-model', choices: [{ index: 0, delta: { content: 'hi' }, finish_reason: null }] },
       { id: 'c1', object: 'chat.completion.chunk', created: 0, model: 'test-model', choices: [{ index: 0, delta: {}, finish_reason: 'stop', usage: { prompt_tokens: 4, completion_tokens: 6 } }] },
     ]);
-    const requester = createKimiOpenAIRequester({
-      ...kimiOpenAI,
+    const requester = createZimiOpenAIRequester({
+      ...zimiOpenAI,
       clientFactory: client.clientFactory,
     });
     const usage = await generateAndCollectUsage(requester);
@@ -1606,10 +1606,10 @@ describe('toolMessageConversion request config', () => {
     ]);
   });
 
-  it('lets the request config override the kimi keep_parts default', async () => {
+  it('lets the request config override the zimi keep_parts default', async () => {
     const client = stubOpenAIClient(chatCompletionChunks);
-    const requester = createKimiOpenAIRequester({
-      ...kimiOpenAI,
+    const requester = createZimiOpenAIRequester({
+      ...zimiOpenAI,
       clientFactory: client.clientFactory,
     });
     await requester.generate(
@@ -1839,7 +1839,7 @@ describe('anthropic cache control', () => {
 
 
 describe('anthropic thinking kwargs', () => {
-  it('applies the kimi thinking protocol, the anthropic-beta api, and thinking echo rules', async () => {
+  it('applies the zimi thinking protocol, the anthropic-beta api, and thinking echo rules', async () => {
     const client = stubAnthropicClient([
       { type: 'message_start', message: { usage: { input_tokens: 10, output_tokens: 1 } } },
       {
@@ -1854,7 +1854,7 @@ describe('anthropic thinking kwargs', () => {
       { type: 'message_delta', delta: { stop_reason: 'end_turn' }, usage: { output_tokens: 2 } },
       { type: 'message_stop' },
     ]);
-    const directRequester = createRunRequester(kimiAnthropicRequester, {
+    const directRequester = createRunRequester(zimiAnthropicRequester, {
       clientFactory: client.clientFactory,
     });
     await directRequester.generate(
@@ -1863,8 +1863,8 @@ describe('anthropic thinking kwargs', () => {
       { signal: new AbortController().signal },
     );
     expect(client.betaCalled()).toBe(true);
-    const requester = createKimiAnthropicRequester({
-      ...kimiAnthropic,
+    const requester = createZimiAnthropicRequester({
+      ...zimiAnthropic,
       clientFactory: client.clientFactory,
     });
     const parts: StreamedMessagePart[] = [];
@@ -1901,12 +1901,12 @@ describe('anthropic thinking kwargs', () => {
       { type: 'tool_use', id: 'call_1', name: 'get_weather', input: {} },
     ]);
 
-    const plainKimiRequester = createKimiAnthropicRequester({
-      ...kimiAnthropic,
+    const plainZimiRequester = createZimiAnthropicRequester({
+      ...zimiAnthropic,
       betaApi: false,
       clientFactory: client.clientFactory,
     });
-    await plainKimiRequester.generate(
+    await plainZimiRequester.generate(
       { model, thinking: { effort: 'high' } },
       { messages },
       { signal: new AbortController().signal },

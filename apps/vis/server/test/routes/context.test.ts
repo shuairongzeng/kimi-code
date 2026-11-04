@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { appendFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { buildCompactionContinuationText } from '@moonshot-ai/agent-core-v2/agent/contextMemory/compactionHandoff';
+import { buildCompactionContinuationText } from '@zimi-ai/agent-core-v2/agent/contextMemory/compactionHandoff';
 import { buildSessionFixture } from '../fixtures/build';
 import { contextRoute } from '../../src/routes/context';
 import { wireRoute } from '../../src/routes/wire';

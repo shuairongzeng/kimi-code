@@ -1,16 +1,16 @@
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
-import { KIMI_CODE_FLOW_CONFIG } from './constants';
+import { ZIMI_CODE_FLOW_CONFIG } from './constants';
 import { OAuthUnauthorizedError } from './errors';
 import {
-  assertKimiHostIdentity,
-  createKimiDefaultHeaders,
-  type KimiHostIdentity,
+  assertZimiHostIdentity,
+  createZimiDefaultHeaders,
+  type ZimiHostIdentity,
 } from './identity';
 import {
   fetchSubmitFeedback,
-  kimiCodeFeedbackUrl,
+  zimiCodeFeedbackUrl,
   type FetchSubmitFeedbackResult,
   type SubmitFeedbackBody,
 } from './managed-feedback';
@@ -23,21 +23,21 @@ import {
   type FetchCreateFeedbackUploadUrlResult,
 } from './managed-feedback-upload';
 import {
-  KIMI_CODE_OAUTH_KEY,
-  KIMI_CODE_PROVIDER_NAME,
-  provisionManagedKimiCodeConfig,
-  resolveKimiCodeOAuthKey,
-  type ManagedKimiCodeProvisionResult,
-  type ManagedKimiConfigAdapter,
-} from './managed-kimi-code';
+  ZIMI_CODE_OAUTH_KEY,
+  ZIMI_CODE_PROVIDER_NAME,
+  provisionManagedZimiCodeConfig,
+  resolveZimiCodeOAuthKey,
+  type ManagedZimiCodeProvisionResult,
+  type ManagedZimiConfigAdapter,
+} from './managed-zimi-code';
 import {
   fetchManagedUserInfo,
-  kimiCodeUserInfoUrl,
+  zimiCodeUserInfoUrl,
   type ManagedUserInfoResult,
 } from './managed-userinfo';
 import {
   fetchManagedUsage,
-  kimiCodeUsageUrl,
+  zimiCodeUsageUrl,
   type FetchManagedUsageError,
   type ManagedQuota,
 } from './managed-usage';
@@ -58,13 +58,13 @@ export interface AuthStatus {
   readonly providers: readonly AuthProviderStatus[];
 }
 
-export interface KimiOAuthToolkitOptions<TConfig = unknown> {
-  readonly identity?: KimiHostIdentity | undefined;
+export interface ZimiOAuthToolkitOptions<TConfig = unknown> {
+  readonly identity?: ZimiHostIdentity | undefined;
   readonly homeDir?: string | undefined;
   readonly credentialsDir?: string | undefined;
   readonly storage?: TokenStorage | undefined;
   readonly flowConfig?: OAuthFlowConfig | undefined;
-  readonly configAdapter?: ManagedKimiConfigAdapter<TConfig> | undefined;
+  readonly configAdapter?: ManagedZimiConfigAdapter<TConfig> | undefined;
   readonly fetchImpl?: typeof fetch | undefined;
   readonly now?: OAuthManagerOptions['now'];
   readonly sleep?: OAuthManagerOptions['sleep'];
@@ -73,25 +73,25 @@ export interface KimiOAuthToolkitOptions<TConfig = unknown> {
   readonly onRefresh?: OAuthManagerOptions['onRefresh'];
 }
 
-export interface KimiOAuthLoginOptions extends LoginOptions {
+export interface ZimiOAuthLoginOptions extends LoginOptions {
   readonly provisionConfig?: boolean | undefined;
   readonly baseUrl?: string | undefined;
-  readonly oauthRef?: KimiOAuthTokenRef | undefined;
+  readonly oauthRef?: ZimiOAuthTokenRef | undefined;
   readonly oauthHost?: string | undefined;
 }
 
-export interface KimiOAuthTokenRef {
+export interface ZimiOAuthTokenRef {
   readonly key?: string | undefined;
   readonly oauthHost?: string | undefined;
 }
 
-export interface KimiOAuthLoginResult {
+export interface ZimiOAuthLoginResult {
   readonly providerName: string;
   readonly ok: true;
-  readonly provision?: ManagedKimiCodeProvisionResult | undefined;
+  readonly provision?: ManagedZimiCodeProvisionResult | undefined;
 }
 
-export interface KimiOAuthLogoutResult {
+export interface ZimiOAuthLogoutResult {
   readonly providerName: string;
   readonly ok: true;
 }
@@ -105,12 +105,12 @@ export type AuthManagedUsageResult =
 
 export type AuthManagedUserInfoResult = ManagedUserInfoResult;
 
-export class KimiOAuthToolkit<TConfig = unknown> {
+export class ZimiOAuthToolkit<TConfig = unknown> {
   private readonly homeDir: string;
-  private readonly identity: KimiHostIdentity | undefined;
+  private readonly identity: ZimiHostIdentity | undefined;
   private readonly storage: TokenStorage;
   private readonly flowConfig: OAuthFlowConfig;
-  private readonly configAdapter: ManagedKimiConfigAdapter<TConfig> | undefined;
+  private readonly configAdapter: ManagedZimiConfigAdapter<TConfig> | undefined;
   private readonly fetchImpl: typeof fetch | undefined;
   private readonly managerOptions: Pick<
     OAuthManagerOptions,
@@ -119,13 +119,13 @@ export class KimiOAuthToolkit<TConfig = unknown> {
   private readonly managers = new Map<string, OAuthManager>();
   private _identityHeaders: Record<string, string> | undefined;
 
-  constructor(options: KimiOAuthToolkitOptions<TConfig>) {
+  constructor(options: ZimiOAuthToolkitOptions<TConfig>) {
     this.identity =
-      options.identity === undefined ? undefined : assertKimiHostIdentity(options.identity);
-    this.homeDir = options.homeDir ?? defaultKimiHome();
+      options.identity === undefined ? undefined : assertZimiHostIdentity(options.identity);
+    this.homeDir = options.homeDir ?? defaultZimiHome();
     const credentialsDir = options.credentialsDir ?? join(this.homeDir, 'credentials');
     this.storage = options.storage ?? new FileTokenStorage(credentialsDir);
-    this.flowConfig = options.flowConfig ?? KIMI_CODE_FLOW_CONFIG;
+    this.flowConfig = options.flowConfig ?? ZIMI_CODE_FLOW_CONFIG;
     this.configAdapter = options.configAdapter;
     this.fetchImpl = options.fetchImpl;
     this.managerOptions = {
@@ -139,9 +139,9 @@ export class KimiOAuthToolkit<TConfig = unknown> {
 
   async status(
     providerName?: string | undefined,
-    oauthRef?: KimiOAuthTokenRef | undefined,
+    oauthRef?: ZimiOAuthTokenRef | undefined,
   ): Promise<AuthStatus> {
-    const name = providerName ?? KIMI_CODE_PROVIDER_NAME;
+    const name = providerName ?? ZIMI_CODE_PROVIDER_NAME;
     const oauthHost = this.oauthHostFor(oauthRef);
     const oauthKey = oauthRef?.key ?? this.defaultOAuthKey(undefined, oauthHost);
     return {
@@ -156,9 +156,9 @@ export class KimiOAuthToolkit<TConfig = unknown> {
 
   async login(
     providerName?: string | undefined,
-    options: KimiOAuthLoginOptions = {},
-  ): Promise<KimiOAuthLoginResult> {
-    const name = providerName ?? KIMI_CODE_PROVIDER_NAME;
+    options: ZimiOAuthLoginOptions = {},
+  ): Promise<ZimiOAuthLoginResult> {
+    const name = providerName ?? ZIMI_CODE_PROVIDER_NAME;
     const oauthHost = this.oauthHostFor(options.oauthRef, options.oauthHost);
     const oauthKey = options.oauthRef?.key ?? this.defaultOAuthKey(options.baseUrl, oauthHost);
     const manager = this.managerFor(name, oauthKey, oauthHost);
@@ -187,10 +187,10 @@ export class KimiOAuthToolkit<TConfig = unknown> {
 
     const shouldProvision = options.provisionConfig ?? this.configAdapter !== undefined;
     const configAdapter = this.configAdapter;
-    let provision: ManagedKimiCodeProvisionResult | undefined;
+    let provision: ManagedZimiCodeProvisionResult | undefined;
     if (shouldProvision && configAdapter !== undefined) {
-      const provisionWithToken = (token: string): Promise<ManagedKimiCodeProvisionResult> =>
-        provisionManagedKimiCodeConfig({
+      const provisionWithToken = (token: string): Promise<ManagedZimiCodeProvisionResult> =>
+        provisionManagedZimiCodeConfig({
           accessToken: token,
           adapter: configAdapter,
           baseUrl: options.baseUrl,
@@ -229,13 +229,13 @@ export class KimiOAuthToolkit<TConfig = unknown> {
 
   async logout(
     providerName?: string | undefined,
-    oauthRef?: KimiOAuthTokenRef | undefined,
-  ): Promise<KimiOAuthLogoutResult> {
-    const name = providerName ?? KIMI_CODE_PROVIDER_NAME;
+    oauthRef?: ZimiOAuthTokenRef | undefined,
+  ): Promise<ZimiOAuthLogoutResult> {
+    const name = providerName ?? ZIMI_CODE_PROVIDER_NAME;
     const oauthHost = this.oauthHostFor(oauthRef);
     const oauthKey = oauthRef?.key ?? this.defaultOAuthKey(undefined, oauthHost);
     await this.managerFor(name, oauthKey, oauthHost).logout();
-    if (this.configAdapter?.remove !== undefined && name === KIMI_CODE_PROVIDER_NAME) {
+    if (this.configAdapter?.remove !== undefined && name === ZIMI_CODE_PROVIDER_NAME) {
       const config = await this.configAdapter.read();
       this.configAdapter.remove(config);
       await this.configAdapter.write(config);
@@ -247,10 +247,10 @@ export class KimiOAuthToolkit<TConfig = unknown> {
     providerName?: string | undefined,
     options: {
       readonly force?: boolean | undefined;
-      readonly oauthRef?: KimiOAuthTokenRef | undefined;
+      readonly oauthRef?: ZimiOAuthTokenRef | undefined;
     } = {},
   ): Promise<string> {
-    const name = providerName ?? KIMI_CODE_PROVIDER_NAME;
+    const name = providerName ?? ZIMI_CODE_PROVIDER_NAME;
     const oauthHost = this.oauthHostFor(options.oauthRef);
     const oauthKey = options.oauthRef?.key ?? this.defaultOAuthKey(undefined, oauthHost);
     return this.managerFor(name, oauthKey, oauthHost).ensureFresh(options);
@@ -258,9 +258,9 @@ export class KimiOAuthToolkit<TConfig = unknown> {
 
   async getCachedAccessToken(
     providerName?: string,
-    oauthRef?: KimiOAuthTokenRef,
+    oauthRef?: ZimiOAuthTokenRef,
   ): Promise<string | undefined> {
-    const name = providerName ?? KIMI_CODE_PROVIDER_NAME;
+    const name = providerName ?? ZIMI_CODE_PROVIDER_NAME;
     const oauthHost = this.oauthHostFor(oauthRef);
     const oauthKey = oauthRef?.key ?? this.defaultOAuthKey(undefined, oauthHost);
     return this.managerFor(name, oauthKey, oauthHost).getCachedAccessToken();
@@ -268,9 +268,9 @@ export class KimiOAuthToolkit<TConfig = unknown> {
 
   tokenProvider(
     providerName?: string | undefined,
-    oauthRef?: KimiOAuthTokenRef | undefined,
+    oauthRef?: ZimiOAuthTokenRef | undefined,
   ): BearerTokenProvider {
-    const name = providerName ?? KIMI_CODE_PROVIDER_NAME;
+    const name = providerName ?? ZIMI_CODE_PROVIDER_NAME;
     const oauthHost = this.oauthHostFor(oauthRef);
     const oauthKey = oauthRef?.key ?? this.defaultOAuthKey(undefined, oauthHost);
     return {
@@ -281,11 +281,11 @@ export class KimiOAuthToolkit<TConfig = unknown> {
   async getManagedUsage(
     providerName?: string | undefined,
     options: {
-      readonly oauthRef?: KimiOAuthTokenRef | undefined;
+      readonly oauthRef?: ZimiOAuthTokenRef | undefined;
       readonly baseUrl?: string | undefined;
     } = {},
   ): Promise<AuthManagedUsageResult> {
-    const name = providerName ?? KIMI_CODE_PROVIDER_NAME;
+    const name = providerName ?? ZIMI_CODE_PROVIDER_NAME;
     try {
       const accessToken = await this.ensureFresh(name, {
         oauthRef: options.oauthRef ?? this.defaultOAuthRef(options.baseUrl),
@@ -304,11 +304,11 @@ export class KimiOAuthToolkit<TConfig = unknown> {
   async getManagedUserInfo(
     providerName?: string | undefined,
     options: {
-      readonly oauthRef?: KimiOAuthTokenRef | undefined;
+      readonly oauthRef?: ZimiOAuthTokenRef | undefined;
       readonly baseUrl?: string | undefined;
     } = {},
   ): Promise<AuthManagedUserInfoResult> {
-    const name = providerName ?? KIMI_CODE_PROVIDER_NAME;
+    const name = providerName ?? ZIMI_CODE_PROVIDER_NAME;
     try {
       const accessToken = await this.ensureFresh(name, {
         oauthRef: options.oauthRef ?? this.defaultOAuthRef(options.baseUrl),
@@ -328,7 +328,7 @@ export class KimiOAuthToolkit<TConfig = unknown> {
     body: SubmitFeedbackBody,
     providerName?: string | undefined,
     options: {
-      readonly oauthRef?: KimiOAuthTokenRef | undefined;
+      readonly oauthRef?: ZimiOAuthTokenRef | undefined;
       readonly baseUrl?: string | undefined;
     } = {},
   ): Promise<FetchSubmitFeedbackResult> {
@@ -342,12 +342,12 @@ export class KimiOAuthToolkit<TConfig = unknown> {
   private async withAccessToken<T>(
     providerName: string | undefined,
     options: {
-      readonly oauthRef?: KimiOAuthTokenRef | undefined;
+      readonly oauthRef?: ZimiOAuthTokenRef | undefined;
       readonly baseUrl?: string | undefined;
     },
     run: (accessToken: string) => Promise<T>,
   ): Promise<T | { readonly kind: 'error'; readonly message: string }> {
-    const name = providerName ?? KIMI_CODE_PROVIDER_NAME;
+    const name = providerName ?? ZIMI_CODE_PROVIDER_NAME;
     try {
       const accessToken = await this.ensureFresh(name, {
         oauthRef: options.oauthRef ?? this.defaultOAuthRef(options.baseUrl),
@@ -365,7 +365,7 @@ export class KimiOAuthToolkit<TConfig = unknown> {
     body: CreateFeedbackUploadUrlBody,
     providerName?: string | undefined,
     options: {
-      readonly oauthRef?: KimiOAuthTokenRef | undefined;
+      readonly oauthRef?: ZimiOAuthTokenRef | undefined;
       readonly baseUrl?: string | undefined;
     } = {},
   ): Promise<FetchCreateFeedbackUploadUrlResult> {
@@ -380,7 +380,7 @@ export class KimiOAuthToolkit<TConfig = unknown> {
     body: CompleteFeedbackUploadBody,
     providerName?: string | undefined,
     options: {
-      readonly oauthRef?: KimiOAuthTokenRef | undefined;
+      readonly oauthRef?: ZimiOAuthTokenRef | undefined;
       readonly baseUrl?: string | undefined;
     } = {},
   ): Promise<FetchCompleteFeedbackUploadResult> {
@@ -393,10 +393,10 @@ export class KimiOAuthToolkit<TConfig = unknown> {
 
   managerFor(
     providerName: string,
-    oauthKey = KIMI_CODE_OAUTH_KEY,
+    oauthKey = ZIMI_CODE_OAUTH_KEY,
     oauthHost?: string | undefined,
   ): OAuthManager {
-    const storageName = resolveKimiTokenStorageName({ providerName, oauthKey });
+    const storageName = resolveZimiTokenStorageName({ providerName, oauthKey });
     const effectiveOAuthHost = oauthHost ?? this.flowConfig.oauthHost;
     const managerKey = `${storageName}\0${normalizeOAuthHost(effectiveOAuthHost)}`;
     let manager = this.managers.get(managerKey);
@@ -417,8 +417,8 @@ export class KimiOAuthToolkit<TConfig = unknown> {
           : () =>
               // Full identity headers (User-Agent + X-Msh-*): the OAuth host
               // reads the platform for the client family and the UA (suffix)
-              // for the runtime surface, e.g. kimi web's `(web)`.
-              createKimiDefaultHeaders({
+              // for the runtime surface, e.g. zimi web's `(web)`.
+              createZimiDefaultHeaders({
                 homeDir: this.homeDir,
                 ...identity,
               }),
@@ -432,13 +432,13 @@ export class KimiOAuthToolkit<TConfig = unknown> {
     baseUrl?: string | undefined,
     oauthHost?: string | undefined,
   ): string {
-    return resolveKimiCodeOAuthKey({
+    return resolveZimiCodeOAuthKey({
       oauthHost: oauthHost ?? this.flowConfig.oauthHost,
       baseUrl,
     });
   }
 
-  private defaultOAuthRef(baseUrl?: string | undefined): KimiOAuthTokenRef {
+  private defaultOAuthRef(baseUrl?: string | undefined): ZimiOAuthTokenRef {
     return {
       key: this.defaultOAuthKey(baseUrl, this.flowConfig.oauthHost),
       oauthHost: this.flowConfig.oauthHost,
@@ -446,7 +446,7 @@ export class KimiOAuthToolkit<TConfig = unknown> {
   }
 
   private oauthHostFor(
-    oauthRef?: KimiOAuthTokenRef | undefined,
+    oauthRef?: ZimiOAuthTokenRef | undefined,
     oauthHost?: string | undefined,
   ): string {
     return oauthRef?.oauthHost ?? oauthHost ?? this.flowConfig.oauthHost;
@@ -454,7 +454,7 @@ export class KimiOAuthToolkit<TConfig = unknown> {
 
   private identityHeaders(): Record<string, string> | undefined {
     if (this.identity === undefined) return undefined;
-    this._identityHeaders ??= createKimiDefaultHeaders({
+    this._identityHeaders ??= createZimiDefaultHeaders({
       homeDir: this.homeDir,
       ...this.identity,
     });
@@ -462,12 +462,12 @@ export class KimiOAuthToolkit<TConfig = unknown> {
   }
 }
 
-export function resolveKimiTokenStorageName(input: {
+export function resolveZimiTokenStorageName(input: {
   readonly providerName?: string | undefined;
   readonly oauthKey?: string | undefined;
 }): string {
-  const key = input.oauthKey ?? KIMI_CODE_OAUTH_KEY;
-  if (key === 'kimi-code' || key === KIMI_CODE_OAUTH_KEY) return 'kimi-code';
+  const key = input.oauthKey ?? ZIMI_CODE_OAUTH_KEY;
+  if (key === 'zimi-code' || key === ZIMI_CODE_OAUTH_KEY) return 'zimi-code';
 
   const prefix = 'oauth/';
   if (key.startsWith(prefix) && key.slice(prefix.length).length > 0) {
@@ -475,27 +475,27 @@ export function resolveKimiTokenStorageName(input: {
   }
 
   if (!key.includes('/') && !key.startsWith('.')) return key;
-  throw new Error(`Invalid Kimi OAuth token key: "${key}".`);
+  throw new Error(`Invalid Zimi OAuth token key: "${key}".`);
 }
 
-function defaultKimiHome(): string {
-  const override = process.env['KIMI_CODE_HOME'];
+function defaultZimiHome(): string {
+  const override = process.env['ZIMI_CODE_HOME'];
   if (override !== undefined && override.length > 0) return override;
-  return join(homedir(), '.kimi-code');
+  return join(homedir(), '.zimi-code');
 }
 
 function managedUsageUrl(baseUrl: string | undefined): string {
-  if (baseUrl === undefined) return kimiCodeUsageUrl();
+  if (baseUrl === undefined) return zimiCodeUsageUrl();
   return `${baseUrl.replace(/\/+$/, '')}/usages`;
 }
 
 function managedUserInfoUrl(baseUrl: string | undefined): string {
-  if (baseUrl === undefined) return kimiCodeUserInfoUrl();
+  if (baseUrl === undefined) return zimiCodeUserInfoUrl();
   return `${baseUrl.replace(/\/+$/, '')}/me`;
 }
 
 function managedFeedbackUrl(baseUrl: string | undefined): string {
-  return kimiCodeFeedbackUrl(baseUrl);
+  return zimiCodeFeedbackUrl(baseUrl);
 }
 
 function normalizeOAuthHost(oauthHost: string): string {

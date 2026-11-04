@@ -7,12 +7,12 @@ import {
   IOAuthToolkit,
   ITelemetryService,
   type Scope,
-} from '@moonshot-ai/agent-core-v2';
-import { createKimiDeviceId } from '@moonshot-ai/kimi-code-oauth';
+} from '@zimi-ai/agent-core-v2';
+import { createZimiDeviceId } from '@zimi-ai/zimi-code-oauth';
 
-const SERVER_TELEMETRY_APP_NAME = 'kimi-code-cli';
+const SERVER_TELEMETRY_APP_NAME = 'zimi-code-cli';
 const SERVER_TELEMETRY_UI_MODE = 'web';
-const TELEMETRY_DISABLE_ENV = 'KIMI_DISABLE_TELEMETRY';
+const TELEMETRY_DISABLE_ENV = 'ZIMI_DISABLE_TELEMETRY';
 const TELEMETRY_DISABLE_ENV_VALUES = new Set(['1', 'true', 't', 'yes', 'y']);
 
 const TELEMETRY_SHUTDOWN_TIMEOUT_MS = 3_000;
@@ -42,7 +42,7 @@ export async function initializeServerTelemetry(
 
   const auth = core.accessor.get(IOAuthToolkit);
   const appender = createCloudAppender(core.accessor, {
-    deviceId: createKimiDeviceId(homeDir),
+    deviceId: createZimiDeviceId(homeDir),
     appName: SERVER_TELEMETRY_APP_NAME,
     uiMode: SERVER_TELEMETRY_UI_MODE,
     model: config.get<string>('defaultModel') ?? undefined,

@@ -19,7 +19,7 @@ describe('ProtocolSchema', () => {
   });
 
   it('rejects vendor names and unknown values', () => {
-    expect(ProtocolSchema.safeParse('kimi').success).toBe(false);
+    expect(ProtocolSchema.safeParse('zimi').success).toBe(false);
     expect(ProtocolSchema.safeParse('vertexai').success).toBe(false);
     expect(ProtocolSchema.safeParse('azure').success).toBe(false);
     expect(ProtocolSchema.safeParse('').success).toBe(false);

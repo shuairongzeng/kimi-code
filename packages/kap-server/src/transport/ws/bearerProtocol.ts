@@ -1,4 +1,4 @@
-export const WS_BEARER_PROTOCOL_PREFIX = 'kimi-code.bearer.';
+export const WS_BEARER_PROTOCOL_PREFIX = 'zimi-code.bearer.';
 
 export function extractWsBearerToken(protocolHeader: string | undefined): string | null {
   if (protocolHeader === undefined) {

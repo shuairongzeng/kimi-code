@@ -7,7 +7,7 @@ import {
   OldSessionStateSchema,
   type OldSessionMetadata,
   type OldSessionState,
-} from '../kimi-cli-schema.js';
+} from '../zimi-cli-schema.js';
 
 export interface LegacySessionRef {
   readonly uuid: string;

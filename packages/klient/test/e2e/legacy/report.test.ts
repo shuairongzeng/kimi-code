@@ -275,8 +275,8 @@ describe('server-e2e report', () => {
   it('records createCaseLogger entries under the active case', () => {
     const reportDir = tmpReportDir();
     resetReportDir(reportDir);
-    const previousReportDir = process.env['KIMI_SERVER_E2E_REPORT_DIR'];
-    process.env['KIMI_SERVER_E2E_REPORT_DIR'] = reportDir;
+    const previousReportDir = process.env['ZIMI_SERVER_E2E_REPORT_DIR'];
+    process.env['ZIMI_SERVER_E2E_REPORT_DIR'] = reportDir;
     try {
       const log = createCaseLogger('refresh: auth');
       log('http envelope', { method: 'GET', path: '/auth', code: 0 });
@@ -290,9 +290,9 @@ describe('server-e2e report', () => {
       });
     } finally {
       if (previousReportDir === undefined) {
-        delete process.env['KIMI_SERVER_E2E_REPORT_DIR'];
+        delete process.env['ZIMI_SERVER_E2E_REPORT_DIR'];
       } else {
-        process.env['KIMI_SERVER_E2E_REPORT_DIR'] = previousReportDir;
+        process.env['ZIMI_SERVER_E2E_REPORT_DIR'] = previousReportDir;
       }
     }
   });

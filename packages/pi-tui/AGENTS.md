@@ -6,7 +6,7 @@ Vendored fork of [`earendil-works/pi`](https://github.com/earendil-works/pi) `pa
 
 ## Changing this package
 
-Put TUI product behavior in `apps/kimi-code/src/tui` (composition, subclassing, existing host callbacks). Change this package only when the public API cannot express the behavior.
+Put TUI product behavior in `apps/zimi-code/src/tui` (composition, subclassing, existing host callbacks). Change this package only when the public API cannot express the behavior.
 
 A patch that lands here must:
 
@@ -18,4 +18,4 @@ Skip step 3 and the change is not done. Do not rewrite a rendering strategy.
 
 ## Tests
 
-This package runs `node --test` via `pnpm --filter @moonshot-ai/pi-tui test`. The repo-root vitest run does not execute these tests.
+This package runs `node --test` via `pnpm --filter @zimi-ai/pi-tui test`. The repo-root vitest run does not execute these tests.

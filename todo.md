@@ -28,9 +28,9 @@
 
    **讨论结论：迁移到 MediaService + Resolver，Loop 不再持有上传或媒体解析职责**
    - 本方案同时覆盖第 13 项“媒体解析与物化”；ownership 方向已确认，上传缓存、媒体预算、display path/placeholder 等具体功能去留后续逐项讨论。
-   - MediaService 对外提供 OSS-like 接口：`put(file)` 保存 bytes、MIME、filename 等并返回 `kimi-file://...`；`get(kimi-file)` 返回文件内容和元数据，大文件可另外提供 stream/open。
-   - ReadMediaFile、MCP、用户附件等媒体生产者只调用 `put()` 并生成包含 `kimi-file` 的 message part，不在生产时上传，也不再注入 `videoUploader`。
-   - MediaService 初始化时注册 Resolver。Resolver 识别消息中的 `kimi-file` part，通过 `get()` 读取文件，根据本次 `request.model` 和 protocol media support 决定上传、inline 或 placeholder，并在上传成功后替换原 part。
+   - MediaService 对外提供 OSS-like 接口：`put(file)` 保存 bytes、MIME、filename 等并返回 `zimi-file://...`；`get(zimi-file)` 返回文件内容和元数据，大文件可另外提供 stream/open。
+   - ReadMediaFile、MCP、用户附件等媒体生产者只调用 `put()` 并生成包含 `zimi-file` 的 message part，不在生产时上传，也不再注入 `videoUploader`。
+   - MediaService 初始化时注册 Resolver。Resolver 识别消息中的 `zimi-file` part，通过 `get()` 读取文件，根据本次 `request.model` 和 protocol media support 决定上传、inline 或 placeholder，并在上传成功后替换原 part。
    - 上传直接调用 `request.endpoint.files.upload()`，先通过 `resolveEndpoint(request.endpoint)` 获取本次 endpoint 和凭证；不给 Loop 或 core requester 新增 `uploadVideo()` 方法。
    - Credential recovery 留在 Resolver：上传鉴权失败时通过 `endpoint.credentials.canRecover/invalidate` 使凭证失效，重新解析 endpoint 后重试。参考 237 `agent-core/src/llm/builtin/policy/store-ref/resolve.ts` 与 `materialize.ts`。
    - 目标删除：LoopRequester 的 `uploadVideo()` 及 contract、AgentLoopRequester 的 `mediaResolver.resolve()` 调用、`AgentMediaResolution { model, requester }`、mediaToolsRegistrar 对 Loop requester 上传方法的绑定，以及 ReadMediaFileTool 的 `videoUploader` 参数。
@@ -175,7 +175,7 @@
     - 同时负责媒体数量判断、恢复快照捕获、日志、`llm_request_projection_fallback` telemetry 和 `onAttemptRetry` 回调。
 
 29. **无限重试策略**（`requester.ts:587-615`）
-    - 读取 `KIMI_CODE_INFINITE_RETRY`。
+    - 读取 `ZIMI_CODE_INFINITE_RETRY`。
     - 开启后对错误进行无限重试，但排除 abort 和 context overflow。
     - 支持 Retry-After、指数退避、重试日志、abortable sleep 和 retry 回调。
 
@@ -218,8 +218,8 @@
 | --- | --- |
 | 旧 `ChatProviderError` 图片错误文本恢复 | `provider` / `syntax` 中的 `unsupported media type for base64 image`、`invalid data url for image` 已恢复媒体剥离重发；已在 `387ad1a6` 提交。 |
 | ReadMediaFile 默认注册与隐藏 | 工具始终注册；仅在图片和视频均不支持时，MediaTool Resolver 同步隐藏 schema、assistant calls 和对应 results；其他 calls/content 保留。 |
-| ReadMediaFile 执行语义 | 不再按 model capability / providerType 拒绝调用；读取和必要处理后默认 `put` 并生成 `kimi-file://`，实际读取、解码、存储错误仍显式返回。 |
-| `kimi-file` 请求解析 | Media Resolver 按模型与协议能力、上传接口和上传结果选择能力提示 omit、provider file-id 或 inline base64；认证错误仍显式抛出。 |
+| ReadMediaFile 执行语义 | 不再按 model capability / providerType 拒绝调用；读取和必要处理后默认 `put` 并生成 `zimi-file://`，实际读取、解码、存储错误仍显式返回。 |
+| `zimi-file` 请求解析 | Media Resolver 按模型与协议能力、上传接口和上传结果选择能力提示 omit、provider file-id 或 inline base64；认证错误仍显式抛出。 |
 | Resolver 组合顺序 | 已固定为 ToolSelect → MediaTool → Structure → Media；中英文文档与聚焦测试已同步。 |
 | full compaction 与 fork 缓存诊断简化 | 已改为 response usage 驱动并删除 `lastTurnRequest` 及历史前缀比较；新增 `cache_hit_rate`，只把 cache read 计为命中，缺 usage 或总输入为 0 时未知，诊断不参与 recovery 或 compaction 决策。 |
 | 非 `Error` provider 异常 | 已按用户决定恢复 main 行为：`unknown` 且 rawError 为非 `Error` 时映射为 `ChatProviderError(provider.api_error)`，`isRetryableGenerateError` 为 true；本地 14/14、远程 75/75，产品改动未提交。 |
@@ -233,13 +233,13 @@
 | 行为 | 用户决定 |
 | --- | --- |
 | 凭证解析异常分类 | 接受当前归为 `provider.api_error` 的行为，不回滚到 main 的 `config.invalid`，本轮不修改。 |
-| kimi-inspect 模型 Ping | 用户明确不管：kimi-inspect 不对外开放，因此 Ping 的 debug RPC `method not found` 与 typecheck 失败均不处理，不再作为本任务回归。 |
+| zimi-inspect 模型 Ping | 用户明确不管：zimi-inspect 不对外开放，因此 Ping 的 debug RPC `method not found` 与 typecheck 失败均不处理，不再作为本任务回归。 |
 | provider 文件失效后的上传缓存 | 用户明确先不管：内容寻址引用与 provider file-id 缓存即使过期或被删除也不在本轮处理，不要求清理缓存或自动重传。 |
 | 媒体降级与结构投影顺序 | 用户接受 313 当前顺序：媒体恢复可先按未投影历史计算和重写，随后再执行 strict 结构投影；orphan 媒体影响降级数量及组合恢复顺序不再作为待修回归。 |
 | `llmRequester.mediaRecovery` inspect state | 接受当前 ledger 的 inspect 展示，不补 main 的 `media.degradeCount/strip` 兼容视图；运行时媒体恢复行为不改。 |
 | reasoning-key 缓存 | 接受以 `baseUrl + model` 作为天然共享边界；相同连接的模型 alias 共用 App 级检测结果，不按 alias 或账号额外隔离，不处理该 corner case。 |
 | 会话级工具快照与运行期变更 | 用户定稿：每个 Agent 会话只初始化一次并持久化 initial；运行期新增、删除、修改以追加变更表达。支持 tool-select 的模型按版本重选，不支持的模型仅提升 initial deferred，runtime 版本过滤并转为 reminder；模型分支只在 Resolver。 |
-| 无凭证 Kimi 上传 | 用户明确不做处理：接受 313 当前无凭证上传与认证错误行为，不恢复 main 的本地失败/inline 回退；标准 Kimi 正常请求与上传共用凭证，本项不再作为待修回归。 |
+| 无凭证 Zimi 上传 | 用户明确不做处理：接受 313 当前无凭证上传与认证错误行为，不恢复 main 的本地失败/inline 回退；标准 Zimi 正常请求与上传共用凭证，本项不再作为待修回归。 |
 
 ### C. 已定稿但尚未实施
 

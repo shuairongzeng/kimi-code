@@ -1,4 +1,4 @@
-import { assign, createActor, fromPromise, setup, waitFor } from '@moonshot-ai/agent-core-v2/human/xstate2';
+import { assign, createActor, fromPromise, setup, waitFor } from '@zimi-ai/agent-core-v2/human/xstate2';
 
 import {
   inspectRemoteControlLock,

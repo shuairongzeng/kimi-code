@@ -15,7 +15,7 @@ import {
   IOAuthToolkit,
   ITelemetryService,
   noopTelemetryService,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 
 import { listLiveServerInstances } from '../src/instanceRegistry';
 import {
@@ -42,7 +42,7 @@ describe('server-v2 boot', () => {
   });
 
   it('boots agent-core-v2 and serves the basic /api/v1 routes', async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -93,7 +93,7 @@ describe('server-v2 boot', () => {
   });
 
   it('reports opts.serverVersion as server_version instead of the package version', async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-version-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-version-'));
     server = await startServer({
       hostIdentity: {
         productName: 'test-host',
@@ -127,8 +127,8 @@ describe('server-v2 boot', () => {
     });
   });
 
-  it('seeds default Kimi identity headers from hostIdentity that opts.seeds can override', async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-ua-'));
+  it('seeds default Zimi identity headers from hostIdentity that opts.seeds can override', async () => {
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-ua-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -156,7 +156,7 @@ describe('server-v2 boot', () => {
   });
 
   it('rejects invalid idle reclaim config before registering an instance', async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-idle-reclaim-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-idle-reclaim-'));
     await expect(
       startServer({
         hostIdentity: TEST_HOST_IDENTITY,
@@ -164,14 +164,14 @@ describe('server-v2 boot', () => {
         port: 0,
         homeDir: home,
         logLevel: 'silent',
-        env: { KIMI_CODE_SESSION_IDLE_RECLAIM_MS: 'nope' },
+        env: { ZIMI_CODE_SESSION_IDLE_RECLAIM_MS: 'nope' },
       }),
-    ).rejects.toThrow(/KIMI_CODE_SESSION_IDLE_RECLAIM_MS.*non-negative integer/);
+    ).rejects.toThrow(/ZIMI_CODE_SESSION_IDLE_RECLAIM_MS.*non-negative integer/);
     expect(await listLiveServerInstances(home)).toEqual([]);
   });
 
   it('seeds explicit skill dirs into the core scope when skillDirs is provided', async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-skills-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-skills-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -197,7 +197,7 @@ describe('server-v2 boot', () => {
   });
 
   it('does not shut down a host-injected telemetry service when server telemetry is disabled', async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-host-telemetry-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-host-telemetry-'));
     await writeFile(join(home, 'config.toml'), 'telemetry = false\n', 'utf8');
     const shutdown = vi.fn(async () => {});
 
@@ -217,7 +217,7 @@ describe('server-v2 boot', () => {
   });
 
   it('completes server cleanup when owned telemetry shutdown fails', async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-telemetry-failure-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-telemetry-failure-'));
     const storage = new InMemoryStorageService();
     const write = storage.write.bind(storage);
     vi.spyOn(storage, 'write').mockImplementation(async (scope, key, data, options) => {
@@ -254,7 +254,7 @@ describe('server-v2 boot', () => {
   });
 
   it('logs process-level exceptions without exiting and removes the handlers on close', async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-'));
     const lines: string[] = [];
     const stream = new Writable({
       write(chunk, _encoding, callback) {
@@ -306,8 +306,8 @@ describe('server-v2 boot', () => {
   });
 
   it('does not leave process handlers installed when startup fails', async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-'));
-    const emptyAssets = await mkdtemp(join(tmpdir(), 'kimi-server-v2-assets-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-'));
+    const emptyAssets = await mkdtemp(join(tmpdir(), 'zimi-server-v2-assets-'));
     const rejectionBefore = process.listenerCount('unhandledRejection');
     const exceptionBefore = process.listenerCount('uncaughtException');
     try {
@@ -470,7 +470,7 @@ describe('server-v2 boot — port retry', () => {
   });
 
   it('retries on port+1 and advertises the bound port in the instance registry', async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-port-retry-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-port-retry-'));
     const { port, next } = await allocateAdjacentFreePair();
     const occupant = await listenOnPort('127.0.0.1', port);
     try {

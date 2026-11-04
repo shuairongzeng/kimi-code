@@ -7,8 +7,8 @@ import {
   IWorkspaceTrustStore,
   type Scope,
   type Workspace,
-} from '@moonshot-ai/agent-core-v2';
-import { workspaceRootKey } from '@moonshot-ai/agent-core-v2/_base/utils/workdir-slug';
+} from '@zimi-ai/agent-core-v2';
+import { workspaceRootKey } from '@zimi-ai/agent-core-v2/_base/utils/workdir-slug';
 import { isAbsolute, join, normalize, resolve } from 'node:path';
 
 import { z } from 'zod';

@@ -3,7 +3,7 @@ import type {
   ContextMessage,
   PromptOrigin,
   ToolCall,
-} from "@moonshot-ai/kimi-code-sdk";
+} from "@zimi-ai/zimi-code-sdk";
 
 import { withoutUserPromptSubmitHookParts } from "./hook-parts";
 
@@ -40,7 +40,7 @@ export function buildExportMarkdown(input: {
     `token_count: ${String(input.tokenCount)}`,
     "---",
     "",
-    "# Kimi Session Export",
+    "# Zimi Session Export",
     "",
     "## Overview",
     "",

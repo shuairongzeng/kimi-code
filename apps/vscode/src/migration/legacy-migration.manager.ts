@@ -10,7 +10,7 @@ import {
   type MigrationPlan,
   type MigrationReport,
   type MigrationScope,
-} from "@moonshot-ai/migration-legacy";
+} from "@zimi-ai/migration-legacy";
 
 const FULL_MIGRATION_SCOPE = {
   config: true,
@@ -80,13 +80,13 @@ export interface LegacyMigrationDiscovery {
 export interface LegacyMigrationManagerOptions {
   /** Harness-resolved homeDir. */
   readonly targetHome: string;
-  /** Defaults to the legacy kimi-cli home (`~/.kimi`). Injectable for isolated tests. */
+  /** Defaults to the legacy zimi-cli home (`~/.zimi`). Injectable for isolated tests. */
   readonly defaultSourceHome?: string;
-  /** Defaults to the legacy kimi-cli plans dir (`~/.kimi/plans`). Injectable for isolated tests. */
+  /** Defaults to the legacy zimi-cli plans dir (`~/.zimi/plans`). Injectable for isolated tests. */
   readonly plansSourceDir?: string;
-  /** First workspace root. Used only to resolve a relative legacy KIMI_SHARE_DIR. */
+  /** First workspace root. Used only to resolve a relative legacy ZIMI_SHARE_DIR. */
   readonly workspaceRoot?: string | null;
-  /** The removed `kimi.environmentVariables` VS Code setting, read once for migration. */
+  /** The removed `zimi.environmentVariables` VS Code setting, read once for migration. */
   readonly legacyEnvironmentVariables?: unknown;
 }
 
@@ -153,7 +153,7 @@ interface SourceCandidate {
 }
 
 /**
- * Coordinates legacy kimi-cli migration for the VS Code host while keeping all
+ * Coordinates legacy zimi-cli migration for the VS Code host while keeping all
  * data translation inside the shared migration package.
  */
 export class LegacyMigrationManager {
@@ -169,7 +169,7 @@ export class LegacyMigrationManager {
       throw new Error("LegacyMigrationManager requires a non-empty targetHome.");
     }
     this.targetHome = resolve(options.targetHome);
-    this.defaultSourceHome = resolve(options.defaultSourceHome ?? join(homedir(), ".kimi"));
+    this.defaultSourceHome = resolve(options.defaultSourceHome ?? join(homedir(), ".zimi"));
     this.workspaceRoot =
       options.workspaceRoot === undefined || options.workspaceRoot === null
         ? null
@@ -189,7 +189,7 @@ export class LegacyMigrationManager {
           : {
               kind: "legacy-migration",
               message:
-                "Legacy Kimi data was found. Migrate config, MCP servers, history, skills, and sessions into Kimi Code? Your old data will be kept.",
+                "Legacy Zimi data was found. Migrate config, MCP servers, history, skills, and sessions into Zimi Code? Your old data will be kept.",
               actions: [
                 { id: "now", label: "Migrate Now" },
                 { id: "later", label: "Later" },
@@ -397,14 +397,14 @@ export class LegacyMigrationManager {
         warnings.push({
           code: "invalid-share-dir",
           message:
-            "The legacy KIMI_SHARE_DIR is relative, but no workspace is open; this migration source was ignored.",
+            "The legacy ZIMI_SHARE_DIR is relative, but no workspace is open; this migration source was ignored.",
         });
       } else {
         sourceHome = resolve(this.workspaceRoot, shareDir.value);
         warnings.push({
           code: "relative-share-dir",
           sourceHome,
-          message: `The legacy relative KIMI_SHARE_DIR was resolved against the workspace: ${sourceHome}`,
+          message: `The legacy relative ZIMI_SHARE_DIR was resolved against the workspace: ${sourceHome}`,
         });
       }
 
@@ -412,7 +412,7 @@ export class LegacyMigrationManager {
         warnings.push({
           code: "source-equals-target",
           sourceHome,
-          message: "The legacy KIMI_SHARE_DIR resolves to the Kimi Code home and was ignored.",
+          message: "The legacy ZIMI_SHARE_DIR resolves to the Zimi Code home and was ignored.",
         });
       } else if (
         sourceHome !== undefined &&
@@ -440,16 +440,16 @@ function readLegacyShareDir(
   ) {
     return {
       kind: "invalid",
-      message: "The legacy kimi.environmentVariables setting is invalid and was ignored.",
+      message: "The legacy zimi.environmentVariables setting is invalid and was ignored.",
     };
   }
 
-  const value = (environmentVariables as Record<string, unknown>)["KIMI_SHARE_DIR"];
+  const value = (environmentVariables as Record<string, unknown>)["ZIMI_SHARE_DIR"];
   if (value === undefined) return { kind: "missing" };
   if (typeof value !== "string" || value.trim().length === 0) {
     return {
       kind: "invalid",
-      message: "The legacy KIMI_SHARE_DIR must be a non-empty string and was ignored.",
+      message: "The legacy ZIMI_SHARE_DIR must be a non-empty string and was ignored.",
     };
   }
   return { kind: "value", value };
@@ -592,7 +592,7 @@ function aggregateManualActions(
     for (const failure of source.failures) {
       if (failure.code === "run-failed") {
         actions.push(
-          `Fix access to ${source.source.sourceHome} or the Kimi Code home, then run “Kimi Code: Migrate Legacy Data” again.`,
+          `Fix access to ${source.source.sourceHome} or the Zimi Code home, then run “Zimi Code: Migrate Legacy Data” again.`,
         );
       } else {
         actions.push(
@@ -604,13 +604,13 @@ function aggregateManualActions(
     const summary = source.report?.summary;
     if (summary === undefined) continue;
     if (summary.config.wroteSiblingDueToConflict) {
-      actions.push("Review and merge config.migrated-from-kimi-cli.toml.");
+      actions.push("Review and merge config.migrated-from-zimi-cli.toml.");
     }
     if (summary.config.wroteTuiSibling) {
-      actions.push("Review and merge tui.migrated-from-kimi-cli.toml.");
+      actions.push("Review and merge tui.migrated-from-zimi-cli.toml.");
     }
     if (summary.mcp.wroteSiblingDueToConflict) {
-      actions.push("Review and merge mcp.migrated-from-kimi-cli.json.");
+      actions.push("Review and merge mcp.migrated-from-zimi-cli.json.");
     }
     if (summary.sessions.sessionsConflicts.length > 0) {
       actions.push(
@@ -665,7 +665,7 @@ function runMessage(
   status: LegacyMigrationRunResult["status"],
   totals: LegacyMigrationTotals,
 ): string {
-  if (status === "nothing-to-migrate") return "No legacy Kimi data needs migration.";
+  if (status === "nothing-to-migrate") return "No legacy Zimi data needs migration.";
   if (status === "failed") {
     return "Legacy migration failed. Fix the reported path or data error, then retry from the command palette.";
   }

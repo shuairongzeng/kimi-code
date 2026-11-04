@@ -4,12 +4,12 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { KimiRegion } from '@moonshot-ai/kimi-code-oauth';
+import type { ZimiRegion } from '@zimi-ai/zimi-code-oauth';
 import { z } from 'zod';
 
 import { ClientConfigClient } from '#/client-configs/node/client-configs';
 
-let region: KimiRegion = 'mainland-cn';
+let region: ZimiRegion = 'mainland-cn';
 let baseUrlOverride: string | undefined;
 let cacheDir: string | undefined;
 
@@ -460,7 +460,7 @@ describe('region awareness', () => {
     expect(client.peek('estimated_cache_duration', configSchema)).toBeUndefined();
   });
 
-  it('keeps honoring the KIMI_CODE_BASE_URL override ahead of the profile', async () => {
+  it('keeps honoring the ZIMI_CODE_BASE_URL override ahead of the profile', async () => {
     baseUrlOverride = 'https://env-api.example.com';
     const fetchImpl = vi.fn(async () => jsonResponse(ENVELOPE));
 

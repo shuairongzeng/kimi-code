@@ -3,10 +3,10 @@ import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promis
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { inflateRawSync } from 'node:zlib';
-import { ISessionMediaStore } from '@moonshot-ai/agent-core-v2/agent/media/sessionMediaStore';
-import { mcpResultToExecutableOutput } from '@moonshot-ai/agent-core-v2/agent/mcp/output';
-import { renderToolResultForModel } from '@moonshot-ai/agent-core-v2/agent/contextMemory/toolResultRender';
-import { IReadTool, ReadInputSchema, type ReadInput } from '@moonshot-ai/agent-core-v2/agent/tools/os/read/read';
+import { ISessionMediaStore } from '@zimi-ai/agent-core-v2/agent/media/sessionMediaStore';
+import { mcpResultToExecutableOutput } from '@zimi-ai/agent-core-v2/agent/mcp/output';
+import { renderToolResultForModel } from '@zimi-ai/agent-core-v2/agent/contextMemory/toolResultRender';
+import { IReadTool, ReadInputSchema, type ReadInput } from '@zimi-ai/agent-core-v2/agent/tools/os/read/read';
 
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -41,16 +41,16 @@ import {
   sessionDirOf,
   type ContextMessage,
   type ScopeSeed,
-} from '@moonshot-ai/agent-core-v2';
-import { ISessionLockService } from '@moonshot-ai/agent-core-v2/persistence/interface/sessionLock';
-import { IHostProcessService, type IHostProcess } from '@moonshot-ai/agent-core-v2/os/interface/hostProcess';
-import { FakeEnvironment } from '@moonshot-ai/agent-core-v2/environment/fakeEnvironment';
-import { TurnSteer } from '@moonshot-ai/agent-core-v2/agent/loop/turnOps';
-import type { AgentTranscriptSnapshot } from '@moonshot-ai/transcript';
-import { TurnStarted } from '@moonshot-ai/agent-core-v2/agent/loop/turnEvents';
-import { EnvironmentSetBinding } from '@moonshot-ai/agent-core-v2/agent/environmentBinding/environmentBindingOps';
-import { sessionWarningsResponseSchema } from '@moonshot-ai/agent-core-v2/app/sessionLegacy/sessionProtocol';
-import { encodeWorkDirKey } from '@moonshot-ai/agent-core-v2/_base/utils/workdir-slug';
+} from '@zimi-ai/agent-core-v2';
+import { ISessionLockService } from '@zimi-ai/agent-core-v2/persistence/interface/sessionLock';
+import { IHostProcessService, type IHostProcess } from '@zimi-ai/agent-core-v2/os/interface/hostProcess';
+import { FakeEnvironment } from '@zimi-ai/agent-core-v2/environment/fakeEnvironment';
+import { TurnSteer } from '@zimi-ai/agent-core-v2/agent/loop/turnOps';
+import type { AgentTranscriptSnapshot } from '@zimi-ai/transcript';
+import { TurnStarted } from '@zimi-ai/agent-core-v2/agent/loop/turnEvents';
+import { EnvironmentSetBinding } from '@zimi-ai/agent-core-v2/agent/environmentBinding/environmentBindingOps';
+import { sessionWarningsResponseSchema } from '@zimi-ai/agent-core-v2/app/sessionLegacy/sessionProtocol';
+import { encodeWorkDirKey } from '@zimi-ai/agent-core-v2/_base/utils/workdir-slug';
 
 import { type RunningServer, startServer } from '../src/start';
 import { TEST_HOST_IDENTITY } from './helpers/hostIdentity';
@@ -113,7 +113,7 @@ describe('server-v2 /api/v1/sessions', () => {
   let base: string;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-sessions-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-sessions-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -156,7 +156,7 @@ describe('server-v2 /api/v1/sessions', () => {
       await new Promise((resolve) => setTimeout(resolve, 25));
       await rm(home, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 } as never);
     }
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-sessions-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-sessions-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -234,7 +234,7 @@ describe('server-v2 /api/v1/sessions', () => {
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toBe('application/zip');
     expect(res.headers.get('content-disposition')).toBe(
-      `attachment; filename="kimi-session-${id}.zip"`,
+      `attachment; filename="zimi-session-${id}.zip"`,
     );
     expect(res.headers.get('content-length')).toBe(String(archive.length));
     expect(res.headers.get('cache-control')).toBe('no-store');
@@ -242,15 +242,15 @@ describe('server-v2 /api/v1/sessions', () => {
     const entries = readZipEntries(archive);
     const manifest = JSON.parse(entries.get('manifest.json')?.toString('utf8') ?? 'null') as {
       sessionId: string;
-      kimiCodeVersion: string;
+      zimiCodeVersion: string;
       desktopVersion?: string;
       webLogPath?: string;
     };
-    expect(entries.get('logs/kimi-web.jsonl')?.toString('utf8')).toBe(webLog);
+    expect(entries.get('logs/zimi-web.jsonl')?.toString('utf8')).toBe(webLog);
     expect(manifest).toMatchObject({
       sessionId: id,
-      kimiCodeVersion: TEST_HOST_IDENTITY.version,
-      webLogPath: 'logs/kimi-web.jsonl',
+      zimiCodeVersion: TEST_HOST_IDENTITY.version,
+      webLogPath: 'logs/zimi-web.jsonl',
     });
     expect(manifest.desktopVersion).toBeUndefined();
     await expect.poll(() => listExportTempDirs(id)).toEqual([]);
@@ -315,7 +315,7 @@ describe('server-v2 /api/v1/sessions', () => {
     const id = created.body.data.id;
     await mkdir(join(home as string, 'logs'), { recursive: true });
     await writeFile(
-      join(home as string, 'logs', 'kimi-code-desktop.log'),
+      join(home as string, 'logs', 'zimi-code-desktop.log'),
       '2026-07-27T00:00:00.000Z INFO  [renderer] hello\n',
       'utf-8',
     );
@@ -333,15 +333,15 @@ describe('server-v2 /api/v1/sessions', () => {
     expect(res.status).toBe(200);
     const entries = readZipEntries(archive);
     const manifest = JSON.parse(entries.get('manifest.json')?.toString('utf8') ?? 'null') as {
-      kimiCodeVersion: string;
+      zimiCodeVersion: string;
       desktopLogPath?: string;
       desktopVersion?: string;
     };
-    expect(entries.get('logs/kimi-desktop.log')?.toString('utf8')).toBe(
+    expect(entries.get('logs/zimi-desktop.log')?.toString('utf8')).toBe(
       '2026-07-27T00:00:00.000Z INFO  [renderer] hello\n',
     );
-    expect(manifest.desktopLogPath).toBe('logs/kimi-desktop.log');
-    expect(manifest.kimiCodeVersion).toBe(TEST_HOST_IDENTITY.version);
+    expect(manifest.desktopLogPath).toBe('logs/zimi-desktop.log');
+    expect(manifest.zimiCodeVersion).toBe(TEST_HOST_IDENTITY.version);
     expect(manifest.desktopVersion).toBe(TEST_HOST_IDENTITY.version);
   });
 
@@ -442,7 +442,7 @@ describe('server-v2 /api/v1/sessions', () => {
   it.each(['missing', 'not-a-directory'] as const)(
     'rejects create via workspace_id when the registered root is %s (40409)',
     async (state) => {
-      const cwd = await mkdtemp(join(tmpdir(), 'kimi-server-v2-workspace-root-'));
+      const cwd = await mkdtemp(join(tmpdir(), 'zimi-server-v2-workspace-root-'));
       let workspaceId: string | undefined;
       try {
         const created = await postJson<{ id: string }>('/api/v1/workspaces', { root: cwd });
@@ -483,7 +483,7 @@ describe('server-v2 /api/v1/sessions', () => {
   });
 
   it('shares one workspace until the last session closes', async () => {
-    const cwd = await mkdtemp(join(tmpdir(), 'kimi-server-v2-shared-workspace-'));
+    const cwd = await mkdtemp(join(tmpdir(), 'zimi-server-v2-shared-workspace-'));
     let firstId: string | undefined;
     let secondId: string | undefined;
     try {
@@ -709,13 +709,13 @@ describe('server-v2 /api/v1/sessions', () => {
         'model = "stub"',
         'max_context_size = 1000',
         '',
-        '[providers."managed:kimi-code"]',
-        'type = "kimi"',
+        '[providers."managed:zimi-code"]',
+        'type = "zimi"',
         'base_url = "https://api.example.test/coding/v1"',
         '',
-        '[providers."managed:kimi-code".oauth]',
+        '[providers."managed:zimi-code".oauth]',
         'storage = "file"',
-        'key = "kimi-code"',
+        'key = "zimi-code"',
         '',
       ].join('\n'),
       'utf-8',
@@ -733,7 +733,7 @@ describe('server-v2 /api/v1/sessions', () => {
       logout: async () => {
         throw new Error('unused');
       },
-      status: async () => ({ loggedIn: true, provider: 'managed:kimi-code' }),
+      status: async () => ({ loggedIn: true, provider: 'managed:zimi-code' }),
       refreshOAuthProviderModels: async () => ({ changed: [], unchanged: [], failed: [] }),
       getManagedUsage: async () => ({ kind: 'error', message: 'unused' }),
       getManagedUserInfo: async () => ({ kind: 'error', message: 'unused' }),
@@ -908,7 +908,7 @@ describe('server-v2 /api/v1/sessions', () => {
     });
     expect(on.body.code).toBe(50001);
     expect(on.body.msg).toContain('the tower experiment is disabled');
-    expect(on.body.msg).toContain('KIMI_CODE_EXPERIMENTAL_TOWER=1');
+    expect(on.body.msg).toContain('ZIMI_CODE_EXPERIMENTAL_TOWER=1');
     expect(readAgentState(await mainAgentOf(id), false).tower_mode).toBe(false);
 
     const off = await postJson(`/api/v1/sessions/${id}/profile`, {
@@ -1053,7 +1053,7 @@ describe('server-v2 /api/v1/sessions', () => {
   });
 
   it('archives a session, force-kills a SIGTERM-ignoring baseline MCP, and reacquires the workspace', async () => {
-    const cwd = await mkdtemp(join(tmpdir(), 'kimi-server-v2-session-archive-mcp-'));
+    const cwd = await mkdtemp(join(tmpdir(), 'zimi-server-v2-session-archive-mcp-'));
     const fixture = new URL('../../agent-core-v2/test/mcpCore/fixtures/mock-stdio-server.mjs', import.meta.url).pathname;
     const spawned: IHostProcess[] = [];
     let disposeReplacement: (() => void) | undefined;
@@ -1065,16 +1065,16 @@ describe('server-v2 /api/v1/sessions', () => {
       return child;
     });
     try {
-      vi.stubEnv('KIMI_CODE_TRUST_WORKSPACE', '1');
-      await mkdir(join(cwd, '.kimi-code'), { recursive: true });
+      vi.stubEnv('ZIMI_CODE_TRUST_WORKSPACE', '1');
+      await mkdir(join(cwd, '.zimi-code'), { recursive: true });
       await writeFile(
-        join(cwd, '.kimi-code', 'mcp.json'),
+        join(cwd, '.zimi-code', 'mcp.json'),
         JSON.stringify({
           mcpServers: {
             fixture: {
               command: process.execPath,
               args: [fixture],
-              env: { KIMI_TEST_MCP_IGNORE_SIGTERM: '1' },
+              env: { ZIMI_TEST_MCP_IGNORE_SIGTERM: '1' },
             },
           },
         }),
@@ -1292,8 +1292,8 @@ describe('server-v2 /api/v1/sessions', () => {
     });
     base = `http://127.0.0.1:${server.port}`;
 
-    const cwd = await mkdtemp(join(tmpdir(), 'kimi-reload-cwd-'));
-    const extra = await mkdtemp(join(tmpdir(), 'kimi-reload-extra-'));
+    const cwd = await mkdtemp(join(tmpdir(), 'zimi-reload-cwd-'));
+    const extra = await mkdtemp(join(tmpdir(), 'zimi-reload-extra-'));
     await mkdir(join(cwd, '.git'));
     try {
       const created = await postJson<SessionWire>('/api/v1/sessions', { metadata: { cwd } });
@@ -1388,7 +1388,7 @@ describe('server-v2 /api/v1/sessions', () => {
     });
     base = `http://127.0.0.1:${server.port}`;
 
-    const cwd = await mkdtemp(join(tmpdir(), 'kimi-reload-pool-cwd-'));
+    const cwd = await mkdtemp(join(tmpdir(), 'zimi-reload-pool-cwd-'));
     await mkdir(join(cwd, '.git'));
     try {
       const created = await postJson<SessionWire>('/api/v1/sessions', { metadata: { cwd } });
@@ -1637,11 +1637,11 @@ describe('server-v2 /api/v1/sessions', () => {
       turn_index: 999,
     });
     expect(sliced.body.code).toBe(40930);
-    expect(sliced.body.msg).toContain('Upgrade Kimi Code');
+    expect(sliced.body.msg).toContain('Upgrade Zimi Code');
     const incompatible = await postJson<SessionWire>(`/api/v1/sessions/${parentId}:fork`, {});
     expect(incompatible.body.code).toBe(40930);
     expect(incompatible.body.msg).toBe(
-      'This session requires a newer version of Kimi Code. Upgrade Kimi Code to the latest version to read this session.',
+      'This session requires a newer version of Zimi Code. Upgrade Zimi Code to the latest version to read this session.',
     );
     expect(incompatible.body.details).toEqual({ minReaderVersion: '9.9', readerVersion: '1.5' });
   });
@@ -2618,7 +2618,7 @@ describe('server-v2 /api/v1/sessions', () => {
 });
 
 async function listExportTempDirs(sessionId: string): Promise<string[]> {
-  const prefix = `kimi-session-export-${sessionId}-`;
+  const prefix = `zimi-session-export-${sessionId}-`;
   return (await readdir(tmpdir())).filter((entry) => entry.startsWith(prefix)).toSorted();
 }
 
@@ -2668,22 +2668,22 @@ describe('server-v2 /api/v1/sessions status context window', () => {
   let base: string;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-status-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-status-'));
     await writeFile(
       join(home, 'config.toml'),
       [
         'default_model = "k2"',
         '',
-        '[providers.kimi]',
-        'type = "kimi"',
+        '[providers.zimi]',
+        'type = "zimi"',
         'api_key = "sk-test"',
         'base_url = "https://api.example.test/v1"',
         '',
         '[models.k2]',
-        'provider = "kimi"',
+        'provider = "zimi"',
         'model = "kimi-k2"',
         'max_context_size = 131072',
-        'display_name = "Kimi K2"',
+        'display_name = "Zimi K2"',
         '',
       ].join('\n'),
       'utf-8',
@@ -2749,7 +2749,7 @@ describe('server-v2 /api/v1/sessions (minidb read model)', () => {
   let home: string | undefined;
   let base: string;
 
-  const READ_MODEL_ENV = 'KIMI_CODE_PERSISTENCE_MINIDB_READMODEL';
+  const READ_MODEL_ENV = 'ZIMI_CODE_PERSISTENCE_MINIDB_READMODEL';
 
   const READ_MODEL_CONFIG = [
     'default_model = "stub"',
@@ -2768,7 +2768,7 @@ describe('server-v2 /api/v1/sessions (minidb read model)', () => {
 
   beforeAll(async () => {
     process.env[READ_MODEL_ENV] = '1';
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-sessions-rm-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-sessions-rm-'));
     await writeFile(join(home, 'config.toml'), READ_MODEL_CONFIG, 'utf8');
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
@@ -2921,7 +2921,7 @@ describe('server-v2 /api/v1/sessions:btw', () => {
   }
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-btw-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-btw-'));
     await writeFile(
       join(home, 'config.toml'),
       [

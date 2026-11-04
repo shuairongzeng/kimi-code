@@ -104,9 +104,9 @@ async function gitCommit(cwd: string, args: readonly string[]): Promise<void> {
     }
     await git(cwd, [
       '-c',
-      'user.name=Kimi Tower',
+      'user.name=Zimi Tower',
       '-c',
-      'user.email=kimi-tower@localhost',
+      'user.email=zimi-tower@localhost',
       ...args,
     ]);
   }

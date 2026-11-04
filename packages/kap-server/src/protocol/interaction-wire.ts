@@ -6,7 +6,7 @@ import {
   type ApprovalRequest,
   type ApprovalResponse,
   type Interaction,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 
 import type { InteractionOutcome } from './interaction';
 

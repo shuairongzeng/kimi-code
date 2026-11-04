@@ -49,9 +49,9 @@ describe('WorkspaceInstructionsService', () => {
   let disposables: DisposableStore;
 
   beforeEach(() => {
-    workDir = mkdtempSync(join(tmpdir(), 'kimi-instructions-work-'));
-    osHomeDir = mkdtempSync(join(tmpdir(), 'kimi-instructions-os-'));
-    brandHomeDir = mkdtempSync(join(tmpdir(), 'kimi-instructions-brand-'));
+    workDir = mkdtempSync(join(tmpdir(), 'zimi-instructions-work-'));
+    osHomeDir = mkdtempSync(join(tmpdir(), 'zimi-instructions-os-'));
+    brandHomeDir = mkdtempSync(join(tmpdir(), 'zimi-instructions-brand-'));
     disposables = new DisposableStore();
     watchFires.clear();
   });

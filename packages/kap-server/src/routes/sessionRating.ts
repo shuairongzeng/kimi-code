@@ -1,5 +1,5 @@
-import { resumeSessionById, type Scope } from '@moonshot-ai/agent-core-v2';
-import type { SessionRatingHost } from '@moonshot-ai/kimi-code-product/session-rating/node';
+import { resumeSessionById, type Scope } from '@zimi-ai/agent-core-v2';
+import type { SessionRatingHost } from '@zimi-ai/zimi-code-product/session-rating/node';
 import { z } from 'zod';
 
 import { okEnvelope } from '../envelope';

@@ -17,7 +17,7 @@ afterEach(async () => {
 });
 
 describe('migrateSkillsStep', () => {
-  it('copies SKILL.md bundles and flat .md skills under ~/.kimi/skills/', async () => {
+  it('copies SKILL.md bundles and flat .md skills under ~/.zimi/skills/', async () => {
     await mkdir(join(src, 'skills', 'my-skill'), { recursive: true });
     await writeFile(
       join(src, 'skills', 'my-skill', 'SKILL.md'),
@@ -91,7 +91,7 @@ describe('migrateSkillsStep', () => {
     expect(await readFile(join(tgt, 'skills', 'already-there', 'SKILL.md'), 'utf-8')).toBe('TGT');
   });
 
-  it('returns zero counters when source ~/.kimi/skills/ is missing', async () => {
+  it('returns zero counters when source ~/.zimi/skills/ is missing', async () => {
     const r = await migrateSkillsStep({ sourceHome: src, targetHome: tgt });
     expect(r).toEqual({ copied: 0, skippedExisting: 0 });
     expect(existsSync(join(tgt, 'skills'))).toBe(false);
@@ -107,7 +107,7 @@ describe('migrateSkillsStep', () => {
 
   it('copies non-skill files at top level too (no filtering)', async () => {
     // We intentionally do not filter — whatever the user kept under
-    // ~/.kimi/skills/ is preserved verbatim. The new scanner ignores anything
+    // ~/.zimi/skills/ is preserved verbatim. The new scanner ignores anything
     // that does not match the skill shape.
     await mkdir(join(src, 'skills'), { recursive: true });
     await writeFile(join(src, 'skills', 'NOTES.txt'), 'stray notes');

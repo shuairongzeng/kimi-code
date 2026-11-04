@@ -511,7 +511,7 @@ describe('isToolExchangeAdjacencyError', () => {
 
   const MOONSHOT_TOOL_CALL_ID_NOT_FOUND = '400 tool_call_id  is not found';
 
-  it('matches the OpenAI/Moonshot tool_call_id-not-found 400', () => {
+  it('matches the OpenAI/Zimi tool_call_id-not-found 400', () => {
     expect(
       isToolExchangeAdjacencyError(new APIStatusError(400, MOONSHOT_TOOL_CALL_ID_NOT_FOUND)),
     ).toBe(true);
@@ -599,7 +599,7 @@ describe('isRecoverableRequestStructureError', () => {
     ).toBe(true);
   });
 
-  it('matches the OpenAI/Moonshot tool_call_id-not-found 400', () => {
+  it('matches the OpenAI/Zimi tool_call_id-not-found 400', () => {
     expect(
       isRecoverableRequestStructureError(new APIStatusError(400, '400 tool_call_id  is not found')),
     ).toBe(true);
@@ -662,7 +662,7 @@ describe('isRecoverableRequestStructureError', () => {
     ).toBe(true);
   });
 
-  it('matches the Moonshot/Kimi vacuous-message rejection', () => {
+  it('matches the Zimi/Zimi vacuous-message rejection', () => {
     expect(
       isRecoverableRequestStructureError(
         new APIStatusError(

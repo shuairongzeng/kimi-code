@@ -19,9 +19,9 @@ import {
   type IAgentScopeHandle,
   type ISessionScopeHandle,
   type Scope,
-} from '@moonshot-ai/agent-core-v2';
-import { TurnStarted } from '@moonshot-ai/agent-core-v2/agent/loop/turnEvents';
-import { TurnEnded, TurnPrompt } from '@moonshot-ai/agent-core-v2/agent/loop/turnOps';
+} from '@zimi-ai/agent-core-v2';
+import { TurnStarted } from '@zimi-ai/agent-core-v2/agent/loop/turnEvents';
+import { TurnEnded, TurnPrompt } from '@zimi-ai/agent-core-v2/agent/loop/turnOps';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SessionRatingHost } from '#/session-rating/node/index';

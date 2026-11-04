@@ -1,5 +1,5 @@
 {
-  "name": "@moonshot-ai/session-import",
+  "name": "@zimi-ai/session-import",
   "version": "0.0.1",
   "private": true,
   "description": "Convert external coding sessions into portable textual history and attachments.",

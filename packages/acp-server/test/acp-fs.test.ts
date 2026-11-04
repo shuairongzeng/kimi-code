@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { RequestError } from '@agentclientprotocol/sdk';
-import { isHostFsNotDirectory, isHostFsNotFound } from '@moonshot-ai/agent-core-v2/os/interface/hostFsErrors';
+import { isHostFsNotDirectory, isHostFsNotFound } from '@zimi-ai/agent-core-v2/os/interface/hostFsErrors';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { AcpHostFileSystem } from '../src/acp-fs/acpFsService';

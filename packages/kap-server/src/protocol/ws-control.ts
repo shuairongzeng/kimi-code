@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { isoDateTimeSchema } from '@moonshot-ai/agent-core-v2/_base/utils/isoDateTime';
-import { transcriptGradeSpecSchema, transcriptSeqSchema } from '@moonshot-ai/transcript';
+import { isoDateTimeSchema } from '@zimi-ai/agent-core-v2/_base/utils/isoDateTime';
+import { transcriptGradeSpecSchema, transcriptSeqSchema } from '@zimi-ai/transcript';
 
 import { pushEventSchema } from './events-zod';
 import { interactionEventMessageSchema } from './interaction';

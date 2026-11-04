@@ -5,7 +5,7 @@ import { providerImagePolicy } from '#/llm/protocol/kit/media';
 import type { Message } from '#/llm/message';
 import { fromCorePart, toCorePart } from '#/message';
 import type { LlmModel } from '#/llm-requester/model';
-import { createKimiAnthropicRequester } from '#/llm-requester/factories';
+import { createZimiAnthropicRequester } from '#/llm-requester/factories';
 import { lowerMessage } from '#/llm/builtin/protocol/anthropic/lower';
 import type { LlmClientContext } from '#/llm-requester/requester';
 
@@ -64,8 +64,8 @@ function stubAnthropicClient(): {
 }
 
 describe('anthropic lowering of inline images', () => {
-  it('forwards a base64 image the Kimi policy accepts even though the route id is anthropic', () => {
-    const wire = lowerMessage(message, providerImagePolicy('kimi').acceptedMimes);
+  it('forwards a base64 image the Zimi policy accepts even though the route id is anthropic', () => {
+    const wire = lowerMessage(message, providerImagePolicy('zimi').acceptedMimes);
     expect(wire[0]?.content[0]).toEqual(HEIC_BLOCK);
   });
 
@@ -84,9 +84,9 @@ describe('anthropic lowering of inline images', () => {
     ).toThrow(/Unsupported media type for base64 video: video\/mp4;codecs=avc1/);
   });
 
-  it('sends the HEIC block on the wire when Kimi is reached over the Anthropic protocol', async () => {
+  it('sends the HEIC block on the wire when Zimi is reached over the Anthropic protocol', async () => {
     const client = stubAnthropicClient();
-    const requester = createKimiAnthropicRequester({
+    const requester = createZimiAnthropicRequester({
       clientFactory: client.clientFactory,
     });
     await requester.generate(

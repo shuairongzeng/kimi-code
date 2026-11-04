@@ -71,7 +71,7 @@ export class BaselineManager {
       throw new BaselineError('The VSCode global storage path is empty');
     }
     if (homeNamespace.length === 0) {
-      throw new BaselineError('The Kimi home namespace is empty');
+      throw new BaselineError('The Zimi home namespace is empty');
     }
     this.baselinesRoot = path.join(globalStorageRoot, 'baselines', hash(homeNamespace));
   }
@@ -668,7 +668,7 @@ function isWindowsAbsolute(value: string): boolean {
 }
 
 function legacyBaselineRoot(session: BaselineSession): string | undefined {
-  const source = session.metadata?.['kimi_cli_source_path'];
+  const source = session.metadata?.['zimi_cli_source_path'];
   if (typeof source !== 'string' || source.length === 0) return undefined;
 
   const sourceIsWindows = isWindowsAbsolute(source);

@@ -16,7 +16,7 @@ describe('ratingCooldownFile', () => {
   let store: RatingCooldownStore;
 
   beforeEach(async () => {
-    dir = await mkdtemp(join(tmpdir(), 'kimi-survey-state-'));
+    dir = await mkdtemp(join(tmpdir(), 'zimi-survey-state-'));
     file = join(dir, RATING_COOLDOWN_FILE_NAME);
     store = ratingCooldownFile(dir);
   });

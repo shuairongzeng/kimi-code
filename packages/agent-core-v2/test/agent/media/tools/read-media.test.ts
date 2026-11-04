@@ -350,7 +350,7 @@ describe('ReadMediaFileTool', () => {
     expect(parts).toHaveLength(3);
     expect(parts[0]).toEqual({ type: 'text', text: '<image path="/workspace/sample.png">' });
     expect(parts[1]?.type).toBe('image_url');
-    expect(mediaUrl(parts[1])).toContain('kimi-file://');
+    expect(mediaUrl(parts[1])).toContain('zimi-file://');
     expect(parts[2]).toEqual({ type: 'text', text: '</image>' });
   });
 
@@ -659,10 +659,10 @@ describe('ReadMediaFileTool', () => {
       { path: '/workspace/sample.png' },
     );
     expect(result.isError).not.toBe(true);
-    expect(mediaUrl(outputParts(result)[1])).toContain('kimi-file://');
+    expect(mediaUrl(outputParts(result)[1])).toContain('zimi-file://');
   });
 
-  it('wraps a video as a kimi-file reference', async () => {
+  it('wraps a video as a zimi-file reference', async () => {
     const result = await execute(makeTool({ '/workspace/clip.mp4': { data: mp4Buffer() } }), {
       path: '/workspace/clip.mp4',
     });
@@ -675,7 +675,7 @@ describe('ReadMediaFileTool', () => {
     expect(parts).toHaveLength(3);
     expect(parts[0]).toEqual({ type: 'text', text: '<video path="/workspace/clip.mp4">' });
     expect(parts[1]?.type).toBe('video_url');
-    expect(mediaUrl(parts[1])).toContain('kimi-file://');
+    expect(mediaUrl(parts[1])).toContain('zimi-file://');
     expect(parts[2]).toEqual({ type: 'text', text: '</video>' });
   });
 
@@ -696,7 +696,7 @@ describe('ReadMediaFileTool', () => {
     expect(withFullResolution.output).toMatch(/image files/i);
   });
 
-  it('stores a video as a kimi-file part without uploading during execution', async () => {
+  it('stores a video as a zimi-file part without uploading during execution', async () => {
     const store = testMediaStore();
     const put = vi.spyOn(store, 'put');
     const result = await execute(
@@ -706,7 +706,7 @@ describe('ReadMediaFileTool', () => {
 
     const parts = outputParts(result);
     expect(put).toHaveBeenCalledOnce();
-    expect(mediaUrl(parts[1])).toMatch(/^kimi-file:\/\//);
+    expect(mediaUrl(parts[1])).toMatch(/^zimi-file:\/\//);
     expect(put.mock.calls[0]?.[0]).toMatchObject({ mimeType: 'video/mp4', filename: 'clip.mp4' });
   });
 
@@ -757,7 +757,7 @@ describe('ReadMediaFileTool', () => {
     });
 
     expect(result.isError).not.toBe(true);
-    expect(mediaUrl(outputParts(result)[1])).toMatch(/^kimi-file:\/\//);
+    expect(mediaUrl(outputParts(result)[1])).toMatch(/^zimi-file:\/\//);
   });
 
   it('defers video upload and video_upload telemetry to the next LLM request', async () => {
@@ -783,7 +783,7 @@ describe('ReadMediaFileTool', () => {
       maxContextSize: 1000,
       alwaysThinking: false,
       providerName: 'p',
-      providerType: 'kimi',
+      providerType: 'zimi',
     };
     const resolver = new AgentMediaResolverService(
       {} as IFileService,
@@ -869,7 +869,7 @@ describe('registerMediaTools', () => {
     });
     const result = await execute(registry.resolve('ReadMediaFile') as ReadMediaFileTool, { path: '/workspace/clip.mp4' });
     expect(result.isError).not.toBe(true);
-    expect(mediaUrl(outputParts(result)[1])).toContain('kimi-file://');
+    expect(mediaUrl(outputParts(result)[1])).toContain('zimi-file://');
   });
 
   it('registers without requiring media capability metadata', () => {
@@ -999,7 +999,7 @@ describe('AgentMediaToolsRegistrar', () => {
       return execute(tool, { path: '/workspace/photo.heic' });
     };
 
-    expect((await readWith('kimi-vision')).isError).toBeFalsy();
+    expect((await readWith('zimi-vision')).isError).toBeFalsy();
     expect((await readWith('other-vision')).isError).toBeFalsy();
   });
 
@@ -1047,7 +1047,7 @@ describe('AgentMediaToolsRegistrar', () => {
     setEnvironmentAvailable(false);
     const tool = registry.resolve('ReadMediaFile');
     expect(tool).toBeDefined();
-    const execution = await tool!.resolveExecution({ path: 'kimi-file://f_picture', region });
+    const execution = await tool!.resolveExecution({ path: 'zimi-file://f_picture', region });
     if (execution.isError === true) throw new Error('expected runnable attachment read');
     const result = await execution.execute({ turnId: 1, toolCallId: 'image', signal: new AbortController().signal });
     expect(result.isError).not.toBe(true);
@@ -1121,7 +1121,7 @@ describe('createVideoUploader', () => {
     const records: TelemetryRecord[] = [];
     const uploader = createVideoUploader(modelWith(vi.fn().mockResolvedValue(uploadResult)), {
       client: recordingTelemetry(records),
-      props: { model: 'example-model', protocol: 'kimi' },
+      props: { model: 'example-model', protocol: 'zimi' },
     });
     await expect(uploader!(input)).resolves.toEqual(uploadResult);
     expect(records).toHaveLength(1);
@@ -1131,7 +1131,7 @@ describe('createVideoUploader', () => {
       mime_type: 'video/mp4',
       size_bytes: 2048,
       model: 'example-model',
-      protocol: 'kimi',
+      protocol: 'zimi',
     });
     expect(records[0]!.properties?.['duration_ms']).toEqual(expect.any(Number));
   });
@@ -1255,6 +1255,6 @@ describe('createVideoUploader', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    expect(mediaUrl(outputParts(result)[1])).toContain('kimi-file://');
+    expect(mediaUrl(outputParts(result)[1])).toContain('zimi-file://');
   });
 });

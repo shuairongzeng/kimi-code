@@ -9,8 +9,8 @@ import {
   TextIndexBuildingError,
   wipeStoreDir,
   type BatchInputOp,
-} from '@moonshot-ai/minidb';
-import type { WireRecord } from '@moonshot-ai/agent-core-v2/wire/record';
+} from '@zimi-ai/minidb';
+import type { WireRecord } from '@zimi-ai/agent-core-v2/wire/record';
 
 import { GlobalSearchError, type GlobalSearchIncomplete } from './contract.ts';
 import {
@@ -110,7 +110,7 @@ function assertSearchWireReaderVersion(line: string): void {
     const diff = Number(current[index] ?? '0') - Number(required[index] ?? '0');
     if (diff < 0) {
       const error = new Error(
-        `This wire.jsonl requires reader protocol ${minReaderVersion}; current Kimi Code supports ${SEARCH_WIRE_PROTOCOL_VERSION}. Upgrade Kimi Code to read this session.`,
+        `This wire.jsonl requires reader protocol ${minReaderVersion}; current Zimi Code supports ${SEARCH_WIRE_PROTOCOL_VERSION}. Upgrade Zimi Code to read this session.`,
       ) as Error & { code: string };
       error.code = 'wire.version_too_low';
       throw error;

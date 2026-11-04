@@ -54,7 +54,7 @@ export class FileProjectLocalConfigService implements IProjectLocalConfigService
   }
 
   private getProjectLocalConfigPath(projectRoot: string): string {
-    return join(projectRoot, '.kimi-code', 'local.toml');
+    return join(projectRoot, '.zimi-code', 'local.toml');
   }
 
   private async findProjectRoot(workDir: string): Promise<string> {

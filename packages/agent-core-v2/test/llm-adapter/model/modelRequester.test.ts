@@ -361,7 +361,7 @@ describe('generateModel request execution', () => {
         },
       });
     const impl = modelEventRequester(
-      { ...modelWith(createStaticCredentialProvider()), providerType: 'kimi' },
+      { ...modelWith(createStaticCredentialProvider()), providerType: 'zimi' },
       requester,
     );
     const failure = await collect(impl.request(INPUT)).catch((error: unknown) => error);

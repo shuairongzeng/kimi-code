@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { isoDateTimeSchema } from '@moonshot-ai/agent-core-v2/_base/utils/isoDateTime';
+import { isoDateTimeSchema } from '@zimi-ai/agent-core-v2/_base/utils/isoDateTime';
 
 const agentFrameFields = {
   session_id: z.string().min(1),

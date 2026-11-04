@@ -174,7 +174,7 @@ describe('LLMRequester service migration coverage', () => {
       });
     });
 
-    it('records the resolved Kimi thinking keep default when thinking is enabled', async () => {
+    it('records the resolved Zimi thinking keep default when thinking is enabled', async () => {
       ctx.configure({
         modelCapabilities: {
           image_in: false,
@@ -197,9 +197,9 @@ describe('LLMRequester service migration coverage', () => {
       });
     });
 
-    it('records the env-forced Kimi effort used by the provider', async () => {
+    it('records the env-forced Zimi effort used by the provider', async () => {
       await ctx.dispose();
-      vi.stubEnv('KIMI_MODEL_THINKING_EFFORT', 'max');
+      vi.stubEnv('ZIMI_MODEL_THINKING_EFFORT', 'max');
       ctx = createTestAgent();
       llmRequester = ctx.get(IAgentLoopService).requester;
       ctx.configure({
@@ -520,7 +520,7 @@ describe('LLMRequester service migration coverage', () => {
           agent_id: 'main',
           model: 'mock-model',
           alias: 'mock-model',
-          provider_type: 'kimi',
+          provider_type: 'zimi',
           protocol: 'openai',
           retryable: expect.any(Boolean),
           duration_ms: expect.any(Number),
@@ -774,10 +774,10 @@ describe('LLMRequester service migration coverage', () => {
         try {
           ctx.configure({
             provider: {
-              type: 'kimi',
+              type: 'zimi',
               apiKey: 'test-key',
               baseUrl: 'https://api.example/v1',
-              model: 'kimi-code',
+              model: 'zimi-code',
             },
             modelCapabilities: {
               image_in: true,

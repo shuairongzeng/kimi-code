@@ -2,14 +2,14 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { IConfigService } from '@moonshot-ai/agent-core-v2';
+import { IConfigService } from '@zimi-ai/agent-core-v2';
 import { parse as parseToml } from 'smol-toml';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import {
   resetModelsDevUpstreamForTest,
   setModelsDevUpstreamForTest,
-} from '@moonshot-ai/agent-core-v2/app/kosongConfig/modelsDevUpstream';
+} from '@zimi-ai/agent-core-v2/app/kosongConfig/modelsDevUpstream';
 import { type RunningServer, startServer } from '../src/start';
 import { TEST_HOST_IDENTITY } from './helpers/hostIdentity';
 import { authHeaders } from './helpers/auth';
@@ -92,15 +92,15 @@ const MANAGED_OPENAI_TOML = [
 ].join('\n');
 
 const DEFAULTED_TOML = [
-  'default_provider = "kimi"',
+  'default_provider = "zimi"',
   'default_model = "k2"',
   '',
-  '[providers.kimi]',
-  'type = "kimi"',
+  '[providers.zimi]',
+  'type = "zimi"',
   'api_key = "sk-test"',
   '',
   '[models.k2]',
-  'provider = "kimi"',
+  'provider = "zimi"',
   'model = "kimi-k2"',
   'max_context_size = 131072',
   '',
@@ -126,9 +126,9 @@ describe('server-v2 /api/v1 catalog browse + import endpoints', () => {
   let base: string;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-catalog-'));
-    process.env['KIMI_CODE_MODEL_CATALOG_REFRESH_ON_START'] = '0';
-    process.env['KIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS'] = '0';
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-catalog-'));
+    process.env['ZIMI_CODE_MODEL_CATALOG_REFRESH_ON_START'] = '0';
+    process.env['ZIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS'] = '0';
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -157,8 +157,8 @@ describe('server-v2 /api/v1 catalog browse + import endpoints', () => {
       await rm(home, { recursive: true, force: true });
       home = undefined;
     }
-    delete process.env['KIMI_CODE_MODEL_CATALOG_REFRESH_ON_START'];
-    delete process.env['KIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS'];
+    delete process.env['ZIMI_CODE_MODEL_CATALOG_REFRESH_ON_START'];
+    delete process.env['ZIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS'];
   });
 
   async function boot(toml?: string): Promise<void> {
@@ -332,7 +332,7 @@ describe('server-v2 /api/v1 catalog browse + import endpoints', () => {
     });
     expect(status).toBe(201);
     const config = await readConfigToml();
-    expect(config['default_provider']).toBe('kimi');
+    expect(config['default_provider']).toBe('zimi');
     expect(config['default_model']).toBe('k2');
   });
 
@@ -582,7 +582,7 @@ describe('server-v2 /api/v1 catalog browse + import endpoints', () => {
     });
     expect(status).toBe(201);
     const config = await readConfigToml();
-    expect(config['default_provider']).toBe('kimi');
+    expect(config['default_provider']).toBe('zimi');
     expect(config['default_model']).toBe('k2');
     expect(config['thinking']).toEqual({ enabled: true, future_option: 'keep-me' });
   });

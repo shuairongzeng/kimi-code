@@ -9,47 +9,47 @@
 import type {
   SessionListQuery,
   SessionSummary,
-} from '@moonshot-ai/agent-core-v2/app/sessionIndex/sessionIndex';
-import type { SessionMeta } from '@moonshot-ai/agent-core-v2/session/sessionMetadata/sessionMetadata';
-import type { Page } from '@moonshot-ai/agent-core-v2/persistence/interface/queryStore';
+} from '@zimi-ai/agent-core-v2/app/sessionIndex/sessionIndex';
+import type { SessionMeta } from '@zimi-ai/agent-core-v2/session/sessionMetadata/sessionMetadata';
+import type { Page } from '@zimi-ai/agent-core-v2/persistence/interface/queryStore';
 import type {
   Workspace,
   WorkspaceUpdate,
-} from '@moonshot-ai/agent-core-v2/app/workspace/workspace';
+} from '@zimi-ai/agent-core-v2/app/workspace/workspace';
 import type {
   ConfigDiagnostic,
   ConfigInspectValue,
   ConfigTarget,
-} from '@moonshot-ai/agent-core-v2/app/config/config';
-import type { ProviderConfig } from '@moonshot-ai/agent-core-v2/llm-adapter/provider/provider';
+} from '@zimi-ai/agent-core-v2/app/config/config';
+import type { ProviderConfig } from '@zimi-ai/agent-core-v2/llm-adapter/provider/provider';
 import type {
   AuthStatus,
   IOAuthService,
   OAuthLoginOptions,
-} from '@moonshot-ai/agent-core-v2/app/auth/auth';
-import type { ExperimentalFeatureState } from '@moonshot-ai/agent-core-v2/app/flag/flag';
+} from '@zimi-ai/agent-core-v2/app/auth/auth';
+import type { ExperimentalFeatureState } from '@zimi-ai/agent-core-v2/app/flag/flag';
 import type {
   FsBrowseResponse,
   FsHomeResponse,
-} from '@moonshot-ai/agent-core-v2/app/hostFolderBrowser/hostFolderBrowser';
-import type { FileMeta } from '@moonshot-ai/agent-core-v2/app/file/fileService';
-import type { ModelRecord } from '@moonshot-ai/agent-core-v2/llm-adapter/model/model';
-import type { IModelCatalog } from '@moonshot-ai/agent-core-v2/llm-adapter/model/catalog';
+} from '@zimi-ai/agent-core-v2/app/hostFolderBrowser/hostFolderBrowser';
+import type { FileMeta } from '@zimi-ai/agent-core-v2/app/file/fileService';
+import type { ModelRecord } from '@zimi-ai/agent-core-v2/llm-adapter/model/model';
+import type { IModelCatalog } from '@zimi-ai/agent-core-v2/llm-adapter/model/catalog';
 import type {
   ModelRequestEvent,
   ModelRequestInput,
-} from '@moonshot-ai/agent-core-v2/llm-adapter/model/generate';
+} from '@zimi-ai/agent-core-v2/llm-adapter/model/generate';
 import {
   fromCoreMessage,
   fromCorePart,
   toCoreMessage,
-} from '@moonshot-ai/agent-core-v2/human/message';
+} from '@zimi-ai/agent-core-v2/human/message';
 import {
   fromLlmMessage,
   toLlmMessage,
-} from '@moonshot-ai/agent-core-v2/llm-adapter/contract/message';
-import type { IProviderDiscoveryService } from '@moonshot-ai/agent-core-v2/app/kosongConfig/discovery';
-import type { IModelsDevImportService } from '@moonshot-ai/agent-core-v2/app/kosongConfig/modelsDevImport';
+} from '@zimi-ai/agent-core-v2/llm-adapter/contract/message';
+import type { IProviderDiscoveryService } from '@zimi-ai/agent-core-v2/app/kosongConfig/discovery';
+import type { IModelsDevImportService } from '@zimi-ai/agent-core-v2/app/kosongConfig/modelsDevImport';
 
 import type { McpServerConfig } from '../../contract/mcp.js';
 import type { CallOptions } from '../channel.js';
@@ -62,7 +62,7 @@ import type {
   McpServerLocator,
   McpServerTestResult,
   McpServerTestTarget,
-} from '@moonshot-ai/agent-core-v2/app/mcpManagement/mcpManagement';
+} from '@zimi-ai/agent-core-v2/app/mcpManagement/mcpManagement';
 import type { AnonymousProviderInput, GenerateEvent, GenerateInput, GenerateParams, ProviderInput } from './kosong-types.js';
 import type {
   PluginCommandDef,
@@ -70,9 +70,9 @@ import type {
   PluginSummary,
   PluginUpdateStatus,
   ReloadSummary,
-} from '@moonshot-ai/agent-core-v2/app/plugin/types';
-import type { CapabilityInstallOptions, CapabilityStatus } from '@moonshot-ai/agent-core-v2/app/capability/types';
-import type { InstallPluginInput } from '@moonshot-ai/agent-core-v2/app/plugin/plugin';
+} from '@zimi-ai/agent-core-v2/app/plugin/types';
+import type { CapabilityInstallOptions, CapabilityStatus } from '@zimi-ai/agent-core-v2/app/capability/types';
+import type { InstallPluginInput } from '@zimi-ai/agent-core-v2/app/plugin/plugin';
 
 /** Low-level caller the klient factory builds: routes + validates one service call. */
 export type Caller = (

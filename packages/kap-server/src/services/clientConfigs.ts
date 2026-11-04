@@ -1,4 +1,4 @@
-import { KIMI_REGION_PROFILES, type KimiRegion } from '@moonshot-ai/kimi-code-oauth';
+import { ZIMI_REGION_PROFILES, type ZimiRegion } from '@zimi-ai/zimi-code-oauth';
 import { z } from 'zod';
 
 const CLIENT_CONFIGS_PATH = '/client_configs';
@@ -106,13 +106,13 @@ export function isRegisteredClientConfig(name: string): boolean {
 
 export function clientConfigsBaseUrl(
   baseUrlOverride: string | undefined,
-  region: KimiRegion,
+  region: ZimiRegion,
 ): string {
   const trimmed = baseUrlOverride?.trim();
   if (trimmed !== undefined && trimmed.length > 0) {
     return trimmed.replace(/\/+$/, '');
   }
-  return KIMI_REGION_PROFILES[region].baseUrl;
+  return ZIMI_REGION_PROFILES[region].baseUrl;
 }
 
 export async function fetchClientConfig(

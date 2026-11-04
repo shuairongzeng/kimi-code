@@ -9,7 +9,7 @@ import type {
   SessionActivityCause,
   SessionActivityChangedEvent,
   SessionActivityState,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import {
   INTERACTION_TAG_SESSION_ID,
   LifecycleScope,
@@ -37,14 +37,14 @@ import {
   MAIN_AGENT_ID,
   interactions,
   makeAgentScopeContext,
-} from '@moonshot-ai/agent-core-v2';
-import { Event2 } from '@moonshot-ai/agent-core-v2/app/event/event2';
+} from '@zimi-ai/agent-core-v2';
+import { Event2 } from '@zimi-ai/agent-core-v2/app/event/event2';
 import {
   AgentEventBusView,
   EventBusService,
-} from '@moonshot-ai/agent-core-v2/app/event/eventBusService';
-import type { AgentActivitySnapshot } from '@moonshot-ai/agent-core-v2/agent/loop/loop';
-import type { AgentTaskInfo } from '@moonshot-ai/agent-core-v2/agent/task/types';
+} from '@zimi-ai/agent-core-v2/app/event/eventBusService';
+import type { AgentActivitySnapshot } from '@zimi-ai/agent-core-v2/agent/loop/loop';
+import type { AgentTaskInfo } from '@zimi-ai/agent-core-v2/agent/task/types';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -565,7 +565,7 @@ describe('SessionEventBroadcaster', () => {
   let bc: SessionEventBroadcaster;
 
   beforeEach(async () => {
-    dir = await mkdtemp(join(tmpdir(), 'kimi-broadcaster-test-'));
+    dir = await mkdtemp(join(tmpdir(), 'zimi-broadcaster-test-'));
     sessions = new Map();
     eventBus = new FakeEventBus();
     managerEvents = new FakeManagerEvents();
@@ -903,7 +903,7 @@ describe('SessionEventBroadcaster', () => {
       eventBus.emit({
         type: 'event.capability.changed',
         payload: {
-          capability_id: 'kimi-webbridge',
+          capability_id: 'zimi-webbridge',
           install: { running: true, step: 'download', percent: 42 },
         },
       });
@@ -917,7 +917,7 @@ describe('SessionEventBroadcaster', () => {
         type: 'event.capability.changed',
         session_id: '__global__',
         payload: {
-          capability_id: 'kimi-webbridge',
+          capability_id: 'zimi-webbridge',
           install: { running: true, step: 'download', percent: 42 },
         },
       });
@@ -929,7 +929,7 @@ describe('SessionEventBroadcaster', () => {
       eventBus.emit({
         type: 'event.capability.changed',
         payload: {
-          capability_id: 'kimi-cu',
+          capability_id: 'zimi-cu',
           install: { running: false, confirmationRequired: 'stop-processes' },
         },
       });
@@ -952,18 +952,18 @@ describe('SessionEventBroadcaster', () => {
       });
       eventBus.emit({
         type: 'event.capability.changed',
-        payload: { capability_id: 'kimi-cu' },
+        payload: { capability_id: 'zimi-cu' },
       });
 
       eventBus.emit({
         type: 'event.capability.changed',
-        payload: { capability_id: 'kimi-cu', install: { running: false } },
+        payload: { capability_id: 'zimi-cu', install: { running: false } },
       });
 
       await vi.waitFor(() => expect(globalView.envelopes).toHaveLength(1));
       expect(globalView.envelopes[0]).toMatchObject({
         type: 'event.capability.changed',
-        payload: { capability_id: 'kimi-cu', install: { running: false } },
+        payload: { capability_id: 'zimi-cu', install: { running: false } },
       });
     });
 
@@ -1062,9 +1062,9 @@ describe('SessionEventBroadcaster', () => {
       bc.addGlobalTarget(globalView.target);
 
       const changed = [
-        { provider_id: 'managed:kimi-code', provider_name: 'Kimi Code', added: 2, removed: 1 },
+        { provider_id: 'managed:zimi-code', provider_name: 'Zimi Code', added: 2, removed: 1 },
       ];
-      const failed = [{ provider: 'managed:kimi-code', reason: 'network disabled' }];
+      const failed = [{ provider: 'managed:zimi-code', reason: 'network disabled' }];
       eventBus.emit({
         type: 'event.model_catalog.changed',
         payload: { changed, unchanged: ['openai-main'], failed },
@@ -1159,7 +1159,7 @@ describe('SessionEventBroadcaster', () => {
       });
 
       const changed = [
-        { provider_id: 'managed:kimi-code', provider_name: 'Kimi Code', added: 1, removed: 0 },
+        { provider_id: 'managed:zimi-code', provider_name: 'Zimi Code', added: 1, removed: 0 },
       ];
       eventBus.emit({
         type: 'event.model_catalog.changed',
@@ -2434,10 +2434,10 @@ describe('sessionEventMessageSchema', () => {
         envelope({
           type: 'event.model_catalog.changed',
           changed: [
-            { provider_id: 'managed:kimi-code', provider_name: 'Kimi Code', added: 2, removed: 1 },
+            { provider_id: 'managed:zimi-code', provider_name: 'Zimi Code', added: 2, removed: 1 },
           ],
           unchanged: ['openai-main'],
-          failed: [{ provider: 'managed:kimi-code', reason: 'network disabled' }],
+          failed: [{ provider: 'managed:zimi-code', reason: 'network disabled' }],
         }),
       ).success,
     ).toBe(true);
@@ -2484,7 +2484,7 @@ describe('sessionEventMessageSchema', () => {
           type: 'event.model_catalog.changed',
           changed: [],
           unchanged: [],
-          failed: [{ provider: 'managed:kimi-code', reason: 42 }],
+          failed: [{ provider: 'managed:zimi-code', reason: 42 }],
         }),
       ).success,
     ).toBe(false);

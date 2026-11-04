@@ -1,16 +1,16 @@
-# @moonshot-ai/kimi-code-oauth
+# @zimi-ai/zimi-code-oauth
 
 ## 0.5.0
 
 ### Minor Changes
 
-- [#4209](https://github.com/MoonshotAI/kimi-code/pull/4209) [`9f0693b`](https://github.com/MoonshotAI/kimi-code/commit/9f0693becb63a329cbf764325688448e76f40922) Thanks [@liruifengv](https://github.com/liruifengv)! - Switch managed Kimi Code model listing to the unified /models schema: context length is read from `limit.context`, thinking capabilities from the `reasoning` object (`type: only | both | none`, with optional `effort.valid` / `effort.default`), image/video input from `modalities.input`, and dynamic-tool support from `tools.dynamic_load`. The legacy flat fields (`context_length`, `supports_reasoning`, `supports_image_in`, `supports_video_in`, `supports_thinking_type`, `think_efforts`, `supports_dynamic_tools`) are no longer read, and entries without a positive `limit.context` are rejected.
+- [#4209](https://github.com/MoonshotAI/kimi-code/pull/4209) [`9f0693b`](https://github.com/MoonshotAI/kimi-code/commit/9f0693becb63a329cbf764325688448e76f40922) Thanks [@liruifengv](https://github.com/liruifengv)! - Switch managed Zimi Code model listing to the unified /models schema: context length is read from `limit.context`, thinking capabilities from the `reasoning` object (`type: only | both | none`, with optional `effort.valid` / `effort.default`), image/video input from `modalities.input`, and dynamic-tool support from `tools.dynamic_load`. The legacy flat fields (`context_length`, `supports_reasoning`, `supports_image_in`, `supports_video_in`, `supports_thinking_type`, `think_efforts`, `supports_dynamic_tools`) are no longer read, and entries without a positive `limit.context` are rejected.
 
 ## 0.4.0
 
 ### Minor Changes
 
-- [#2885](https://github.com/MoonshotAI/kimi-code/pull/2885) [`4a93f70`](https://github.com/MoonshotAI/kimi-code/commit/4a93f70aa2cf5f70a88b4f8eeb2e409aab2c8f59) Thanks [@liruifengv](https://github.com/liruifengv)! - Add a browser-safe `./device` subpath export exposing the device-code flow's pure-fetch HTTP wrappers and flow config, so browser bundles can run OAuth sign-in without pulling in Node-only modules. Import from `@moonshot-ai/kimi-code-oauth/device`.
+- [#2885](https://github.com/MoonshotAI/kimi-code/pull/2885) [`4a93f70`](https://github.com/MoonshotAI/kimi-code/commit/4a93f70aa2cf5f70a88b4f8eeb2e409aab2c8f59) Thanks [@liruifengv](https://github.com/liruifengv)! - Add a browser-safe `./device` subpath export exposing the device-code flow's pure-fetch HTTP wrappers and flow config, so browser bundles can run OAuth sign-in without pulling in Node-only modules. Import from `@zimi-ai/zimi-code-oauth/device`.
 
 ### Patch Changes
 
@@ -42,12 +42,12 @@
 
 ### Patch Changes
 
-- [#274](https://github.com/MoonshotAI/kimi-code/pull/274) [`a1dfbfe`](https://github.com/MoonshotAI/kimi-code/commit/a1dfbfeb16bcad0c2c8faa232d6d1ce4a2681d57) - Clarify Kimi Platform API key login labels and prompt details.
+- [#274](https://github.com/MoonshotAI/kimi-code/pull/274) [`a1dfbfe`](https://github.com/MoonshotAI/kimi-code/commit/a1dfbfeb16bcad0c2c8faa232d6d1ce4a2681d57) - Clarify Zimi Platform API key login labels and prompt details.
 
 ## 0.1.2
 
 ### Patch Changes
 
-- [#52](https://github.com/MoonshotAI/kimi-code/pull/52) [`064343a`](https://github.com/MoonshotAI/kimi-code/commit/064343a6e565a525fbf38b3a1f70f7ff0235a5ed) - Correct the `X-Msh-Platform` header value to `kimi_code_cli`.
+- [#52](https://github.com/MoonshotAI/kimi-code/pull/52) [`064343a`](https://github.com/MoonshotAI/kimi-code/commit/064343a6e565a525fbf38b3a1f70f7ff0235a5ed) - Correct the `X-Msh-Platform` header value to `zimi_code_cli`.
 
 - [#11](https://github.com/MoonshotAI/kimi-code/pull/11) [`15b018f`](https://github.com/MoonshotAI/kimi-code/commit/15b018fc84a36a9ebde598970e5b44bebe5d68c6) - Surface API-provided error messages during feedback, usage, login, and model setup failures.

@@ -4,7 +4,7 @@ import { SystemMetricsCollector } from './systemMetrics';
 import { AsyncTransport } from './transport';
 import type { TelemetryRegion, TelemetryRegionResolution } from './types';
 
-export const TELEMETRY_DISABLE_ENV = 'KIMI_DISABLE_TELEMETRY';
+export const TELEMETRY_DISABLE_ENV = 'ZIMI_DISABLE_TELEMETRY';
 
 const TRUE_ENV_VALUES = new Set(['1', 'true', 't', 'yes', 'y']);
 

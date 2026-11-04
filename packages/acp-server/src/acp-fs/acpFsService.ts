@@ -23,7 +23,7 @@ import {
   isHostFsNotDirectory,
   isHostFsNotFound,
   OsFsErrors,
-} from '@moonshot-ai/agent-core-v2/os/interface/hostFsErrors';
+} from '@zimi-ai/agent-core-v2/os/interface/hostFsErrors';
 import {
   HostFileSystem,
   type HostDirEntry,
@@ -36,7 +36,7 @@ import {
   LifecycleScope,
   registerScopedService,
   ScopeActivation,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 
 import { IAcpConnection } from './acpConnection';
 

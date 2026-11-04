@@ -2,7 +2,7 @@ import { Error2 } from '#/_base/errors/errors';
 import {
   credentialConflictMessage,
   declaredProviderCredential,
-} from '@moonshot-ai/kimi-code-oauth/provider-credential';
+} from '@zimi-ai/zimi-code-oauth/provider-credential';
 import {
   BUDGET_THINKING_EFFORTS,
   matchKnownAnthropicModelProfile,

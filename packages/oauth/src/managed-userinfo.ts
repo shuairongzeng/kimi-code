@@ -1,7 +1,7 @@
 /**
  * Managed-platform profile fetch / parse.
  *
- * Only `managed:kimi-code` is supported today. The platform exposes a
+ * Only `managed:zimi-code` is supported today. The platform exposes a
  * `/me` endpoint that returns a payload of the shape:
  *
  *   {
@@ -38,13 +38,13 @@
 import { z } from 'zod';
 
 import { readApiErrorMessage } from './api-error';
-import { kimiCodeBaseUrl } from './managed-usage';
+import { zimiCodeBaseUrl } from './managed-usage';
 import { isRecord } from './utils';
 
 // The cloud path stays `/me` (owned by the backend); only the local
 // naming moved to "userinfo".
-export function kimiCodeUserInfoUrl(): string {
-  return `${kimiCodeBaseUrl()}/me`;
+export function zimiCodeUserInfoUrl(): string {
+  return `${zimiCodeBaseUrl()}/me`;
 }
 
 export const managedUserInfoPhoneSchema = z.object({
@@ -183,7 +183,7 @@ export async function fetchManagedUserInfo(
         status === 401
           ? 'Authorization failed. Please check your API key (try /login).'
           : status === 404
-            ? 'Profile endpoint not available. Try Kimi For Coding.'
+            ? 'Profile endpoint not available. Try Zimi For Coding.'
             : `Failed to fetch profile: HTTP ${String(status)}`;
       return { kind: 'error', status, message: await readApiErrorMessage(res, hint) };
     }

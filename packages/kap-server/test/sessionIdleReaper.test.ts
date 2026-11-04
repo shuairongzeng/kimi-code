@@ -1,4 +1,4 @@
-import type { ISessionManager, ISessionScopeHandle } from '@moonshot-ai/agent-core-v2';
+import type { ISessionManager, ISessionScopeHandle } from '@zimi-ai/agent-core-v2';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -43,7 +43,7 @@ describe('SessionIdleReaper', () => {
   it('throws for negative, non-integer, or non-numeric values', () => {
     for (const raw of ['-1', '0.5', 'nope']) {
       expect(() => resolveSessionIdleReclaimMs({ [SESSION_IDLE_RECLAIM_ENV]: raw })).toThrow(
-        /KIMI_CODE_SESSION_IDLE_RECLAIM_MS.*non-negative integer/,
+        /ZIMI_CODE_SESSION_IDLE_RECLAIM_MS.*non-negative integer/,
       );
     }
   });

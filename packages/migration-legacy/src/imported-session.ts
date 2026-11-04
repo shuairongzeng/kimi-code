@@ -1,7 +1,7 @@
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { SESSION_META_VERSION } from '@moonshot-ai/agent-core-v2/session/sessionMetadata/sessionMetadata';
+import { SESSION_META_VERSION } from '@zimi-ai/agent-core-v2/session/sessionMetadata/sessionMetadata';
 
 import { targetSessionsDir } from './paths.js';
 import { ensureSessionIndexEntry } from './session-index.js';
@@ -30,10 +30,10 @@ export function importedSessionDir(targetHome: string, workDir: string, sessionI
 }
 
 /**
- * Write a session converted from another tool as an ordinary kimi-code session.
+ * Write a session converted from another tool as an ordinary zimi-code session.
  *
  * The main agent wire gets the same synthesized turn records as migrated
- * kimi-cli sessions. `state.json` is written last, so a directory without it
+ * zimi-cli sessions. `state.json` is written last, so a directory without it
  * is an interrupted write the caller can remove and retry. The generated
  * title kind keeps the imported title when the session is continued.
  */

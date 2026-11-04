@@ -6,9 +6,9 @@ import {
   anthropicRequester,
   googleGenAIRequester,
   googleVertexRequester,
-  kimiAnthropicRequester,
-  kimiRequester,
-  kimiResponsesRequester,
+  zimiAnthropicRequester,
+  zimiRequester,
+  zimiResponsesRequester,
   openAIRequester,
   openAIResponsesRequester,
 } from '#/llm/builtin/provider/index';
@@ -23,9 +23,9 @@ import {
   anthropicEndpoint,
   geminiEndpoint,
   googleGenAIEndpoint,
-  KIMI_API_KEY_ENV,
-  KIMI_BASE_URL_ENV,
-  kimiEndpoint,
+  ZIMI_API_KEY_ENV,
+  ZIMI_BASE_URL_ENV,
+  zimiEndpoint,
   openAIEndpoint,
   vertexEndpoint,
 } from './endpoints';
@@ -37,9 +37,9 @@ export {
   anthropicEndpoint,
   geminiEndpoint,
   googleGenAIEndpoint,
-  KIMI_API_KEY_ENV,
-  KIMI_BASE_URL_ENV,
-  kimiEndpoint,
+  ZIMI_API_KEY_ENV,
+  ZIMI_BASE_URL_ENV,
+  zimiEndpoint,
   openAIEndpoint,
   vertexEndpoint,
 };
@@ -136,7 +136,7 @@ export function createGoogleGenAIRequester(options?: GoogleGenAIRequesterOptions
   });
 }
 
-export interface KimiOpenAIRequesterOptions {
+export interface ZimiOpenAIRequesterOptions {
   readonly endpoint?: ProtocolEndpointSource;
   readonly defaultHeaders?: DefaultHeadersResolver;
   readonly classifyError?: LlmErrorClassifier;
@@ -144,9 +144,9 @@ export interface KimiOpenAIRequesterOptions {
   readonly reasoningKey?: string;
 }
 
-export function createKimiOpenAIRequester(options?: KimiOpenAIRequesterOptions): LlmRequester {
-  return createOpenAIRunRequester(kimiRequester, {
-    endpoint: options?.endpoint ?? kimiEndpoint,
+export function createZimiOpenAIRequester(options?: ZimiOpenAIRequesterOptions): LlmRequester {
+  return createOpenAIRunRequester(zimiRequester, {
+    endpoint: options?.endpoint ?? zimiEndpoint,
     defaultHeaders: options?.defaultHeaders,
     classifyError: options?.classifyError,
     clientFactory: options?.clientFactory,
@@ -158,7 +158,7 @@ export function createKimiOpenAIRequester(options?: KimiOpenAIRequesterOptions):
   });
 }
 
-export interface KimiAnthropicRequesterOptions {
+export interface ZimiAnthropicRequesterOptions {
   readonly endpoint?: ProtocolEndpointSource;
   readonly defaultHeaders?: DefaultHeadersResolver;
   readonly classifyError?: LlmErrorClassifier;
@@ -166,11 +166,11 @@ export interface KimiAnthropicRequesterOptions {
   readonly betaApi?: boolean;
 }
 
-export function createKimiAnthropicRequester(
-  options?: KimiAnthropicRequesterOptions,
+export function createZimiAnthropicRequester(
+  options?: ZimiAnthropicRequesterOptions,
 ): LlmRequester {
-  return createRunRequester(kimiAnthropicRequester, {
-    endpoint: options?.endpoint ?? kimiEndpoint,
+  return createRunRequester(zimiAnthropicRequester, {
+    endpoint: options?.endpoint ?? zimiEndpoint,
     defaultHeaders: options?.defaultHeaders,
     classifyError: options?.classifyError,
     clientFactory: options?.clientFactory,
@@ -181,16 +181,16 @@ export function createKimiAnthropicRequester(
   });
 }
 
-export interface KimiResponsesRequesterOptions {
+export interface ZimiResponsesRequesterOptions {
   readonly endpoint?: ProtocolEndpointSource;
   readonly defaultHeaders?: DefaultHeadersResolver;
   readonly classifyError?: LlmErrorClassifier;
   readonly clientFactory?: (request: LlmClientContext) => OpenAI;
 }
 
-export function createKimiResponsesRequester(options?: KimiResponsesRequesterOptions): LlmRequester {
-  return createRunRequester(kimiResponsesRequester, {
-    endpoint: options?.endpoint ?? kimiEndpoint,
+export function createZimiResponsesRequester(options?: ZimiResponsesRequesterOptions): LlmRequester {
+  return createRunRequester(zimiResponsesRequester, {
+    endpoint: options?.endpoint ?? zimiEndpoint,
     defaultHeaders: options?.defaultHeaders,
     classifyError: options?.classifyError,
     clientFactory: options?.clientFactory,

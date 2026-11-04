@@ -31,23 +31,23 @@ export interface ResolveLoggingInput {
 }
 
 export function resolveGlobalLogPath(homeDir: string): string {
-  return join(homeDir, 'logs', 'kimi-code.log');
+  return join(homeDir, 'logs', 'zimi-code.log');
 }
 
 export function resolveSessionLogPath(sessionDir: string): string {
-  return join(sessionDir, 'logs', 'kimi-code.log');
+  return join(sessionDir, 'logs', 'zimi-code.log');
 }
 
 export function resolveLoggingConfig(input: ResolveLoggingInput): LoggingConfig {
   const env = input.env;
   return {
-    level: parseLevel(env['KIMI_LOG_LEVEL']) ?? DEFAULT_LOG_LEVEL,
+    level: parseLevel(env['ZIMI_LOG_LEVEL']) ?? DEFAULT_LOG_LEVEL,
     globalLogPath: resolveGlobalLogPath(input.homeDir),
-    globalMaxBytes: parsePositiveInt(env['KIMI_LOG_GLOBAL_MAX_BYTES']) ?? DEFAULT_GLOBAL_MAX_BYTES,
-    globalFiles: parsePositiveInt(env['KIMI_LOG_GLOBAL_FILES']) ?? DEFAULT_GLOBAL_FILES,
+    globalMaxBytes: parsePositiveInt(env['ZIMI_LOG_GLOBAL_MAX_BYTES']) ?? DEFAULT_GLOBAL_MAX_BYTES,
+    globalFiles: parsePositiveInt(env['ZIMI_LOG_GLOBAL_FILES']) ?? DEFAULT_GLOBAL_FILES,
     sessionMaxBytes:
-      parsePositiveInt(env['KIMI_LOG_SESSION_MAX_BYTES']) ?? DEFAULT_SESSION_MAX_BYTES,
-    sessionFiles: parsePositiveInt(env['KIMI_LOG_SESSION_FILES']) ?? DEFAULT_SESSION_FILES,
+      parsePositiveInt(env['ZIMI_LOG_SESSION_MAX_BYTES']) ?? DEFAULT_SESSION_MAX_BYTES,
+    sessionFiles: parsePositiveInt(env['ZIMI_LOG_SESSION_FILES']) ?? DEFAULT_SESSION_FILES,
   };
 }
 

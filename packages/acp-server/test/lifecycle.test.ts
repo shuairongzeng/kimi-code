@@ -8,10 +8,10 @@ import {
   ISessionManager,
   ISessionMcpHandle,
   IWorkspaceInstanceManager,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import type { SessionSummary } from '@moonshot-ai/klient';
+import type { SessionSummary } from '@zimi-ai/klient';
 
 import { filterSessionSummariesByCwd } from '../src/server';
 import { createTestClient, type TestClient } from './_helpers/acpClient';
@@ -28,7 +28,7 @@ const STDIO_MCP_FIXTURE = fileURLToPath(
  * the token itself lives in the seeded fake `IOAuthToolkit`.
  */
 const OAUTH_PROVIDER_CONFIG = `[providers.test-oauth]
-type = "kimi"
+type = "zimi"
 baseUrl = "http://localhost"
 
 [providers.test-oauth.oauth]
@@ -318,7 +318,7 @@ describe('acp-server session lifecycle', () => {
             name: 'mock',
             command: process.execPath,
             args: [STDIO_MCP_FIXTURE],
-            env: [{ name: 'KIMI_TEST_MCP_START_DELAY_MS', value: '0' }],
+            env: [{ name: 'ZIMI_TEST_MCP_START_DELAY_MS', value: '0' }],
           },
         ],
       })) as { sessionId: string };

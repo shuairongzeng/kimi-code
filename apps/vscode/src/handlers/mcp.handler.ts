@@ -3,7 +3,7 @@ import type {
   McpManagedServerInfo,
   McpServerConfig as SdkMcpServerConfig,
   McpTestResult,
-} from "@moonshot-ai/kimi-code-sdk";
+} from "@zimi-ai/zimi-code-sdk";
 
 import { Events, Methods } from "../../shared/bridge";
 import {
@@ -67,7 +67,7 @@ export const mcpHandlers: Record<string, Handler<any, any>> = {
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: `Kimi: Authenticating "${name}"...`,
+        title: `Zimi: Authenticating "${name}"...`,
         cancellable: false,
       },
       async () => {
@@ -75,10 +75,10 @@ export const mcpHandlers: Record<string, Handler<any, any>> = {
           await ctx.harness.authenticateMcpServer(name, {
             onAuthorizationUrl: async (url) => vscode.env.openExternal(vscode.Uri.parse(url)),
           });
-          await vscode.window.showInformationMessage(`Kimi: OAuth completed for "${name}"`);
+          await vscode.window.showInformationMessage(`Zimi: OAuth completed for "${name}"`);
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
-          await vscode.window.showErrorMessage(`Kimi: OAuth failed for "${name}": ${message}`);
+          await vscode.window.showErrorMessage(`Zimi: OAuth failed for "${name}": ${message}`);
           throw error;
         }
       },
@@ -90,16 +90,16 @@ export const mcpHandlers: Record<string, Handler<any, any>> = {
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: `Kimi: Resetting auth for "${name}"...`,
+        title: `Zimi: Resetting auth for "${name}"...`,
         cancellable: false,
       },
       async () => {
         try {
           await ctx.harness.resetMcpServerAuth(name);
-          await vscode.window.showInformationMessage(`Kimi: Auth reset for "${name}"`);
+          await vscode.window.showInformationMessage(`Zimi: Auth reset for "${name}"`);
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
-          await vscode.window.showErrorMessage(`Kimi: Reset auth failed for "${name}": ${message}`);
+          await vscode.window.showErrorMessage(`Zimi: Reset auth failed for "${name}": ${message}`);
           throw error;
         }
       },
@@ -108,7 +108,7 @@ export const mcpHandlers: Record<string, Handler<any, any>> = {
   },
 
   [Methods.TestMCP]: async ({ name }: NameParams, ctx): Promise<MCPTestResult> => {
-    void vscode.window.showInformationMessage(`Kimi: Testing MCP server "${name}"...`);
+    void vscode.window.showInformationMessage(`Zimi: Testing MCP server "${name}"...`);
     const result = toWebviewTestResult(await ctx.harness.testMcpServer(name, {
       cwd: ctx.workDir ?? undefined,
     }));

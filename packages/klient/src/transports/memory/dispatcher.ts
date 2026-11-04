@@ -15,55 +15,55 @@
  * memory behave identically by construction.
  */
 
-import type { ServiceIdentifier } from '@moonshot-ai/agent-core-v2/_base/di/instantiation';
-import type { IAgentScopeHandle } from '@moonshot-ai/agent-core-v2/_base/di/scope';
-import { IWorkspaceInstanceManager } from '@moonshot-ai/agent-core-v2/workspace/workspaceInstance/workspaceInstanceManager';
-import { ISessionManager } from '@moonshot-ai/agent-core-v2/app/sessionManager/sessionManager';
-import { getLiveSessionById } from '@moonshot-ai/agent-core-v2/app/sessionManager/sessionLookup';
-import { IAgentLifecycleService } from '@moonshot-ai/agent-core-v2/session/agentLifecycle/agentLifecycle';
-import { MAIN_AGENT_ID } from '@moonshot-ai/agent-core-v2/session/agentLifecycle/agentLifecycle';
-import { ensureMainAgent } from '@moonshot-ai/agent-core-v2/session/agentLifecycle/mainAgent';
-import { getOrRestoreAgent } from '@moonshot-ai/agent-core-v2/session/agentLifecycle/getOrRestoreAgent';
-import { agentContextOf } from '@moonshot-ai/agent-core-v2/agent/scopeContext/scopeContext';
+import type { ServiceIdentifier } from '@zimi-ai/agent-core-v2/_base/di/instantiation';
+import type { IAgentScopeHandle } from '@zimi-ai/agent-core-v2/_base/di/scope';
+import { IWorkspaceInstanceManager } from '@zimi-ai/agent-core-v2/workspace/workspaceInstance/workspaceInstanceManager';
+import { ISessionManager } from '@zimi-ai/agent-core-v2/app/sessionManager/sessionManager';
+import { getLiveSessionById } from '@zimi-ai/agent-core-v2/app/sessionManager/sessionLookup';
+import { IAgentLifecycleService } from '@zimi-ai/agent-core-v2/session/agentLifecycle/agentLifecycle';
+import { MAIN_AGENT_ID } from '@zimi-ai/agent-core-v2/session/agentLifecycle/agentLifecycle';
+import { ensureMainAgent } from '@zimi-ai/agent-core-v2/session/agentLifecycle/mainAgent';
+import { getOrRestoreAgent } from '@zimi-ai/agent-core-v2/session/agentLifecycle/getOrRestoreAgent';
+import { agentContextOf } from '@zimi-ai/agent-core-v2/agent/scopeContext/scopeContext';
 import {
   INTERACTION_TAG_AGENT_ID,
   INTERACTION_TAG_SESSION_ID,
   type Interaction,
   type InteractionKind,
   type InteractionRequest,
-} from '@moonshot-ai/agent-core-v2/human/interaction/interaction';
-import { interactions } from '@moonshot-ai/agent-core-v2/human/interaction/facade';
-import { IAgentLoopService, type PromptPayload, type SteerPayload } from '@moonshot-ai/agent-core-v2/agent/loop/loop';
-import { IAgentPromptChannel } from '@moonshot-ai/agent-core-v2/agent/loop/promptChannel';
-import { IModelCatalog } from '@moonshot-ai/agent-core-v2/llm-adapter/model/catalog';
-import { IProtocolAdapterRegistry } from '@moonshot-ai/agent-core-v2/llm-adapter/protocol/protocol';
+} from '@zimi-ai/agent-core-v2/human/interaction/interaction';
+import { interactions } from '@zimi-ai/agent-core-v2/human/interaction/facade';
+import { IAgentLoopService, type PromptPayload, type SteerPayload } from '@zimi-ai/agent-core-v2/agent/loop/loop';
+import { IAgentPromptChannel } from '@zimi-ai/agent-core-v2/agent/loop/promptChannel';
+import { IModelCatalog } from '@zimi-ai/agent-core-v2/llm-adapter/model/catalog';
+import { IProtocolAdapterRegistry } from '@zimi-ai/agent-core-v2/llm-adapter/protocol/protocol';
 import {
   generateModel,
   type ModelRequestInput,
   type ModelRequestParams,
-} from '@moonshot-ai/agent-core-v2/llm-adapter/model/generate';
-import { streamWithCredentialRecovery } from '@moonshot-ai/agent-core-v2/llm-adapter/model/credential-recovery';
+} from '@zimi-ai/agent-core-v2/llm-adapter/model/generate';
+import { streamWithCredentialRecovery } from '@zimi-ai/agent-core-v2/llm-adapter/model/credential-recovery';
 import {
   fromCorePart,
   toCorePart,
   type ContentPart as LegacyContentPart,
-} from '@moonshot-ai/agent-core-v2/human/message';
-import type { ContentPart as CoreContentPart } from '@moonshot-ai/agent-core-v2/human/llm/message';
-import type { SkillActivationOrigin } from '@moonshot-ai/agent-core-v2/agent/contextMemory/types';
-import { ITelemetryService } from '@moonshot-ai/agent-core-v2/app/telemetry/telemetry';
+} from '@zimi-ai/agent-core-v2/human/message';
+import type { ContentPart as CoreContentPart } from '@zimi-ai/agent-core-v2/human/llm/message';
+import type { SkillActivationOrigin } from '@zimi-ai/agent-core-v2/agent/contextMemory/types';
+import { ITelemetryService } from '@zimi-ai/agent-core-v2/app/telemetry/telemetry';
 import type {
   PromptWithSkillsInput,
   SkillActivationInput,
-} from '@moonshot-ai/agent-core-v2/features/skill/skill';
-import { IAgentSkillService } from '@moonshot-ai/agent-core-v2/features/skill/skillService';
-import { IEventBus } from '@moonshot-ai/agent-core-v2/app/event/eventBus';
+} from '@zimi-ai/agent-core-v2/features/skill/skill';
+import { IAgentSkillService } from '@zimi-ai/agent-core-v2/features/skill/skillService';
+import { IEventBus } from '@zimi-ai/agent-core-v2/app/event/eventBus';
 import type {
   FileMeta,
   GetResult,
   SaveOptions,
-} from '@moonshot-ai/agent-core-v2/app/file/fileService';
-import { FileErrors } from '@moonshot-ai/agent-core-v2/app/file/fileService';
-import { Error2, ErrorCodes } from '@moonshot-ai/agent-core-v2/errors';
+} from '@zimi-ai/agent-core-v2/app/file/fileService';
+import { FileErrors } from '@zimi-ai/agent-core-v2/app/file/fileService';
+import { Error2, ErrorCodes } from '@zimi-ai/agent-core-v2/errors';
 
 import { Readable } from 'node:stream';
 

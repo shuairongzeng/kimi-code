@@ -10,18 +10,18 @@ import type {
   ToolCallLocation,
   ToolKind,
 } from '@agentclientprotocol/sdk';
-import type { ToolResultEvent } from '@moonshot-ai/agent-core-v2/events';
+import type { ToolResultEvent } from '@zimi-ai/agent-core-v2/events';
 import type {
   AssistantDeltaEvent,
   ThinkingDeltaEvent,
   TurnEndReason,
-} from '@moonshot-ai/agent-core-v2/agent/loop/turnEvents';
+} from '@zimi-ai/agent-core-v2/agent/loop/turnEvents';
 import type {
   ToolCallDeltaEvent,
   ToolCallStartedEvent,
   ToolProgressEvent,
-} from '@moonshot-ai/agent-core-v2/agent/toolExecutor/toolExecutorEvents';
-import type { ToolInputDisplay } from '@moonshot-ai/agent-core-v2/tool/toolInputDisplay';
+} from '@zimi-ai/agent-core-v2/agent/toolExecutor/toolExecutorEvents';
+import type { ToolInputDisplay } from '@zimi-ai/agent-core-v2/tool/toolInputDisplay';
 
 import { displayBlockToAcpContent, toolResultToAcpContent } from './convert';
 import type { AcpStopReason } from './types';
@@ -108,7 +108,7 @@ export function acpToolCallId(turnId: number, toolCallId: string): string {
 }
 
 /**
- * Heuristic map from a Kimi tool's `name` to ACP {@link ToolKind}.
+ * Heuristic map from a Zimi tool's `name` to ACP {@link ToolKind}.
  *
  * Pure, never throws — defaults to `'other'` whenever the name is
  * unrecognized so we never block streaming on an unknown tool.

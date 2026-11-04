@@ -1,12 +1,12 @@
-import type { KimiHarness } from "@moonshot-ai/kimi-code-sdk";
+import type { ZimiHarness } from "@zimi-ai/zimi-code-sdk";
 
 const DEFAULT_REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const MAX_INTERVAL_MS = 2_147_483_647;
-const INTERVAL_ENV = "KIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS";
-const REFRESH_ON_START_ENV = "KIMI_CODE_MODEL_CATALOG_REFRESH_ON_START";
+const INTERVAL_ENV = "ZIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS";
+const REFRESH_ON_START_ENV = "ZIMI_CODE_MODEL_CATALOG_REFRESH_ON_START";
 
 export interface ModelCatalogRefreshOptions {
-  readonly harness: Pick<KimiHarness, "getConfig" | "refreshProviderModels">;
+  readonly harness: Pick<ZimiHarness, "getConfig" | "refreshProviderModels">;
   readonly onChanged: () => void;
   readonly log: (message: string, error?: unknown) => void;
   readonly env?: NodeJS.ProcessEnv;

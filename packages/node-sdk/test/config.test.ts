@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { createKimiConfigRpc } from '#/index';
+import { createZimiConfigRpc } from '#/index';
 import { configToTomlData, parseConfigString } from '#/config/index';
 
 const toPosix = (p: string): string => p.replaceAll('\\', '/');
@@ -18,7 +18,7 @@ afterEach(async () => {
 });
 
 async function makeTempDir(): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'kimi-sdk-config-'));
+  const dir = await mkdtemp(join(tmpdir(), 'zimi-sdk-config-'));
   tempDirs.push(dir);
   return dir;
 }
@@ -26,23 +26,23 @@ async function makeTempDir(): Promise<string> {
 describe('SDK config TOML', () => {
   it('resolves config paths through the config RPC wrapper', async () => {
     const dir = await makeTempDir();
-    const rpc = createKimiConfigRpc();
+    const rpc = createZimiConfigRpc();
 
     await expect(rpc.resolveConfigPath({ homeDir: dir })).resolves.toBe(toPosix(join(dir, 'config.toml')));
   });
 
   it('returns structured validation issues through the config RPC wrapper', async () => {
-    const rpc = createKimiConfigRpc();
+    const rpc = createZimiConfigRpc();
 
     await expect(
       rpc.validateConfigToml({
         text: `
-[providers.kimi]
-type = "kimi"
+[providers.zimi]
+type = "zimi"
 
-[models.kimi]
-provider = "kimi"
-model = "kimi"
+[models.zimi]
+provider = "zimi"
+model = "zimi"
 max_context_size = "large"
 `,
         filePath: 'broken.toml',
@@ -51,7 +51,7 @@ max_context_size = "large"
       details: {
         validationIssues: [
           {
-            path: ['models', 'kimi', 'maxContextSize'],
+            path: ['models', 'zimi', 'maxContextSize'],
           },
         ],
       },
@@ -59,7 +59,7 @@ max_context_size = "large"
   });
 
   it('parses a provider api_key_env into camelCase apiKeyEnv', async () => {
-    const rpc = createKimiConfigRpc();
+    const rpc = createZimiConfigRpc();
     const text = `
 [providers.acme]
 type = "openai"
@@ -104,7 +104,7 @@ default = "dev_box"
 type = "ssh"
 host = "dev-box"
 default_cwd = "/remote/dev"
-remote_bin = "~/.kimi-code/bin/kimi"
+remote_bin = "~/.zimi-code/bin/zimi"
 `;
     const config = parseConfigString(text);
     expect(config.environments?.default).toBe('dev_box');
@@ -112,7 +112,7 @@ remote_bin = "~/.kimi-code/bin/kimi"
       type: 'ssh',
       host: 'dev-box',
       defaultCwd: '/remote/dev',
-      remoteBin: '~/.kimi-code/bin/kimi',
+      remoteBin: '~/.zimi-code/bin/zimi',
     });
   });
 

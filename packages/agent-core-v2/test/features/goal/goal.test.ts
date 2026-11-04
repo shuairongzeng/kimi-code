@@ -41,7 +41,7 @@ import { IEventBus } from '#/app/event/eventBus';
 import { APIConnectionError, APIStatusError } from '#/llm-adapter/contract/errors';
 import type { ToolCall } from '#human/message';
 import type { TokenUsage } from '#human/llm-requester/usage';
-import { ErrorCodes, Error2, errorInfo, toKimiErrorPayload } from '#/errors';
+import { ErrorCodes, Error2, errorInfo, toZimiErrorPayload } from '#/errors';
 import type { ExecutableTool, RunnableToolExecution } from '#/tool/toolContract';
 import type { ToolInputDisplay } from '#/tool/toolInputDisplay';
 
@@ -283,7 +283,7 @@ function endTurn(
   turn: StubTurn,
   result: TurnEndedInput = { reason: 'completed' },
 ): void {
-  const error = result.error !== undefined ? toKimiErrorPayload(result.error) : undefined;
+  const error = result.error !== undefined ? toZimiErrorPayload(result.error) : undefined;
   eventBus.publish(
     new TurnEnded({ agentId: 'main',
       turnId: turn.id,
@@ -693,7 +693,7 @@ describe('AgentGoalService', () => {
         mode: 'agent',
         model: 'mock-model',
         protocol: 'openai',
-        provider_type: 'kimi',
+        provider_type: 'zimi',
       });
       expect(telemetry[1]?.properties).toMatchObject({ actor: 'model', has_token_budget: true });
       expect(telemetry[3]?.properties).toMatchObject({ status: 'paused', actor: 'user' });

@@ -10,7 +10,7 @@ import type {
   Scope,
   SessionActivityState,
   Workspace,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import {
   IAgentLifecycleService,
   IEventService,
@@ -23,7 +23,7 @@ import {
   resumeSessionById,
   interactions,
   toDisposable,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import type {
   ConfigWarningItem,
   DiUnitChangedEvent,
@@ -50,7 +50,7 @@ import {
   type TranscriptOpsEvent,
   type TranscriptResetEvent,
   type TranscriptStore,
-} from '@moonshot-ai/transcript';
+} from '@zimi-ai/transcript';
 
 import type { InteractionEventMessage, InteractionOutcome } from '../../../protocol/interaction';
 import {

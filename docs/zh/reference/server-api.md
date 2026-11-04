@@ -1,6 +1,6 @@
 # 服务 API
 
-`kimi web` 启动的本地服务暴露两组程序化接口：REST API（`/api/v1`，另有 `/api/v2/sessions` 和 `/api/v2/mcp`）和 WebSocket 事件流（`/api/v1/ws`）。本页是这两组接口的协议参考。如何启动服务及其命令行选项见 [kimi 命令](./kimi-command.md#kimi-web) 参考；端到端的上手流程见下文「[用 API 驱动一个会话](#用-api-驱动一个会话)」。
+`zimi web` 启动的本地服务暴露两组程序化接口：REST API（`/api/v1`，另有 `/api/v2/sessions` 和 `/api/v2/mcp`）和 WebSocket 事件流（`/api/v1/ws`）。本页是这两组接口的协议参考。如何启动服务及其命令行选项见 [zimi 命令](./zimi-command.md#zimi-web) 参考；端到端的上手流程见下文「[用 API 驱动一个会话](#用-api-驱动一个会话)」。
 
 本页是一份经过整理、面向人阅读的参考：下文逐一记录每个端点的参数、请求体与响应结构。每个端点精确的机器可读 schema 以服务的在线规范文档为准：`GET /openapi.json`（OpenAPI）与 `GET /asyncapi.json`（AsyncAPI），两者都由服务运行时实际执行的校验 schema 生成。两者都需要鉴权；当本页与在线规范不一致时，以在线规范为准。
 
@@ -12,7 +12,7 @@
 
 ### 地址
 
-默认地址为 `http://127.0.0.1:58627`。端口被占用时，服务会用下一个端口重试（至多 100 次）；可用 `--port` / `--host` 修改绑定。同一 home 目录下可并存多个实例，运行中的实例登记在 `~/.kimi-code/server/instances/`。
+默认地址为 `http://127.0.0.1:58627`。端口被占用时，服务会用下一个端口重试（至多 100 次）；可用 `--port` / `--host` 修改绑定。同一 home 目录下可并存多个实例，运行中的实例登记在 `~/.zimi-code/server/instances/`。
 
 ### 鉴权
 
@@ -22,7 +22,7 @@
 - `GET /api/v1/healthz`（探活）
 - 静态 web 资源（非 `/api/` 路径）
 
-携带方式：REST 用 `Authorization: Bearer <token>` 请求头；WebSocket 升级请求接受同一请求头，或子协议 `kimi-code.bearer.<token>`。token 的生成与轮换见 [在网页中使用：开始使用](../guides/web.md#开始使用)。
+携带方式：REST 用 `Authorization: Bearer <token>` 请求头；WebSocket 升级请求接受同一请求头，或子协议 `zimi-code.bearer.<token>`。token 的生成与轮换见 [在网页中使用：开始使用](../guides/web.md#开始使用)。
 
 鉴权失败返回 HTTP 401，信封 `code` 为 `40101`。在非 loopback 绑定上，同一来源 60 秒内鉴权失败 10 次会被封禁 60 秒，期间每个请求都返回 HTTP 429（`code` 为 `42901`）。
 
@@ -72,7 +72,7 @@ HTTP 状态码几乎总是 200，业务结果以 `code` 为准。例外情况：
 | `500xx` | 服务端内部错误 | `50001` 未捕获异常、`50003` 持久化失败 |
 | `6xxxx` / `7xxxx` / `8xxxx` | 工具运行时 / LLM 供应商 / MCP 透传错误，`msg` 保留上游原文 | |
 
-`40931` 和 `40932` 只在同一会话被多个客户端打开时出现。`40931` 表示另一个 Kimi Code 进程正在写入该会话，等它空闲后重试即可。如果确认该进程已退出、只是留下了锁，可以调用 `POST /api/v1/sessions/{session_id}:takeover` 后再重试。会话已被其他客户端更新时，提交 prompt、激活 skill 和压缩会在服务端重新载入会话、向订阅者推送最新的 transcript，然后重新执行请求，调用方不会从这些接口收到 `40932`。只有撤销会返回 `40932`：服务端已重新载入会话，本次没有撤销任何内容；请让用户先查看刷新后的历史，再决定是否撤销。
+`40931` 和 `40932` 只在同一会话被多个客户端打开时出现。`40931` 表示另一个 Zimi Code 进程正在写入该会话，等它空闲后重试即可。如果确认该进程已退出、只是留下了锁，可以调用 `POST /api/v1/sessions/{session_id}:takeover` 后再重试。会话已被其他客户端更新时，提交 prompt、激活 skill 和压缩会在服务端重新载入会话、向订阅者推送最新的 transcript，然后重新执行请求，调用方不会从这些接口收到 `40932`。只有撤销会返回 `40932`：服务端已重新载入会话，本次没有撤销任何内容；请让用户先查看刷新后的历史，再决定是否撤销。
 
 ### 分页
 
@@ -109,7 +109,7 @@ curl -s -X POST http://127.0.0.1:58627/api/v1/sessions \
 ```js
 // subscribe.mjs —— 用法：TOKEN=... node subscribe.mjs session_...
 const ws = new WebSocket('ws://127.0.0.1:58627/api/v1/ws', [
-  `kimi-code.bearer.${process.env.TOKEN}`,
+  `zimi-code.bearer.${process.env.TOKEN}`,
 ]);
 ws.onmessage = (e) => console.log(e.data);
 ws.onopen = () =>
@@ -185,7 +185,7 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 
 ### 登录与用量
 
-这组端点驱动托管 Kimi OAuth 登录的生命周期，并暴露账号级信息。托管供应商名为 `managed:kimi-code`；下面每个端点上可选的 `provider` 参数都默认取它。
+这组端点驱动托管 Zimi OAuth 登录的生命周期，并暴露账号级信息。托管供应商名为 `managed:zimi-code`；下面每个端点上可选的 `provider` 参数都默认取它。
 
 | 方法与路径 | 说明 |
 | --- | --- |
@@ -200,7 +200,7 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 
 #### `GET /api/v1/auth`
 
-鉴权状态快照：默认模型能否解析到可用的供应商配置，以及托管供应商的登录状态。当全局 `default_model` 别名存在于模型表中且能解析到已配置的供应商时，`models_ready` 为 `true`——包括自带 `base_url` 的平铺（providerless）模型，以及通过 `KIMI_MODEL_*` 环境变量注入的模型。它不做凭据校验，因此此后的对话请求仍可能以 `40111` / `40112` 失败。
+鉴权状态快照：默认模型能否解析到可用的供应商配置，以及托管供应商的登录状态。当全局 `default_model` 别名存在于模型表中且能解析到已配置的供应商时，`models_ready` 为 `true`——包括自带 `base_url` 的平铺（providerless）模型，以及通过 `ZIMI_MODEL_*` 环境变量注入的模型。它不做凭据校验，因此此后的对话请求仍可能以 `40111` / `40112` 失败。
 
 成功时 `data` 携带 `models_ready`（布尔值）、`providers_count`（已配置供应商数量）与 `managed_provider`（`null`，或 `{ name, status }`，其中 `status` 为 `authenticated` / `expired` / `revoked` / `unauthenticated` 之一）。全局默认模型别名本身改从 `GET /api/v1/config` 的 `default_model` 读取，本端点不再携带。
 
@@ -210,7 +210,7 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 
 | 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `provider` | body | string | 托管供应商名称。默认 `managed:kimi-code` |
+| `provider` | body | string | 托管供应商名称。默认 `managed:zimi-code` |
 | `region` | body | string | `mainland-cn` 或 `global`；覆盖 `GET /api/v1/oauth/region` 一节描述的区域解析结果，仅对本次流程生效 |
 
 成功时 `data` 有两种形态。进行中的流程——`{ flow_id, provider, status: "pending", verification_uri, verification_uri_complete, user_code, expires_in, interval, expires_at }`：打开 `verification_uri_complete`（或打开 `verification_uri` 并输入 `user_code`），然后每隔 `interval` 秒轮询 `GET /api/v1/oauth/login`，直到流程完结或超过 `expires_at`（`expires_in` 是以秒表示的同一时限）。已登录的快速路径——`{ flow_id, provider, status: "authenticated" }`。
@@ -221,7 +221,7 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 
 | 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `provider` | query | string | 托管供应商名称。默认 `managed:kimi-code` |
+| `provider` | query | string | 托管供应商名称。默认 `managed:zimi-code` |
 
 成功时 `data` 为 `null` 或流程快照：`{ flow_id, provider, status, verification_uri, verification_uri_complete, user_code, expires_in, expires_at, interval }`，其中 `status` 为 `pending` / `authenticated` / `denied` / `expired` / `cancelled`。流程离开 `pending` 后，`resolved_at` 记录其到达终态的时间，`error_message` 描述失败的流程。
 
@@ -231,7 +231,7 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 
 | 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `provider` | query | string | 托管供应商名称。默认 `managed:kimi-code` |
+| `provider` | query | string | 托管供应商名称。默认 `managed:zimi-code` |
 
 成功时 `data` 为 `{ cancelled, status }`：只有确实中止了一个 `pending` 流程时 `cancelled` 才为 `true`，`status` 为调用后的流程状态。
 
@@ -239,11 +239,11 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 
 登出托管供应商：丢弃已存储的 OAuth 凭据、中止进行中的登录流程，并把托管供应商从配置中移除。OAuth 托管的供应商拒绝手动编辑与删除（见下文 `PUT` / `DELETE /api/v1/providers/{provider_id}`），因此要移除它需先登出。
 
-对默认 Kimi 供应商（`managed:kimi-code`），登出还会拆除本机的远程控制并清除缓存的远程控制云端会话。当没有隧道运行或隧道由本机其他进程持有时，登出会先把本机设备下线并持有本机锁，确保凭据被丢弃之前本机任何进程都无法再次开启远程控制；清理失败会中止登出。当隧道由本服务持有时，先丢弃凭据，隧道在响应发出后随即拆除，因此通过远程控制链接发起的登出仍能收到响应。登出其他供应商不影响远程控制。
+对默认 Zimi 供应商（`managed:zimi-code`），登出还会拆除本机的远程控制并清除缓存的远程控制云端会话。当没有隧道运行或隧道由本机其他进程持有时，登出会先把本机设备下线并持有本机锁，确保凭据被丢弃之前本机任何进程都无法再次开启远程控制；清理失败会中止登出。当隧道由本服务持有时，先丢弃凭据，隧道在响应发出后随即拆除，因此通过远程控制链接发起的登出仍能收到响应。登出其他供应商不影响远程控制。
 
 | 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `provider` | body | string | 托管供应商名称。默认 `managed:kimi-code` |
+| `provider` | body | string | 托管供应商名称。默认 `managed:zimi-code` |
 
 成功时 `data` 为 `{ logged_out: true, provider }`。
 
@@ -253,7 +253,7 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 
 | 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `provider` | query | string | 托管供应商名称。默认 `managed:kimi-code` |
+| `provider` | query | string | 托管供应商名称。默认 `managed:zimi-code` |
 
 成功时 `data` 为 `{ kind: "ok", quota }` 或 `{ kind: "error", message, status? }`，其中 `status` 为上游 HTTP 状态码（如存在）。在 `ok` 形态中，`quota` 为 `{ usages, extraUsage }`：`usages` 按窗口携带 `{ usedRatio, resetAt? }` 条目——`limit5h`、`limit7d`、`monthTotal`、`monthCode`——其中 `usedRatio` 为 0–1 浮点数，`resetAt` 为 RFC3339 重置时间，客户端按实际下发的条目渲染；`extraUsage`（可空）是按量付费钱包：`{ balanceCents, totalCents, monthlyChargeLimitEnabled, monthlyChargeLimitCents, monthlyUsedCents, currency }`。
 
@@ -263,21 +263,21 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 
 | 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `provider` | query | string | 托管供应商名称。默认 `managed:kimi-code` |
+| `provider` | query | string | 托管供应商名称。默认 `managed:zimi-code` |
 
 成功时 `data` 为 `{ kind: "ok", userInfo }` 或 `{ kind: "error", message, status? }`。`userInfo` 始终携带 `userId`、`nickname`、`status`、`region`、`userLevel`、`userLevelName`、`domain`、`domainName`，并可能附加 `globalId`、`bio`、`avatar`、`username`、`email`、`phone`（`{ countryCode, number }`）、`createdTime` 与 `lastLoginTime`。
 
 #### `GET /api/v1/oauth/region`
 
-解析该客户端所属的 Kimi 区域，结果在本地推导，不经网络探测。优先取环境变量或配置固定的 OAuth host，其次是已配置的 OAuth key，再次是 `<home>/region` 中的安装渠道标记。
+解析该客户端所属的 Zimi 区域，结果在本地推导，不经网络探测。优先取环境变量或配置固定的 OAuth host，其次是已配置的 OAuth key，再次是 `<home>/region` 中的安装渠道标记。
 
-客户端未登录且上述输入都无法决定区域时，会根据设备时区和语言环境进行推断。成功结果缓存到 `<home>/region.json`，登录状态变化时失效；原始时区和语言环境值不会上传。信号缺失或冲突时，本次进程回退到 `mainland-cn`，但不持久化该结果，下次启动会重新判断。设置 `KIMI_CODE_REGION_MARKER=off` 可同时禁用安装渠道标记和本地推断。
+客户端未登录且上述输入都无法决定区域时，会根据设备时区和语言环境进行推断。成功结果缓存到 `<home>/region.json`，登录状态变化时失效；原始时区和语言环境值不会上传。信号缺失或冲突时，本次进程回退到 `mainland-cn`，但不持久化该结果，下次启动会重新判断。设置 `ZIMI_CODE_REGION_MARKER=off` 可同时禁用安装渠道标记和本地推断。
 
 成功时 `data` 为 `{ region }`，`region` 为 `mainland-cn` / `global` 之一。
 
 ### 远程控制
 
-这组端点管理机器级的远程控制隧道（见 [远程控制指南](../guides/remote-control.md)）和账号的设备注册表。隧道状态按机器区分；设备注册表按账号区分、保存在云端，因此设备端点需要 Kimi 登录，并由服务端持会话代理到 relay——OAuth 凭据不会暴露给调用方。
+这组端点管理机器级的远程控制隧道（见 [远程控制指南](../guides/remote-control.md)）和账号的设备注册表。隧道状态按机器区分；设备注册表按账号区分、保存在云端，因此设备端点需要 Zimi 登录，并由服务端持会话代理到 relay——OAuth 凭据不会暴露给调用方。
 
 #### `GET /api/v1/remote-control`
 
@@ -432,7 +432,7 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 
 #### `POST /api/v1/models/{model_id}:set_default`
 
-把全局 `default_model` 设为一个已存在的别名。`model_id` 是配置中的别名键原样——裸键如 `POST /api/v1/models/turbo:set_default`；当 id 含 `/` 时需做 URL 编码，如 `POST /api/v1/models/my-provider%2Fkimi-for-coding:set_default`。
+把全局 `default_model` 设为一个已存在的别名。`model_id` 是配置中的别名键原样——裸键如 `POST /api/v1/models/turbo:set_default`；当 id 含 `/` 时需做 URL 编码，如 `POST /api/v1/models/my-provider%2Fzimi-for-coding:set_default`。
 
 | 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
@@ -452,7 +452,7 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `id` | string | 供应商 id |
-| `type` | string | 通信协议：`kimi` / `openai` / `openai_responses` / `anthropic` / `google-genai` / `vertexai` |
+| `type` | string | 通信协议：`zimi` / `openai` / `openai_responses` / `anthropic` / `google-genai` / `vertexai` |
 | `base_url` | string | API 基础 URL，如已设置 |
 | `default_model` | string | 该供应商的默认模型别名，如已设置 |
 | `has_api_key` | boolean | 是否已存储凭据 |
@@ -466,7 +466,7 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 | 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
 | `id` | body | string | **必填。** 供应商 id——字母、数字、`-`、`_` 与空格；必须以字母或数字开头 |
-| `type` | body | string | **必填。** 通信协议：`kimi` / `openai` / `openai_responses` / `anthropic` / `google-genai` / `vertexai` |
+| `type` | body | string | **必填。** 通信协议：`zimi` / `openai` / `openai_responses` / `anthropic` / `google-genai` / `vertexai` |
 | `api_key` | body | string | API 密钥，存储于 `config.toml` |
 | `base_url` | body | string | API 基础 URL；不得包含环境变量占位符（`${...}`） |
 | `default_model` | body | string | 该供应商的默认模型；必须是 `models[].model` 之一 |
@@ -508,7 +508,7 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 | --- | --- | --- | --- |
 | `provider_id` | path | string | **必填。** 当前供应商 id |
 | `new_id` | body | string | 重命名供应商；providers 键、模型别名、`default_provider`、指向旧别名的 `default_model` 以及 subagent 次级模型池都会随之迁移。id 规则与 `POST /api/v1/providers` 相同 |
-| `type` | body | string | **必填。** 通信协议：`kimi` / `openai` / `openai_responses` / `anthropic` / `google-genai` / `vertexai` |
+| `type` | body | string | **必填。** 通信协议：`zimi` / `openai` / `openai_responses` / `anthropic` / `google-genai` / `vertexai` |
 | `api_key` | body | string | 三态，见上文 |
 | `base_url` | body | string | API 基础 URL；不得包含环境变量占位符（`${...}`） |
 | `default_model` | body | string | 该供应商的默认模型；必须是 `models[].model` 之一 |
@@ -846,7 +846,7 @@ schema 还接受 `agent_config` 内的 `system_prompt`、`tools`、`mcp_servers`
 
 #### `POST /api/v1/sessions/{session_id}:takeover`
 
-移除其他 Kimi Code 进程在该会话上持有的锁，之后可以重试返回 `40931` 的请求。只应在该进程已退出、锁残留时使用：如果它仍在运行，两个进程会同时写入该会话直到它空闲，会话历史可能交错。
+移除其他 Zimi Code 进程在该会话上持有的锁，之后可以重试返回 `40931` 的请求。只应在该进程已退出、锁残留时使用：如果它仍在运行，两个进程会同时写入该会话直到它空闲，会话历史可能交错。
 
 成功时，`data` 为 `{ taken_over: true }`。
 
@@ -949,7 +949,7 @@ schema 还接受 `agent_config` 内的 `system_prompt`、`tools`、`mcp_servers`
 
 #### `POST /api/v1/sessions/{session_id}/export`
 
-将会话连同诊断日志一起导出为 zip 附件（`kimi-session-<id>.zip`）。响应是二进制流，不是 JSON 信封——能力与失败语义见 [二进制与流式端点](#二进制与流式端点)。
+将会话连同诊断日志一起导出为 zip 附件（`zimi-session-<id>.zip`）。响应是二进制流，不是 JSON 信封——能力与失败语义见 [二进制与流式端点](#二进制与流式端点)。
 
 | 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
@@ -1384,7 +1384,7 @@ schema 还接受共享消息格式中的 `tool_use`、`tool_result` 和 `thinkin
 
 ### 能力与插件
 
-能力是带有分层就绪状态的内置特性——由检测步骤加后台安装组成；当前版本注册了 `kimi-cu`（Kimi Computer Use）与 `kimi-webbridge`（Kimi Browser Extension）。插件是已安装的技能、MCP 服务、hook 与命令的打包集合。这组端点报告能力状态、驱动能力安装，并管理插件从市场列表到移除的整个生命周期。
+能力是带有分层就绪状态的内置特性——由检测步骤加后台安装组成；当前版本注册了 `zimi-cu`（Zimi Computer Use）与 `zimi-webbridge`（Zimi Browser Extension）。插件是已安装的技能、MCP 服务、hook 与命令的打包集合。这组端点报告能力状态、驱动能力安装，并管理插件从市场列表到移除的整个生命周期。
 
 | 方法与路径 | 说明 |
 | --- | --- |
@@ -1452,11 +1452,11 @@ schema 还接受共享消息格式中的 `tool_use`、`tool_result` 和 `thinkin
 
 #### `GET /api/v1/plugins/marketplace`
 
-列出插件市场目录并合并实时安装状态。默认目录 URL 由当前 managed `baseURL` 派生为 `${baseURL}/plugins/marketplace`，不再注入内置能力条目。目录中的 `clients` 将条目限制为 `desktop`、`cli` 或两者；缺省时两种宿主均可用。Web 和 Remote Control 使用所连接 server 的宿主身份。`platforms` 独立按 daemon 操作系统过滤：包含 daemon 所在平台或全部为 `cloud` 时保留条目；包含 `cloud` 但本机平台为其他平台的条目会被过滤。客户端与操作系统条件必须同时满足。cloud-only 条目不能在本机安装。旧 `kimi-webbridge` 条目不再返回，Computer Use 只返回当前平台对应的接线插件。
+列出插件市场目录并合并实时安装状态。默认目录 URL 由当前 managed `baseURL` 派生为 `${baseURL}/plugins/marketplace`，不再注入内置能力条目。目录中的 `clients` 将条目限制为 `desktop`、`cli` 或两者；缺省时两种宿主均可用。Web 和 Remote Control 使用所连接 server 的宿主身份。`platforms` 独立按 daemon 操作系统过滤：包含 daemon 所在平台或全部为 `cloud` 时保留条目；包含 `cloud` 但本机平台为其他平台的条目会被过滤。客户端与操作系统条件必须同时满足。cloud-only 条目不能在本机安装。旧 `zimi-webbridge` 条目不再返回，Computer Use 只返回当前平台对应的接线插件。
 
 安装记录和托管文件仍共享在 daemon 的数据目录下。当前宿主不可用的条目也会从该宿主的已安装列表和运行能力中隐藏。daemon 将最近一次成功获取的可用性配置缓存到 `plugins/availability.json`；目录刷新成功后，客户端规则变化会隐藏或恢复已有安装，无需重新安装，也不会删除插件文件。
 
-成功时 `data` 为 `{ entries }`，每项包含 `id`、`tier`、`classification`、`displayName`、`description?`、`shortDescription?`、`longDescription?`、`cliDescription?`、`homepage?`、`keywords?`、`version?`、`source`、`iconUrl?`、`sha256sum?`、`filename?`、`locale?`、`defaultLocale?`、`platforms?`、`distribution?`、`billing?`、`installed?`、`updateAvailable?` 和 `capabilityId?`。`defaultLocale` 声明顶层 `description` / `cliDescription` 的语言，`locale` 存放各语言的 `displayName`、`shortDescription`、`longDescription` 和 `cliDescription` 翻译。`distribution.category` 为 `official` 或 `third_party`；`platforms` 使用 `darwin` / `win32` / `linux` / `cloud`。市场安装传 `marketplaceId`、可用时的 `expectedVersion`，以及带摘要 ZIP 的 `expectedSha256`，不直接传 `source`；自定义安装传 `source`。capability 只由 daemon 标注：`kimi-browser-extension` 映射到 `kimi-webbridge` capability，`kimi-cu` / `kimi-cu-win` 映射到 `kimi-cu`。
+成功时 `data` 为 `{ entries }`，每项包含 `id`、`tier`、`classification`、`displayName`、`description?`、`shortDescription?`、`longDescription?`、`cliDescription?`、`homepage?`、`keywords?`、`version?`、`source`、`iconUrl?`、`sha256sum?`、`filename?`、`locale?`、`defaultLocale?`、`platforms?`、`distribution?`、`billing?`、`installed?`、`updateAvailable?` 和 `capabilityId?`。`defaultLocale` 声明顶层 `description` / `cliDescription` 的语言，`locale` 存放各语言的 `displayName`、`shortDescription`、`longDescription` 和 `cliDescription` 翻译。`distribution.category` 为 `official` 或 `third_party`；`platforms` 使用 `darwin` / `win32` / `linux` / `cloud`。市场安装传 `marketplaceId`、可用时的 `expectedVersion`，以及带摘要 ZIP 的 `expectedSha256`，不直接传 `source`；自定义安装传 `source`。capability 只由 daemon 标注：`zimi-browser-extension` 映射到 `zimi-webbridge` capability，`zimi-cu` / `zimi-cu-win` 映射到 `zimi-cu`。
 
 - `50001`：市场不可达或返回了非法目录
 
@@ -1659,7 +1659,7 @@ schema 还接受共享消息格式中的 `tool_use`、`tool_result` 和 `thinkin
 | --- | --- | --- | --- |
 | `workspace_id` | path | string | **必填。** 工作区 id |
 
-成功时 `data` 为 `{ trusted }`，表示撤销后的有效信任状态。通常为 `{ trusted: false }`；如果 `KIMI_CODE_TRUST_WORKSPACE` 或 [`[workspace] require_trust = false`](../configuration/config-files.md#workspace-trust) 生效，则仍为 `true`。
+成功时 `data` 为 `{ trusted }`，表示撤销后的有效信任状态。通常为 `{ trusted: false }`；如果 `ZIMI_CODE_TRUST_WORKSPACE` 或 [`[workspace] require_trust = false`](../configuration/config-files.md#workspace-trust) 生效，则仍为 `true`。
 
 - `40410`：工作区不存在
 
@@ -2487,5 +2487,5 @@ Agent 自身的状态由另外四种平铺帧同步，每帧都携带完整的�
 
 ## 下一步
 
-- [在网页中使用](../guides/web.md) — 启动服务并在浏览器中使用 Kimi Code
-- [kimi 命令](./kimi-command.md#kimi-web) — `kimi web` 的全部命令行选项
+- [在网页中使用](../guides/web.md) — 启动服务并在浏览器中使用 Zimi Code
+- [zimi 命令](./zimi-command.md#zimi-web) — `zimi web` 的全部命令行选项

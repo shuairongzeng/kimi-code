@@ -1,5 +1,5 @@
 /**
- * `DaemonClient` — wire-level test client for the kimi-code server.
+ * `DaemonClient` — wire-level test client for the zimi-code server.
  *
  * Wraps the server's HTTP REST + WS surfaces (`/api/v1/...` + `/api/v1/ws`)
  * into a single, typed object that scenarios can drive. Handles:
@@ -15,23 +15,23 @@
 import type {
   FsBrowseResponse,
   FsHomeResponse,
-} from '@moonshot-ai/agent-core-v2/app/hostFolderBrowser/hostFolderBrowser';
-import type { AuthSummary } from '@moonshot-ai/agent-core-v2/app/authLegacy/authLegacy';
-import type { FileMeta } from '@moonshot-ai/agent-core-v2/app/file/fileService';
-import type { UpdateSessionProfileRequest as SessionUpdate } from '@moonshot-ai/agent-core-v2/app/sessionLegacy/sessionProtocol';
+} from '@zimi-ai/agent-core-v2/app/hostFolderBrowser/hostFolderBrowser';
+import type { AuthSummary } from '@zimi-ai/agent-core-v2/app/authLegacy/authLegacy';
+import type { FileMeta } from '@zimi-ai/agent-core-v2/app/file/fileService';
+import type { UpdateSessionProfileRequest as SessionUpdate } from '@zimi-ai/agent-core-v2/app/sessionLegacy/sessionProtocol';
 import type {
   ProviderCatalogItem,
   SetDefaultModelResponse,
-} from '@moonshot-ai/agent-core-v2/llm-adapter/model/catalog';
-import type { Message } from '@moonshot-ai/kap-server/protocol/message';
+} from '@zimi-ai/agent-core-v2/llm-adapter/model/catalog';
+import type { Message } from '@zimi-ai/kap-server/protocol/message';
 import type {
   InteractionRespondRequest,
   InteractionRespondResult,
-} from '@moonshot-ai/kap-server/protocol/interaction';
+} from '@zimi-ai/kap-server/protocol/interaction';
 import type {
   ListModelsResponse,
   ListProvidersResponse,
-} from '@moonshot-ai/kap-server/protocol/rest-modelCatalog';
+} from '@zimi-ai/kap-server/protocol/rest-modelCatalog';
 import type {
   PromptAbortResponse,
   PromptListResponse,
@@ -40,7 +40,7 @@ import type {
   PromptSteerResult,
   PromptSubmitResult,
   PromptThinking,
-} from '@moonshot-ai/kap-server/protocol/rest-prompt';
+} from '@zimi-ai/kap-server/protocol/rest-prompt';
 import type {
   CompactSessionRequest,
   CompactSessionResponse,
@@ -48,18 +48,18 @@ import type {
   SessionAbortResponse,
   UndoSessionRequest,
   UndoSessionResponse,
-} from '@moonshot-ai/kap-server/protocol/rest-session';
+} from '@zimi-ai/kap-server/protocol/rest-session';
 import type {
   Session,
   SessionChildCreate,
   SessionCreate,
-} from '@moonshot-ai/kap-server/protocol/session';
+} from '@zimi-ai/kap-server/protocol/session';
 import type {
   Workspace,
   WorkspaceCreate,
   WorkspaceUpdate,
-} from '@moonshot-ai/kap-server/protocol/workspace';
-import type { ServerHelloMessage } from '@moonshot-ai/kap-server/protocol/ws-control';
+} from '@zimi-ai/kap-server/protocol/workspace';
+import type { ServerHelloMessage } from '@zimi-ai/kap-server/protocol/ws-control';
 import { ulid } from 'ulid';
 import { WebSocket as WsWebSocket } from 'ws';
 
@@ -109,10 +109,10 @@ const DEFAULT_CONTROL_ACK_TIMEOUT_MS = 5_000;
  * they need.
  *
  * `model` matches what the existing server-e2e scenarios assume (the
- * default provider exposes `kimi-code/kimi-for-coding`).
+ * default provider exposes `zimi-code/kimi-for-coding`).
  */
 export const DEFAULT_PROMPT_CONTROLS = {
-  model: 'kimi-code/kimi-for-coding',
+  model: 'zimi-code/kimi-for-coding',
   thinking: 'off' as PromptThinking,
   permission_mode: 'manual' as PromptPermissionMode,
   plan_mode: false,

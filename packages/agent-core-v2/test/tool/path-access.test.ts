@@ -81,9 +81,9 @@ describe('extendWorkspaceWithSkillRoots', () => {
   });
 
   it('appends roots outside the workspace and existing additional dirs', () => {
-    expect(extendWorkspaceWithSkillRoots(workspace, ['/home/user/.kimi-code/skills'])).toEqual({
+    expect(extendWorkspaceWithSkillRoots(workspace, ['/home/user/.zimi-code/skills'])).toEqual({
       workspaceDir: '/repo',
-      additionalDirs: ['/extra', '/home/user/.kimi-code/skills'],
+      additionalDirs: ['/extra', '/home/user/.zimi-code/skills'],
     });
   });
 
@@ -116,7 +116,7 @@ describe('resolvePathAccess shell path bridge', () => {
     homeDir: 'C:\\Users\\test',
     osKind: 'Windows',
     shellName: 'bash' as const,
-    shellPath: 'C:\\kimi-test-nonexistent\\Git\\bin\\bash.exe',
+    shellPath: 'C:\\zimi-test-nonexistent\\Git\\bin\\bash.exe',
   };
 
   it('routes win32 file-tool paths through the shell path bridge', () => {

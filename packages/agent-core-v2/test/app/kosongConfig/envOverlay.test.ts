@@ -1,28 +1,28 @@
 import { describe, expect, it } from 'vitest';
 
 import { ENV_MODEL_PROVIDER_KEY } from '#/app/kosongConfig/configSection';
-import { ENV_MODEL_ALIAS_KEY, kimiModelEnvOverlay } from '#/app/kosongConfig/envOverlay';
+import { ENV_MODEL_ALIAS_KEY, zimiModelEnvOverlay } from '#/app/kosongConfig/envOverlay';
 
 type Env = Record<string, string>;
 
 function apply(effective: Record<string, unknown>, env: Env): readonly string[] {
-  return kimiModelEnvOverlay.apply(effective, (name) => env[name], (_domain, value) => value);
+  return zimiModelEnvOverlay.apply(effective, (name) => env[name], (_domain, value) => value);
 }
 
-describe('kimiModelEnvOverlay.apply', () => {
-  it('does nothing with no KIMI_MODEL_* env', () => {
+describe('zimiModelEnvOverlay.apply', () => {
+  it('does nothing with no ZIMI_MODEL_* env', () => {
     const effective: Record<string, unknown> = {};
     expect(apply(effective, {})).toEqual([]);
     expect(effective).toEqual({});
   });
 
-  it('applies only modelOverrides when KIMI_MODEL_NAME is unset', () => {
+  it('applies only modelOverrides when ZIMI_MODEL_NAME is unset', () => {
     const effective: Record<string, unknown> = {};
     const changed = apply(effective, {
-      KIMI_MODEL_TEMPERATURE: '0.7',
-      KIMI_MODEL_TOP_P: '0.95',
-      KIMI_MODEL_THINKING_KEEP: 'all',
-      KIMI_MODEL_MAX_COMPLETION_TOKENS: '8192',
+      ZIMI_MODEL_TEMPERATURE: '0.7',
+      ZIMI_MODEL_TOP_P: '0.95',
+      ZIMI_MODEL_THINKING_KEEP: 'all',
+      ZIMI_MODEL_MAX_COMPLETION_TOKENS: '8192',
     });
     expect(changed).toEqual(['modelOverrides']);
     expect(effective['modelOverrides']).toEqual({
@@ -35,7 +35,7 @@ describe('kimiModelEnvOverlay.apply', () => {
 
   it('synthesizes the env model, selects it, and defaults the provider through the registry', () => {
     const effective: Record<string, unknown> = {};
-    const changed = apply(effective, { KIMI_MODEL_NAME: 'kimi-k2-custom' });
+    const changed = apply(effective, { ZIMI_MODEL_NAME: 'kimi-k2-custom' });
     expect(changed).toEqual(
       expect.arrayContaining(['models', 'providers', 'defaultModel']),
     );
@@ -46,7 +46,7 @@ describe('kimiModelEnvOverlay.apply', () => {
       capabilities: ['image_in', 'thinking'],
     });
     expect((effective['providers'] as Record<string, unknown>)[ENV_MODEL_PROVIDER_KEY]).toEqual({
-      type: 'kimi',
+      type: 'zimi',
       baseUrl: 'https://api.moonshot.ai/v1',
     });
     expect(effective['defaultModel']).toBe(ENV_MODEL_ALIAS_KEY);
@@ -55,12 +55,12 @@ describe('kimiModelEnvOverlay.apply', () => {
   it('honors the vendor endpoint env chain for the default baseUrl', () => {
     const effective: Record<string, unknown> = {};
     apply(effective, {
-      KIMI_MODEL_NAME: 'kimi-k2-custom',
-      KIMI_BASE_URL: 'https://kimi-proxy.example.test/v1',
+      ZIMI_MODEL_NAME: 'kimi-k2-custom',
+      ZIMI_BASE_URL: 'https://zimi-proxy.example.test/v1',
     });
     expect((effective['providers'] as Record<string, unknown>)[ENV_MODEL_PROVIDER_KEY]).toEqual({
-      type: 'kimi',
-      baseUrl: 'https://kimi-proxy.example.test/v1',
+      type: 'zimi',
+      baseUrl: 'https://zimi-proxy.example.test/v1',
     });
   });
 
@@ -70,7 +70,7 @@ describe('kimiModelEnvOverlay.apply', () => {
         [ENV_MODEL_PROVIDER_KEY]: { type: 'openai', baseUrl: 'https://proxy.example.test/v1' },
       },
     };
-    const changed = apply(effective, { KIMI_MODEL_NAME: 'my-model' });
+    const changed = apply(effective, { ZIMI_MODEL_NAME: 'my-model' });
     expect(changed).not.toContain('providers');
     expect((effective['providers'] as Record<string, unknown>)[ENV_MODEL_PROVIDER_KEY]).toEqual({
       type: 'openai',
@@ -81,13 +81,13 @@ describe('kimiModelEnvOverlay.apply', () => {
   it('parses the optional model fields and validates their shapes', () => {
     const effective: Record<string, unknown> = {};
     apply(effective, {
-      KIMI_MODEL_NAME: 'my-model',
-      KIMI_MODEL_MAX_CONTEXT_SIZE: '131072',
-      KIMI_MODEL_MAX_OUTPUT_SIZE: '4096',
-      KIMI_MODEL_CAPABILITIES: 'image_in, tool_use',
-      KIMI_MODEL_DISPLAY_NAME: 'Mine',
-      KIMI_MODEL_REASONING_KEY: 'reasoning_content',
-      KIMI_MODEL_ADAPTIVE_THINKING: 'true',
+      ZIMI_MODEL_NAME: 'my-model',
+      ZIMI_MODEL_MAX_CONTEXT_SIZE: '131072',
+      ZIMI_MODEL_MAX_OUTPUT_SIZE: '4096',
+      ZIMI_MODEL_CAPABILITIES: 'image_in, tool_use',
+      ZIMI_MODEL_DISPLAY_NAME: 'Mine',
+      ZIMI_MODEL_REASONING_KEY: 'reasoning_content',
+      ZIMI_MODEL_ADAPTIVE_THINKING: 'true',
     });
     expect((effective['models'] as Record<string, unknown>)[ENV_MODEL_ALIAS_KEY]).toEqual({
       provider: ENV_MODEL_PROVIDER_KEY,
@@ -100,18 +100,18 @@ describe('kimiModelEnvOverlay.apply', () => {
       adaptiveThinking: true,
     });
 
-    expect(() => apply({}, { KIMI_MODEL_NAME: 'm', KIMI_MODEL_MAX_CONTEXT_SIZE: 'abc' })).toThrowError(
-      /KIMI_MODEL_MAX_CONTEXT_SIZE must be a positive integer/,
+    expect(() => apply({}, { ZIMI_MODEL_NAME: 'm', ZIMI_MODEL_MAX_CONTEXT_SIZE: 'abc' })).toThrowError(
+      /ZIMI_MODEL_MAX_CONTEXT_SIZE must be a positive integer/,
     );
-    expect(() => apply({}, { KIMI_MODEL_TEMPERATURE: 'hot' })).toThrowError(
-      /KIMI_MODEL_TEMPERATURE must be a number/,
+    expect(() => apply({}, { ZIMI_MODEL_TEMPERATURE: 'hot' })).toThrowError(
+      /ZIMI_MODEL_TEMPERATURE must be a number/,
     );
   });
 });
 
-describe('kimiModelEnvOverlay.strip', () => {
+describe('zimiModelEnvOverlay.strip', () => {
   it('removes the synthesized values on the write path', () => {
-    const strip = kimiModelEnvOverlay.strip!;
+    const strip = zimiModelEnvOverlay.strip!;
     expect(
       strip('models', { keep: { model: 'a' }, [ENV_MODEL_ALIAS_KEY]: { model: 'b' } }, {}),
     ).toEqual({ keep: { model: 'a' } });
@@ -120,6 +120,6 @@ describe('kimiModelEnvOverlay.strip', () => {
     );
     expect(strip('defaultModel', 'other-model', {})).toBe('other-model');
     expect(strip('modelOverrides', { temperature: 1 }, {})).toBeUndefined();
-    expect(strip('providers', { p: { type: 'kimi' } }, {})).toEqual({ p: { type: 'kimi' } });
+    expect(strip('providers', { p: { type: 'zimi' } }, {})).toEqual({ p: { type: 'zimi' } });
   });
 });

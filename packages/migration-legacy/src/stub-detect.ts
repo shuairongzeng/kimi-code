@@ -1,18 +1,18 @@
 import { readFile } from 'node:fs/promises';
 import { parse as parseToml } from 'smol-toml';
 
-// Verbatim from packages/kimi-core/src/harness/configs/toml.ts:42
+// Verbatim from packages/zimi-core/src/harness/configs/toml.ts:42
 export const DEFAULT_CONFIG_FILE_TEXT =
-  '# ~/.kimi-code/config.toml\n' +
-  '# Runtime settings for Kimi Code.\n' +
+  '# ~/.zimi-code/config.toml\n' +
+  '# Runtime settings for Zimi Code.\n' +
   '# This file starts empty so built-in defaults can apply.\n' +
-  '# Login will populate managed Kimi provider and model entries.\n';
+  '# Login will populate managed Zimi provider and model entries.\n';
 
-// Verbatim from apps/kimi-code/src/tui/config.ts:renderTuiConfig(DEFAULT_TUI_CONFIG)
+// Verbatim from apps/zimi-code/src/tui/config.ts:renderTuiConfig(DEFAULT_TUI_CONFIG)
 export const DEFAULT_TUI_RENDER =
-  '# ~/.kimi-code/tui.toml\n' +
-  '# Terminal UI preferences for kimi-code.\n' +
-  '# Agent/runtime settings stay in ~/.kimi-code/config.toml.\n' +
+  '# ~/.zimi-code/tui.toml\n' +
+  '# Terminal UI preferences for zimi-code.\n' +
+  '# Agent/runtime settings stay in ~/.zimi-code/config.toml.\n' +
   '\n' +
   'theme = "auto" # "auto" | "dark" | "light"\n' +
   '\n' +

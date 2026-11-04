@@ -3,7 +3,7 @@ import { type FlagDefinitionInput, registerFlagDefinition } from '#/app/flag/fla
 import { TOWER_FLAG_ID } from './tower';
 import { isTowerFeatureAssembled } from './towerFeature';
 
-export const TOWER_FLAG_ENV = 'KIMI_CODE_EXPERIMENTAL_TOWER';
+export const TOWER_FLAG_ENV = 'ZIMI_CODE_EXPERIMENTAL_TOWER';
 
 export const towerFlag: FlagDefinitionInput = {
   id: TOWER_FLAG_ID,

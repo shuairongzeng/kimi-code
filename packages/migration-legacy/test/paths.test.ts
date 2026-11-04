@@ -3,8 +3,8 @@ import { join } from 'node:path';
 import * as paths from '../src/paths.js';
 
 describe('paths', () => {
-  it('sourceCredentialsDir joins ~/.kimi/credentials', () => {
-    expect(paths.sourceCredentialsDir('/x/.kimi')).toBe(join('/x/.kimi', 'credentials'));
+  it('sourceCredentialsDir joins ~/.zimi/credentials', () => {
+    expect(paths.sourceCredentialsDir('/x/.zimi')).toBe(join('/x/.zimi', 'credentials'));
   });
 
   it('targetConfigFile and targetTuiFile', () => {
@@ -17,20 +17,20 @@ describe('paths', () => {
   });
 
   it('migratedMarker is under source', () => {
-    expect(paths.migratedMarker('/x/.kimi')).toBe(join('/x/.kimi', '.migrated-to-kimi-code'));
+    expect(paths.migratedMarker('/x/.zimi')).toBe(join('/x/.zimi', '.migrated-to-zimi-code'));
   });
 
   it('skipMarker is under target', () => {
-    expect(paths.skipMarker('/y/.kimi-code')).toBe(join('/y/.kimi-code', '.skip-migration-from-kimi-cli'));
+    expect(paths.skipMarker('/y/.zimi-code')).toBe(join('/y/.zimi-code', '.skip-migration-from-zimi-cli'));
   });
 
   it('migrationReportFile is under target', () => {
     expect(paths.migrationReportFile('/y')).toBe(join('/y', 'migration-report.json'));
   });
 
-  it('sourceSessionsDir / sourceUserHistoryDir / sourceKimiJson', () => {
+  it('sourceSessionsDir / sourceUserHistoryDir / sourceZimiJson', () => {
     expect(paths.sourceSessionsDir('/x')).toBe(join('/x', 'sessions'));
     expect(paths.sourceUserHistoryDir('/x')).toBe(join('/x', 'user-history'));
-    expect(paths.sourceKimiJson('/x')).toBe(join('/x', 'kimi.json'));
+    expect(paths.sourceZimiJson('/x')).toBe(join('/x', 'zimi.json'));
   });
 });

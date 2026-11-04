@@ -26,7 +26,7 @@ describe('API surface snapshot', () => {
   let server: RunningServer | undefined;
 
   beforeAll(async () => {
-    home = mkdtempSync(join(tmpdir(), 'kimi-server-v2-api-surface-'));
+    home = mkdtempSync(join(tmpdir(), 'zimi-server-v2-api-surface-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',

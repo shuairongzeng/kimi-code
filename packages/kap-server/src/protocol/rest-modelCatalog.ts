@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
-import { PROVIDER_ID_PATTERN } from '@moonshot-ai/agent-core-v2';
+import { PROVIDER_ID_PATTERN } from '@zimi-ai/agent-core-v2';
 import {
   modelCatalogItemSchema,
   providerCatalogItemSchema,
-} from '@moonshot-ai/agent-core-v2/llm-adapter/model/catalog';
+} from '@zimi-ai/agent-core-v2/llm-adapter/model/catalog';
 
 export const listModelsResponseSchema = z.object({
   items: z.array(modelCatalogItemSchema),
@@ -22,7 +22,7 @@ export const getProviderResponseSchema = providerCatalogItemSchema.extend({
 export type GetProviderResponse = z.infer<typeof getProviderResponseSchema>;
 
 export const providerWireTypeSchema = z.enum([
-  'kimi',
+  'zimi',
   'openai',
   'openai_responses',
   'anthropic',

@@ -19,8 +19,8 @@ const mermaidOptimizeDeps = [
 
 const config = withMermaid(defineConfig({
   base,
-  title: 'Kimi Code CLI Docs',
-  description: 'Kimi Code CLI Documentation',
+  title: 'Zimi Code CLI Docs',
+  description: 'Zimi Code CLI Documentation',
 
   head: [
     ['link', { rel: 'icon', type: 'image/x-icon', href: `${base}favicon.ico` }],
@@ -34,14 +34,14 @@ const config = withMermaid(defineConfig({
       label: '简体中文',
       lang: 'zh-CN',
       link: '/zh/',
-      title: 'Kimi Code CLI 文档',
-      description: 'Kimi Code CLI 用户文档',
+      title: 'Zimi Code CLI 文档',
+      description: 'Zimi Code CLI 用户文档',
       themeConfig: {
         nav: [
           { text: '指南', link: '/zh/guides/getting-started', activeMatch: '/zh/guides/' },
           { text: '定制化', link: '/zh/customization/mcp', activeMatch: '/zh/customization/' },
           { text: '配置', link: '/zh/configuration/config-files', activeMatch: '/zh/configuration/' },
-          { text: '参考手册', link: '/zh/reference/kimi-command', activeMatch: '/zh/reference/' },
+          { text: '参考手册', link: '/zh/reference/zimi-command', activeMatch: '/zh/reference/' },
           { text: '发布说明', link: '/zh/release-notes/changelog', activeMatch: '/zh/release-notes/' },
         ],
         sidebar: {
@@ -50,7 +50,7 @@ const config = withMermaid(defineConfig({
               text: '指南',
               items: [
                 { text: '开始使用', link: '/zh/guides/getting-started' },
-                { text: '从 kimi-cli 迁移', link: '/zh/guides/migration' },
+                { text: '从 zimi-cli 迁移', link: '/zh/guides/migration' },
                 { text: '常见使用案例', link: '/zh/guides/use-cases' },
                 { text: 'Tower 多 Agent 协作', link: '/zh/guides/tower' },
                 { text: '交互与输入', link: '/zh/guides/interaction' },
@@ -91,8 +91,8 @@ const config = withMermaid(defineConfig({
             {
               text: '参考手册',
               items: [
-                { text: 'kimi 命令', link: '/zh/reference/kimi-command' },
-                { text: 'kimi acp 子命令', link: '/zh/reference/kimi-acp' },
+                { text: 'zimi 命令', link: '/zh/reference/zimi-command' },
+                { text: 'zimi acp 子命令', link: '/zh/reference/zimi-acp' },
                 { text: '服务 API', link: '/zh/reference/server-api' },
                 { text: '内置工具', link: '/zh/reference/tools' },
                 { text: '斜杠命令', link: '/zh/reference/slash-commands' },
@@ -115,14 +115,14 @@ const config = withMermaid(defineConfig({
       label: 'English',
       lang: 'en-US',
       link: '/en/',
-      title: 'Kimi Code CLI Docs',
-      description: 'Kimi Code CLI User Documentation',
+      title: 'Zimi Code CLI Docs',
+      description: 'Zimi Code CLI User Documentation',
       themeConfig: {
         nav: [
           { text: 'Guides', link: '/en/guides/getting-started', activeMatch: '/en/guides/' },
           { text: 'Customization', link: '/en/customization/mcp', activeMatch: '/en/customization/' },
           { text: 'Configuration', link: '/en/configuration/config-files', activeMatch: '/en/configuration/' },
-          { text: 'Reference', link: '/en/reference/kimi-command', activeMatch: '/en/reference/' },
+          { text: 'Reference', link: '/en/reference/zimi-command', activeMatch: '/en/reference/' },
           { text: 'Release Notes', link: '/en/release-notes/changelog', activeMatch: '/en/release-notes/' },
         ],
         sidebar: {
@@ -131,13 +131,13 @@ const config = withMermaid(defineConfig({
               text: 'Guides',
               items: [
                 { text: 'Getting Started', link: '/en/guides/getting-started' },
-                { text: 'Migrating from kimi-cli', link: '/en/guides/migration' },
+                { text: 'Migrating from zimi-cli', link: '/en/guides/migration' },
                 { text: 'Common Use Cases', link: '/en/guides/use-cases' },
                 { text: 'Tower multi-agent collaboration', link: '/en/guides/tower' },
                 { text: 'Interaction and Input', link: '/en/guides/interaction' },
                 { text: 'Sessions and Context', link: '/en/guides/sessions' },
                 { text: 'Using in IDEs', link: '/en/guides/ides' },
-                { text: 'Using Kimi Code in the browser', link: '/en/guides/web' },
+                { text: 'Using Zimi Code in the browser', link: '/en/guides/web' },
                 { text: 'Remote Control', link: '/en/guides/remote-control' },
                 { text: 'Remote environments', link: '/en/guides/remote-environment' },
               ],
@@ -172,8 +172,8 @@ const config = withMermaid(defineConfig({
             {
               text: 'Reference',
               items: [
-                { text: 'kimi Command', link: '/en/reference/kimi-command' },
-                { text: 'kimi acp Subcommand', link: '/en/reference/kimi-acp' },
+                { text: 'zimi Command', link: '/en/reference/zimi-command' },
+                { text: 'zimi acp Subcommand', link: '/en/reference/zimi-acp' },
                 { text: 'Server API', link: '/en/reference/server-api' },
                 { text: 'Built-in Tools', link: '/en/reference/tools' },
                 { text: 'Slash Commands', link: '/en/reference/slash-commands' },
@@ -198,7 +198,7 @@ const config = withMermaid(defineConfig({
     outline: [2, 3],
     search: { provider: 'local' },
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/MoonshotAI/kimi-code' },
+      { icon: 'github', link: 'https://github.com/ZimiAI/zimi-code' },
     ],
   },
 

@@ -6,7 +6,7 @@ export type ModelsDevWire =
   | 'openai_responses'
   | 'google-genai'
   | 'google-vertex'
-  | 'kimi';
+  | 'zimi';
 
 export interface ModelsDevModelEntry {
   readonly id?: string;
@@ -66,7 +66,7 @@ const KNOWN_WIRES = [
   'openai_responses',
   'google-genai',
   'google-vertex',
-  'kimi',
+  'zimi',
 ] as const satisfies readonly ModelsDevWire[];
 
 function isModelsDevWire(value: unknown): value is ModelsDevWire {
@@ -269,7 +269,7 @@ function dropAlwaysThinkingForWire(
   model: CatalogModelDefinition,
   wire: ModelsDevWire | undefined,
 ): CatalogModelDefinition {
-  return model.alwaysThinking === true && (wire === 'anthropic' || wire === 'kimi')
+  return model.alwaysThinking === true && (wire === 'anthropic' || wire === 'zimi')
     ? { ...model, alwaysThinking: undefined }
     : model;
 }

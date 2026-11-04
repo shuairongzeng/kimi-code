@@ -47,8 +47,8 @@ describe('Workspace MCP initialization', () => {
   let manager: McpConnectionManager | undefined;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'kimi-session-mcp-cwd-'));
-    homeDir = mkdtempSync(join(tmpdir(), 'kimi-session-mcp-home-'));
+    cwd = mkdtempSync(join(tmpdir(), 'zimi-session-mcp-cwd-'));
+    homeDir = mkdtempSync(join(tmpdir(), 'zimi-session-mcp-home-'));
     disposables = new DisposableStore();
     manager = undefined;
   });
@@ -140,7 +140,7 @@ describe('Workspace MCP initialization', () => {
         command: process.execPath,
         args: [slowToolStdioFixture],
         environment_id: 'local',
-        env: { KIMI_TEST_MCP_TOOL_DELAY_MS: '300' },
+        env: { ZIMI_TEST_MCP_TOOL_DELAY_MS: '300' },
       },
     });
     const service = createWorkspaceMcpService(Promise.resolve(), { toolTimeoutMs: 1 });
@@ -156,9 +156,9 @@ async function writeProjectMcpJson(
   cwd: string,
   servers: Record<string, unknown>,
 ): Promise<void> {
-  await mkdir(join(cwd, '.kimi-code'), { recursive: true });
+  await mkdir(join(cwd, '.zimi-code'), { recursive: true });
   await writeFile(
-    join(cwd, '.kimi-code', 'mcp.json'),
+    join(cwd, '.zimi-code', 'mcp.json'),
     JSON.stringify({ mcpServers: servers }),
     'utf8',
   );

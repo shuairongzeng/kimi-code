@@ -1,6 +1,6 @@
 /**
  * v2 wiring MVP — an `SDKRpcClientBase` backed by the agent-core-v2 engine
- * (DI × Scope) instead of the v1 `KimiCore` RPC pair. The engine is
+ * (DI × Scope) instead of the v1 `ZimiCore` RPC pair. The engine is
  * bootstrapped in-process and reached through the klient facade over the
  * memory transport, so every call crosses the same contract validation and
  * JSON round-trip as the networked transports.
@@ -14,7 +14,7 @@
  *   `IWorkspaceFsService`); the v1 client inherits the base's `undefined`
  *   (capability absent).
  * - `getConfig` / `setConfig` / `removeProvider` / `getConfigDiagnostics` →
- *   `klient.global.config.*`, with the v1 `KimiConfig` shape restored by the
+ *   `klient.global.config.*`, with the v1 `ZimiConfig` shape restored by the
  *   pure mapping layer in `src/v2/config-mapper.ts`.
  * - `listPlugins` / `installPlugin` / `setPluginEnabled` /
  *   `setPluginMcpServerEnabled` / `removePlugin` / `reloadPlugins` /
@@ -134,31 +134,31 @@
 import { readdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { Readable } from 'node:stream';
-import { ISessionMediaStore } from '@moonshot-ai/agent-core-v2/agent/media/sessionMediaStore';
-import { buildDaemonFileUrl } from '@moonshot-ai/agent-core-v2/agent/media/mediaRef';
+import { ISessionMediaStore } from '@zimi-ai/agent-core-v2/agent/media/sessionMediaStore';
+import { buildDaemonFileUrl } from '@zimi-ai/agent-core-v2/agent/media/mediaRef';
 import { join } from 'node:path';
 
 import {
   encodeWorkDirKey,
   isWorkDirKey,
   workspaceRootKey,
-} from '@moonshot-ai/agent-core-v2/_base/utils/workdir-slug';
-import { McpConnectionManager } from '@moonshot-ai/agent-core-v2/mcpCore/connection-manager';
-import { ITowerRateLimitService } from '@moonshot-ai/agent-core-v2/features/tower/towerRateLimit';
-import { readTowerStatusSummary } from '@moonshot-ai/agent-core-v2/features/tower/tools/status/statusReader';
-import { loadMcpServers } from '@moonshot-ai/agent-core-v2/app/mcpConfig/configLoader';
-import { IGitService } from '@moonshot-ai/agent-core-v2/app/git/git';
-import { fsSuggestRequestSchema } from '@moonshot-ai/agent-core-v2/workspace/workspaceFs/fs';
-import { ILogService } from '@moonshot-ai/agent-core-v2/_base/log/log';
-import { IAppendLogStore } from '@moonshot-ai/agent-core-v2/persistence/interface/appendLogStore';
-import { ISessionLockService } from '@moonshot-ai/agent-core-v2/persistence/interface/sessionLock';
+} from '@zimi-ai/agent-core-v2/_base/utils/workdir-slug';
+import { McpConnectionManager } from '@zimi-ai/agent-core-v2/mcpCore/connection-manager';
+import { ITowerRateLimitService } from '@zimi-ai/agent-core-v2/features/tower/towerRateLimit';
+import { readTowerStatusSummary } from '@zimi-ai/agent-core-v2/features/tower/tools/status/statusReader';
+import { loadMcpServers } from '@zimi-ai/agent-core-v2/app/mcpConfig/configLoader';
+import { IGitService } from '@zimi-ai/agent-core-v2/app/git/git';
+import { fsSuggestRequestSchema } from '@zimi-ai/agent-core-v2/workspace/workspaceFs/fs';
+import { ILogService } from '@zimi-ai/agent-core-v2/_base/log/log';
+import { IAppendLogStore } from '@zimi-ai/agent-core-v2/persistence/interface/appendLogStore';
+import { ISessionLockService } from '@zimi-ai/agent-core-v2/persistence/interface/sessionLock';
 import {
   bootstrap,
   DEFAULT_AGENT_PROFILE_NAME,
   drainLogCloses,
   drainQueryStoreDisposals,
   drainSessionIndexMirror,
-  ensureKimiHome,
+  ensureZimiHome,
   ensureMainAgent,
   getOrRestoreAgent,
   reloadOnStale,
@@ -239,7 +239,7 @@ import {
   resolveAgentTaskConfig,
   resolveConfigPath,
   resolveSubagentModelPool,
-  resolveKimiHome,
+  resolveZimiHome,
   resolveLoggingConfig,
   resolvePrintBackgroundMode,
   summarizeSkill,
@@ -253,7 +253,7 @@ import {
   type SessionSummary as V2SessionSummary,
   type WorkspaceInstance,
   type SubagentModelPoolSnapshot,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import {
   RPCError,
   type AgentHandle,
@@ -262,18 +262,18 @@ import {
   type ImportCustomRegistryResult,
   type RefreshProviderModelsOptions,
   type RefreshProviderModelsResponse,
-} from '@moonshot-ai/klient';
+} from '@zimi-ai/klient';
 import { RegistryImportError } from '#/catalog';
-import { createKlient } from '@moonshot-ai/klient/memory';
-import { assertKimiHostIdentity, createKimiDefaultHeaders } from '@moonshot-ai/kimi-code-oauth';
-import { RemoteEnvironmentProviderFactory } from '@moonshot-ai/agent-core-v2/remote';
+import { createKlient } from '@zimi-ai/klient/memory';
+import { assertZimiHostIdentity, createZimiDefaultHeaders } from '@zimi-ai/zimi-code-oauth';
+import { RemoteEnvironmentProviderFactory } from '@zimi-ai/agent-core-v2/remote';
 
-import { KimiAuthFacade } from '#/auth';
+import { ZimiAuthFacade } from '#/auth';
 import { ensureConfigFile, HookDefSchema } from '#/config/index';
 import type { AgentContextData } from '#/context';
-import { ErrorCodes, isKimiErrorCode, KimiError, type KimiErrorCode } from '#/errors';
+import { ErrorCodes, isZimiErrorCode, ZimiError, type ZimiErrorCode } from '#/errors';
 import type { ExperimentalFeatureState } from '#/flag';
-import { KimiHarness } from '#/kimi-harness';
+import { ZimiHarness } from '#/zimi-harness';
 import type { BeginGlobalMcpServerAuthResult } from '#/mcp';
 import { noopTelemetryClient } from '#/telemetry';
 import {
@@ -322,12 +322,12 @@ import type {
   GoalSnapshot,
   GoalToolResult,
   JsonObject,
-  KimiConfig,
-  KimiConfigPatch,
-  KimiHarnessOptions,
-  KimiHostIdentity,
+  ZimiConfig,
+  ZimiConfigPatch,
+  ZimiHarnessOptions,
+  ZimiHostIdentity,
   InstallPluginInput,
-  KimiSshPasswordOptions,
+  ZimiSshPasswordOptions,
   ListSessionsOptions,
   McpManagedServerInfo,
   McpServerConfig,
@@ -369,7 +369,7 @@ import type {
 import {
   diagnosticsToConfigDiagnostics,
   planProviderRemoval,
-  resolvedConfigToKimiConfig,
+  resolvedConfigToZimiConfig,
 } from '#/v2/config-mapper';
 import { translateGlobalEvent } from '#/v2/event-mapper';
 import { assertImportFits, buildImportContextMessage } from '#/v2/import-context';
@@ -390,7 +390,7 @@ import { SessionEventWiring } from '#/v2/session-wiring';
 export interface SDKRpcClientV2Options {
   readonly homeDir?: string;
   readonly configPath?: string;
-  readonly identity?: KimiHostIdentity;
+  readonly identity?: ZimiHostIdentity;
   /**
    * Explicit skill directories for this process (v1's SDK `skillDirs` /
    * the CLI's `--skills-dir`): when non-empty, default user / project skill
@@ -402,7 +402,7 @@ export interface SDKRpcClientV2Options {
   readonly nonInteractive?: boolean;
   readonly telemetry?: TelemetryClient;
   readonly onOAuthRefresh?: (outcome: OAuthRefreshOutcome) => void;
-  readonly sshPassword?: KimiSshPasswordOptions;
+  readonly sshPassword?: ZimiSshPasswordOptions;
   readonly uiMode?: string;
   /** UI surfaces this host renders; forwarded as `BootstrapInput.args.uiCapabilities`. */
   readonly uiCapabilities?: readonly HostUiCapability[];
@@ -434,9 +434,9 @@ function promptSubmissionResult(result: {
 export class SDKRpcClientV2 extends SDKRpcClientBase {
   readonly homeDir: string;
   readonly configPath: string;
-  readonly identity: KimiHostIdentity | undefined;
+  readonly identity: ZimiHostIdentity | undefined;
   readonly telemetry: TelemetryClient;
-  readonly auth: KimiAuthFacade;
+  readonly auth: ZimiAuthFacade;
   readonly klient: Klient;
 
   private readonly app: Scope;
@@ -499,22 +499,22 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
   constructor(options: SDKRpcClientV2Options = {}) {
     super();
     this.identity =
-      options.identity === undefined ? undefined : assertKimiHostIdentity(options.identity);
-    this.homeDir = resolveKimiHome(options.homeDir);
+      options.identity === undefined ? undefined : assertZimiHostIdentity(options.identity);
+    this.homeDir = resolveZimiHome(options.homeDir);
     this.configPath = resolveConfigPath({
       homeDir: this.homeDir,
       configPath: options.configPath,
     });
-    ensureKimiHome(this.homeDir);
+    ensureZimiHome(this.homeDir);
     this.telemetry = options.telemetry ?? noopTelemetryClient;
-    this.auth = new KimiAuthFacade({
+    this.auth = new ZimiAuthFacade({
       homeDir: this.homeDir,
       configPath: this.configPath,
       identity: this.identity,
       onRefresh: options.onOAuthRefresh,
     });
 
-    const identity = assertKimiHostIdentity(this.identity);
+    const identity = assertZimiHostIdentity(this.identity);
     const { app } = bootstrap(
       {
         homeDir: this.homeDir,
@@ -524,7 +524,7 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
           // Host identity headers for the engine's outbound requests (model,
           // WebSearch, registry refresh). Without them the managed vendors go
           // out with the SDK's default User-Agent and no X-Msh-* at all.
-          requestHeaders: createKimiDefaultHeaders({ homeDir: this.homeDir, ...identity }),
+          requestHeaders: createZimiDefaultHeaders({ homeDir: this.homeDir, ...identity }),
           // `--skills-dir` (v1 parity): explicit skill dirs replace default
           // user / project discovery for every session this client hosts.
           skillDirs: options.skillDirs,
@@ -620,7 +620,7 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
 
   /**
    * Forward engine telemetry to the host-supplied client. Without this the
-   * client only served `KimiHarness`-level events and every engine-side event
+   * client only served `ZimiHarness`-level events and every engine-side event
    * (`track2` facts from agent/session scopes) was dropped on the v2 route.
    * The v1 `TelemetryClient` is wrapped into the engine appender record shape
    * (event + ambient context + final properties). The `telemetry` config
@@ -650,7 +650,7 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
 
   /**
    * Drop the engine's own `session_started` from telemetry forwarding. Called
-   * by `createKimiHarness` at assembly time: the harness emits that event
+   * by `createZimiHarness` at assembly time: the harness emits that event
    * for every session it opens (create / resume / reload / fork) with the
    * richer client-attribution schema, so the engine's
    * `{resumed, experimental_flags}` copy would double-count every open.
@@ -789,7 +789,7 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
     if (!parsed.success) {
       const issue = parsed.error.issues[0];
       const where = issue !== undefined && issue.path.length > 0 ? `${String(issue.path[0])}: ` : '';
-      throw new KimiError(
+      throw new ZimiError(
         ErrorCodes.REQUEST_INVALID,
         `suggestFiles ${where}${issue?.message ?? 'invalid input'}`,
       );
@@ -928,18 +928,18 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
   }
 
   /**
-   * v1 returns the whole config.toml document as one `KimiConfig`; v2
+   * v1 returns the whole config.toml document as one `ZimiConfig`; v2
    * resolves the same file per config domain. `getAll()` is the effective
    * view (file + env overlays + section defaults), which matches v1's
-   * runtime config (`loadRuntimeConfigSafe` + the KIMI_MODEL_* overlay);
+   * runtime config (`loadRuntimeConfigSafe` + the ZIMI_MODEL_* overlay);
    * `reload` mirrors v1's re-read-from-disk option.
    */
-  override async getConfig(options?: GetConfigOptions): Promise<KimiConfig> {
+  override async getConfig(options?: GetConfigOptions): Promise<ZimiConfig> {
     await this.configReady;
     if (options?.reload) {
       await this.klient.global.config.reload();
     }
-    return resolvedConfigToKimiConfig(await this.klient.global.config.getAll());
+    return resolvedConfigToZimiConfig(await this.klient.global.config.getAll());
   }
 
   override async getConfigDiagnostics(): Promise<ConfigDiagnostics> {
@@ -963,7 +963,7 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
    * Unknown-to-v2 fields (`yolo`, `planMode`, `telemetry`, ...) persist as
    * unregistered pass-through domains, like v1's schema keeping them.
    */
-  override async setConfig(patch: KimiConfigPatch): Promise<KimiConfig> {
+  override async setConfig(patch: ZimiConfigPatch): Promise<ZimiConfig> {
     await this.configReady;
     for (const [domain, domainPatch] of Object.entries(patch)) {
       if (domainPatch === undefined) continue;
@@ -978,14 +978,14 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
    * `kosong.removeProvider` only clears the default-provider pointer, so the
    * full v1 cascade is computed from the user-layer values (see
    * `planProviderRemoval`) and persisted as ONE atomic multi-section
-   * replace — the same single-write shape as v1's `removeKimiProvider`, so a
+   * replace — the same single-write shape as v1's `removeZimiProvider`, so a
    * process exit can never leave the file in a halfway-cascaded state. The
    * `[secondary_model]` section is left alone on purpose: an entry whose
    * model no longer resolves fails pool validation on the next session
    * create, surfacing a named error instead of silently rewriting the
    * user's configuration.
    */
-  override async removeProvider(providerId: string): Promise<KimiConfig> {
+  override async removeProvider(providerId: string): Promise<ZimiConfig> {
     await this.configReady;
     const [providers, models, defaultModel, defaultProvider] = await Promise.all([
       this.klient.global.config.inspect<Record<string, unknown>>('providers'),
@@ -1089,8 +1089,8 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
   }
 
   /**
-   * Capability surface (v2-only): built-in product capabilities (kimi-cu,
-   * kimi-webbridge) with layered readiness and idempotent installs. v1 has
+   * Capability surface (v2-only): built-in product capabilities (zimi-cu,
+   * zimi-webbridge) with layered readiness and idempotent installs. v1 has
    * no capability domain, so these stay off the shared base — callers
    * feature-detect via `in` before use.
    */
@@ -1230,8 +1230,8 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
   }
 
   /** v1's `requireSession` / store lookup failure shape. */
-  private static sessionNotFound(sessionId: string): KimiError {
-    return new KimiError(ErrorCodes.SESSION_NOT_FOUND, `Session "${sessionId}" was not found`, {
+  private static sessionNotFound(sessionId: string): ZimiError {
+    return new ZimiError(ErrorCodes.SESSION_NOT_FOUND, `Session "${sessionId}" was not found`, {
       details: { sessionId },
     });
   }
@@ -1259,7 +1259,7 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
       loadMcpServers({ fs, cwd, homeDir: this.homeDir, includeProject: false }),
     ]);
     if (withProject[name] !== undefined && userOnly[name] === undefined) {
-      throw new KimiError(
+      throw new ZimiError(
         ErrorCodes.REQUEST_INVALID,
         `MCP server "${name}" is read-only: it is defined in the project MCP config — edit that file instead`,
       );
@@ -1593,14 +1593,14 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
   private async doCreateSession(input: CreateSessionOptions): Promise<SessionSummary> {
     const workDir = normalizeRequiredWorkDir('createSession', input.workDir);
     if (input.environmentCwd !== undefined && input.environmentId === undefined) {
-      throw new KimiError(ErrorCodes.REQUEST_INVALID, 'createSession environmentCwd requires environmentId');
+      throw new ZimiError(ErrorCodes.REQUEST_INVALID, 'createSession environmentCwd requires environmentId');
     }
     if (input.id !== undefined) {
       const existing =
         this.liveSession(input.id) ??
         (await this.engineAccessor.get(ISessionIndex).get(input.id));
       if (existing !== undefined) {
-        throw new KimiError(
+        throw new ZimiError(
           ErrorCodes.SESSION_ALREADY_EXISTS,
           `Session "${input.id}" already exists`,
         );
@@ -1657,7 +1657,7 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
   override async renameSession(input: RenameSessionInput): Promise<void> {
     const title = input.title.trim();
     if (title.length === 0) {
-      throw new KimiError(ErrorCodes.SESSION_TITLE_EMPTY, 'Session title cannot be empty');
+      throw new ZimiError(ErrorCodes.SESSION_TITLE_EMPTY, 'Session title cannot be empty');
     }
     await this.runSessionAccess(input.id, () =>
       this.withTemporarySession(input.id, () => this.klient.session(input.id).setTitle(title)),
@@ -1737,7 +1737,7 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
    * because the klient facade's
    * `session(id).delete()` reports a missing session with its own
    * `RPCError(NOT_FOUND)` where v1's store failure is a
-   * `KimiError(SESSION_NOT_FOUND)` — the pre-check here keeps the v1 shape.
+   * `ZimiError(SESSION_NOT_FOUND)` — the pre-check here keeps the v1 shape.
    * The engine's delete mirrors v1's order: close the live session first
    * (which also drops this client's wiring via the close subscription), then
    * remove the session dir, the index entry, and journal the deletion.
@@ -1863,14 +1863,14 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
           const agentHandle = agentLifecycle.handleOf(agent.agentId);
           if (agentHandle === undefined) continue;
           if (agentHandle.accessor.get(IAgentLoopService).snapshot().state === 'running') {
-            throw new KimiError(
+            throw new ZimiError(
               ErrorCodes.TURN_AGENT_BUSY,
               `Session "${sessionId}" cannot be reloaded while a turn is running`,
               { details: { sessionId } },
             );
           }
           if (agentHandle.accessor.get(IAgentFullCompactionService).compacting !== null) {
-            throw new KimiError(
+            throw new ZimiError(
               ErrorCodes.TURN_AGENT_BUSY,
               `Session "${sessionId}" cannot be reloaded while compaction is running`,
               { details: { sessionId } },
@@ -2079,7 +2079,7 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
     const context = await ensureMainAgent(session);
     const agent = session.accessor.get(IAgentLifecycleService).handleOf(context.agentId);
     if (agent === undefined) {
-      throw new KimiError(ErrorCodes.AGENT_NOT_FOUND, 'Main agent was not found');
+      throw new ZimiError(ErrorCodes.AGENT_NOT_FOUND, 'Main agent was not found');
     }
     const profile = agent.accessor.get(IAgentProfileService);
     if (binding !== undefined || profile.data().profileName === undefined) {
@@ -2110,7 +2110,7 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
     if (agentId === MAIN_AGENT_ID) return this.materializeMainAgent(session);
     const agent = await getOrRestoreAgent(session, agentId);
     if (agent === undefined) {
-      throw new KimiError(ErrorCodes.AGENT_NOT_FOUND, `Agent "${agentId}" was not found`);
+      throw new ZimiError(ErrorCodes.AGENT_NOT_FOUND, `Agent "${agentId}" was not found`);
     }
     return agent;
   }
@@ -2392,7 +2392,7 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
       agent.accessor.get(IAgentLoopService).snapshot().state === 'running' ||
       agent.accessor.get(IAgentFullCompactionService).compacting !== null
     ) {
-      throw new KimiError(
+      throw new ZimiError(
         ErrorCodes.TURN_AGENT_BUSY,
         'Cannot import context while the agent is busy',
       );
@@ -2914,7 +2914,7 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
 
   /**
    * The engine's management plane throws `Error2`; the SDK's public error
-   * contract is `KimiError` (what `isKimiError` branches on, and what the v1
+   * contract is `ZimiError` (what `isZimiError` branches on, and what the v1
    * client throws for the same failures). Restate so both engines surface
    * the identical class — see `restateEngineError`.
    */
@@ -3145,7 +3145,7 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
     }
     const manager = mcp.connectionManager;
     if (!(manager instanceof McpConnectionManager)) {
-      throw new KimiError(
+      throw new ZimiError(
         ErrorCodes.NOT_IMPLEMENTED,
         'reconnectMcpServer with an explicit config is not supported for v2 sessions with ephemeral MCP servers',
       );
@@ -3154,7 +3154,7 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
     // Parity with v1's manager reconnect: a disabled replacement is rejected
     // before anything is applied, not upserted over the live connection.
     if (replacement.enabled === false) {
-      throw new KimiError(
+      throw new ZimiError(
         ErrorCodes.MCP_SERVER_DISABLED,
         `MCP server is disabled: ${input.name}`,
       );
@@ -3180,7 +3180,7 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
     const mcp = session.accessor.get(ISessionMcpHandle);
     const manager = mcp.connectionManager;
     if (!(manager instanceof McpConnectionManager)) {
-      throw new KimiError(
+      throw new ZimiError(
         ErrorCodes.NOT_IMPLEMENTED,
         'addSessionMcpServer is not supported for v2 sessions with ephemeral MCP servers',
       );
@@ -3197,7 +3197,7 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
     await manager.connect(target.name, mcpConfigWithoutName(target));
     const entry = manager.get(target.name);
     if (entry === undefined) {
-      throw new KimiError(
+      throw new ZimiError(
         ErrorCodes.MCP_SERVER_NOT_FOUND,
         `MCP server "${target.name}" was not connected`,
       );
@@ -3206,10 +3206,10 @@ export class SDKRpcClientV2 extends SDKRpcClientBase {
   }
 }
 
-export function createKimiHarness(options: KimiHarnessOptions): KimiHarness {
+export function createZimiHarness(options: ZimiHarnessOptions): ZimiHarness {
   const rpc = new SDKRpcClientV2(options);
   rpc.suppressEngineSessionStarted();
-  return new KimiHarness(rpc, {
+  return new ZimiHarness(rpc, {
     identity: rpc.identity,
     uiMode: options.uiMode,
     homeDir: rpc.homeDir,
@@ -3229,7 +3229,7 @@ export function createKimiHarness(options: KimiHarnessOptions): KimiHarness {
 /** v1's `requiredWorkDir`: reject blank and normalize to the canonical spelling. */
 function normalizeRequiredWorkDir(operation: string, workDir: string): string {
   if (typeof workDir !== 'string' || workDir.trim() === '') {
-    throw new KimiError(ErrorCodes.REQUEST_WORK_DIR_REQUIRED, `${operation} requires workDir`);
+    throw new ZimiError(ErrorCodes.REQUEST_WORK_DIR_REQUIRED, `${operation} requires workDir`);
   }
   return normalizeWorkDir(workDir);
 }
@@ -3243,23 +3243,23 @@ function normalizeRequiredWorkDir(operation: string, workDir: string): string {
 async function assertUsableWorkDir(fs: IHostFileSystem, workDir: string): Promise<void> {
   const stat = await fs.stat(workDir).catch(() => undefined);
   if (stat === undefined) {
-    throw new KimiError(ErrorCodes.FS_PATH_NOT_FOUND, `workDir ${workDir} does not exist`);
+    throw new ZimiError(ErrorCodes.FS_PATH_NOT_FOUND, `workDir ${workDir} does not exist`);
   }
   if (!stat.isDirectory) {
-    throw new KimiError(ErrorCodes.FS_PATH_NOT_FOUND, `workDir ${workDir} is not a directory`);
+    throw new ZimiError(ErrorCodes.FS_PATH_NOT_FOUND, `workDir ${workDir} is not a directory`);
   }
 }
 
 /**
- * Restate an engine `Error2` in the SDK's public error shape (`KimiError`,
- * what `isKimiError` branches on) so the engine-backed entry points throw
+ * Restate an engine `Error2` in the SDK's public error shape (`ZimiError`,
+ * what `isZimiError` branches on) so the engine-backed entry points throw
  * the same class the v1 client throws for the same failure. Non-Error2
  * failures (DI resolution bugs, aborts) pass through untouched.
  *
  * An engine code this build's registry does not declare (a newer engine than
  * the pinned SDK) restates as `internal` — stamping the unknown code would
- * mint a `KimiError` that `toKimiErrorPayload` cannot serialize (its
- * `KIMI_ERROR_INFO` lookup throws on undeclared codes).
+ * mint a `ZimiError` that `toZimiErrorPayload` cannot serialize (its
+ * `ZIMI_ERROR_INFO` lookup throws on undeclared codes).
  */
 async function nullWhenGitUnavailable<T>(read: Promise<T>): Promise<T | null> {
   try {
@@ -3272,8 +3272,8 @@ async function nullWhenGitUnavailable<T>(read: Promise<T>): Promise<T | null> {
 
 function restateEngineError(error: unknown): unknown {
   if (!isError2(error)) return error;
-  const code: KimiErrorCode = isKimiErrorCode(error.code) ? error.code : ErrorCodes.INTERNAL;
-  return new KimiError(code, error.message, {
+  const code: ZimiErrorCode = isZimiErrorCode(error.code) ? error.code : ErrorCodes.INTERNAL;
+  return new ZimiError(code, error.message, {
     details: error.details as Record<string, unknown> | undefined,
     cause: error.cause,
   });

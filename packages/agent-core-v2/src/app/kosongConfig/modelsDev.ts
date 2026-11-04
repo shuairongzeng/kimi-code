@@ -59,7 +59,7 @@ export interface ModelsDevModel {
 const KNOWN_WIRE_TYPES = [
   'anthropic',
   'openai',
-  'kimi',
+  'zimi',
   'google-genai',
   'openai_responses',
   'vertexai',

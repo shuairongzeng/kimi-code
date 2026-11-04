@@ -53,8 +53,8 @@ let workDir: string;
 
 beforeEach(async () => {
   disposables = new DisposableStore();
-  homeDir = await mkdtemp(join(tmpdir(), 'kimi-notifier-home-'));
-  workDir = await mkdtemp(join(tmpdir(), 'kimi-notifier-work-'));
+  homeDir = await mkdtemp(join(tmpdir(), 'zimi-notifier-home-'));
+  workDir = await mkdtemp(join(tmpdir(), 'zimi-notifier-work-'));
   await mkdir(join(workDir, '.git'));
 });
 

@@ -1,24 +1,24 @@
 import * as vscode from "vscode";
 
 import {
-  createKimiDeviceId,
-  KIMI_CODE_PROVIDER_NAME,
-  KIMI_REGION_PROFILES,
-} from "@moonshot-ai/kimi-code-oauth";
+  createZimiDeviceId,
+  ZIMI_CODE_PROVIDER_NAME,
+  ZIMI_REGION_PROFILES,
+} from "@zimi-ai/zimi-code-oauth";
 import {
-  KimiAuthFacade,
+  ZimiAuthFacade,
   loadRuntimeConfigSafe,
   resolveConfigPath,
-  resolveKimiHome,
-  type KimiConfig,
-} from "@moonshot-ai/kimi-code-sdk";
+  resolveZimiHome,
+  type ZimiConfig,
+} from "@zimi-ai/zimi-code-sdk";
 import {
   initializeTelemetry,
   setTelemetryEnabled,
   shouldEnableTelemetry,
   shutdownTelemetry,
   track,
-} from "@moonshot-ai/kimi-telemetry";
+} from "@zimi-ai/zimi-telemetry";
 
 import { resolveExtensionRegion } from "./utils/region";
 
@@ -30,16 +30,16 @@ export interface ExtensionTelemetryOptions {
 }
 
 export function activateExtensionTelemetry(options: ExtensionTelemetryOptions): vscode.Disposable {
-  const homeDir = resolveKimiHome();
+  const homeDir = resolveZimiHome();
   let firstLaunch = false;
-  const deviceId = createKimiDeviceId(homeDir, {
+  const deviceId = createZimiDeviceId(homeDir, {
     onFirstLaunch: () => {
       firstLaunch = true;
     },
   });
   const configPath = resolveConfigPath({ homeDir });
   const config = readTelemetryConfig(configPath);
-  const auth = new KimiAuthFacade({ homeDir, configPath });
+  const auth = new ZimiAuthFacade({ homeDir, configPath });
   const resolveRegion = () => resolveExtensionRegion({ homeDir });
   const resolution = resolveRegion();
 
@@ -48,15 +48,15 @@ export function activateExtensionTelemetry(options: ExtensionTelemetryOptions): 
     deviceId,
     enabled: config.telemetry !== false,
     initiallyEnabled: vscode.env.isTelemetryEnabled,
-    appName: "kimi-code-vscode",
+    appName: "zimi-code-vscode",
     version: options.version,
     uiMode: "vscode",
     model: config.defaultModel,
     region: resolution.region,
     regionSource: resolution.source,
     resolveRegion,
-    endpoint: () => KIMI_REGION_PROFILES[resolveRegion().region].telemetryEndpoint,
-    getAccessToken: async () => (await auth.getCachedAccessToken(KIMI_CODE_PROVIDER_NAME)) ?? null,
+    endpoint: () => ZIMI_REGION_PROFILES[resolveRegion().region].telemetryEndpoint,
+    getAccessToken: async () => (await auth.getCachedAccessToken(ZIMI_CODE_PROVIDER_NAME)) ?? null,
     onUnexpectedError: (error) => options.log(`Telemetry dropped a property: ${error.message}`),
   });
 
@@ -74,7 +74,7 @@ export async function deactivateExtensionTelemetry(): Promise<void> {
 
 function readTelemetryConfig(
   configPath: string,
-): Pick<KimiConfig, "telemetry" | "defaultModel"> {
+): Pick<ZimiConfig, "telemetry" | "defaultModel"> {
   try {
     const { config, fileError } = loadRuntimeConfigSafe(configPath);
     if (fileError !== undefined) return {};

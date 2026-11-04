@@ -11,16 +11,16 @@ import {
 } from './custom-registry';
 import {
   applyManagedApiKeyProviderModels,
-  applyManagedKimiCodeConfig,
-  fetchManagedKimiCodeModels,
-  KIMI_CODE_PLATFORM_ID,
-  KIMI_CODE_PROVIDER_NAME,
-  resolveKimiCodeRuntimeAuth,
-  type ManagedKimiConfigShape,
-  type ManagedKimiModelAlias,
-  type ManagedKimiOAuthRef,
-} from './managed-kimi-code';
-import { isManagedKimiCodeBaseUrl } from './managed-usage';
+  applyManagedZimiCodeConfig,
+  fetchManagedZimiCodeModels,
+  ZIMI_CODE_PLATFORM_ID,
+  ZIMI_CODE_PROVIDER_NAME,
+  resolveZimiCodeRuntimeAuth,
+  type ManagedZimiConfigShape,
+  type ManagedZimiModelAlias,
+  type ManagedZimiOAuthRef,
+} from './managed-zimi-code';
+import { isManagedZimiCodeBaseUrl } from './managed-usage';
 import {
   applyOpenPlatformConfig,
   fetchOpenPlatformModels,
@@ -38,18 +38,18 @@ import { isRecord } from './utils';
 
 /**
  * Host capabilities the refresh orchestrator needs. Intentionally typed against
- * {@link ManagedKimiConfigShape} (the oauth package's own minimal config shape)
- * rather than the SDK's full `KimiConfig`, so this module has no dependency on
+ * {@link ManagedZimiConfigShape} (the oauth package's own minimal config shape)
+ * rather than the SDK's full `ZimiConfig`, so this module has no dependency on
  * the engine or the SDK and can be reused by both the CLI and the daemon.
  */
 export interface RefreshProviderHost {
-  getConfig(): Promise<ManagedKimiConfigShape>;
-  removeProvider(providerId: string): Promise<ManagedKimiConfigShape>;
-  setConfig(patch: ManagedKimiConfigShape): Promise<ManagedKimiConfigShape>;
-  resolveOAuthToken(providerName: string, oauthRef?: ManagedKimiOAuthRef): Promise<string>;
+  getConfig(): Promise<ManagedZimiConfigShape>;
+  removeProvider(providerId: string): Promise<ManagedZimiConfigShape>;
+  setConfig(patch: ManagedZimiConfigShape): Promise<ManagedZimiConfigShape>;
+  resolveOAuthToken(providerName: string, oauthRef?: ManagedZimiOAuthRef): Promise<string>;
   /**
    * Product User-Agent sent on custom-registry (api.json) fetches, e.g.
-   * `kimi-code-cli/1.2.3`. When omitted the fetch falls back to the runtime
+   * `zimi-code-cli/1.2.3`. When omitted the fetch falls back to the runtime
    * default (`User-Agent: node`).
    */
   readonly userAgent?: string;
@@ -77,7 +77,7 @@ export interface RefreshResult {
     readonly from: string;
     readonly to: string;
     /** The dropped model's record as it was before this refresh. */
-    readonly fromModel: ManagedKimiModelAlias;
+    readonly fromModel: ManagedZimiModelAlias;
   };
 }
 
@@ -98,15 +98,15 @@ interface ProviderView {
   readonly baseUrl?: string;
   readonly apiKey?: string;
   readonly apiKeyEnv?: unknown;
-  readonly oauth?: ManagedKimiOAuthRef;
+  readonly oauth?: ManagedZimiOAuthRef;
   readonly source?: unknown;
   readonly env?: unknown;
 }
 
 /**
- * Resolves the Bearer key for `type: 'kimi'` providers: the inline `apiKey`
+ * Resolves the Bearer key for `type: 'zimi'` providers: the inline `apiKey`
  * wins, then a declared `apiKeyEnv` naming an environment variable (read from
- * `process.env` at refresh time), with `env.KIMI_API_KEY` as the documented
+ * `process.env` at refresh time), with `env.ZIMI_API_KEY` as the documented
  * config-file fallback. A declared `apiKeyEnv` whose variable is unset or
  * empty throws — silently falling through to another key source could send
  * requests (and bill) under the wrong account.
@@ -132,7 +132,7 @@ function resolveProviderApiKey(provider: ProviderView, providerName: string): st
     return value;
   }
   if (isRecord(provider.env)) {
-    const fromEnv = nonEmptyString(provider.env['KIMI_API_KEY']);
+    const fromEnv = nonEmptyString(provider.env['ZIMI_API_KEY']);
     if (fromEnv !== undefined) {
       if (provider.oauth !== undefined) {
         throw new Error(credentialConflictMessage('Provider', providerName, 'apiKey', 'oauth'));
@@ -144,7 +144,7 @@ function resolveProviderApiKey(provider: ProviderView, providerName: string): st
 }
 
 function readProvider(
-  config: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
   providerId: string,
 ): ProviderView | undefined {
   const provider = config.providers[providerId];
@@ -153,12 +153,12 @@ function readProvider(
 }
 
 function readModel(
-  config: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
   alias: string,
-): ManagedKimiModelAlias | undefined {
+): ManagedZimiModelAlias | undefined {
   const model = config.models?.[alias];
   if (model === undefined) return undefined;
-  return model as ManagedKimiModelAlias;
+  return model as ManagedZimiModelAlias;
 }
 
 function customRegistrySourceKey(source: CustomRegistrySource): string {
@@ -193,7 +193,7 @@ async function fetchCustomRegistryFromSources(
 }
 
 function collectModelIdsForAliases(
-  config: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
   aliasKeys: ReadonlySet<string>,
 ): Set<string> {
   const ids = new Set<string>();
@@ -206,22 +206,22 @@ function collectModelIdsForAliases(
   return ids;
 }
 
-function providerAliasKeys(config: ManagedKimiConfigShape, providerId: string): Set<string> {
+function providerAliasKeys(config: ManagedZimiConfigShape, providerId: string): Set<string> {
   const keys = new Set<string>();
   for (const [alias, raw] of Object.entries(config.models ?? {})) {
-    if ((raw as ManagedKimiModelAlias).provider === providerId) keys.add(alias);
+    if ((raw as ManagedZimiModelAlias).provider === providerId) keys.add(alias);
   }
   return keys;
 }
 
 function generatedProviderAliasKeys(
-  config: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
   providerId: string,
   aliasPrefix: string,
 ): Set<string> {
   const keys = new Set<string>();
   for (const [alias, raw] of Object.entries(config.models ?? {})) {
-    const model = raw as ManagedKimiModelAlias;
+    const model = raw as ManagedZimiModelAlias;
     if (model.provider === providerId && alias.startsWith(aliasPrefix)) {
       keys.add(alias);
     }
@@ -243,7 +243,7 @@ function computeChanges(oldIds: Set<string>, newIds: Set<string>): { added: numb
 
 interface ProviderModelSnapshot {
   readonly alias: string;
-  readonly model: ManagedKimiModelAlias;
+  readonly model: ManagedZimiModelAlias;
 }
 
 // Field order follows how the config file happened to be written: the writer
@@ -268,7 +268,7 @@ function sortKeysDeep(value: unknown): unknown {
 // a lost selection flips the provider to changed and the re-selected default is
 // written back.
 function providerModelSnapshot(
-  config: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
   providerId: string,
   aliasKeys: ReadonlySet<string>,
 ): string {
@@ -289,8 +289,8 @@ function providerModelSnapshot(
 }
 
 function providerModelsEqual(
-  config: ManagedKimiConfigShape,
-  nextConfig: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
+  nextConfig: ManagedZimiConfigShape,
   providerId: string,
   aliasKeys: ReadonlySet<string>,
 ): boolean {
@@ -300,21 +300,21 @@ function providerModelsEqual(
   );
 }
 
-function providerConfigSnapshot(config: ManagedKimiConfigShape, providerId: string): string {
+function providerConfigSnapshot(config: ManagedZimiConfigShape, providerId: string): string {
   return JSON.stringify(sortKeysDeep(config.providers[providerId] ?? null));
 }
 
 function providerConfigEqual(
-  config: ManagedKimiConfigShape,
-  nextConfig: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
+  nextConfig: ManagedZimiConfigShape,
   providerId: string,
 ): boolean {
   return providerConfigSnapshot(config, providerId) === providerConfigSnapshot(nextConfig, providerId);
 }
 
 function providerRefreshAliasKeys(
-  config: ManagedKimiConfigShape,
-  nextConfig: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
+  nextConfig: ManagedZimiConfigShape,
   providerId: string,
   aliasPrefix: string,
 ): Set<string> {
@@ -324,13 +324,13 @@ function providerRefreshAliasKeys(
 }
 
 function preserveUserProviderAliases(
-  config: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
   providerId: string,
   refreshedAliasKeys: ReadonlySet<string>,
-): Record<string, ManagedKimiModelAlias> {
-  const preserved: Record<string, ManagedKimiModelAlias> = {};
+): Record<string, ManagedZimiModelAlias> {
+  const preserved: Record<string, ManagedZimiModelAlias> = {};
   for (const [alias, raw] of Object.entries(config.models ?? {})) {
-    const model = raw as ManagedKimiModelAlias;
+    const model = raw as ManagedZimiModelAlias;
     if (model.provider !== providerId || refreshedAliasKeys.has(alias)) continue;
     preserved[alias] = structuredClone(model);
   }
@@ -338,8 +338,8 @@ function preserveUserProviderAliases(
 }
 
 function restoreProviderAliases(
-  config: ManagedKimiConfigShape,
-  aliases: Record<string, ManagedKimiModelAlias>,
+  config: ManagedZimiConfigShape,
+  aliases: Record<string, ManagedZimiModelAlias>,
 ): void {
   if (Object.keys(aliases).length === 0) return;
   config.models = {
@@ -349,7 +349,7 @@ function restoreProviderAliases(
 }
 
 function restoreDefaultSelection(
-  config: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
   defaultModel: string | undefined,
   defaultEnabled: boolean | undefined,
 ): void {
@@ -366,8 +366,8 @@ function restoreDefaultSelection(
 
 async function rebaseSelectionAfterFetch(
   host: RefreshProviderHost,
-  config: ManagedKimiConfigShape,
-): Promise<ManagedKimiConfigShape> {
+  config: ManagedZimiConfigShape,
+): Promise<ManagedZimiConfigShape> {
   const fresh = await host.getConfig();
   return { ...config, defaultModel: fresh.defaultModel, thinking: fresh.thinking };
 }
@@ -377,8 +377,8 @@ async function rebaseSelectionAfterFetch(
 // that declaration instead of leaving the user without a default, carrying the
 // user's thinking selection over the same way a surviving default keeps it.
 function followRetiredDefault(
-  previous: ManagedKimiConfigShape,
-  next: ManagedKimiConfigShape,
+  previous: ManagedZimiConfigShape,
+  next: ManagedZimiConfigShape,
 ): RefreshResult['retiredDefault'] {
   const from = previous.defaultModel;
   if (from === undefined || readModel(next, from) !== undefined) return undefined;
@@ -395,7 +395,7 @@ function followRetiredDefault(
 // (e.g. the previously-selected model was dropped from the registry). The host's
 // `setConfig` deep-merge cannot clear a key, so the matching `removeProvider`
 // call handles disk cleanup while this drops the dangling reference in memory.
-function clampDanglingDefault(config: ManagedKimiConfigShape): void {
+function clampDanglingDefault(config: ManagedZimiConfigShape): void {
   if (config.defaultModel !== undefined && readModel(config, config.defaultModel) === undefined) {
     config.defaultModel = undefined;
     config.thinking = undefined;
@@ -403,7 +403,7 @@ function clampDanglingDefault(config: ManagedKimiConfigShape): void {
 }
 
 function clearDefaultThinkingWhenDefaultRemoved(
-  config: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
   previousDefaultModel: string | undefined,
 ): void {
   if (previousDefaultModel !== undefined && config.defaultModel === undefined) {
@@ -412,7 +412,7 @@ function clearDefaultThinkingWhenDefaultRemoved(
 }
 
 function pickDefaultModel(
-  config: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
   providerId: string,
   models: Array<{ id: string }>,
 ): string {
@@ -436,11 +436,11 @@ function pickDefaultModel(
  * Refresh remote model metadata for the configured providers and persist any
  * changes through the host. Handles four provider kinds, in order:
  *
- *  1. Managed Kimi Code (OAuth) — `GET /models` against the runtime endpoint.
- *  2. Open platforms (moonshot-cn, moonshot-ai, …) — platform catalog fetch.
- *  2.5. Managed-endpoint API-key providers — hand-written `type: 'kimi'`
- *     providers (including a hand-written `managed:kimi-code` without an oauth
- *     ref) whose baseUrl is exactly the managed Kimi Code endpoint; refreshed
+ *  1. Managed Zimi Code (OAuth) — `GET /models` against the runtime endpoint.
+ *  2. Open platforms (zimi-cn, zimi-ai, …) — platform catalog fetch.
+ *  2.5. Managed-endpoint API-key providers — hand-written `type: 'zimi'`
+ *     providers (including a hand-written `managed:zimi-code` without an oauth
+ *     ref) whose baseUrl is exactly the managed Zimi Code endpoint; refreshed
  *     via `GET /models` with the configured API key as Bearer. Only model
  *     aliases are merged; the provider record is user-owned and never
  *     rewritten.
@@ -465,34 +465,34 @@ export async function refreshProviderModels(
   let config = await host.getConfig();
 
   // ---------------------------------------------------------------------------
-  // 1. Managed Kimi Code (OAuth)
+  // 1. Managed Zimi Code (OAuth)
   // ---------------------------------------------------------------------------
-  const managedProvider = readProvider(config, KIMI_CODE_PROVIDER_NAME);
-  const managedWanted = targetId === undefined || targetId === KIMI_CODE_PROVIDER_NAME;
+  const managedProvider = readProvider(config, ZIMI_CODE_PROVIDER_NAME);
+  const managedWanted = targetId === undefined || targetId === ZIMI_CODE_PROVIDER_NAME;
   if (
     managedWanted &&
     managedProvider !== undefined &&
-    managedProvider.type === 'kimi' &&
+    managedProvider.type === 'zimi' &&
     managedProvider.oauth !== undefined
   ) {
     try {
-      const declared = declaredProviderCredential(managedProvider, KIMI_CODE_PROVIDER_NAME);
+      const declared = declaredProviderCredential(managedProvider, ZIMI_CODE_PROVIDER_NAME);
       if (declared.kind === 'conflict') {
         throw new Error(declared.message);
       }
-      const auth = resolveKimiCodeRuntimeAuth({
+      const auth = resolveZimiCodeRuntimeAuth({
         configuredBaseUrl: managedProvider.baseUrl,
         configuredOAuthRef: managedProvider.oauth,
       });
-      const accessToken = await host.resolveOAuthToken(KIMI_CODE_PROVIDER_NAME, auth.oauthRef);
-      const models = await fetchManagedKimiCodeModels({
+      const accessToken = await host.resolveOAuthToken(ZIMI_CODE_PROVIDER_NAME, auth.oauthRef);
+      const models = await fetchManagedZimiCodeModels({
         accessToken,
         baseUrl: auth.baseUrl,
       });
       if (models.length > 0) {
         config = await rebaseSelectionAfterFetch(host, config);
         const next = structuredClone(config);
-        applyManagedKimiCodeConfig(next, {
+        applyManagedZimiCodeConfig(next, {
           models,
           baseUrl: auth.baseUrl,
           oauthKey: auth.oauthRef.key,
@@ -502,25 +502,25 @@ export async function refreshProviderModels(
         const refreshedAliasKeys = providerRefreshAliasKeys(
           config,
           next,
-          KIMI_CODE_PROVIDER_NAME,
-          `${KIMI_CODE_PLATFORM_ID}/`,
+          ZIMI_CODE_PROVIDER_NAME,
+          `${ZIMI_CODE_PLATFORM_ID}/`,
         );
         restoreProviderAliases(
           next,
-          preserveUserProviderAliases(config, KIMI_CODE_PROVIDER_NAME, refreshedAliasKeys),
+          preserveUserProviderAliases(config, ZIMI_CODE_PROVIDER_NAME, refreshedAliasKeys),
         );
         restoreDefaultSelection(next, config.defaultModel, config.thinking?.enabled);
         clampDanglingDefault(next);
         clearDefaultThinkingWhenDefaultRemoved(next, config.defaultModel);
 
-        if (providerModelsEqual(config, next, KIMI_CODE_PROVIDER_NAME, refreshedAliasKeys)) {
-          unchanged.push(KIMI_CODE_PROVIDER_NAME);
+        if (providerModelsEqual(config, next, ZIMI_CODE_PROVIDER_NAME, refreshedAliasKeys)) {
+          unchanged.push(ZIMI_CODE_PROVIDER_NAME);
         } else {
           const { added, removed } = computeChanges(
             collectModelIdsForAliases(config, refreshedAliasKeys),
             collectModelIdsForAliases(next, refreshedAliasKeys),
           );
-          await host.removeProvider(KIMI_CODE_PROVIDER_NAME);
+          await host.removeProvider(ZIMI_CODE_PROVIDER_NAME);
           config = await host.setConfig({
             providers: next.providers,
             models: next.models,
@@ -528,8 +528,8 @@ export async function refreshProviderModels(
             thinking: next.thinking,
           });
           changed.push({
-            providerId: KIMI_CODE_PROVIDER_NAME,
-            providerName: 'Kimi Code',
+            providerId: ZIMI_CODE_PROVIDER_NAME,
+            providerName: 'Zimi Code',
             added,
             removed,
           });
@@ -537,7 +537,7 @@ export async function refreshProviderModels(
       }
     } catch (error) {
       failed.push({
-        provider: KIMI_CODE_PROVIDER_NAME,
+        provider: ZIMI_CODE_PROVIDER_NAME,
         reason: error instanceof Error ? error.message : String(error),
       });
     }
@@ -545,14 +545,14 @@ export async function refreshProviderModels(
 
   // The oauth scope stops here, but a targeted refresh of the managed provider
   // must fall through: branch 2 no-ops on a non-open-platform id, branch 2.5
-  // handles a hand-written `managed:kimi-code` that carries an API key instead
+  // handles a hand-written `managed:zimi-code` that carries an API key instead
   // of an oauth ref, and branch 3 no-ops when no registry group contains it.
   if (scope === 'oauth') {
     return { changed, unchanged, failed };
   }
 
   // ---------------------------------------------------------------------------
-  // 2. Open Platforms (moonshot-cn, moonshot-ai, …)
+  // 2. Open Platforms (zimi-cn, zimi-ai, …)
   // ---------------------------------------------------------------------------
   const openPlatformIds = Object.keys(config.providers).filter((id) => {
     if (!isOpenPlatformId(id)) return false;
@@ -630,9 +630,9 @@ export async function refreshProviderModels(
   // ---------------------------------------------------------------------------
   // 2.5. Managed-endpoint API-key providers (hand-configured distributed keys)
   // ---------------------------------------------------------------------------
-  // A hand-written `type: 'kimi'` provider whose baseUrl is exactly the managed
-  // Kimi Code endpoint, carrying an API key (inline, via `apiKeyEnv`, or via
-  // `env.KIMI_API_KEY`) instead of an oauth ref, gets its model list refreshed
+  // A hand-written `type: 'zimi'` provider whose baseUrl is exactly the managed
+  // Zimi Code endpoint, carrying an API key (inline, via `apiKeyEnv`, or via
+  // `env.ZIMI_API_KEY`) instead of an oauth ref, gets its model list refreshed
   // from `{baseUrl}/models` just like the OAuth branch. Strict baseUrl matching
   // keeps proxies / gateways with an untrusted `/models` schema out.
   for (const providerId of Object.keys(config.providers)) {
@@ -640,22 +640,22 @@ export async function refreshProviderModels(
     if (targetId !== undefined && targetId !== providerId) continue;
     const provider = readProvider(config, providerId);
     if (provider === undefined) continue;
-    if (provider.type !== 'kimi') continue;
+    if (provider.type !== 'zimi') continue;
     const earlyDeclared = declaredProviderCredential(provider, providerId);
     if (earlyDeclared.kind === 'conflict') {
-      if (providerId !== KIMI_CODE_PROVIDER_NAME || provider.oauth === undefined) {
+      if (providerId !== ZIMI_CODE_PROVIDER_NAME || provider.oauth === undefined) {
         failed.push({ provider: providerId, reason: earlyDeclared.message });
       }
       continue;
     }
     if (provider.oauth !== undefined) continue;
     if (readCustomRegistrySource(provider) !== undefined) continue;
-    if (!isManagedKimiCodeBaseUrl(provider.baseUrl)) continue;
+    if (!isManagedZimiCodeBaseUrl(provider.baseUrl)) continue;
 
     try {
       const apiKey = resolveProviderApiKey(provider, providerId);
       if (apiKey === undefined) continue;
-      const models = await fetchManagedKimiCodeModels({
+      const models = await fetchManagedZimiCodeModels({
         accessToken: apiKey,
         baseUrl: provider.baseUrl,
         credentialKind: 'apiKey',
@@ -663,11 +663,11 @@ export async function refreshProviderModels(
       if (models.length === 0) continue;
 
       config = await rebaseSelectionAfterFetch(host, config);
-      // A hand-written `managed:kimi-code` shares the OAuth branch's
-      // `kimi-code/` alias prefix so the two shapes merge cleanly if the user
+      // A hand-written `managed:zimi-code` shares the OAuth branch's
+      // `zimi-code/` alias prefix so the two shapes merge cleanly if the user
       // later logs in via OAuth; ordinary providers use their own id.
       const aliasPrefix =
-        providerId === KIMI_CODE_PROVIDER_NAME ? `${KIMI_CODE_PLATFORM_ID}/` : `${providerId}/`;
+        providerId === ZIMI_CODE_PROVIDER_NAME ? `${ZIMI_CODE_PLATFORM_ID}/` : `${providerId}/`;
       const next = structuredClone(config);
       applyManagedApiKeyProviderModels(next, providerId, models, aliasPrefix);
       const refreshedAliasKeys = providerRefreshAliasKeys(config, next, providerId, aliasPrefix);

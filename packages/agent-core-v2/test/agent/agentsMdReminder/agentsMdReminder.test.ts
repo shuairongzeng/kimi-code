@@ -71,8 +71,8 @@ let workDir: string;
 
 beforeEach(async () => {
   disposables = new DisposableStore();
-  homeDir = await mkdtemp(join(tmpdir(), 'kimi-reminder-home-'));
-  workDir = await mkdtemp(join(tmpdir(), 'kimi-reminder-work-'));
+  homeDir = await mkdtemp(join(tmpdir(), 'zimi-reminder-home-'));
+  workDir = await mkdtemp(join(tmpdir(), 'zimi-reminder-work-'));
   await mkdir(join(workDir, '.git'));
 });
 
@@ -415,18 +415,18 @@ describe('agentsMdReminder path-carrying tools', () => {
     expect(reminderText(h)).toContain(subAgentsMd);
   });
 
-  it('discovers the .kimi-code/AGENTS.md variant alongside the plain one', async () => {
+  it('discovers the .zimi-code/AGENTS.md variant alongside the plain one', async () => {
     const h = createHarness();
     const subDir = join(workDir, 'packages', 'kap-server');
-    const dotKimi = normalize(join(subDir, '.kimi-code', 'AGENTS.md'));
-    await writeAgentsMd(join(subDir, '.kimi-code'), 'dot kimi instructions');
+    const dotZimi = normalize(join(subDir, '.zimi-code', 'AGENTS.md'));
+    await writeAgentsMd(join(subDir, '.zimi-code'), 'dot zimi instructions');
     const plain = await writeAgentsMd(subDir);
 
     const result = await fire(h, didCtx('Read', { path: join(subDir, 'index.ts') }));
 
     expect(outputText(result)).toBe('original result');
     const text = reminderText(h);
-    expect(text).toContain(dotKimi);
+    expect(text).toContain(dotZimi);
     expect(text).toContain(plain);
   });
 
@@ -1052,7 +1052,7 @@ describe('agentsMdReminder probing boundaries', () => {
 
   it('probes only the immediate directory outside any project', async () => {
     const h = createHarness();
-    const outside = await mkdtemp(join(tmpdir(), 'kimi-reminder-outside-'));
+    const outside = await mkdtemp(join(tmpdir(), 'zimi-reminder-outside-'));
     const outerAgentsMd = await writeAgentsMd(outside, 'outer instructions');
     const leaf = join(outside, 'leaf');
     const leafAgentsMd = await writeAgentsMd(leaf, 'leaf instructions');
@@ -1071,7 +1071,7 @@ describe('agentsMdReminder probing boundaries', () => {
 
   it('discovers a symlinked directory through the link at its lexical address', async () => {
     const h = createHarness();
-    const target = await mkdtemp(join(tmpdir(), 'kimi-reminder-target-'));
+    const target = await mkdtemp(join(tmpdir(), 'zimi-reminder-target-'));
     const targetAgentsMd = await writeAgentsMd(target, 'target instructions');
     await symlink(target, join(workDir, 'link'));
 
@@ -1495,7 +1495,7 @@ describe('agentsMdReminder Windows Bash paths', () => {
 });
 
 describe('agentsMdReminder remote environment binding', () => {
-  const sessionCwd = '/Users/local/Projects/kimi-code';
+  const sessionCwd = '/Users/local/Projects/zimi-code';
   const remoteWorkDir = '/remote/work';
   const remoteSubDir = `${remoteWorkDir}/packages/kap-server`;
   const remoteAgentsMd = `${remoteSubDir}/AGENTS.md`;

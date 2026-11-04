@@ -1,16 +1,16 @@
-import type { KimiConfig, ModelAlias, ProviderType } from '#/config/index';
+import type { ZimiConfig, ModelAlias, ProviderType } from '#/config/index';
 import {
   modelsDevBaseUrl,
   modelsDevProviderModels,
   resolveModelsDevImport,
   type ModelCapability,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import type {
   ModelsDevCatalog as Catalog,
   ModelsDevImportInvalidReason as CatalogImportInvalidReason,
   ModelsDevModel as CatalogModel,
   ModelsDevProviderEntry as CatalogProviderEntry,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 
 export { modelsDevProviderModels as catalogProviderModels };
 export type { Catalog, CatalogImportInvalidReason, CatalogModel, CatalogProviderEntry };
@@ -77,7 +77,7 @@ export interface FetchCatalogOptions {
 
 /**
  * Fetches a models.dev-style catalog. Public endpoint, no credentials needed.
- * `userAgent` identifies the host product (e.g. `kimi-code-cli/1.2.3`); when
+ * `userAgent` identifies the host product (e.g. `zimi-code-cli/1.2.3`); when
  * omitted the request falls back to the runtime default (`User-Agent: node`).
  */
 export async function fetchCatalog(
@@ -109,7 +109,7 @@ function capabilityToStrings(capability: ModelCapability): string[] | undefined 
   return caps.length > 0 ? caps : undefined;
 }
 
-/** Builds a kimi-code model alias from a normalized catalog model. */
+/** Builds a zimi-code model alias from a normalized catalog model. */
 export function catalogModelToAlias(providerId: string, model: CatalogModel): ModelAlias {
   const caps = capabilityToStrings(model.capability);
   return {
@@ -145,7 +145,7 @@ export interface ApplyCatalogProviderOptions {
 
 /**
  * Parses an optional pruned models.dev catalog string — typically the
- * `__KIMI_CODE_BUILT_IN_CATALOG__` constant injected by tsdown at build
+ * `__ZIMI_CODE_BUILT_IN_CATALOG__` constant injected by tsdown at build
  * time. Returns `undefined` when the argument is missing or invalid.
  */
 export function loadBuiltInCatalog(text?: string): Catalog | undefined {
@@ -170,7 +170,7 @@ export function loadBuiltInCatalog(text?: string): Catalog | undefined {
  * after the merge.
  */
 export function applyCatalogProvider(
-  config: KimiConfig,
+  config: ZimiConfig,
   options: ApplyCatalogProviderOptions,
 ): { defaultModel: string } {
   config.providers[options.providerId] = {

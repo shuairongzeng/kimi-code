@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-import { KIMI_REGION_PROFILES, type KimiRegion } from '@moonshot-ai/kimi-code-oauth';
+import { ZIMI_REGION_PROFILES, type ZimiRegion } from '@zimi-ai/zimi-code-oauth';
 import { z } from 'zod';
 
 import { readJsonFile, writeJsonFile } from '#/shared/node/json-file';
@@ -12,7 +12,7 @@ const CONFIG_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const FETCH_TIMEOUT_MS = 5000;
 
 export interface ClientConfigEnvironment {
-  readonly region: () => KimiRegion;
+  readonly region: () => ZimiRegion;
   readonly baseUrlOverride: () => string | undefined;
   readonly cacheDir: () => string | undefined;
 }
@@ -41,7 +41,7 @@ export class ClientConfigClient {
 
   constructor(private readonly environment: ClientConfigEnvironment) {}
 
-  region(): KimiRegion {
+  region(): ZimiRegion {
     return this.environment.region();
   }
 
@@ -128,7 +128,7 @@ export class ClientConfigClient {
 
   private baseUrl(): string {
     const base =
-      this.environment.baseUrlOverride() ?? KIMI_REGION_PROFILES[this.region()].baseUrl;
+      this.environment.baseUrlOverride() ?? ZIMI_REGION_PROFILES[this.region()].baseUrl;
     return base.replace(/\/+$/, '');
   }
 

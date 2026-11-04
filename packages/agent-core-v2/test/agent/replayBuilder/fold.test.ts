@@ -478,7 +478,7 @@ describe('foldWireRecords', () => {
           created_at: 0,
         },
       ]),
-    ).toThrow('Upgrade Kimi Code');
+    ).toThrow('Upgrade Zimi Code');
   });
 
   it('clears replay-visible state on context.clear without touching earlier replay records', () => {

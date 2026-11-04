@@ -142,9 +142,9 @@ describe('WorkspaceDirsService (registry source)', () => {
 
   it('merges registry dirs with local.toml dirs for implicit scopes', async () => {
     await workspaces.create({ root: dirA, additionalDirs: [dirB], name: 'proj' });
-    await mkdir(join(dirA, '.kimi-code'), { recursive: true });
+    await mkdir(join(dirA, '.zimi-code'), { recursive: true });
     await writeFile(
-      join(dirA, '.kimi-code', 'local.toml'),
+      join(dirA, '.zimi-code', 'local.toml'),
       `[workspace]\nadditional_dir = ["${dirC.replaceAll('\\', '\\\\')}"]\n`,
       'utf8',
     );
@@ -159,9 +159,9 @@ describe('WorkspaceDirsService (registry source)', () => {
 
   it('ignores local.toml entirely for managed workspaces', async () => {
     const project = await workspaces.create({ root: dirA, additionalDirs: [dirB], name: 'proj' });
-    await mkdir(join(dirA, '.kimi-code'), { recursive: true });
+    await mkdir(join(dirA, '.zimi-code'), { recursive: true });
     await writeFile(
-      join(dirA, '.kimi-code', 'local.toml'),
+      join(dirA, '.zimi-code', 'local.toml'),
       `[workspace]\nadditional_dir = ["${dirC.replaceAll('\\', '\\\\')}"]\n`,
       'utf8',
     );
@@ -175,7 +175,7 @@ describe('WorkspaceDirsService (registry source)', () => {
       fired += 1;
     });
     await writeFile(
-      join(dirA, '.kimi-code', 'local.toml'),
+      join(dirA, '.zimi-code', 'local.toml'),
       `[workspace]\nadditional_dir = ["${dirA.replaceAll('\\', '\\\\')}", "${dirC.replaceAll('\\', '\\\\')}"]\n`,
       'utf8',
     );
@@ -213,12 +213,12 @@ describe('WorkspaceDirsService (registry source)', () => {
     const result = await dirs.addDir({ path: dirB, persist: true });
     expect(result.persisted).toBe(true);
     expect(result.projectRoot).toBe(dirA);
-    expect(result.configPath).toBe(join(dirA, '.kimi-code', 'local.toml'));
+    expect(result.configPath).toBe(join(dirA, '.zimi-code', 'local.toml'));
     expect(result.additionalDirs).toEqual([dirB]);
 
     const entry = await workspaces.get(project.id);
     expect(entry?.additionalDirs).toEqual([dirB]);
-    await expect(stat(join(dirA, '.kimi-code', 'local.toml'))).rejects.toThrow();
+    await expect(stat(join(dirA, '.zimi-code', 'local.toml'))).rejects.toThrow();
 
     const again = await dirs.addDir({ path: dirB, persist: true });
     expect(again.additionalDirs).toEqual([dirB]);
@@ -273,7 +273,7 @@ describe('WorkspaceDirsService (registry source)', () => {
 
     expect(result.persisted).toBe(false);
     expect(result.projectRoot).toBe(dirA);
-    expect(result.configPath).toBe(join(dirA, '.kimi-code', 'local.toml'));
+    expect(result.configPath).toBe(join(dirA, '.zimi-code', 'local.toml'));
     expect(result.additionalDirs).toEqual([dirB]);
     expect((await workspaces.get(project.id))?.additionalDirs).toEqual([]);
     expect(fired).toBe(1);
@@ -355,9 +355,9 @@ describe('WorkspaceDirsService (registry source)', () => {
     const project = await workspaces.create({ root: dirA, name: 'proj' });
     const dirs = createDirs(dirA, encodeWorkDirKey(dirA));
     await dirs.ready;
-    await mkdir(join(dirA, '.kimi-code'), { recursive: true });
+    await mkdir(join(dirA, '.zimi-code'), { recursive: true });
     await writeFile(
-      join(dirA, '.kimi-code', 'local.toml'),
+      join(dirA, '.zimi-code', 'local.toml'),
       `[workspace]\nadditional_dir = ["${dirC.replaceAll('\\', '\\\\')}"]\n`,
       'utf8',
     );
@@ -434,9 +434,9 @@ describe('WorkspaceDirsService (registry source)', () => {
   });
 
   it('keeps an initial local config failure on ready without an unhandled watcher rejection', async () => {
-    await mkdir(join(dirA, '.kimi-code'), { recursive: true });
+    await mkdir(join(dirA, '.zimi-code'), { recursive: true });
     await writeFile(
-      join(dirA, '.kimi-code', 'local.toml'),
+      join(dirA, '.zimi-code', 'local.toml'),
       '[workspace]\nadditional_dir = ["missing"]\n',
       'utf8',
     );

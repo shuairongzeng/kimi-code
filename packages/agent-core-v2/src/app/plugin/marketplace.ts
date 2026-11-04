@@ -3,7 +3,7 @@ import { homedir } from 'node:os';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { KIMI_REGION_PROFILES, OAuthUnauthorizedError } from '@moonshot-ai/kimi-code-oauth';
+import { ZIMI_REGION_PROFILES, OAuthUnauthorizedError } from '@zimi-ai/zimi-code-oauth';
 import { gt, valid } from 'semver';
 
 export function isMissingMarketplaceTokenError(error: unknown): boolean {
@@ -13,7 +13,7 @@ export function isMissingMarketplaceTokenError(error: unknown): boolean {
   );
 }
 
-export const KIMI_CODE_PLUGIN_MARKETPLACE_URL_ENV = 'KIMI_CODE_PLUGIN_MARKETPLACE_URL';
+export const ZIMI_CODE_PLUGIN_MARKETPLACE_URL_ENV = 'ZIMI_CODE_PLUGIN_MARKETPLACE_URL';
 
 export const PLUGIN_MARKETPLACE_CLASSIFICATIONS = ['official', 'third_party'] as const;
 export const PLUGIN_MARKETPLACE_TIERS = ['official', 'curated'] as const;
@@ -26,7 +26,7 @@ export type PluginMarketplacePlatform = 'darwin' | 'win32' | 'linux' | 'cloud';
 export type PluginClient = (typeof PLUGIN_MARKETPLACE_CLIENTS)[number];
 
 export function pluginClientForIdentity(identity: string): PluginClient {
-  return identity === 'kimi_code_desktop' ? 'desktop' : 'cli';
+  return identity === 'zimi_code_desktop' ? 'desktop' : 'cli';
 }
 
 export function marketplaceEntrySupportsClient(
@@ -124,12 +124,12 @@ export interface ReadPluginMarketplaceOptions {
 
 export function pluginMarketplaceUrl(baseUrl: string): string {
   const normalized = baseUrl.trim().replace(/\/+$/, '');
-  if (normalized.length === 0) throw new Error('Kimi Code base URL cannot be empty.');
+  if (normalized.length === 0) throw new Error('Zimi Code base URL cannot be empty.');
   return `${normalized}/plugins/marketplace`;
 }
 
 const TRUSTED_PLUGIN_MARKETPLACE_URLS = new Set(
-  [...Object.values(KIMI_REGION_PROFILES).map((profile) => profile.baseUrl), 'https://coding.deva.msh.team/coding/v1']
+  [...Object.values(ZIMI_REGION_PROFILES).map((profile) => profile.baseUrl), 'https://coding.deva.msh.team/coding/v1']
     .map(pluginMarketplaceUrl),
 );
 
@@ -158,7 +158,7 @@ export function computeUpdateStatus(
 export function resolveMarketplaceLocation(source: string, workDir: string): MarketplaceLocation {
   const trimmed = source.trim();
   if (trimmed.length === 0) {
-    throw new Error(`${KIMI_CODE_PLUGIN_MARKETPLACE_URL_ENV} cannot be empty.`);
+    throw new Error(`${ZIMI_CODE_PLUGIN_MARKETPLACE_URL_ENV} cannot be empty.`);
   }
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
     return { raw: trimmed, kind: 'remote', resolved: trimmed };

@@ -2,9 +2,9 @@ import { Readable } from 'node:stream';
 
 import { describe, expect, it } from 'vitest';
 
-import type { FileMeta, GetResult, IFileService } from '@moonshot-ai/agent-core-v2';
-import type { IHostFileSystem } from '@moonshot-ai/agent-core-v2/os/interface/hostFileSystem';
-import type { EnvironmentPath } from '@moonshot-ai/agent-core-v2/environment/environment';
+import type { FileMeta, GetResult, IFileService } from '@zimi-ai/agent-core-v2';
+import type { IHostFileSystem } from '@zimi-ai/agent-core-v2/os/interface/hostFileSystem';
+import type { EnvironmentPath } from '@zimi-ai/agent-core-v2/environment/environment';
 
 import {
   resolvePromptMediaFiles,
@@ -87,7 +87,7 @@ function patternedBytes(size: number): Uint8Array {
 }
 
 function targetFor(fs: IHostFileSystem): PromptAttachmentsTarget {
-  return { dir: '/remote/tmp/kimi-code/attachments', fs, path: environmentPath };
+  return { dir: '/remote/tmp/zimi-code/attachments', fs, path: environmentPath };
 }
 
 function expectStoredBytes(files: ReadonlyMap<string, Uint8Array>, path: string, expected: Uint8Array): void {
@@ -125,7 +125,7 @@ describe('resolvePromptMediaFiles with an environment attachments target', () =>
     );
     expect(result.attachments).toHaveLength(1);
     const target = result.attachments[0]!.path;
-    expect(target).toBe('/remote/tmp/kimi-code/attachments/f_big-big.bin');
+    expect(target).toBe('/remote/tmp/zimi-code/attachments/f_big-big.bin');
     expectStoredBytes(fake.files, target, data);
     expect(result.content[0]).toEqual({
       type: 'text',
@@ -139,7 +139,7 @@ describe('resolvePromptMediaFiles with an environment attachments target', () =>
       new Map([['f_seed', { meta: meta('f_seed', 'seed.txt', data.byteLength), chunks: [data] }]]),
     );
     const fake = fakeEnvironmentFs();
-    const target = '/remote/tmp/kimi-code/attachments/f_seed-seed.txt';
+    const target = '/remote/tmp/zimi-code/attachments/f_seed-seed.txt';
     fake.files.set(target, data);
     await expect(
       resolvePromptMediaFiles(

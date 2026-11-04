@@ -1,4 +1,4 @@
-# @moonshot-ai/transcript
+# @zimi-ai/transcript
 
 ## 0.0.2
 

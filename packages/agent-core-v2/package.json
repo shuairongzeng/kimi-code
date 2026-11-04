@@ -1,21 +1,21 @@
 {
-  "name": "@moonshot-ai/agent-core-v2",
+  "name": "@zimi-ai/agent-core-v2",
   "version": "0.6.0",
   "private": true,
-  "description": "The unified agent engine for Kimi (v2 — DI Scope architecture)",
+  "description": "The unified agent engine for Zimi (v2 — DI Scope architecture)",
   "license": "MIT",
-  "author": "Moonshot AI",
-  "homepage": "https://github.com/MoonshotAI/kimi-code/tree/main/packages/agent-core-v2#readme",
+  "author": "Zimi AI",
+  "homepage": "https://github.com/ZimiAI/zimi-code/tree/main/packages/agent-core-v2#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MoonshotAI/kimi-code.git",
+    "url": "git+https://github.com/ZimiAI/zimi-code.git",
     "directory": "packages/agent-core-v2"
   },
   "bugs": {
-    "url": "https://github.com/MoonshotAI/kimi-code/issues"
+    "url": "https://github.com/ZimiAI/zimi-code/issues"
   },
   "keywords": [
-    "kimi",
+    "zimi",
     "agent",
     "ai",
     "llm",
@@ -69,9 +69,9 @@
     "@google/genai": "^1.49.0",
     "@jsquash/webp": "^1.5.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "@moonshot-ai/kimi-code-oauth": "workspace:^",
-    "@moonshot-ai/minidb": "workspace:^",
-    "@moonshot-ai/tree-sitter-bash": "workspace:^",
+    "@zimi-ai/zimi-code-oauth": "workspace:^",
+    "@zimi-ai/minidb": "workspace:^",
+    "@zimi-ai/tree-sitter-bash": "workspace:^",
     "@mozilla/readability": "^0.6.0",
     "@noble/hashes": "^2.0.0",
     "ajv": "^8.18.0",

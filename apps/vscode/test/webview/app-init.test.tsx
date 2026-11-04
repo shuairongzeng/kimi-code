@@ -24,8 +24,8 @@ vi.mock("@/components/ui/sonner", () => ({
 import { useAppInit } from "../../webview-ui/src/hooks/useAppInit";
 import { useSettingsStore } from "../../webview-ui/src/stores/settings.store";
 
-const PLAIN_MODEL = { id: "plain", name: "Plain", provider: "managed:kimi-code", capabilities: [] };
-const NEW_MODEL = { id: "new", name: "New", provider: "managed:kimi-code", capabilities: [] };
+const PLAIN_MODEL = { id: "plain", name: "Plain", provider: "managed:zimi-code", capabilities: [] };
+const NEW_MODEL = { id: "new", name: "New", provider: "managed:zimi-code", capabilities: [] };
 const INITIAL_CONFIG = { models: [PLAIN_MODEL], defaultModel: "plain", defaultThinking: false };
 const listeners = new Map<string, Set<(data: unknown) => void>>();
 

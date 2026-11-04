@@ -5,8 +5,8 @@
  * Mirrors `packages/kap-server/src/protocol/envelope.ts` so the server's wire
  * shape and this client's parsing stay in lockstep.
  */
-import { type Envelope } from '@moonshot-ai/kap-server/protocol/envelope';
-import { ErrorCode } from '@moonshot-ai/kap-server/protocol/error-codes';
+import { type Envelope } from '@zimi-ai/kap-server/protocol/envelope';
+import { ErrorCode } from '@zimi-ai/kap-server/protocol/error-codes';
 
 /**
  * Thrown when an HTTP call lands but `envelope.code !== 0`.

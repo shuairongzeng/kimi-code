@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import type { JsonObject, PermissionMode } from "@moonshot-ai/kimi-code-sdk";
+import type { JsonObject, PermissionMode } from "@zimi-ai/zimi-code-sdk";
 
 export const LEGACY_APPROVAL_METADATA_KEY = "vscode_legacy_approval";
 
@@ -20,7 +20,7 @@ export function readLegacyApprovalFlags(
 export async function readMigratedLegacyApprovalFlags(
   metadata: Readonly<Record<string, unknown>> | undefined,
 ): Promise<LegacyApprovalFlags | undefined> {
-  const sourcePath = metadata?.["kimi_cli_source_path"];
+  const sourcePath = metadata?.["zimi_cli_source_path"];
   if (typeof sourcePath !== "string" || sourcePath.length === 0) return undefined;
   let text: string;
   try {
@@ -59,7 +59,7 @@ export function corePermissionForLegacyApproval(flags: LegacyApprovalFlags): Per
 }
 
 /**
- * The global `kimi.yoloMode` setting is authoritative whenever a session
+ * The global `zimi.yoloMode` setting is authoritative whenever a session
  * attaches to the runtime; afk stays per-session because it has no global
  * setting counterpart.
  */

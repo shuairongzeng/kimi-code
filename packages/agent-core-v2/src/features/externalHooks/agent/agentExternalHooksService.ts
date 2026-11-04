@@ -29,7 +29,7 @@ import type { ExecutableToolResult } from '#/tool/toolContract';
 import type { ResolvedToolExecutionHookContext, ToolDidExecuteContext } from '#/agent/toolExecutor/toolHooks';
 import { denyToolExecution } from '#/agent/toolExecutor/beforeToolExecuteEvent';
 import { IAgentToolExecutorService } from '#/agent/toolExecutor/toolExecutor';
-import { toKimiErrorPayload } from '#/errors';
+import { toZimiErrorPayload } from '#/errors';
 import { fromCorePart } from '#human/message';
 import { MAIN_AGENT_ID } from '#/session/agentLifecycle/agentLifecycle';
 import { ISessionContext } from '#/session/sessionContext/sessionContext';
@@ -351,7 +351,7 @@ export class AgentExternalHooksService extends Service implements IAgentExternal
         toolName: ctx.toolCall.name,
         toolInput: isPlainRecord(ctx.args) ? ctx.args : {},
         toolCallId: ctx.toolCall.id,
-        error: isError ? toKimiErrorPayload(output) : undefined,
+        error: isError ? toZimiErrorPayload(output) : undefined,
         toolOutput: isError ? undefined : output.slice(0, 2000),
       },
       ctx.toolCall.name,
@@ -425,7 +425,7 @@ export class AgentExternalHooksService extends Service implements IAgentExternal
   }
 
   private notifyStopFailure(error: unknown, signal: AbortSignal): void {
-    const payload = toKimiErrorPayload(error);
+    const payload = toZimiErrorPayload(error);
     this.fireAndForget(
       'StopFailure',
       {

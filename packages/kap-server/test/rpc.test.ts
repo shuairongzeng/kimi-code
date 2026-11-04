@@ -1,4 +1,4 @@
-import { IEnvironmentService } from '@moonshot-ai/agent-core-v2';
+import { IEnvironmentService } from '@zimi-ai/agent-core-v2';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -23,16 +23,16 @@ import {
   IWorkspaceInstanceManager,
   IWorkspaceService,
   getLiveSessionById,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import type {
   AgentEnvironmentBindingSnapshot,
   ServiceIdentifier,
   SessionWorkspaceAssociationSnapshot,
   WorkspaceInstanceSnapshot,
-} from '@moonshot-ai/agent-core-v2';
-import { FakeEnvironment } from '@moonshot-ai/agent-core-v2/environment/fakeEnvironment';
-import { HostFileSystem } from '@moonshot-ai/agent-core-v2/os/backends/node-local/hostFsService';
-import { HostProcessService } from '@moonshot-ai/agent-core-v2/os/backends/node-local/hostProcessService';
+} from '@zimi-ai/agent-core-v2';
+import { FakeEnvironment } from '@zimi-ai/agent-core-v2/environment/fakeEnvironment';
+import { HostFileSystem } from '@zimi-ai/agent-core-v2/os/backends/node-local/hostFsService';
+import { HostProcessService } from '@zimi-ai/agent-core-v2/os/backends/node-local/hostProcessService';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { type RunningServer, startServer } from '../src/start';
@@ -73,7 +73,7 @@ describe('server-v2 /api/v1/debug RPC', () => {
   let base: string;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-rpc-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-rpc-'));
     server = await startServer({ hostIdentity: TEST_HOST_IDENTITY, host: '127.0.0.1', port: 0, homeDir: home, logLevel: 'silent', debugEndpoints: true });
     base = `http://127.0.0.1:${server.port}`;
   });
@@ -582,7 +582,7 @@ describe('server-v2 /api/v1/debug RPC', () => {
     try {
       await writeFile(join(pluginRoot, 'deploy.md'), '---\ndescription: Deploy\n---\n\nDeploy body', 'utf8');
       await writeFile(
-        join(pluginRoot, 'kimi.plugin.json'),
+        join(pluginRoot, 'zimi.plugin.json'),
         JSON.stringify({ name: 'rpc-plugin', commands: ['./deploy.md'] }),
         'utf8',
       );
@@ -722,7 +722,7 @@ describe('server-v2 /api/v1/debug RPC auth', () => {
   const token = 'test-secret-token';
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-rpc-auth-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-rpc-auth-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -790,7 +790,7 @@ describe('server-v2 /api/v1/debug RPC (dev-only, whitelist-free)', () => {
   let base: string;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-debug-rpc-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-debug-rpc-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',

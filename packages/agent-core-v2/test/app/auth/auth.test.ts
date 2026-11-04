@@ -4,10 +4,10 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import {
-  clearManagedKimiCodeConfig,
-  resolveKimiCodeOAuthKey,
-  resolveKimiCodeRuntimeAuth,
-} from '@moonshot-ai/kimi-code-oauth';
+  clearManagedZimiCodeConfig,
+  resolveZimiCodeOAuthKey,
+  resolveZimiCodeRuntimeAuth,
+} from '@zimi-ai/zimi-code-oauth';
 
 import { DisposableStore } from '#/_base/di/lifecycle';
 import { createServices, type TestInstantiationService } from '#/_base/di/test';
@@ -44,7 +44,7 @@ import { registerBootstrapServices } from '../bootstrap/stubs';
 import { registerTelemetryServices } from '../telemetry/stubs';
 import { stubAgentIdentity } from '../../app/agentIdentity/stubs';
 
-const OAUTH_PROVIDER = 'managed:kimi-code';
+const OAUTH_PROVIDER = 'managed:zimi-code';
 const NON_OAUTH_PROVIDER = 'openai-main';
 
 const deviceAuth = {
@@ -60,13 +60,13 @@ const flush = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 
 
 const EXAMPLE_COM_SCOPED_REF = {
   storage: 'file',
-  key: resolveKimiCodeOAuthKey({ baseUrl: 'https://api.example.com' }),
+  key: resolveZimiCodeOAuthKey({ baseUrl: 'https://api.example.com' }),
   oauthHost: 'https://auth.kimi.com',
 } as const;
 
 const ENV_SCOPED_REF = {
   storage: 'file',
-  key: resolveKimiCodeOAuthKey({
+  key: resolveZimiCodeOAuthKey({
     oauthHost: 'https://env-auth.example.com',
     baseUrl: 'https://env-api.example.com/coding/v1',
   }),
@@ -75,7 +75,7 @@ const ENV_SCOPED_REF = {
 
 const OVERSEAS_SCOPED_REF = {
   storage: 'file',
-  key: resolveKimiCodeOAuthKey({
+  key: resolveZimiCodeOAuthKey({
     oauthHost: 'https://auth.kimi.ai',
     baseUrl: 'https://api.kimi.ai/coding/v1',
   }),
@@ -111,9 +111,9 @@ describe('OAuthService', () => {
     providerChangedEmitter = new Emitter<ProvidersChangedEvent>();
     providers = {
       [OAUTH_PROVIDER]: {
-        type: 'kimi',
+        type: 'zimi',
         baseUrl: 'https://api.example.com',
-        oauth: { storage: 'file', key: 'oauth/kimi-code' },
+        oauth: { storage: 'file', key: 'oauth/zimi-code' },
       },
       [NON_OAUTH_PROVIDER]: { type: 'openai', apiKey: 'sk-test' },
     };
@@ -231,7 +231,7 @@ describe('OAuthService', () => {
             id: 'kimi-k2',
             limit: { context: 131072 },
             reasoning: { type: 'both' },
-            display_name: 'Kimi K2',
+            display_name: 'Zimi K2',
           },
         ],
       }),
@@ -245,7 +245,7 @@ describe('OAuthService', () => {
     model: 'kimi-k2',
     maxContextSize: 131072,
     capabilities: ['thinking', 'tool_use'],
-    displayName: 'Kimi K2',
+    displayName: 'Zimi K2',
   };
 
   const managedK25Alias: ModelRecord = {
@@ -253,7 +253,7 @@ describe('OAuthService', () => {
     model: 'kimi-k2.5',
     maxContextSize: 262144,
     capabilities: ['thinking', 'tool_use'],
-    displayName: 'Kimi K2.5',
+    displayName: 'Zimi K2.5',
   };
 
   function stubGatedManagedModelsFetch(): {
@@ -274,19 +274,19 @@ describe('OAuthService', () => {
               id: 'kimi-k2',
               limit: { context: 131072 },
               reasoning: { type: 'both' },
-              display_name: 'Kimi K2',
+              display_name: 'Zimi K2',
             },
             {
               id: 'kimi-k2.5',
               limit: { context: 262144 },
               reasoning: { type: 'both' },
-              display_name: 'Kimi K2.5',
+              display_name: 'Zimi K2.5',
             },
             {
               id: 'kimi-k3',
               limit: { context: 1048576 },
               reasoning: { type: 'both' },
-              display_name: 'Kimi K3',
+              display_name: 'Zimi K3',
             },
           ],
         }),
@@ -338,7 +338,7 @@ describe('OAuthService', () => {
     expect(providerSet).toHaveBeenCalledWith(
       OAUTH_PROVIDER,
       expect.objectContaining({
-        type: 'kimi',
+        type: 'zimi',
         baseUrl: 'https://api.example.com',
         apiKey: '',
         oauth: EXAMPLE_COM_SCOPED_REF,
@@ -347,7 +347,7 @@ describe('OAuthService', () => {
   });
 
   it('startLogin resolves an env-scoped oauth ref for the managed provider without oauth config', async () => {
-    providers[OAUTH_PROVIDER] = { type: 'kimi', baseUrl: 'https://api.example.com' };
+    providers[OAUTH_PROVIDER] = { type: 'zimi', baseUrl: 'https://api.example.com' };
     stubManagedModelsFetch();
     toolkit.login.mockImplementation((_provider, options) => {
       options.onDeviceCode(deviceAuth);
@@ -367,7 +367,7 @@ describe('OAuthService', () => {
     expect(providerSet).toHaveBeenCalledWith(
       OAUTH_PROVIDER,
       expect.objectContaining({
-        type: 'kimi',
+        type: 'zimi',
         baseUrl: 'https://api.example.com',
         oauth: EXAMPLE_COM_SCOPED_REF,
       }),
@@ -376,9 +376,9 @@ describe('OAuthService', () => {
 
   it('startLogin reuses the configured oauth ref when it matches the login environment', async () => {
     providers[OAUTH_PROVIDER] = {
-      type: 'kimi',
+      type: 'zimi',
       baseUrl: 'https://api.kimi.com/coding/v1',
-      oauth: { storage: 'file', key: 'oauth/kimi-code' },
+      oauth: { storage: 'file', key: 'oauth/zimi-code' },
     };
     stubManagedModelsFetch();
     toolkit.login.mockImplementation((_provider, options) => {
@@ -391,15 +391,15 @@ describe('OAuthService', () => {
     expect(toolkit.login).toHaveBeenCalledWith(
       OAUTH_PROVIDER,
       expect.objectContaining({
-        oauthRef: { storage: 'file', key: 'oauth/kimi-code' },
+        oauthRef: { storage: 'file', key: 'oauth/zimi-code' },
         baseUrl: 'https://api.kimi.com/coding/v1',
       }),
     );
   });
 
-  it('startLogin honors KIMI_CODE_BASE_URL / KIMI_CODE_OAUTH_HOST for the login environment', async () => {
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'https://env-api.example.com/coding/v1');
-    vi.stubEnv('KIMI_CODE_OAUTH_HOST', 'https://env-auth.example.com');
+  it('startLogin honors ZIMI_CODE_BASE_URL / ZIMI_CODE_OAUTH_HOST for the login environment', async () => {
+    vi.stubEnv('ZIMI_CODE_BASE_URL', 'https://env-api.example.com/coding/v1');
+    vi.stubEnv('ZIMI_CODE_OAUTH_HOST', 'https://env-auth.example.com');
     stubManagedModelsFetch();
     toolkit.login.mockImplementation((_provider, options) => {
       options.onDeviceCode(deviceAuth);
@@ -420,7 +420,7 @@ describe('OAuthService', () => {
     expect(providerSet).toHaveBeenCalledWith(
       OAUTH_PROVIDER,
       expect.objectContaining({
-        type: 'kimi',
+        type: 'zimi',
         baseUrl: 'https://env-api.example.com/coding/v1',
         oauth: ENV_SCOPED_REF,
       }),
@@ -434,7 +434,7 @@ describe('OAuthService', () => {
       return Promise.resolve({ providerName: OAUTH_PROVIDER, ok: true });
     });
     const home = ix.get(IBootstrapService).homeDir;
-    providers[OAUTH_PROVIDER] = { type: 'kimi' };
+    providers[OAUTH_PROVIDER] = { type: 'zimi' };
     try {
       await mkdir(home, { recursive: true });
       await writeFile(join(home, 'region'), 'global\n', 'utf-8');
@@ -453,7 +453,7 @@ describe('OAuthService', () => {
       expect(providerSet).toHaveBeenCalledWith(
         OAUTH_PROVIDER,
         expect.objectContaining({
-          type: 'kimi',
+          type: 'zimi',
           baseUrl: 'https://api.kimi.ai/coding/v1',
           oauth: OVERSEAS_SCOPED_REF,
         }),
@@ -464,7 +464,7 @@ describe('OAuthService', () => {
   });
 
   it('startLogin with a region still honors env endpoint overrides', async () => {
-    vi.stubEnv('KIMI_CODE_OAUTH_HOST', 'https://env-auth.example.com');
+    vi.stubEnv('ZIMI_CODE_OAUTH_HOST', 'https://env-auth.example.com');
     stubManagedModelsFetch();
     toolkit.login.mockImplementation((_provider, options) => {
       options.onDeviceCode(deviceAuth);
@@ -483,27 +483,27 @@ describe('OAuthService', () => {
   });
 
   it('getRegion resolves cn by default and global from the persisted login host', async () => {
-    vi.stubEnv('KIMI_CODE_REGION_MARKER', 'off');
+    vi.stubEnv('ZIMI_CODE_REGION_MARKER', 'off');
     const svc = createService();
     expect(await svc.getRegionAsync()).toBe('mainland-cn');
 
     providers[OAUTH_PROVIDER] = {
-      type: 'kimi',
+      type: 'zimi',
       oauth: { storage: 'file', key: OVERSEAS_SCOPED_REF.key, oauthHost: 'https://auth.kimi.ai' },
     };
     expect(await svc.getRegionAsync()).toBe('global');
   });
 
-  it('getRegion reads the install marker from the bootstrapped home unless KIMI_CODE_REGION_MARKER=off', async () => {
+  it('getRegion reads the install marker from the bootstrapped home unless ZIMI_CODE_REGION_MARKER=off', async () => {
     const home = ix.get(IBootstrapService).homeDir;
     try {
       await mkdir(home, { recursive: true });
       await writeFile(join(home, 'region'), 'global\n', 'utf-8');
-      vi.stubEnv('KIMI_CODE_OAUTH_HOST', '');
-      providers[OAUTH_PROVIDER] = { type: 'kimi' };
+      vi.stubEnv('ZIMI_CODE_OAUTH_HOST', '');
+      providers[OAUTH_PROVIDER] = { type: 'zimi' };
       expect(await createService().getRegionAsync()).toBe('global');
 
-      vi.stubEnv('KIMI_CODE_REGION_MARKER', 'off');
+      vi.stubEnv('ZIMI_CODE_REGION_MARKER', 'off');
       const offRegions = new RegionService(ix.get(IProviderService), ix.get(IBootstrapService));
       try {
         expect(await offRegions.getRegionAsync()).toBe('mainland-cn');
@@ -515,15 +515,15 @@ describe('OAuthService', () => {
     }
   });
 
-  it('getRegion reads the marker from the bootstrapped home, not KIMI_CODE_HOME', async () => {
+  it('getRegion reads the marker from the bootstrapped home, not ZIMI_CODE_HOME', async () => {
     const bootstrapHome = ix.get(IBootstrapService).homeDir;
-    const envHome = await mkdtemp(join(tmpdir(), 'kimi-v2-auth-envhome-'));
+    const envHome = await mkdtemp(join(tmpdir(), 'zimi-v2-auth-envhome-'));
     try {
       await mkdir(bootstrapHome, { recursive: true });
       await writeFile(join(bootstrapHome, 'region'), 'global\n', 'utf-8');
-      vi.stubEnv('KIMI_CODE_HOME', envHome);
-      vi.stubEnv('KIMI_CODE_OAUTH_HOST', '');
-      providers[OAUTH_PROVIDER] = { type: 'kimi' };
+      vi.stubEnv('ZIMI_CODE_HOME', envHome);
+      vi.stubEnv('ZIMI_CODE_OAUTH_HOST', '');
+      providers[OAUTH_PROVIDER] = { type: 'zimi' };
       expect(await createService().getRegionAsync()).toBe('global');
     } finally {
       await rm(bootstrapHome, { recursive: true, force: true });
@@ -536,10 +536,10 @@ describe('OAuthService', () => {
     try {
       await mkdir(home, { recursive: true });
       await writeFile(join(home, 'region'), 'global\n', 'utf-8');
-      vi.stubEnv('KIMI_CODE_OAUTH_HOST', '');
+      vi.stubEnv('ZIMI_CODE_OAUTH_HOST', '');
       providers[OAUTH_PROVIDER] = {
-        type: 'kimi',
-        oauth: { storage: 'file', key: 'oauth/kimi-code' },
+        type: 'zimi',
+        oauth: { storage: 'file', key: 'oauth/zimi-code' },
       };
       expect(await createService().getRegionAsync()).toBe('mainland-cn');
     } finally {
@@ -548,8 +548,8 @@ describe('OAuthService', () => {
   });
 
   it('resolves the runtime credential slot to the env environment after an env-scoped login', async () => {
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'https://env-api.example.com/coding/v1');
-    vi.stubEnv('KIMI_CODE_OAUTH_HOST', 'https://env-auth.example.com');
+    vi.stubEnv('ZIMI_CODE_BASE_URL', 'https://env-api.example.com/coding/v1');
+    vi.stubEnv('ZIMI_CODE_OAUTH_HOST', 'https://env-auth.example.com');
     stubManagedModelsFetch();
     toolkit.login.mockImplementation((_provider, options) => {
       options.onDeviceCode(deviceAuth);
@@ -563,7 +563,7 @@ describe('OAuthService', () => {
     expect(toolkit.getCachedAccessToken).toHaveBeenCalledWith(
       OAUTH_PROVIDER,
       expect.objectContaining({
-        key: resolveKimiCodeOAuthKey({
+        key: resolveZimiCodeOAuthKey({
           oauthHost: 'https://env-auth.example.com',
           baseUrl: 'https://env-api.example.com/coding/v1',
         }),
@@ -593,13 +593,13 @@ describe('OAuthService', () => {
     expect(providerSet).toHaveBeenCalledWith(
       OAUTH_PROVIDER,
       expect.objectContaining({
-        type: 'kimi',
+        type: 'zimi',
         baseUrl: 'https://api.example.com',
         oauth: EXAMPLE_COM_SCOPED_REF,
       }),
     );
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(configReplace).toHaveBeenCalledWith('defaultModel', 'kimi-code/kimi-k2');
+    expect(configReplace).toHaveBeenCalledWith('defaultModel', 'zimi-code/kimi-k2');
   });
 
   it('startLogin returns authenticated when model refresh fails on the already-authenticated fast path', async () => {
@@ -617,7 +617,7 @@ describe('OAuthService', () => {
     expect(providerSet).toHaveBeenCalledWith(
       OAUTH_PROVIDER,
       expect.objectContaining({
-        type: 'kimi',
+        type: 'zimi',
         baseUrl: 'https://api.example.com',
         oauth: EXAMPLE_COM_SCOPED_REF,
       }),
@@ -658,17 +658,17 @@ describe('OAuthService', () => {
     expect(providerSet).toHaveBeenCalledWith(
       OAUTH_PROVIDER,
       expect.objectContaining({
-        type: 'kimi',
+        type: 'zimi',
         oauth: EXAMPLE_COM_SCOPED_REF,
       }),
     );
     expect(configReplace).toHaveBeenCalledWith(
       'models',
       expect.objectContaining({
-        'kimi-code/kimi-k2': expect.objectContaining({ model: 'kimi-k2' }),
+        'zimi-code/kimi-k2': expect.objectContaining({ model: 'kimi-k2' }),
       }),
     );
-    expect(configReplace).toHaveBeenCalledWith('defaultModel', 'kimi-code/kimi-k2');
+    expect(configReplace).toHaveBeenCalledWith('defaultModel', 'zimi-code/kimi-k2');
   });
 
   it('keeps an in-flight OAuth flow alive when unrelated providers change', async () => {
@@ -813,7 +813,7 @@ describe('OAuthService', () => {
 
   it('logout removes managed provider models and dangling defaults', async () => {
     models = {
-      'kimi-code/kimi-k2': {
+      'zimi-code/kimi-k2': {
         provider: OAUTH_PROVIDER,
         model: 'kimi-k2',
         maxContextSize: 131072,
@@ -824,7 +824,7 @@ describe('OAuthService', () => {
         maxContextSize: 8192,
       },
     };
-    defaultModel = 'kimi-code/kimi-k2';
+    defaultModel = 'zimi-code/kimi-k2';
     thinking = { enabled: true };
     const svc = createService();
 
@@ -847,15 +847,15 @@ describe('OAuthService', () => {
 
   it('logout removes managed web services while preserving unrelated services', async () => {
     services = ServicesConfigSchema.parse({
-      moonshotSearch: {
+      zimiSearch: {
         baseUrl: 'https://api.example.com/search',
         apiKey: '',
-        oauth: { storage: 'file', key: 'oauth/kimi-code' },
+        oauth: { storage: 'file', key: 'oauth/zimi-code' },
       },
-      moonshotFetch: {
+      zimiFetch: {
         baseUrl: 'https://api.example.com/fetch',
         apiKey: '',
-        oauth: { storage: 'file', key: 'oauth/kimi-code' },
+        oauth: { storage: 'file', key: 'oauth/zimi-code' },
       },
       customService: {
         baseUrl: 'https://service.example.com',
@@ -908,7 +908,7 @@ describe('OAuthService', () => {
   it('resolveTokenProvider re-derives the managed provider oauth ref from the current base url', () => {
     const svc = createService();
     svc.resolveTokenProvider(OAUTH_PROVIDER, { storage: 'file', key: 'stale-key' });
-    const expectedRef = resolveKimiCodeRuntimeAuth({
+    const expectedRef = resolveZimiCodeRuntimeAuth({
       configuredBaseUrl: 'https://api.example.com',
       configuredOAuthRef: { storage: 'file', key: 'stale-key' },
     }).oauthRef;
@@ -954,7 +954,7 @@ describe('OAuthService', () => {
     });
   });
 
-  it('refreshOAuthProviderModels returns an empty result when no Kimi Code provider is configured', async () => {
+  it('refreshOAuthProviderModels returns an empty result when no Zimi Code provider is configured', async () => {
     providers = { [NON_OAUTH_PROVIDER]: { type: 'openai', apiKey: 'sk-test' } };
     const svc = createService();
 
@@ -976,7 +976,7 @@ describe('OAuthService', () => {
             id: 'kimi-k2',
             limit: { context: 131072 },
             reasoning: { type: 'both' },
-            display_name: 'Kimi K2',
+            display_name: 'Zimi K2',
           },
         ],
       }),
@@ -990,22 +990,22 @@ describe('OAuthService', () => {
     expect(result.changed).toEqual([
       {
         provider_id: OAUTH_PROVIDER,
-        provider_name: 'Kimi Code',
+        provider_name: 'Zimi Code',
         added: 1,
         removed: 0,
       },
     ]);
     expect(configReplace).toHaveBeenCalledWith(
       'providers',
-      expect.objectContaining({ [OAUTH_PROVIDER]: expect.objectContaining({ type: 'kimi' }) }),
+      expect.objectContaining({ [OAUTH_PROVIDER]: expect.objectContaining({ type: 'zimi' }) }),
     );
     expect(configReplace).toHaveBeenCalledWith(
       'models',
       expect.objectContaining({
-        'kimi-code/kimi-k2': expect.objectContaining({ model: 'kimi-k2' }),
+        'zimi-code/kimi-k2': expect.objectContaining({ model: 'kimi-k2' }),
       }),
     );
-    expect(configReplace).toHaveBeenCalledWith('defaultModel', 'kimi-code/kimi-k2');
+    expect(configReplace).toHaveBeenCalledWith('defaultModel', 'zimi-code/kimi-k2');
     expect(configReplace).toHaveBeenCalledWith('thinking', { enabled: true });
     expect(events).toEqual([
       expect.objectContaining({
@@ -1031,7 +1031,7 @@ describe('OAuthService', () => {
               id: 'kimi-k2',
               limit: { context: 131072 },
               reasoning: { type: 'both' },
-              display_name: 'Kimi K2',
+              display_name: 'Zimi K2',
             },
           ],
         }),
@@ -1066,7 +1066,7 @@ describe('OAuthService', () => {
             id: 'kimi-k2',
             limit: { context: 131072 },
             reasoning: { type: 'both' },
-            display_name: 'Kimi K2',
+            display_name: 'Zimi K2',
           },
         ],
       }),
@@ -1083,7 +1083,7 @@ describe('OAuthService', () => {
 
     const first = await svc.refreshOAuthProviderModels();
     expect(first.changed).toHaveLength(1);
-    expect(defaultModel).toBe('kimi-code/kimi-k2');
+    expect(defaultModel).toBe('zimi-code/kimi-k2');
 
     configReplace.mockClear();
     events.length = 0;
@@ -1096,13 +1096,13 @@ describe('OAuthService', () => {
     expect(second.changed).toEqual([
       {
         provider_id: OAUTH_PROVIDER,
-        provider_name: 'Kimi Code',
+        provider_name: 'Zimi Code',
         added: 0,
         removed: 0,
       },
     ]);
-    expect(configReplace).toHaveBeenCalledWith('defaultModel', 'kimi-code/kimi-k2');
-    expect(defaultModel).toBe('kimi-code/kimi-k2');
+    expect(configReplace).toHaveBeenCalledWith('defaultModel', 'zimi-code/kimi-k2');
+    expect(defaultModel).toBe('zimi-code/kimi-k2');
     expect(events).toEqual([
       expect.objectContaining({
         type: 'event.model_catalog.changed',
@@ -1116,7 +1116,7 @@ describe('OAuthService', () => {
     const svc = createService();
 
     await svc.refreshOAuthProviderModels();
-    expect(defaultModel).toBe('kimi-code/kimi-k2');
+    expect(defaultModel).toBe('zimi-code/kimi-k2');
 
     configReplace.mockClear();
     events.length = 0;
@@ -1131,15 +1131,15 @@ describe('OAuthService', () => {
   it('keeps the default model the user selects while a refresh is in flight', async () => {
     const { fetchMock, releaseFetch } = stubGatedManagedModelsFetch();
     models = {
-      'kimi-code/kimi-k2': managedK2Alias,
-      'kimi-code/kimi-k2.5': managedK25Alias,
+      'zimi-code/kimi-k2': managedK2Alias,
+      'zimi-code/kimi-k2.5': managedK25Alias,
     };
-    defaultModel = 'kimi-code/kimi-k2';
+    defaultModel = 'zimi-code/kimi-k2';
     const svc = createService();
 
     const refresh = svc.refreshOAuthProviderModels();
     await vi.waitFor(() => { expect(fetchMock).toHaveBeenCalled(); });
-    await configReplace('defaultModel', 'kimi-code/kimi-k2.5');
+    await configReplace('defaultModel', 'zimi-code/kimi-k2.5');
     releaseFetch();
     const result = await refresh;
 
@@ -1147,22 +1147,22 @@ describe('OAuthService', () => {
     expect(result.changed).toEqual([
       {
         provider_id: OAUTH_PROVIDER,
-        provider_name: 'Kimi Code',
+        provider_name: 'Zimi Code',
         added: 1,
         removed: 0,
       },
     ]);
-    expect(configReplace).toHaveBeenCalledWith('defaultModel', 'kimi-code/kimi-k2.5');
-    expect(defaultModel).toBe('kimi-code/kimi-k2.5');
+    expect(configReplace).toHaveBeenCalledWith('defaultModel', 'zimi-code/kimi-k2.5');
+    expect(defaultModel).toBe('zimi-code/kimi-k2.5');
   });
 
   it('writes back the refreshed catalog and default when the user does not intervene mid-flight', async () => {
     const { fetchMock, releaseFetch } = stubGatedManagedModelsFetch();
     models = {
-      'kimi-code/kimi-k2': managedK2Alias,
-      'kimi-code/kimi-k2.5': managedK25Alias,
+      'zimi-code/kimi-k2': managedK2Alias,
+      'zimi-code/kimi-k2.5': managedK25Alias,
     };
-    defaultModel = 'kimi-code/kimi-k2';
+    defaultModel = 'zimi-code/kimi-k2';
     const svc = createService();
 
     const refresh = svc.refreshOAuthProviderModels();
@@ -1174,7 +1174,7 @@ describe('OAuthService', () => {
     expect(result.changed).toEqual([
       {
         provider_id: OAUTH_PROVIDER,
-        provider_name: 'Kimi Code',
+        provider_name: 'Zimi Code',
         added: 1,
         removed: 0,
       },
@@ -1182,20 +1182,20 @@ describe('OAuthService', () => {
     expect(configReplace).toHaveBeenCalledWith(
       'models',
       expect.objectContaining({
-        'kimi-code/kimi-k3': expect.objectContaining({ model: 'kimi-k3' }),
+        'zimi-code/kimi-k3': expect.objectContaining({ model: 'kimi-k3' }),
       }),
     );
-    expect(configReplace).toHaveBeenCalledWith('defaultModel', 'kimi-code/kimi-k2');
-    expect(defaultModel).toBe('kimi-code/kimi-k2');
+    expect(configReplace).toHaveBeenCalledWith('defaultModel', 'zimi-code/kimi-k2');
+    expect(defaultModel).toBe('zimi-code/kimi-k2');
   });
 
   it('keeps the thinking selection the user makes while a refresh is in flight', async () => {
     const { fetchMock, releaseFetch } = stubGatedManagedModelsFetch();
     models = {
-      'kimi-code/kimi-k2': managedK2Alias,
-      'kimi-code/kimi-k2.5': managedK25Alias,
+      'zimi-code/kimi-k2': managedK2Alias,
+      'zimi-code/kimi-k2.5': managedK25Alias,
     };
-    defaultModel = 'kimi-code/kimi-k2';
+    defaultModel = 'zimi-code/kimi-k2';
     thinking = { enabled: true };
     const svc = createService();
 
@@ -1236,7 +1236,7 @@ describe('WebSearchProviderService', () => {
             resolveTokenProvider as unknown as IOAuthService['resolveTokenProvider'],
         });
         const hostHeaders = {
-          'User-Agent': 'kimi-code-cli/test',
+          'User-Agent': 'zimi-code-cli/test',
           'X-Msh-Device-Id': 'device-test',
         };
         reg.defineInstance(
@@ -1269,8 +1269,8 @@ describe('WebSearchProviderService', () => {
     expect(resolveTokenProvider).not.toHaveBeenCalled();
   });
 
-  it('returns undefined when the managed provider is not an OAuth kimi provider', () => {
-    providers = { [OAUTH_PROVIDER]: { type: 'kimi', apiKey: 'sk-test' } };
+  it('returns undefined when the managed provider is not an OAuth zimi provider', () => {
+    providers = { [OAUTH_PROVIDER]: { type: 'zimi', apiKey: 'sk-test' } };
     expect(createService().getWebSearchProvider()).toBeUndefined();
     expect(resolveTokenProvider).not.toHaveBeenCalled();
   });
@@ -1278,9 +1278,9 @@ describe('WebSearchProviderService', () => {
   it('returns undefined when the oauth service yields no token provider', () => {
     providers = {
       [OAUTH_PROVIDER]: {
-        type: 'kimi',
+        type: 'zimi',
         baseUrl: 'https://api.example.com',
-        oauth: { storage: 'file', key: 'oauth/kimi-code' },
+        oauth: { storage: 'file', key: 'oauth/zimi-code' },
       },
     };
     resolveTokenProvider.mockReturnValue(undefined);
@@ -1290,24 +1290,24 @@ describe('WebSearchProviderService', () => {
   it('builds a search provider from the managed provider oauth ref', () => {
     providers = {
       [OAUTH_PROVIDER]: {
-        type: 'kimi',
+        type: 'zimi',
         baseUrl: 'https://api.example.com/v1',
-        oauth: { storage: 'file', key: 'oauth/kimi-code' },
+        oauth: { storage: 'file', key: 'oauth/zimi-code' },
       },
     };
     expect(createService().getWebSearchProvider()).not.toBeUndefined();
     expect(resolveTokenProvider).toHaveBeenCalledWith(OAUTH_PROVIDER, {
       storage: 'file',
-      key: 'oauth/kimi-code',
+      key: 'oauth/zimi-code',
     });
   });
 
   it('searches against /search with the OAuth access token, host identity headers, and custom headers', async () => {
     providers = {
       [OAUTH_PROVIDER]: {
-        type: 'kimi',
+        type: 'zimi',
         baseUrl: 'https://api.example.com/v1/',
-        oauth: { storage: 'file', key: 'oauth/kimi-code' },
+        oauth: { storage: 'file', key: 'oauth/zimi-code' },
         customHeaders: { 'X-Custom': 'yes' },
       },
     };
@@ -1331,15 +1331,15 @@ describe('WebSearchProviderService', () => {
     expect(url).toBe('https://api.example.com/v1/search');
     const headers = init.headers as Record<string, string>;
     expect(headers['Authorization']).toBe('Bearer access-token');
-    expect(headers['User-Agent']).toBe('kimi-code-cli/test');
+    expect(headers['User-Agent']).toBe('zimi-code-cli/test');
     expect(headers['X-Msh-Device-Id']).toBe('device-test');
     expect(headers['X-Custom']).toBe('yes');
     expect(JSON.parse(init.body as string)).toEqual({ text_query: 'hello' });
   });
 
-  it('builds a search provider from the services.moonshot_search api_key config', async () => {
+  it('builds a search provider from the services.zimi_search api_key config', async () => {
     servicesConfig = {
-      moonshotSearch: {
+      zimiSearch: {
         baseUrl: 'https://search.example.com/search',
         apiKey: 'search-key',
         customHeaders: { 'X-Custom': 'yes' },
@@ -1365,20 +1365,20 @@ describe('WebSearchProviderService', () => {
     expect(url).toBe('https://search.example.com/search');
     const headers = init.headers as Record<string, string>;
     expect(headers['Authorization']).toBe('Bearer search-key');
-    expect(headers['User-Agent']).toBe('kimi-code-cli/test');
+    expect(headers['User-Agent']).toBe('zimi-code-cli/test');
     expect(headers['X-Msh-Device-Id']).toBe('device-test');
     expect(headers['X-Custom']).toBe('yes');
   });
 
-  it('prefers the services.moonshot_search config over the managed oauth provider', async () => {
+  it('prefers the services.zimi_search config over the managed oauth provider', async () => {
     servicesConfig = {
-      moonshotSearch: { baseUrl: 'https://config.example.com/search', apiKey: 'config-key' },
+      zimiSearch: { baseUrl: 'https://config.example.com/search', apiKey: 'config-key' },
     };
     providers = {
       [OAUTH_PROVIDER]: {
-        type: 'kimi',
+        type: 'zimi',
         baseUrl: 'https://managed.example.com/v1',
-        oauth: { storage: 'file', key: 'oauth/kimi-code' },
+        oauth: { storage: 'file', key: 'oauth/zimi-code' },
       },
     };
     const fetchMock = vi.fn().mockResolvedValue({
@@ -1398,11 +1398,11 @@ describe('WebSearchProviderService', () => {
     expect(resolveTokenProvider).not.toHaveBeenCalled();
   });
 
-  it('builds a search provider from the services.moonshot_search oauth ref', async () => {
+  it('builds a search provider from the services.zimi_search oauth ref', async () => {
     servicesConfig = {
-      moonshotSearch: {
+      zimiSearch: {
         baseUrl: 'https://search.example.com/search',
-        oauth: { storage: 'file', key: 'oauth/kimi-code' },
+        oauth: { storage: 'file', key: 'oauth/zimi-code' },
       },
     };
     const fetchMock = vi.fn().mockResolvedValue({
@@ -1415,7 +1415,7 @@ describe('WebSearchProviderService', () => {
     expect(provider).not.toBeUndefined();
     expect(resolveTokenProvider).toHaveBeenCalledWith(OAUTH_PROVIDER, {
       storage: 'file',
-      key: 'oauth/kimi-code',
+      key: 'oauth/zimi-code',
     });
     await provider!.search('hello');
 
@@ -1423,8 +1423,8 @@ describe('WebSearchProviderService', () => {
     expect((init.headers as Record<string, string>)['Authorization']).toBe('Bearer access-token');
   });
 
-  it('returns undefined when services.moonshot_search has no baseUrl and no managed oauth', () => {
-    servicesConfig = { moonshotSearch: { apiKey: 'search-key' } };
+  it('returns undefined when services.zimi_search has no baseUrl and no managed oauth', () => {
+    servicesConfig = { zimiSearch: { apiKey: 'search-key' } };
     expect(createService().getWebSearchProvider()).toBeUndefined();
     expect(resolveTokenProvider).not.toHaveBeenCalled();
   });
@@ -1438,7 +1438,7 @@ describe('WebSearchProviderService', () => {
       },
     };
     servicesConfig = {
-      moonshotSearch: { baseUrl: 'https://search.example.com/search', apiKey: 'k' },
+      zimiSearch: { baseUrl: 'https://search.example.com/search', apiKey: 'k' },
     };
     const svc = new WebSearchProviderService(
       { get: ((name: string) => providers[name]) as IProviderService['get'] } as IProviderService,
@@ -1463,9 +1463,9 @@ describe('WebSearchProviderService', () => {
 
     providers = {
       [OAUTH_PROVIDER]: {
-        type: 'kimi',
+        type: 'zimi',
         baseUrl: 'https://api.example.com/v1',
-        oauth: { storage: 'file', key: 'oauth/kimi-code' },
+        oauth: { storage: 'file', key: 'oauth/zimi-code' },
       },
     };
     expect(svc.hasWebSearchProvider()).toBe(true);
@@ -1479,39 +1479,39 @@ describe('services config section', () => {
     expect(registry.getSection(SERVICES_SECTION)).toBeDefined();
     expect(
       registry.validate(SERVICES_SECTION, {
-        moonshotSearch: { baseUrl: 'https://api.example.com/search', apiKey: 'search-key' },
-        moonshotFetch: { baseUrl: 'https://api.example.com/fetch' },
+        zimiSearch: { baseUrl: 'https://api.example.com/search', apiKey: 'search-key' },
+        zimiFetch: { baseUrl: 'https://api.example.com/fetch' },
         customService: { baseUrl: 'https://service.example.com', retries: 3 },
       }),
     ).toEqual({
-      moonshotSearch: { baseUrl: 'https://api.example.com/search', apiKey: 'search-key' },
-      moonshotFetch: { baseUrl: 'https://api.example.com/fetch' },
+      zimiSearch: { baseUrl: 'https://api.example.com/search', apiKey: 'search-key' },
+      zimiFetch: { baseUrl: 'https://api.example.com/fetch' },
       customService: { baseUrl: 'https://service.example.com', retries: 3 },
     });
     expect(() =>
-      registry.validate(SERVICES_SECTION, { moonshotSearch: { baseUrl: 42 } }),
+      registry.validate(SERVICES_SECTION, { zimiSearch: { baseUrl: 42 } }),
     ).toThrow();
   });
 
   it('maps services from TOML snake_case to camelCase', () => {
     expect(
       servicesFromToml({
-        moonshot_search: {
+        zimi_search: {
           base_url: 'https://api.example.com/search',
           api_key: 'search-key',
           custom_headers: { 'X-Search': '1' },
-          oauth: { storage: 'file', key: 'oauth/kimi-code', oauth_host: 'https://auth.example.com' },
+          oauth: { storage: 'file', key: 'oauth/zimi-code', oauth_host: 'https://auth.example.com' },
         },
-        moonshot_fetch: { base_url: 'https://api.example.com/fetch', api_key: 'fetch-key' },
+        zimi_fetch: { base_url: 'https://api.example.com/fetch', api_key: 'fetch-key' },
       }),
     ).toEqual({
-      moonshotSearch: {
+      zimiSearch: {
         baseUrl: 'https://api.example.com/search',
         apiKey: 'search-key',
         customHeaders: { 'X-Search': '1' },
-        oauth: { storage: 'file', key: 'oauth/kimi-code', oauthHost: 'https://auth.example.com' },
+        oauth: { storage: 'file', key: 'oauth/zimi-code', oauthHost: 'https://auth.example.com' },
       },
-      moonshotFetch: { baseUrl: 'https://api.example.com/fetch', apiKey: 'fetch-key' },
+      zimiFetch: { baseUrl: 'https://api.example.com/fetch', apiKey: 'fetch-key' },
     });
   });
 
@@ -1519,13 +1519,13 @@ describe('services config section', () => {
     expect(
       servicesToToml(
         {
-          moonshotSearch: {
+          zimiSearch: {
             baseUrl: 'https://api.example.com/search',
             apiKey: 'search-key',
             customHeaders: { 'X-Search': '1' },
             oauth: {
               storage: 'file',
-              key: 'oauth/kimi-code',
+              key: 'oauth/zimi-code',
               oauthHost: 'https://auth.example.com',
             },
           },
@@ -1533,11 +1533,11 @@ describe('services config section', () => {
         { custom_service: { base_url: 'https://service.example.com' } },
       ),
     ).toEqual({
-      moonshot_search: {
+      zimi_search: {
         base_url: 'https://api.example.com/search',
         api_key: 'search-key',
         custom_headers: { 'X-Search': '1' },
-        oauth: { storage: 'file', key: 'oauth/kimi-code', oauth_host: 'https://auth.example.com' },
+        oauth: { storage: 'file', key: 'oauth/zimi-code', oauth_host: 'https://auth.example.com' },
       },
       custom_service: { base_url: 'https://service.example.com' },
     });
@@ -1545,13 +1545,13 @@ describe('services config section', () => {
 
   it('preserves unknown services when managed services are removed', () => {
     const rawServices = {
-      moonshot_search: {
+      zimi_search: {
         base_url: 'https://api.example.com/search',
-        oauth: { storage: 'file', key: 'oauth/kimi-code' },
+        oauth: { storage: 'file', key: 'oauth/zimi-code' },
       },
-      moonshot_fetch: {
+      zimi_fetch: {
         base_url: 'https://api.example.com/fetch',
-        oauth: { storage: 'file', key: 'oauth/kimi-code' },
+        oauth: { storage: 'file', key: 'oauth/zimi-code' },
       },
       custom_service: {
         base_url: 'https://service.example.com',
@@ -1561,7 +1561,7 @@ describe('services config section', () => {
     const services = ServicesConfigSchema.parse(servicesFromToml(rawServices));
     const config = { providers: {}, services };
 
-    clearManagedKimiCodeConfig(config);
+    clearManagedZimiCodeConfig(config);
 
     expect(servicesToToml(config.services, rawServices)).toEqual({
       custom_service: {
@@ -1588,13 +1588,13 @@ describe('AuthSummaryService', () => {
     defaultProvider = undefined;
     providers = {
       [OAUTH_PROVIDER]: {
-        type: 'kimi',
-        oauth: { storage: 'file', key: 'oauth/kimi-code' },
+        type: 'zimi',
+        oauth: { storage: 'file', key: 'oauth/zimi-code' },
       },
       [NON_OAUTH_PROVIDER]: { type: 'openai', apiKey: 'sk-test' },
     };
     models = {
-      kimi: {
+      zimi: {
         provider: OAUTH_PROVIDER,
         model: 'kimi-k2',
         protocol: 'openai',
@@ -1607,7 +1607,7 @@ describe('AuthSummaryService', () => {
         maxContextSize: 128000,
       },
     };
-    defaultModel = 'kimi';
+    defaultModel = 'zimi';
     oauthStatus = vi.fn();
     getCachedAccessToken = vi.fn().mockResolvedValue(undefined);
     reload = vi.fn().mockResolvedValue(undefined);
@@ -1663,10 +1663,10 @@ describe('AuthSummaryService', () => {
   });
 
   it('summarize skips providers whose status throws', async () => {
-    const OTHER_OAUTH = 'kimi-code-anthropic';
+    const OTHER_OAUTH = 'zimi-code-anthropic';
     providers[OTHER_OAUTH] = {
-      type: 'kimi',
-      oauth: { storage: 'file', key: 'oauth/kimi-code' },
+      type: 'zimi',
+      oauth: { storage: 'file', key: 'oauth/zimi-code' },
     };
     oauthStatus.mockImplementation((name: string) => {
       if (name === OTHER_OAUTH) throw new Error('No OAuth manager configured');
@@ -1703,7 +1703,7 @@ describe('AuthSummaryService', () => {
 
     await expect(createSummary().ensureReady()).rejects.toMatchObject({
       code: 'auth.model_not_resolved',
-      details: { model_id: 'kimi', provider_id: OAUTH_PROVIDER },
+      details: { model_id: 'zimi', provider_id: OAUTH_PROVIDER },
     });
     expect(getCachedAccessToken).not.toHaveBeenCalled();
   });
@@ -1715,7 +1715,7 @@ describe('AuthSummaryService', () => {
     });
     expect(getCachedAccessToken).toHaveBeenCalledWith(OAUTH_PROVIDER, {
       storage: 'file',
-      key: 'oauth/kimi-code',
+      key: 'oauth/zimi-code',
     });
   });
 
@@ -1725,7 +1725,7 @@ describe('AuthSummaryService', () => {
     await expect(createSummary().ensureReady()).rejects.toThrow('token store unreadable');
     expect(getCachedAccessToken).toHaveBeenCalledWith(OAUTH_PROVIDER, {
       storage: 'file',
-      key: 'oauth/kimi-code',
+      key: 'oauth/zimi-code',
     });
   });
 
@@ -1758,10 +1758,10 @@ describe('AuthSummaryService', () => {
 
   it('ensureReady accepts cached oauth tokens', async () => {
     getCachedAccessToken.mockResolvedValue('access-token');
-    await expect(createSummary().ensureReady('kimi')).resolves.toBeUndefined();
+    await expect(createSummary().ensureReady('zimi')).resolves.toBeUndefined();
     expect(getCachedAccessToken).toHaveBeenCalledWith(OAUTH_PROVIDER, {
       storage: 'file',
-      key: 'oauth/kimi-code',
+      key: 'oauth/zimi-code',
     });
   });
 });
@@ -1819,7 +1819,7 @@ describe('AuthLegacyService', () => {
 
   it('counts every configured provider, not only oauth ones', async () => {
     providers = {
-      [OAUTH_PROVIDER]: { type: 'kimi', oauth: { storage: 'file', key: 'oauth/kimi-code' } },
+      [OAUTH_PROVIDER]: { type: 'zimi', oauth: { storage: 'file', key: 'oauth/zimi-code' } },
       [NON_OAUTH_PROVIDER]: { type: 'openai', apiKey: 'sk-test' },
     };
     oauthStatus.mockResolvedValue({ loggedIn: false });
@@ -1828,7 +1828,7 @@ describe('AuthLegacyService', () => {
   });
 
   it('reports models_ready when the default model resolves to a configured provider', async () => {
-    providers = { [NON_OAUTH_PROVIDER]: { type: 'kimi', apiKey: 'sk-test' } };
+    providers = { [NON_OAUTH_PROVIDER]: { type: 'zimi', apiKey: 'sk-test' } };
     models = { k2: { provider: NON_OAUTH_PROVIDER, model: 'kimi-k2', maxContextSize: 128000 } };
     defaultModel = 'k2';
     const summary = await createService().get();
@@ -1837,7 +1837,7 @@ describe('AuthLegacyService', () => {
   });
 
   it('is not models_ready when a provider exists but no default model is set', async () => {
-    providers = { [NON_OAUTH_PROVIDER]: { type: 'kimi', apiKey: 'sk-test' } };
+    providers = { [NON_OAUTH_PROVIDER]: { type: 'zimi', apiKey: 'sk-test' } };
     models = { k2: { provider: NON_OAUTH_PROVIDER, model: 'kimi-k2' } };
     const summary = await createService().get();
     expect(summary.providers_count).toBe(1);
@@ -1846,7 +1846,7 @@ describe('AuthLegacyService', () => {
   });
 
   it('is not models_ready when the default model dangles', async () => {
-    providers = { [NON_OAUTH_PROVIDER]: { type: 'kimi', apiKey: 'sk-test' } };
+    providers = { [NON_OAUTH_PROVIDER]: { type: 'zimi', apiKey: 'sk-test' } };
     models = { k2: { provider: NON_OAUTH_PROVIDER, model: 'kimi-k2' } };
     defaultModel = 'gone';
     const summary = await createService().get();
@@ -1854,7 +1854,7 @@ describe('AuthLegacyService', () => {
   });
 
   it('is not models_ready when the default model points at a missing provider', async () => {
-    providers = { [NON_OAUTH_PROVIDER]: { type: 'kimi', apiKey: 'sk-test' } };
+    providers = { [NON_OAUTH_PROVIDER]: { type: 'zimi', apiKey: 'sk-test' } };
     models = { k2: { provider: 'ghost', model: 'kimi-k2' } };
     defaultModel = 'k2';
     const summary = await createService().get();
@@ -1878,7 +1878,7 @@ describe('AuthLegacyService', () => {
 
   it('surfaces managed_provider.unauthenticated when configured without a cached token', async () => {
     providers = {
-      [OAUTH_PROVIDER]: { type: 'kimi', oauth: { storage: 'file', key: 'oauth/kimi-code' } },
+      [OAUTH_PROVIDER]: { type: 'zimi', oauth: { storage: 'file', key: 'oauth/zimi-code' } },
     };
     oauthStatus.mockResolvedValue({ loggedIn: false });
     const summary = await createService().get();
@@ -1891,7 +1891,7 @@ describe('AuthLegacyService', () => {
 
   it('surfaces managed_provider.authenticated when a cached token exists', async () => {
     providers = {
-      [OAUTH_PROVIDER]: { type: 'kimi', oauth: { storage: 'file', key: 'oauth/kimi-code' } },
+      [OAUTH_PROVIDER]: { type: 'zimi', oauth: { storage: 'file', key: 'oauth/zimi-code' } },
     };
     models = { k2: { provider: OAUTH_PROVIDER, model: 'kimi-k2', maxContextSize: 128000 } };
     defaultModel = 'k2';
@@ -1906,7 +1906,7 @@ describe('AuthLegacyService', () => {
 
   it('treats a throwing oauth status as unauthenticated', async () => {
     providers = {
-      [OAUTH_PROVIDER]: { type: 'kimi', oauth: { storage: 'file', key: 'oauth/kimi-code' } },
+      [OAUTH_PROVIDER]: { type: 'zimi', oauth: { storage: 'file', key: 'oauth/zimi-code' } },
     };
     oauthStatus.mockRejectedValue(new Error('token storage unavailable'));
     await expect(createService().get()).resolves.toMatchObject({

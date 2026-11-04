@@ -56,7 +56,7 @@ afterEach(() => {
 });
 
 async function tempHome(): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'kimi-telemetry-'));
+  const dir = await mkdtemp(join(tmpdir(), 'zimi-telemetry-'));
   tempDirs.push(dir);
   return dir;
 }
@@ -88,7 +88,7 @@ function makeSink(
     transport,
     resolveRegion,
     context: {
-      appName: 'kimi-code-cli',
+      appName: 'zimi-code-cli',
       version: '1.2.3',
       uiMode: 'shell',
       model: 'kimi-k2',
@@ -510,7 +510,7 @@ describe('EventSink', () => {
 
     expect('context' in event).toBe(false);
     expect(transport.saved[0]?.[0]?.context).toMatchObject({
-      app_name: 'kimi-code-cli',
+      app_name: 'zimi-code-cli',
       version: '1.2.3',
       runtime: 'node',
       ui_mode: 'shell',
@@ -1017,30 +1017,30 @@ describe('AsyncTransport', () => {
 });
 
 describe('telemetry bootstrap', () => {
-  it('matches the KIMI_DISABLE_TELEMETRY true-value semantics', () => {
-    expect(isTelemetryDisabledByEnv({ KIMI_DISABLE_TELEMETRY: '1' })).toBe(true);
-    expect(isTelemetryDisabledByEnv({ KIMI_DISABLE_TELEMETRY: 'yes' })).toBe(true);
-    expect(isTelemetryDisabledByEnv({ KIMI_DISABLE_TELEMETRY: '0' })).toBe(false);
-    expect(isTelemetryDisabledByEnv({ KIMI_DISABLE_TELEMETRY: 'false' })).toBe(false);
+  it('matches the ZIMI_DISABLE_TELEMETRY true-value semantics', () => {
+    expect(isTelemetryDisabledByEnv({ ZIMI_DISABLE_TELEMETRY: '1' })).toBe(true);
+    expect(isTelemetryDisabledByEnv({ ZIMI_DISABLE_TELEMETRY: 'yes' })).toBe(true);
+    expect(isTelemetryDisabledByEnv({ ZIMI_DISABLE_TELEMETRY: '0' })).toBe(false);
+    expect(isTelemetryDisabledByEnv({ ZIMI_DISABLE_TELEMETRY: 'false' })).toBe(false);
   });
 
   it('disables the singleton without attaching a sink when opted out', async () => {
     const fetchImpl = vi.fn(async () => new Response('', { status: 200 }));
     vi.stubGlobal('fetch', fetchImpl);
-    const saved = process.env['KIMI_DISABLE_TELEMETRY'];
+    const saved = process.env['ZIMI_DISABLE_TELEMETRY'];
     try {
-      process.env['KIMI_DISABLE_TELEMETRY'] = 'true';
+      process.env['ZIMI_DISABLE_TELEMETRY'] = 'true';
       initializeTelemetry({
         homeDir: await tempHome(),
         deviceId: 'dev',
-        appName: 'kimi-code-cli',
+        appName: 'zimi-code-cli',
         version: '1.2.3',
       });
       track('dropped');
       await shutdownTelemetry();
     } finally {
-      if (saved === undefined) delete process.env['KIMI_DISABLE_TELEMETRY'];
-      else process.env['KIMI_DISABLE_TELEMETRY'] = saved;
+      if (saved === undefined) delete process.env['ZIMI_DISABLE_TELEMETRY'];
+      else process.env['ZIMI_DISABLE_TELEMETRY'] = saved;
     }
 
     expect(fetchImpl).not.toHaveBeenCalled();
@@ -1058,7 +1058,7 @@ describe('telemetry bootstrap', () => {
     initializeTelemetry({
       homeDir,
       deviceId: 'dev',
-      appName: 'kimi-code-cli',
+      appName: 'zimi-code-cli',
       version: '1.2.3',
       initiallyEnabled: false,
     });
@@ -1077,7 +1077,7 @@ describe('telemetry bootstrap', () => {
     initializeTelemetry({
       homeDir: await tempHome(),
       deviceId: 'dev',
-      appName: 'kimi-code-cli',
+      appName: 'zimi-code-cli',
       version: '1.2.3',
       initiallyEnabled: false,
     });
@@ -1093,7 +1093,7 @@ describe('telemetry bootstrap', () => {
     initializeTelemetry({
       homeDir: await tempHome(),
       deviceId: 'dev',
-      appName: 'kimi-code-cli',
+      appName: 'zimi-code-cli',
       version: '1.2.3',
       initiallyEnabled: false,
       endpoint: 'https://mock.test/events',
@@ -1121,7 +1121,7 @@ describe('telemetry bootstrap', () => {
     initializeTelemetry({
       homeDir,
       deviceId: 'dev',
-      appName: 'kimi-code-cli',
+      appName: 'zimi-code-cli',
       version: '1.2.3',
       endpoint: 'https://mock.test/events',
     });
@@ -1142,7 +1142,7 @@ describe('telemetry bootstrap', () => {
       homeDir: await tempHome(),
       deviceId: 'dev',
       sessionId: 'ses',
-      appName: 'kimi-code-cli',
+      appName: 'zimi-code-cli',
       version: '1.2.3',
       endpoint: 'https://mock.test/events',
     });
@@ -1167,7 +1167,7 @@ describe('telemetry bootstrap', () => {
     initializeTelemetry({
       homeDir: await tempHome(),
       deviceId: 'dev',
-      appName: 'kimi-code-cli',
+      appName: 'zimi-code-cli',
       version: '1.2.3',
       endpoint: 'https://mock.test/events',
     });
@@ -1186,7 +1186,7 @@ describe('telemetry bootstrap', () => {
     initializeTelemetry({
       homeDir: await tempHome(),
       deviceId: 'dev',
-      appName: 'kimi-code-cli',
+      appName: 'zimi-code-cli',
       version: '1.2.3',
       onUnexpectedError,
     });
@@ -1204,7 +1204,7 @@ describe('telemetry bootstrap', () => {
     initializeTelemetry({
       homeDir: await tempHome(),
       deviceId: 'dev',
-      appName: 'kimi-code-cli',
+      appName: 'zimi-code-cli',
       version: '1.2.3',
       model: 'model-a',
       endpoint: 'https://mock.test/events',
@@ -1234,7 +1234,7 @@ describe('telemetry bootstrap', () => {
       homeDir,
       deviceId: 'dev',
       sessionId: 'ses',
-      appName: 'kimi-code-cli',
+      appName: 'zimi-code-cli',
       version: '1.2.3',
     });
     track('sync_flush');
@@ -1253,7 +1253,7 @@ describe('telemetry bootstrap', () => {
       homeDir,
       deviceId: 'dev',
       sessionId: 'ses',
-      appName: 'kimi-code-cli',
+      appName: 'zimi-code-cli',
       version: '1.2.3',
     });
 

@@ -489,7 +489,7 @@ describe('AgentToolApprovalService', () => {
         const display: ToolInputDisplay = {
           kind: 'plan_review',
           plan: '# Plan',
-          path: '/tmp/kimi-plan.md',
+          path: '/tmp/zimi-plan.md',
         };
 
         await expect(

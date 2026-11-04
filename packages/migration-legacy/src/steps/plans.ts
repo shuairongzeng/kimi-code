@@ -7,8 +7,8 @@ import { join } from 'node:path';
 export interface PlansStepInput {
   readonly targetHome: string;
   /**
-   * kimi-cli hardcodes plan files at `~/.kimi/plans` regardless of
-   * KIMI_SHARE_DIR (`tools/plan/heroes.py`), so the source is resolved from the
+   * zimi-cli hardcodes plan files at `~/.zimi/plans` regardless of
+   * ZIMI_SHARE_DIR (`tools/plan/heroes.py`), so the source is resolved from the
    * user's home, never from the migration source home. Injectable for tests.
    */
   readonly plansSourceDir?: string;
@@ -20,7 +20,7 @@ export interface PlansStepResult {
 }
 
 export function defaultPlansSourceDir(): string {
-  return join(homedir(), '.kimi', 'plans');
+  return join(homedir(), '.zimi', 'plans');
 }
 
 export async function migratePlansStep(input: PlansStepInput): Promise<PlansStepResult> {

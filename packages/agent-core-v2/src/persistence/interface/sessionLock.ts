@@ -43,7 +43,7 @@ export const ISessionLockService: ServiceIdentifier<ISessionLockService> =
 export function sessionOccupiedError(sessionId: string, holder?: SessionLockHolder): Error2 {
   const message = holder?.clientDisplayName
     ? `This session is in use by another ${holder.clientDisplayName} instance. Stop the session in that instance or exit it, then try again.`
-    : 'This session is in use by another Kimi Code process. Stop the session in that process or exit it, then try again.';
+    : 'This session is in use by another Zimi Code process. Stop the session in that process or exit it, then try again.';
   return new Error2(SessionErrors.codes.SESSION_OCCUPIED, message, {
     details: { sessionId, holder },
   });

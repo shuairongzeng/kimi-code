@@ -6,7 +6,7 @@ import type {
   McpServerEntry,
   SessionHandle,
   UsageStatus,
-} from '@moonshot-ai/klient';
+} from '@zimi-ai/klient';
 
 /**
  * ACP-owned built-in slash commands. Advertised in

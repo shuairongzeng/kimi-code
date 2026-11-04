@@ -2,7 +2,7 @@ import {
   BUDGET_THINKING_EFFORTS,
   matchKnownAnthropicModelProfile,
   matchUnknownClaudeProfile,
-} from '@moonshot-ai/agent-core-v2/human/llm/builtin/protocol/anthropic/legalize';
+} from '@zimi-ai/agent-core-v2/human/llm/builtin/protocol/anthropic/legalize';
 
 import type { ModelAlias, ProviderType } from './schema';
 
@@ -35,7 +35,7 @@ function withAnthropicProfile(model: ModelAlias, providerType?: ProviderType): M
   if (modelName === undefined) return model;
   const protocol = model.protocol ?? providerType;
   const profile =
-    providerType !== undefined && providerType !== 'kimi' && protocol === 'anthropic'
+    providerType !== undefined && providerType !== 'zimi' && protocol === 'anthropic'
       ? (matchKnownAnthropicModelProfile(modelName) ?? matchUnknownClaudeProfile(modelName))
       : matchKnownAnthropicModelProfile(modelName);
   if (profile === undefined) return model;

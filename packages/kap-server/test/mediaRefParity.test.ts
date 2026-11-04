@@ -4,23 +4,23 @@ import {
   daemonFileRefFromPart as engineRefFromPart,
   matchSingleMediaPathTag as engineMatchTag,
   parseDaemonFileUrl as engineParse,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import {
   daemonFileRefFromPairingPart as mirrorRefFromPart,
   matchMediaPathTagText as mirrorMatchTag,
   parseDaemonFileRef as mirrorParse,
   type MediaRefPart,
-} from '@moonshot-ai/transcript';
-import { toCorePart, type ContentPart } from '@moonshot-ai/agent-core-v2/human/message';
+} from '@zimi-ai/transcript';
+import { toCorePart, type ContentPart } from '@zimi-ai/agent-core-v2/human/message';
 
 const URLS = [
-  'kimi-file://f_1?path=%2Fcache%2Fshot.png',
-  'kimi-file://f_1',
-  'kimi-file://f_1?path=',
-  'kimi-file://?path=%2Fcache%2Fshot.png',
-  'kimi-file://f_1?path=%2Fcache%2Fa%20%26%20%22b%22%20%3Cc%3E.png',
-  'kimi-file://f_1?path=%zz',
-  'kimi-file://',
+  'zimi-file://f_1?path=%2Fcache%2Fshot.png',
+  'zimi-file://f_1',
+  'zimi-file://f_1?path=',
+  'zimi-file://?path=%2Fcache%2Fshot.png',
+  'zimi-file://f_1?path=%2Fcache%2Fa%20%26%20%22b%22%20%3Cc%3E.png',
+  'zimi-file://f_1?path=%zz',
+  'zimi-file://',
   'https://example.com/shot.png',
   '',
 ];
@@ -58,9 +58,9 @@ describe('standalone media path tag matching parity', () => {
 });
 
 const PARTS: ReadonlyArray<MediaRefPart & ContentPart> = [
-  { type: 'image_url', imageUrl: { url: 'kimi-file://f_1?path=%2Fcache%2Fshot.png' } },
-  { type: 'video_url', videoUrl: { url: 'kimi-file://f_3?path=%2Fcache%2Fclip.mp4' } },
-  { type: 'image_url', imageUrl: { url: 'kimi-file://f_1' } },
+  { type: 'image_url', imageUrl: { url: 'zimi-file://f_1?path=%2Fcache%2Fshot.png' } },
+  { type: 'video_url', videoUrl: { url: 'zimi-file://f_3?path=%2Fcache%2Fclip.mp4' } },
+  { type: 'image_url', imageUrl: { url: 'zimi-file://f_1' } },
   { type: 'image_url', imageUrl: { url: 'https://example.com/shot.png' } },
   { type: 'text', text: '<image path="/cache/shot.png"></image>' },
   { type: 'text', text: 'hello' },

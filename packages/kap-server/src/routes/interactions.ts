@@ -6,7 +6,7 @@ import {
   type QuestionAnswers,
   type QuestionResult,
   type Scope,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import { z } from 'zod';
 
 import { errEnvelope, okEnvelope } from '../envelope';

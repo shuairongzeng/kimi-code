@@ -1,4 +1,4 @@
-# @moonshot-ai/minidb
+# @zimi-ai/minidb
 
 ## 0.2.0
 

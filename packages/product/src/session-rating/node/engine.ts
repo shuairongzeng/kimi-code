@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import type { PromptOrigin } from '@moonshot-ai/agent-core-v2';
+import type { PromptOrigin } from '@zimi-ai/agent-core-v2';
 
 import { isSurveyTurnOrigin, type SurveyTurnRecovery } from './survey-turns';
 

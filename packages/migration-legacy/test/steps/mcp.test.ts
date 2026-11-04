@@ -62,7 +62,7 @@ describe('migrateMcpStep', () => {
     expect(r.sourceUnreadable).toBe(true);
   });
 
-  it('drops MCP server entries kimi-code\'s schema rejects', async () => {
+  it('drops MCP server entries zimi-code\'s schema rejects', async () => {
     await writeFile(
       join(src, 'mcp.json'),
       JSON.stringify({
@@ -92,7 +92,7 @@ describe('migrateMcpStep', () => {
     expect(await readFile(join(tgt, 'mcp.json'), 'utf-8')).toBe('this is not json {{{');
     // Migrated servers land in the sibling instead.
     const sibling = JSON.parse(
-      await readFile(join(tgt, 'mcp.migrated-from-kimi-cli.json'), 'utf-8'),
+      await readFile(join(tgt, 'mcp.migrated-from-zimi-cli.json'), 'utf-8'),
     );
     expect(sibling.mcpServers.foo.command).toBe('foo');
   });

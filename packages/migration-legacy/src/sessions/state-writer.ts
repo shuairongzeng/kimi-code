@@ -4,9 +4,9 @@ import { join } from 'node:path';
 import {
   SESSION_META_VERSION,
   type SessionTitleKind,
-} from '@moonshot-ai/agent-core-v2/session/sessionMetadata/sessionMetadata';
+} from '@zimi-ai/agent-core-v2/session/sessionMetadata/sessionMetadata';
 
-import type { OldSessionState } from '../kimi-cli-schema.js';
+import type { OldSessionState } from '../zimi-cli-schema.js';
 
 export interface StateWriteInput {
   readonly oldState: Partial<OldSessionState>;
@@ -64,7 +64,7 @@ export async function writeSessionState(sessionDir: string, input: StateWriteInp
         : input.oldState.additional_dirs,
     agents: {
       main: {
-        // kimi-core's `Session.resume()` treats `agents.main.homedir` as the
+        // zimi-core's `Session.resume()` treats `agents.main.homedir` as the
         // agent's *record directory* — where it reads `wire.jsonl`. The
         // migrator writes the translated history to
         // `<sessionDir>/agents/main/wire.jsonl`, so this must point there,
@@ -86,10 +86,10 @@ export async function writeSessionState(sessionDir: string, input: StateWriteInp
       ),
     },
     custom: {
-      imported_from_kimi_cli: true,
-      kimi_cli_source_path: input.sourcePath,
-      kimi_cli_session_id: input.oldSessionUuid,
-      kimi_cli_wire_protocol: input.wireProtocolFromOld,
+      imported_from_zimi_cli: true,
+      zimi_cli_source_path: input.sourcePath,
+      zimi_cli_session_id: input.oldSessionUuid,
+      zimi_cli_wire_protocol: input.wireProtocolFromOld,
       imported_at: new Date().toISOString(),
       auto_archive_exempt: input.oldState.auto_archive_exempt ?? false,
       vscode_legacy_approval:

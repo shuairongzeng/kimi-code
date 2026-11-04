@@ -2,8 +2,8 @@ import type Anthropic from '@anthropic-ai/sdk';
 import type { GoogleGenAI as GenAIClient } from '@google/genai';
 import type OpenAI from 'openai';
 
-import type { BearerTokenProvider } from '@moonshot-ai/kimi-code-oauth';
-import type { ChatProviderError, ModelCapability } from '@moonshot-ai/agent-core-v2';
+import type { BearerTokenProvider } from '@zimi-ai/zimi-code-oauth';
+import type { ChatProviderError, ModelCapability } from '@zimi-ai/agent-core-v2';
 
 import type { ModelAlias, OAuthRef, ProviderType } from '#/config/index';
 import type { Logger } from '#/logging/index';
@@ -18,7 +18,7 @@ export interface ProviderRequestAuth {
 export type ProviderConfig =
   | ({ type: 'anthropic' } & AnthropicOptions)
   | ({ type: 'openai' } & OpenAILegacyOptions)
-  | ({ type: 'kimi' } & KimiOptions)
+  | ({ type: 'zimi' } & ZimiOptions)
   | ({ type: 'google-genai' } & GoogleGenAIOptions)
   | ({ type: 'openai_responses' } & OpenAIResponsesOptions)
   | ({ type: 'vertexai' } & GoogleGenAIOptions);
@@ -34,7 +34,7 @@ interface AnthropicOptions {
   stream?: boolean | undefined;
   adaptiveThinking?: boolean | undefined;
   supportEfforts?: readonly string[] | undefined;
-  kimiThinking?: boolean | undefined;
+  zimiThinking?: boolean | undefined;
   betaApi?: boolean | undefined;
   clientFactory?: (auth: ProviderRequestAuth) => Anthropic;
   convertError?: (error: unknown) => ChatProviderError | undefined;
@@ -55,7 +55,7 @@ interface OpenAILegacyOptions {
   generationKwargs?: OpenAILegacyGenerationKwargs | undefined;
 }
 
-interface KimiOptions {
+interface ZimiOptions {
   apiKey?: string | undefined;
   baseUrl?: string | undefined;
   model: string;

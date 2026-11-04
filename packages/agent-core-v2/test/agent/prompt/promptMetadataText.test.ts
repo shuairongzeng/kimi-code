@@ -63,7 +63,7 @@ describe('promptMetadataTextFromContentParts', () => {
     const text = promptMetadataTextFromContentParts([
       { type: 'text', text: 'what is this?' },
       { type: 'text', text: '<image path="/Users/alice/cache/f_123.png"></image>' },
-      { type: 'image_url', imageUrl: { url: 'kimi-file://f_123?path=%2FUsers%2Falice%2Fcache%2Ff_123.png' } },
+      { type: 'image_url', imageUrl: { url: 'zimi-file://f_123?path=%2FUsers%2Falice%2Fcache%2Ff_123.png' } },
     ]);
     expect(text).toBe('what is this? [image]');
     expect(text).not.toContain('/Users/alice');

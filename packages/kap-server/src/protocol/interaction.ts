@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { isoDateTimeSchema } from '@moonshot-ai/agent-core-v2/_base/utils/isoDateTime';
+import { isoDateTimeSchema } from '@zimi-ai/agent-core-v2/_base/utils/isoDateTime';
 
 import { approvalDecisionSchema, approvalResponseSchema, approvalScopeSchema } from './approval';
 import { questionAnswerMethodSchema, questionAnswerSchema, questionItemSchema } from './question';

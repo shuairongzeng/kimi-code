@@ -155,7 +155,7 @@ await test('a complete canary release contains the pointer and every native arti
   }), false);
   assert.equal(isCompleteCanaryRelease({
     ...release,
-    assets: release.assets.filter((asset) => asset.name !== 'kimi-code-linux-x64.zst'),
+    assets: release.assets.filter((asset) => asset.name !== 'zimi-code-linux-x64.zst'),
   }), false);
 });
 
@@ -187,7 +187,7 @@ await test('canary release accepts only the latest main commit with successful C
 
 await test('CI selection asks gh to return only successful main head SHAs', () => {
   let invocation;
-  const shas = listSuccessfulMainCiShas('MoonshotAI/kimi-code', (command, args, options) => {
+  const shas = listSuccessfulMainCiShas('ZimiAI/zimi-code', (command, args, options) => {
     invocation = { command, args, options };
     return 'a\n\nb\n';
   });
@@ -195,7 +195,7 @@ await test('CI selection asks gh to return only successful main head SHAs', () =
   assert.equal(invocation.command, 'gh');
   assert.equal(
     invocation.args[1],
-    'repos/MoonshotAI/kimi-code/actions/workflows/ci.yml/runs?branch=main&event=push&status=success&per_page=100',
+    'repos/ZimiAI/zimi-code/actions/workflows/ci.yml/runs?branch=main&event=push&status=success&per_page=100',
   );
   assert.deepEqual(invocation.args.slice(2), ['--jq', '.workflow_runs[].head_sha']);
   assert.deepEqual(invocation.options, { encoding: 'utf8' });
@@ -206,16 +206,16 @@ await test('a new task skips a complete release but resumes a partial release', 
     ref: 'refs/heads/main',
     sha: 'c',
     greenShas: ['c'],
-    canaryReleases: [{ tag: `@moonshot-ai/kimi-code@${CANARY}`, isComplete: true }],
+    canaryReleases: [{ tag: `@zimi-ai/zimi-code@${CANARY}`, isComplete: true }],
   };
   assert.deepEqual(selectCanaryCommit(input), {
     sha: 'c',
     skip: true,
-    reason: `c already has @moonshot-ai/kimi-code@${CANARY}`,
+    reason: `c already has @zimi-ai/zimi-code@${CANARY}`,
   });
   assert.deepEqual(selectCanaryCommit({
     ...input,
-    canaryReleases: [{ tag: `@moonshot-ai/kimi-code@${CANARY}`, isComplete: false }],
+    canaryReleases: [{ tag: `@zimi-ai/zimi-code@${CANARY}`, isComplete: false }],
   }), {
     sha: 'c',
     skip: false,

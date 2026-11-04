@@ -6,21 +6,21 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import {
-  createKimiDeviceId,
+  createZimiDeviceId,
   FileTokenStorage,
-  KIMI_CODE_PLATFORM,
-  KIMI_CODE_PROVIDER_NAME,
-  resolveKimiTokenStorageName,
+  ZIMI_CODE_PLATFORM,
+  ZIMI_CODE_PROVIDER_NAME,
+  resolveZimiTokenStorageName,
   type TokenInfo,
-} from '@moonshot-ai/kimi-code-oauth';
+} from '@zimi-ai/zimi-code-oauth';
 import {
   acquireRemoteControlLock,
   remoteControlLockPath,
   RemoteControlAlreadyRunningError,
   type RemoteControlDeviceClient,
   type RemoteControlManager,
-} from '@moonshot-ai/remote-control';
-import { IOAuthService, type ITelemetryService, type Scope } from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/remote-control';
+import { IOAuthService, type ITelemetryService, type Scope } from '@zimi-ai/agent-core-v2';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { WebSocketServer, type RawData, type WebSocket } from 'ws';
 
@@ -92,9 +92,9 @@ describe('server-v2 /api/v1/remote-control', () => {
   let base: string;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-rc-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-rc-'));
     await new FileTokenStorage(join(home, 'credentials')).save(
-      resolveKimiTokenStorageName({ providerName: KIMI_CODE_PROVIDER_NAME }),
+      resolveZimiTokenStorageName({ providerName: ZIMI_CODE_PROVIDER_NAME }),
       TOKEN,
     );
     server = await startServer({
@@ -128,7 +128,7 @@ describe('server-v2 /api/v1/remote-control', () => {
 
   it('starts and stops the tunnel at runtime, dedupes concurrent enables, and tracks relay-initiated shutdown', async () => {
     const relay = await startRegisterAckRelay();
-    vi.stubEnv('KIMI_CODE_REMOTE_CONTROL_RELAY_URL', `http://127.0.0.1:${relay.port}`);
+    vi.stubEnv('ZIMI_CODE_REMOTE_CONTROL_RELAY_URL', `http://127.0.0.1:${relay.port}`);
 
     const initial = await authedFetch(server as RunningServer, base, '/api/v1/remote-control');
     const initialBody = (await initial.json()) as Envelope<RemoteControlStatusWire>;
@@ -288,7 +288,7 @@ describe('server-v2 /api/v1/remote-control', () => {
   it('proxies device list and management operations through the Node-side cloud session', async () => {
     const cloud = await startDeviceCloud();
     vi.stubEnv(
-      'KIMI_CODE_REMOTE_CONTROL_RELAY_URL',
+      'ZIMI_CODE_REMOTE_CONTROL_RELAY_URL',
       `http://127.0.0.1:${cloud.port}/coding-relay/`,
     );
 
@@ -348,7 +348,7 @@ describe('server-v2 /api/v1/remote-control', () => {
     await rm(remoteControlLockPath(home as string), { force: true });
     const cloud = await startDeviceCloud({ tunnel: true });
     vi.stubEnv(
-      'KIMI_CODE_REMOTE_CONTROL_RELAY_URL',
+      'ZIMI_CODE_REMOTE_CONTROL_RELAY_URL',
       `http://127.0.0.1:${cloud.port}/coding-relay/`,
     );
 
@@ -387,7 +387,7 @@ describe('server-v2 /api/v1/remote-control', () => {
     await rm(remoteControlLockPath(home as string), { force: true });
     const cloud = await startDeviceCloud({ tunnel: true });
     vi.stubEnv(
-      'KIMI_CODE_REMOTE_CONTROL_RELAY_URL',
+      'ZIMI_CODE_REMOTE_CONTROL_RELAY_URL',
       `http://127.0.0.1:${cloud.port}/coding-relay/`,
     );
 
@@ -429,11 +429,11 @@ describe('server-v2 /api/v1/remote-control', () => {
     await rm(remoteControlLockPath(home as string), { force: true });
     const cloud = await startDeviceCloud();
     vi.stubEnv(
-      'KIMI_CODE_REMOTE_CONTROL_RELAY_URL',
+      'ZIMI_CODE_REMOTE_CONTROL_RELAY_URL',
       `http://127.0.0.1:${cloud.port}/coding-relay/`,
     );
 
-    const deviceId = createKimiDeviceId(home as string);
+    const deviceId = createZimiDeviceId(home as string);
     await mkdir(join(home as string, 'server'), { recursive: true });
     await writeFile(
       remoteControlLockPath(home as string),
@@ -472,11 +472,11 @@ describe('server-v2 /api/v1/remote-control', () => {
     await rm(remoteControlLockPath(home as string), { force: true });
     const cloud = await startDeviceCloud();
     vi.stubEnv(
-      'KIMI_CODE_REMOTE_CONTROL_RELAY_URL',
+      'ZIMI_CODE_REMOTE_CONTROL_RELAY_URL',
       `http://127.0.0.1:${cloud.port}/coding-relay/`,
     );
 
-    const deviceId = createKimiDeviceId(home as string);
+    const deviceId = createZimiDeviceId(home as string);
     await mkdir(join(home as string, 'server'), { recursive: true });
     await writeFile(
       remoteControlLockPath(home as string),
@@ -508,7 +508,7 @@ describe('server-v2 /api/v1/remote-control', () => {
   }, 12000);
 
   it('treats the deterministic device id as local before the lock file exists', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-server-v2-rc-prelock-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-server-v2-rc-prelock-'));
     let disabled = false;
     const service = {
       status: () => ({ enabled: false, state: 'starting', deviceId: undefined }),
@@ -533,7 +533,7 @@ describe('server-v2 /api/v1/remote-control', () => {
 
     let payload: unknown;
     await handler!(
-      { id: 'req-1', params: { id: createKimiDeviceId(homeDir) } },
+      { id: 'req-1', params: { id: createZimiDeviceId(homeDir) } },
       {
         send: (value: unknown) => {
           payload = value;
@@ -547,7 +547,7 @@ describe('server-v2 /api/v1/remote-control', () => {
   });
 
   it('treats the active tunnel registered id as local when it differs from the recomputed id', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-server-v2-rc-legacy-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-server-v2-rc-legacy-'));
     const events: string[] = [];
     const service = {
       status: () => ({ enabled: true, state: 'on', deviceId: 'legacy-id' }),
@@ -589,7 +589,7 @@ describe('server-v2 /api/v1/remote-control', () => {
   });
 
   it('blocks concurrent starts while the current device is being deactivated', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-server-v2-rc-gated-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-server-v2-rc-gated-'));
     const service = {
       status: () => ({ enabled: false, state: 'off' }),
       disable: async () => ({ enabled: false, state: 'off' }),
@@ -599,7 +599,7 @@ describe('server-v2 /api/v1/remote-control', () => {
         await expect(
           acquireRemoteControlLock(homeDir, {
             localOrigin: 'http://127.0.0.1:58627',
-            deviceId: createKimiDeviceId(homeDir),
+            deviceId: createZimiDeviceId(homeDir),
             url: 'https://code-rc.kimi.com/devices/x/',
           }),
         ).rejects.toBeInstanceOf(RemoteControlAlreadyRunningError);
@@ -618,7 +618,7 @@ describe('server-v2 /api/v1/remote-control', () => {
 
     let payload: unknown;
     await handler!(
-      { id: 'req-1', params: { id: createKimiDeviceId(homeDir) } },
+      { id: 'req-1', params: { id: createZimiDeviceId(homeDir) } },
       {
         send: (value: unknown) => {
           payload = value;
@@ -632,7 +632,7 @@ describe('server-v2 /api/v1/remote-control', () => {
   });
 
   it('keeps the status readable when stale-lock cleanup fails', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-server-v2-rc-stale-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-server-v2-rc-stale-'));
     await mkdir(join(homeDir, 'server'), { recursive: true });
     const child = spawn(process.execPath, ['-e', ''], { stdio: 'ignore' });
     await new Promise((resolve) => child.once('exit', resolve));
@@ -685,7 +685,7 @@ describe('server-v2 /api/v1/remote-control', () => {
   });
 
   it('rechecks the local manager before releasing the deactivation gate', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-server-v2-rc-recheck-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-server-v2-rc-recheck-'));
     let state = 'off';
     const events: string[] = [];
     const service = {
@@ -715,7 +715,7 @@ describe('server-v2 /api/v1/remote-control', () => {
 
     let payload: unknown;
     await handler!(
-      { id: 'req-1', params: { id: createKimiDeviceId(homeDir) } },
+      { id: 'req-1', params: { id: createZimiDeviceId(homeDir) } },
       {
         send: (value: unknown) => {
           payload = value;
@@ -732,7 +732,7 @@ describe('server-v2 /api/v1/remote-control', () => {
   it('cancels an in-flight start when the current device is deactivated', async () => {await rm(remoteControlLockPath(home as string), { force: true });
     const cloud = await startDeviceCloud({ tunnel: true, registerDelayMs: 1000 });
     vi.stubEnv(
-      'KIMI_CODE_REMOTE_CONTROL_RELAY_URL',
+      'ZIMI_CODE_REMOTE_CONTROL_RELAY_URL',
       `http://127.0.0.1:${cloud.port}/coding-relay/`,
     );
 
@@ -748,7 +748,7 @@ describe('server-v2 /api/v1/remote-control', () => {
     await waitFor(lockExists);
     expect(await currentState()).toBe('starting');
 
-    const deviceId = createKimiDeviceId(home as string);
+    const deviceId = createZimiDeviceId(home as string);
     const startedAt = Date.now();
     const res = await authedFetch(
       server as RunningServer,
@@ -770,7 +770,7 @@ describe('server-v2 /api/v1/remote-control', () => {
   it('rejects blank and overlong device aliases before reaching the cloud', async () => {
     const cloud = await startDeviceCloud();
     vi.stubEnv(
-      'KIMI_CODE_REMOTE_CONTROL_RELAY_URL',
+      'ZIMI_CODE_REMOTE_CONTROL_RELAY_URL',
       `http://127.0.0.1:${cloud.port}/coding-relay/`,
     );
 
@@ -795,7 +795,7 @@ describe('server-v2 /api/v1/remote-control', () => {
   it('maps cloud session failures to an internal API error instead of local auth', async () => {
     const cloud = await startDeviceCloud({ exchangeStatus: 401 });
     vi.stubEnv(
-      'KIMI_CODE_REMOTE_CONTROL_RELAY_URL',
+      'ZIMI_CODE_REMOTE_CONTROL_RELAY_URL',
       `http://127.0.0.1:${cloud.port}/coding-relay/`,
     );
 
@@ -815,19 +815,19 @@ describe('server-v2 /api/v1/remote-control', () => {
 
 describe('remote-control registration identity', () => {
   it('registers with the host product name and version', async () => {
-    const cliHome = await mkdtemp(join(tmpdir(), 'kimi-server-v2-rc-cli-'));
+    const cliHome = await mkdtemp(join(tmpdir(), 'zimi-server-v2-rc-cli-'));
     const relay = await startRegisterAckRelay();
     let cliServer: RunningServer | undefined;
     try {
       await new FileTokenStorage(join(cliHome, 'credentials')).save(
-        resolveKimiTokenStorageName({ providerName: KIMI_CODE_PROVIDER_NAME }),
+        resolveZimiTokenStorageName({ providerName: ZIMI_CODE_PROVIDER_NAME }),
         TOKEN,
       );
       cliServer = await startServer({
         hostIdentity: {
-          productName: 'kimi-code-cli',
+          productName: 'zimi-code-cli',
           version: '9.9.9',
-          platform: KIMI_CODE_PLATFORM,
+          platform: ZIMI_CODE_PLATFORM,
         },
         serverVersion: '9.9.9',
         host: '127.0.0.1',
@@ -835,7 +835,7 @@ describe('remote-control registration identity', () => {
         homeDir: cliHome,
         logLevel: 'silent',
       });
-      vi.stubEnv('KIMI_CODE_REMOTE_CONTROL_RELAY_URL', `http://127.0.0.1:${relay.port}`);
+      vi.stubEnv('ZIMI_CODE_REMOTE_CONTROL_RELAY_URL', `http://127.0.0.1:${relay.port}`);
       const res = await authedFetch(
         cliServer,
         `http://127.0.0.1:${cliServer.port}`,
@@ -848,11 +848,11 @@ describe('remote-control registration identity', () => {
       );
       const body = (await res.json()) as Envelope<RemoteControlStatusWire>;
       expect(body.code).toBe(0);
-      expect(body.data.url).toContain('from=kimi_code_cli');
+      expect(body.data.url).toContain('from=zimi_code_cli');
       expect(
         (relay.registrations[0] as { payload?: { client_version?: string } }).payload
           ?.client_version,
-      ).toBe('kimi-code-cli/9.9.9');
+      ).toBe('zimi-code-cli/9.9.9');
     } finally {
       if (cliServer !== undefined) await cliServer.close();
       await relay.close();
@@ -980,7 +980,7 @@ describe('oauth logout remote-control cleanup', () => {
         get: (token: unknown) => (token === IOAuthService ? { logout } : undefined),
       },
     } as unknown as Scope;
-    const resolvedHomeDir = homeDir ?? (await mkdtemp(join(tmpdir(), 'kimi-server-v2-logout-')));
+    const resolvedHomeDir = homeDir ?? (await mkdtemp(join(tmpdir(), 'zimi-server-v2-logout-')));
     registerOAuthRoutes(app as never, core, remoteControl, remoteControlDevices, resolvedHomeDir);
     return async (body) => {
       let payload: unknown;
@@ -1013,18 +1013,18 @@ describe('oauth logout remote-control cleanup', () => {
       },
       deactivateDevice: async () => {},
     };
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-server-v2-logout-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-server-v2-logout-'));
     const post = await logoutHandler(
       remoteControl,
       remoteControlDevices,
       async (provider) => {
         events.push('logout');
-        return { logged_out: true, provider: provider ?? 'managed:kimi-code' };
+        return { logged_out: true, provider: provider ?? 'managed:zimi-code' };
       },
       homeDir,
     );
 
-    const payload = (await post({ provider: 'managed:kimi-code' })) as Envelope<{
+    const payload = (await post({ provider: 'managed:zimi-code' })) as Envelope<{
       logged_out: true;
       provider: string;
     }>;
@@ -1048,7 +1048,7 @@ describe('oauth logout remote-control cleanup', () => {
       },
       deactivateDevice: async () => {},
     };
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-server-v2-logout-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-server-v2-logout-'));
     const post = await logoutHandler(
       remoteControl,
       remoteControlDevices,
@@ -1063,12 +1063,12 @@ describe('oauth logout remote-control cleanup', () => {
             url: 'https://code-rc.kimi.com/devices/racing-device/',
           }),
         ).rejects.toBeInstanceOf(RemoteControlAlreadyRunningError);
-        return { logged_out: true, provider: provider ?? 'managed:kimi-code' };
+        return { logged_out: true, provider: provider ?? 'managed:zimi-code' };
       },
       homeDir,
     );
 
-    const payload = (await post({ provider: 'managed:kimi-code' })) as Envelope<{
+    const payload = (await post({ provider: 'managed:zimi-code' })) as Envelope<{
       logged_out: true;
       provider: string;
     }>;
@@ -1096,10 +1096,10 @@ describe('oauth logout remote-control cleanup', () => {
     };
     const post = await logoutHandler(remoteControl, remoteControlDevices, async (provider) => {
       logoutCalled = true;
-      return { logged_out: true, provider: provider ?? 'managed:kimi-code' };
+      return { logged_out: true, provider: provider ?? 'managed:zimi-code' };
     });
 
-    const payload = (await post({ provider: 'managed:kimi-code' })) as Envelope<null>;
+    const payload = (await post({ provider: 'managed:zimi-code' })) as Envelope<null>;
 
     expect(payload.code).toBe(ErrorCode.INTERNAL_ERROR);
     expect(payload.msg).toBe('tunnel stop failed');
@@ -1125,7 +1125,7 @@ describe('oauth logout remote-control cleanup', () => {
     };
     const post = await logoutHandler(remoteControl, remoteControlDevices, async (provider) => ({
       logged_out: true,
-      provider: provider ?? 'managed:kimi-code',
+      provider: provider ?? 'managed:zimi-code',
     }));
 
     const payload = (await post({ provider: 'managed:other' })) as Envelope<{
@@ -1139,7 +1139,7 @@ describe('oauth logout remote-control cleanup', () => {
     expect(clearCalled).toBe(false);
   });
 
-  it('serializes concurrent Kimi logouts so repeated logout stays idempotent', async () => {
+  it('serializes concurrent Zimi logouts so repeated logout stays idempotent', async () => {
     const events: string[] = [];
     const remoteControl = {
       status: () => ({ enabled: false, state: 'off' }),
@@ -1160,13 +1160,13 @@ describe('oauth logout remote-control cleanup', () => {
           resolveFirst = resolve;
         });
       }
-      return { logged_out: true, provider: provider ?? 'managed:kimi-code' };
+      return { logged_out: true, provider: provider ?? 'managed:zimi-code' };
     });
 
-    const first = post({ provider: 'managed:kimi-code' }) as Promise<
+    const first = post({ provider: 'managed:zimi-code' }) as Promise<
       Envelope<{ logged_out: true }>
     >;
-    const second = post({ provider: 'managed:kimi-code' }) as Promise<
+    const second = post({ provider: 'managed:zimi-code' }) as Promise<
       Envelope<{ logged_out: true }>
     >;
     await new Promise((resolve) => setTimeout(resolve, 50));
@@ -1180,7 +1180,7 @@ describe('oauth logout remote-control cleanup', () => {
   });
 
   it('deactivates a lock held by another process before clearing OAuth credentials', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-server-v2-logout-lock-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-server-v2-logout-lock-'));
     await mkdir(join(homeDir, 'server'), { recursive: true });
     await writeFile(
       remoteControlLockPath(homeDir),
@@ -1215,12 +1215,12 @@ describe('oauth logout remote-control cleanup', () => {
       remoteControlDevices,
       async (provider) => {
         events.push('logout');
-        return { logged_out: true, provider: provider ?? 'managed:kimi-code' };
+        return { logged_out: true, provider: provider ?? 'managed:zimi-code' };
       },
       homeDir,
     );
 
-    const payload = (await post({ provider: 'managed:kimi-code' })) as Envelope<{
+    const payload = (await post({ provider: 'managed:zimi-code' })) as Envelope<{
       logged_out: true;
       provider: string;
     }>;
@@ -1232,7 +1232,7 @@ describe('oauth logout remote-control cleanup', () => {
   });
 
   it('blocks logout when deactivating a foreign lock holder fails', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-server-v2-logout-lock-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-server-v2-logout-lock-'));
     await mkdir(join(homeDir, 'server'), { recursive: true });
     await writeFile(
       remoteControlLockPath(homeDir),
@@ -1260,12 +1260,12 @@ describe('oauth logout remote-control cleanup', () => {
       remoteControlDevices,
       async (provider) => {
         logoutCalled = true;
-        return { logged_out: true, provider: provider ?? 'managed:kimi-code' };
+        return { logged_out: true, provider: provider ?? 'managed:zimi-code' };
       },
       homeDir,
     );
 
-    const payload = (await post({ provider: 'managed:kimi-code' })) as Envelope<null>;
+    const payload = (await post({ provider: 'managed:zimi-code' })) as Envelope<null>;
 
     expect(payload.code).toBe(ErrorCode.INTERNAL_ERROR);
     expect(payload.msg).toBe('cloud unavailable');
@@ -1274,7 +1274,7 @@ describe('oauth logout remote-control cleanup', () => {
   });
 
   it('deactivates a foreign holder that races the start gate before acquiring it', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-server-v2-start-gate-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-server-v2-start-gate-'));
     await mkdir(join(homeDir, 'server'), { recursive: true });
     await writeFile(
       remoteControlLockPath(homeDir),
@@ -1303,14 +1303,14 @@ describe('oauth logout remote-control cleanup', () => {
       device_id?: string;
     };
     expect(gateHolder.local_origin).toBe('logout in progress');
-    expect(gateHolder.device_id).toBe(createKimiDeviceId(homeDir));
+    expect(gateHolder.device_id).toBe(createZimiDeviceId(homeDir));
     await gate.release();
     expect(existsSync(remoteControlLockPath(homeDir))).toBe(false);
     await rm(homeDir, { recursive: true, force: true });
   });
 
   it('waits for a logout gate held by another server instead of deactivating it', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-server-v2-logout-gate-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-server-v2-logout-gate-'));
     await mkdir(join(homeDir, 'server'), { recursive: true });
     await writeFile(
       remoteControlLockPath(homeDir),
@@ -1318,7 +1318,7 @@ describe('oauth logout remote-control cleanup', () => {
         pid: process.pid,
         nonce: 'gate',
         local_origin: 'logout in progress',
-        device_id: createKimiDeviceId(homeDir),
+        device_id: createZimiDeviceId(homeDir),
         url: '',
         started_at: Date.now(),
       }),
@@ -1336,13 +1336,13 @@ describe('oauth logout remote-control cleanup', () => {
     const post = await logoutHandler(
       remoteControl,
       remoteControlDevices,
-      async (provider) => ({ logged_out: true, provider: provider ?? 'managed:kimi-code' }),
+      async (provider) => ({ logged_out: true, provider: provider ?? 'managed:zimi-code' }),
       homeDir,
     );
 
     const startedAt = Date.now();
     const [payload] = await Promise.all([
-      post({ provider: 'managed:kimi-code' }) as Promise<Envelope<{ logged_out: true }>>,
+      post({ provider: 'managed:zimi-code' }) as Promise<Envelope<{ logged_out: true }>>,
       (async () => {
         await new Promise((resolve) => setTimeout(resolve, 200));
         await rm(remoteControlLockPath(homeDir), { force: true });
@@ -1357,7 +1357,7 @@ describe('oauth logout remote-control cleanup', () => {
   });
 
   it('waits out another server start gate without deactivating it', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-server-v2-start-gate-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-server-v2-start-gate-'));
     await mkdir(join(homeDir, 'server'), { recursive: true });
     await writeFile(
       remoteControlLockPath(homeDir),
@@ -1365,7 +1365,7 @@ describe('oauth logout remote-control cleanup', () => {
         pid: process.pid,
         nonce: 'gate',
         local_origin: 'logout in progress',
-        device_id: createKimiDeviceId(homeDir),
+        device_id: createZimiDeviceId(homeDir),
         url: '',
         started_at: Date.now(),
       }),
@@ -1405,10 +1405,10 @@ describe('oauth logout remote-control cleanup', () => {
     const post = await logoutHandler(
       remoteControl,
       remoteControlDevices,
-      async (provider) => ({ logged_out: true, provider: provider ?? 'managed:kimi-code' }),
+      async (provider) => ({ logged_out: true, provider: provider ?? 'managed:zimi-code' }),
     );
 
-    const payload = (await post({ provider: 'managed:kimi-code' })) as Envelope<{
+    const payload = (await post({ provider: 'managed:zimi-code' })) as Envelope<{
       logged_out: true;
     }>;
 

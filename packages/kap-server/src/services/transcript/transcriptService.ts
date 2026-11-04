@@ -1,5 +1,5 @@
-import type { UserPromptOrigin } from '@moonshot-ai/agent-core-v2/agent/contextMemory/types';
-import { AgentBlobServiceImpl } from '@moonshot-ai/agent-core-v2/agent/blob/agentBlobServiceImpl';
+import type { UserPromptOrigin } from '@zimi-ai/agent-core-v2/agent/contextMemory/types';
+import { AgentBlobServiceImpl } from '@zimi-ai/agent-core-v2/agent/blob/agentBlobServiceImpl';
 import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
 
@@ -22,7 +22,7 @@ import {
   type IDisposable,
   type Scope,
   type SessionMeta,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import {
   TranscriptStore,
   foldWireRecordFacts,
@@ -37,7 +37,7 @@ import {
   type TranscriptMarker,
   type TranscriptOperation,
   type TranscriptTurn,
-} from '@moonshot-ai/transcript';
+} from '@zimi-ai/transcript';
 
 import { WireRecordCache, type ContextRecord } from './wireCache';
 import { toWireQuestion } from '../../protocol/question-wire';

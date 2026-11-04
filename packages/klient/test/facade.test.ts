@@ -101,7 +101,7 @@ describe('facade routing', () => {
 
     channel.results.set('oauthService.startLogin', {
       flow_id: 'f1',
-      provider: 'managed:kimi-code',
+      provider: 'managed:zimi-code',
       status: 'pending',
       verification_uri: 'https://example.com/device',
       verification_uri_complete: 'https://example.com/device?user_code=ABCD',
@@ -110,11 +110,11 @@ describe('facade routing', () => {
       expires_at: '2026-08-19T15:00:00.000Z',
       interval: 5,
     });
-    await klient.global.auth.startLogin('managed:kimi-code', { region: 'global' });
+    await klient.global.auth.startLogin('managed:zimi-code', { region: 'global' });
     expect(channel.calls[0]).toMatchObject({
       service: 'oauthService',
       method: 'startLogin',
-      args: ['managed:kimi-code', { region: 'global' }],
+      args: ['managed:zimi-code', { region: 'global' }],
     });
   });
 
@@ -122,8 +122,8 @@ describe('facade routing', () => {
     const channel = new FakeChannel();
     const klient = createKlientFromChannel(channel);
     const status = {
-      id: 'kimi-cu',
-      displayName: 'Kimi Computer Use',
+      id: 'zimi-cu',
+      displayName: 'Zimi Computer Use',
       description: 'Background GUI automation',
       supported: true,
       state: 'partial',
@@ -135,25 +135,25 @@ describe('facade routing', () => {
 
     await expect(klient.global.capabilities.list()).resolves.toEqual([status]);
     channel.result = status;
-    await expect(klient.global.capabilities.get('kimi-cu')).resolves.toEqual(status);
-    await expect(klient.global.capabilities.install('kimi-cu')).resolves.toEqual(status);
+    await expect(klient.global.capabilities.get('zimi-cu')).resolves.toEqual(status);
+    await expect(klient.global.capabilities.install('zimi-cu')).resolves.toEqual(status);
     const confirmation = {
       ...status,
       install: { running: false, confirmationRequired: 'stop-processes' },
     };
     channel.result = confirmation;
-    await expect(klient.global.capabilities.install('kimi-cu', { stopRunningProcesses: true }))
+    await expect(klient.global.capabilities.install('zimi-cu', { stopRunningProcesses: true }))
       .resolves.toEqual(confirmation);
 
     expect(channel.calls).toEqual([
       { scope: {}, service: 'capabilityService', method: 'listCapabilities', args: [] },
-      { scope: {}, service: 'capabilityService', method: 'getCapability', args: ['kimi-cu'] },
-      { scope: {}, service: 'capabilityService', method: 'installCapability', args: ['kimi-cu', undefined] },
+      { scope: {}, service: 'capabilityService', method: 'getCapability', args: ['zimi-cu'] },
+      { scope: {}, service: 'capabilityService', method: 'installCapability', args: ['zimi-cu', undefined] },
       {
         scope: {},
         service: 'capabilityService',
         method: 'installCapability',
-        args: ['kimi-cu', { stopRunningProcesses: true }],
+        args: ['zimi-cu', { stopRunningProcesses: true }],
       },
     ]);
   });

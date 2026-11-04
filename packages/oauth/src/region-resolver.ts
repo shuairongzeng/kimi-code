@@ -1,29 +1,29 @@
 import { statSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { kimiCodeEnvBaseUrl } from './managed-kimi-code';
+import { zimiCodeEnvBaseUrl } from './managed-zimi-code';
 import {
-  clearKimiRegionCache,
-  KIMI_REGION_CACHE_FILENAME,
-  readKimiRegionCache,
-  writeKimiRegionCache,
-  type KimiRegionCacheRecord,
+  clearZimiRegionCache,
+  ZIMI_REGION_CACHE_FILENAME,
+  readZimiRegionCache,
+  writeZimiRegionCache,
+  type ZimiRegionCacheRecord,
 } from './region-cache';
 import {
   collectLocalRegionSignals,
-  detectKimiRegionFromLocalSignals,
+  detectZimiRegionFromLocalSignals,
   type LocalRegionDetection,
   type LocalRegionSignals,
 } from './region-local';
 import {
-  KIMI_REGION_MARKER_FILENAME,
-  readKimiRegionMarker,
-  resolveKimiRegionFromParts,
-  type KimiRegion,
-  type KimiRegionResolution,
+  ZIMI_REGION_MARKER_FILENAME,
+  readZimiRegionMarker,
+  resolveZimiRegionFromParts,
+  type ZimiRegion,
+  type ZimiRegionResolution,
 } from './region';
 
-export interface KimiRegionOAuthRef {
+export interface ZimiRegionOAuthRef {
   readonly key: string;
   readonly oauthHost?: string;
 }
@@ -35,33 +35,33 @@ export interface KimiRegionOAuthRef {
  * `unreadable` and the resolver short-circuits without inferring, touching
  * the cache, or memoizing, so every read retries and the failure self-heals.
  */
-export type KimiRegionAuthSnapshot =
+export type ZimiRegionAuthSnapshot =
   | { readonly status: 'logged-out' }
-  | { readonly status: 'logged-in'; readonly ref: KimiRegionOAuthRef };
+  | { readonly status: 'logged-in'; readonly ref: ZimiRegionOAuthRef };
 
-export type KimiRegionAuthRead = KimiRegionAuthSnapshot | { readonly status: 'unreadable' };
+export type ZimiRegionAuthRead = ZimiRegionAuthSnapshot | { readonly status: 'unreadable' };
 
-export type KimiRegionCacheAction =
+export type ZimiRegionCacheAction =
   | { readonly kind: 'none' }
-  | { readonly kind: 'write'; readonly region: KimiRegion }
+  | { readonly kind: 'write'; readonly region: ZimiRegion }
   | { readonly kind: 'clear' };
 
-export interface KimiRegionDecideInput {
-  readonly auth: KimiRegionAuthSnapshot;
+export interface ZimiRegionDecideInput {
+  readonly auth: ZimiRegionAuthSnapshot;
   readonly env: NodeJS.ProcessEnv;
   /** Install-channel marker value; absent when unreadable or skipped. */
-  readonly marker?: KimiRegion;
+  readonly marker?: ZimiRegion;
   /** Persisted logged-out inference record, when one validates. */
-  readonly cacheRecord?: KimiRegionCacheRecord;
+  readonly cacheRecord?: ZimiRegionCacheRecord;
   /** Invoked only when the chain reaches local-signals. */
   readonly signals: () => LocalRegionSignals;
   readonly readMarker?: boolean;
   readonly allowLocalInference?: boolean;
 }
 
-export interface KimiRegionDecision {
-  readonly resolution: KimiRegionResolution;
-  readonly cacheAction: KimiRegionCacheAction;
+export interface ZimiRegionDecision {
+  readonly resolution: ZimiRegionResolution;
+  readonly cacheAction: ZimiRegionCacheAction;
 }
 
 /**
@@ -69,9 +69,9 @@ export interface KimiRegionDecision {
  * default. No I/O: file effects are returned as `cacheAction` for the single
  * exit in the resolver to execute once.
  */
-export function decideKimiRegion(input: KimiRegionDecideInput): KimiRegionDecision {
+export function decideZimiRegion(input: ZimiRegionDecideInput): ZimiRegionDecision {
   const ref = input.auth.status === 'logged-in' ? input.auth.ref : undefined;
-  const explicit = resolveKimiRegionFromParts({
+  const explicit = resolveZimiRegionFromParts({
     env: input.env,
     configuredOAuthHost: ref?.oauthHost,
     configuredOAuthKey: ref?.key,
@@ -92,7 +92,7 @@ export function decideKimiRegion(input: KimiRegionDecideInput): KimiRegionDecisi
   if (
     input.readMarker === false ||
     input.allowLocalInference === false ||
-    kimiCodeEnvBaseUrl(input.env) !== undefined
+    zimiCodeEnvBaseUrl(input.env) !== undefined
   ) {
     return { resolution: explicit, cacheAction: { kind: 'none' } };
   }
@@ -104,7 +104,7 @@ export function decideKimiRegion(input: KimiRegionDecideInput): KimiRegionDecisi
   }
   let detection: LocalRegionDetection;
   try {
-    detection = detectKimiRegionFromLocalSignals(input.signals());
+    detection = detectZimiRegionFromLocalSignals(input.signals());
   } catch {
     return {
       resolution: { region: 'mainland-cn', source: 'fallback' },
@@ -123,10 +123,10 @@ export function decideKimiRegion(input: KimiRegionDecideInput): KimiRegionDecisi
   };
 }
 
-export interface CreateKimiRegionResolverOptions {
+export interface CreateZimiRegionResolverOptions {
   readonly homeDir: string;
   readonly env?: NodeJS.ProcessEnv;
-  readonly readAuth: () => KimiRegionAuthRead;
+  readonly readAuth: () => ZimiRegionAuthRead;
   /**
    * Path of the file `readAuth` parses (config.toml). When set, `readAuth`
    * only runs again after the file's stat fingerprint changes; hosts whose
@@ -139,10 +139,10 @@ export interface CreateKimiRegionResolverOptions {
   readonly collectSignals?: () => LocalRegionSignals;
 }
 
-export interface KimiRegionResolver {
-  current(): KimiRegionResolution;
+export interface ZimiRegionResolver {
+  current(): ZimiRegionResolution;
   /** Force a full re-read of every input; `current()` re-validates via stat. */
-  refresh(): KimiRegionResolution;
+  refresh(): ZimiRegionResolution;
 }
 
 interface FileRead<T> {
@@ -159,24 +159,24 @@ function statFingerprint(path: string): string {
   }
 }
 
-function authBasis(auth: KimiRegionAuthRead): string {
+function authBasis(auth: ZimiRegionAuthRead): string {
   if (auth.status !== 'logged-in') return auth.status;
   return JSON.stringify([auth.status, auth.ref.key, auth.ref.oauthHost]);
 }
 
-export function createKimiRegionResolver(
-  options: CreateKimiRegionResolverOptions,
-): KimiRegionResolver {
+export function createZimiRegionResolver(
+  options: CreateZimiRegionResolverOptions,
+): ZimiRegionResolver {
   const env = options.env ?? process.env;
   const collectSignals = options.collectSignals ?? collectLocalRegionSignals;
-  const markerPath = join(options.homeDir, KIMI_REGION_MARKER_FILENAME);
-  const cachePath = join(options.homeDir, KIMI_REGION_CACHE_FILENAME);
-  let memo: { readonly basis: string; readonly resolution: KimiRegionResolution } | undefined;
-  let authRead: FileRead<KimiRegionAuthRead> | undefined;
-  let markerRead: FileRead<KimiRegion | undefined> | undefined;
-  let cacheRead: FileRead<KimiRegionCacheRecord | undefined> | undefined;
+  const markerPath = join(options.homeDir, ZIMI_REGION_MARKER_FILENAME);
+  const cachePath = join(options.homeDir, ZIMI_REGION_CACHE_FILENAME);
+  let memo: { readonly basis: string; readonly resolution: ZimiRegionResolution } | undefined;
+  let authRead: FileRead<ZimiRegionAuthRead> | undefined;
+  let markerRead: FileRead<ZimiRegion | undefined> | undefined;
+  let cacheRead: FileRead<ZimiRegionCacheRecord | undefined> | undefined;
 
-  function readAuth(): KimiRegionAuthRead {
+  function readAuth(): ZimiRegionAuthRead {
     try {
       return options.readAuth();
     } catch {
@@ -184,8 +184,8 @@ export function createKimiRegionResolver(
     }
   }
 
-  function current(): KimiRegionResolution {
-    let auth: KimiRegionAuthRead;
+  function current(): ZimiRegionResolution {
+    let auth: ZimiRegionAuthRead;
     let authFileFingerprint: string | undefined;
     if (options.authFilePath !== undefined) {
       authFileFingerprint = statFingerprint(options.authFilePath);
@@ -199,43 +199,43 @@ export function createKimiRegionResolver(
       auth = readAuth();
     }
 
-    let marker: KimiRegion | undefined;
+    let marker: ZimiRegion | undefined;
     let markerFingerprint = 'off';
     if (options.readMarker !== false) {
       markerFingerprint = statFingerprint(markerPath);
       if (markerRead?.fingerprint === markerFingerprint) {
         marker = markerRead.value;
       } else {
-        marker = readKimiRegionMarker(options.homeDir);
+        marker = readZimiRegionMarker(options.homeDir);
         markerRead = { fingerprint: markerFingerprint, value: marker };
       }
     }
 
     if (auth.status === 'unreadable') {
-      return resolveKimiRegionFromParts({ env, marker });
+      return resolveZimiRegionFromParts({ env, marker });
     }
 
-    let cacheRecord: KimiRegionCacheRecord | undefined;
+    let cacheRecord: ZimiRegionCacheRecord | undefined;
     const cacheFingerprint = statFingerprint(cachePath);
     if (cacheRead?.fingerprint === cacheFingerprint) {
       cacheRecord = cacheRead.value;
     } else {
-      cacheRecord = readKimiRegionCache(options.homeDir);
+      cacheRecord = readZimiRegionCache(options.homeDir);
       cacheRead = { fingerprint: cacheFingerprint, value: cacheRecord };
     }
 
     const basis = JSON.stringify([
       authBasis(auth),
-      env['KIMI_CODE_OAUTH_HOST'],
-      env['KIMI_OAUTH_HOST'],
-      env['KIMI_CODE_BASE_URL'],
+      env['ZIMI_CODE_OAUTH_HOST'],
+      env['ZIMI_OAUTH_HOST'],
+      env['ZIMI_CODE_BASE_URL'],
       authFileFingerprint,
       markerFingerprint,
       cacheFingerprint,
     ]);
     if (memo?.basis === basis) return memo.resolution;
 
-    const decision = decideKimiRegion({
+    const decision = decideZimiRegion({
       auth,
       env,
       marker,
@@ -245,15 +245,15 @@ export function createKimiRegionResolver(
       allowLocalInference: options.allowLocalInference,
     });
     if (decision.cacheAction.kind === 'write') {
-      writeKimiRegionCache(options.homeDir, decision.cacheAction.region);
+      writeZimiRegionCache(options.homeDir, decision.cacheAction.region);
     } else if (decision.cacheAction.kind === 'clear') {
-      clearKimiRegionCache(options.homeDir);
+      clearZimiRegionCache(options.homeDir);
     }
     memo = { basis, resolution: decision.resolution };
     return decision.resolution;
   }
 
-  function refresh(): KimiRegionResolution {
+  function refresh(): ZimiRegionResolution {
     memo = undefined;
     authRead = undefined;
     markerRead = undefined;

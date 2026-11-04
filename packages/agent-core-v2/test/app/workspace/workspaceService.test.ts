@@ -651,9 +651,9 @@ describe('WorkspaceService (file-backed)', () => {
     const extraB = join(homeDir, 'extra-b');
     await fsp.mkdir(extraA, { recursive: true });
     await fsp.mkdir(extraB, { recursive: true });
-    await fsp.mkdir(join(homeDir, '.kimi-code'), { recursive: true });
+    await fsp.mkdir(join(homeDir, '.zimi-code'), { recursive: true });
     await fsp.writeFile(
-      join(homeDir, '.kimi-code', 'local.toml'),
+      join(homeDir, '.zimi-code', 'local.toml'),
       `[workspace]\nadditional_dir = ["${extraA.replaceAll('\\', '\\\\')}", "${extraB.replaceAll('\\', '\\\\')}"]\nother_key = "keep"\n`,
       'utf8',
     );
@@ -662,7 +662,7 @@ describe('WorkspaceService (file-backed)', () => {
     const created = await registry.create({ root: homeDir, additionalDirs: [extraA] });
     expect(created.additionalDirs).toEqual([extraA]);
 
-    const text = await fsp.readFile(join(homeDir, '.kimi-code', 'local.toml'), 'utf8');
+    const text = await fsp.readFile(join(homeDir, '.zimi-code', 'local.toml'), 'utf8');
     expect(text).toContain('other_key');
     expect(text).toContain('extra-a');
     expect(text).toContain('extra-b');
@@ -683,9 +683,9 @@ describe('WorkspaceService (file-backed)', () => {
   it('readProjectConfigDirs returns resolved local.toml dirs without mutating anything', async () => {
     const extra = join(homeDir, 'extra');
     await fsp.mkdir(extra, { recursive: true });
-    await fsp.mkdir(join(homeDir, '.kimi-code'), { recursive: true });
+    await fsp.mkdir(join(homeDir, '.zimi-code'), { recursive: true });
     await fsp.writeFile(
-      join(homeDir, '.kimi-code', 'local.toml'),
+      join(homeDir, '.zimi-code', 'local.toml'),
       `[workspace]\nadditional_dir = ["${extra.replaceAll('\\', '\\\\')}"]\n`,
       'utf8',
     );
@@ -693,16 +693,16 @@ describe('WorkspaceService (file-backed)', () => {
     const registry = build();
     expect(await registry.readProjectConfigDirs(homeDir)).toEqual([extra]);
 
-    const text = await fsp.readFile(join(homeDir, '.kimi-code', 'local.toml'), 'utf8');
+    const text = await fsp.readFile(join(homeDir, '.zimi-code', 'local.toml'), 'utf8');
     expect(text).toContain('extra');
   });
 
   it('readProjectConfigDirs drops the root itself and duplicate entries', async () => {
     const extra = join(homeDir, 'extra');
     await fsp.mkdir(extra, { recursive: true });
-    await fsp.mkdir(join(homeDir, '.kimi-code'), { recursive: true });
+    await fsp.mkdir(join(homeDir, '.zimi-code'), { recursive: true });
     await fsp.writeFile(
-      join(homeDir, '.kimi-code', 'local.toml'),
+      join(homeDir, '.zimi-code', 'local.toml'),
       `[workspace]\nadditional_dir = ["${homeDir.replaceAll('\\', '\\\\')}", "${extra.replaceAll('\\', '\\\\')}", "${extra.replaceAll('\\', '\\\\')}"]\n`,
       'utf8',
     );
@@ -715,16 +715,16 @@ describe('WorkspaceService (file-backed)', () => {
     const registry = build();
     expect(await registry.readProjectConfigDirs(homeDir)).toEqual([]);
 
-    await fsp.mkdir(join(homeDir, '.kimi-code'), { recursive: true });
-    await fsp.writeFile(join(homeDir, '.kimi-code', 'local.toml'), 'not toml at all = [', 'utf8');
+    await fsp.mkdir(join(homeDir, '.zimi-code'), { recursive: true });
+    await fsp.writeFile(join(homeDir, '.zimi-code', 'local.toml'), 'not toml at all = [', 'utf8');
     await expect(registry.readProjectConfigDirs(homeDir)).rejects.toThrow();
   });
 
   it('readProjectConfigDirs rejects a configured directory that no longer exists', async () => {
     const missing = join(homeDir, 'missing');
-    await fsp.mkdir(join(homeDir, '.kimi-code'), { recursive: true });
+    await fsp.mkdir(join(homeDir, '.zimi-code'), { recursive: true });
     await fsp.writeFile(
-      join(homeDir, '.kimi-code', 'local.toml'),
+      join(homeDir, '.zimi-code', 'local.toml'),
       `[workspace]\nadditional_dir = ["${missing.replaceAll('\\', '\\\\')}"]\n`,
       'utf8',
     );

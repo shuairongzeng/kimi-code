@@ -1,4 +1,4 @@
-import { KIMI_CODE_PROVIDER_NAME } from '@moonshot-ai/kimi-code-oauth';
+import { ZIMI_CODE_PROVIDER_NAME } from '@zimi-ai/zimi-code-oauth';
 
 import { ScopeActivation, registerScopedService } from '#/_base/di/scope';
 import { Service } from '#/_base/di/service';
@@ -55,9 +55,9 @@ import type {
   ReloadSummary,
 } from './types';
 
-const KIMI_CODE_BASE_URL_ENV = 'KIMI_CODE_BASE_URL';
-const KIMI_CODE_OAUTH_HOST_ENV = 'KIMI_CODE_OAUTH_HOST';
-const KIMI_OAUTH_HOST_ENV = 'KIMI_OAUTH_HOST';
+const ZIMI_CODE_BASE_URL_ENV = 'ZIMI_CODE_BASE_URL';
+const ZIMI_CODE_OAUTH_HOST_ENV = 'ZIMI_CODE_OAUTH_HOST';
+const ZIMI_OAUTH_HOST_ENV = 'ZIMI_OAUTH_HOST';
 const NO_ABORT = new AbortController().signal;
 
 interface PluginReloadNotification {
@@ -109,14 +109,14 @@ export class PluginService extends Service implements IPluginService {
   ) {
     super();
     this.homeDir = bootstrap.homeDir;
-    this.envBaseUrl = bootstrap.getEnv(KIMI_CODE_BASE_URL_ENV);
+    this.envBaseUrl = bootstrap.getEnv(ZIMI_CODE_BASE_URL_ENV);
     this.envOAuthHost =
-      bootstrap.getEnv(KIMI_CODE_OAUTH_HOST_ENV) ?? bootstrap.getEnv(KIMI_OAUTH_HOST_ENV);
+      bootstrap.getEnv(ZIMI_CODE_OAUTH_HOST_ENV) ?? bootstrap.getEnv(ZIMI_OAUTH_HOST_ENV);
     this.availability = new PluginAvailabilityStore(this.homeDir);
     this.client = pluginClientForIdentity(bootstrap.clientIdentity.platform);
     this.platform = bootstrap.platform;
     this.manager = new PluginManager({
-      kimiHomeDir: this.homeDir,
+      zimiHomeDir: this.homeDir,
       client: this.client,
       platform: this.platform,
       availability: this.availability,
@@ -271,7 +271,7 @@ export class PluginService extends Service implements IPluginService {
           throw new Error2(
             PluginErrors.codes.PLUGIN_LOAD_FAILED,
             `Failed to reload plugins: ${this.loadError.message}`,
-            { cause: this.loadError, details: { kimiHomeDir: this.homeDir } },
+            { cause: this.loadError, details: { zimiHomeDir: this.homeDir } },
           );
         }
       }),
@@ -399,8 +399,8 @@ export class PluginService extends Service implements IPluginService {
       if (!Object.values(pluginServers).some((server) => server.transport === 'stdio')) {
         return pluginServers;
       }
-      const managedEnv = await this.managedKimiCodeEnvForPlugins();
-      return withManagedKimiPluginEnv(pluginServers, managedEnv);
+      const managedEnv = await this.managedZimiCodeEnvForPlugins();
+      return withManagedZimiPluginEnv(pluginServers, managedEnv);
     });
   }
 
@@ -414,8 +414,8 @@ export class PluginService extends Service implements IPluginService {
       if (!entries.some((entry) => entry.config.transport === 'stdio')) {
         return entries;
       }
-      const managedEnv = await this.managedKimiCodeEnvForPlugins();
-      return withManagedKimiPluginEnvOnEntries(entries, managedEnv);
+      const managedEnv = await this.managedZimiCodeEnvForPlugins();
+      return withManagedZimiPluginEnvOnEntries(entries, managedEnv);
     });
   }
 
@@ -493,21 +493,21 @@ export class PluginService extends Service implements IPluginService {
       PluginErrors.codes.PLUGIN_LOAD_FAILED,
       `Plugin state failed to load: ${this.loadError.message}. ` +
         `Fix the file at ${this.homeDir}/plugins/installed.json and run /plugins reload.`,
-      { cause: this.loadError, details: { kimiHomeDir: this.homeDir } },
+      { cause: this.loadError, details: { zimiHomeDir: this.homeDir } },
     );
   }
 
-  private async managedKimiCodeEnvForPlugins(): Promise<Record<string, string>> {
+  private async managedZimiCodeEnvForPlugins(): Promise<Record<string, string>> {
     await this.providers.ready;
-    const provider = this.providers.get(KIMI_CODE_PROVIDER_NAME);
+    const provider = this.providers.get(ZIMI_CODE_PROVIDER_NAME);
     const envBaseUrl = this.envBaseUrl;
     const envOAuthHost = this.envOAuthHost;
     const hasEnvOverride = envBaseUrl !== undefined || envOAuthHost !== undefined;
     const baseUrl = envBaseUrl !== undefined ? envBaseUrl.replace(/\/+$/, '') : provider?.baseUrl;
     const oauthHost = hasEnvOverride ? envOAuthHost : provider?.oauth?.oauthHost;
     const env: Record<string, string> = {};
-    if (baseUrl !== undefined) env[KIMI_CODE_BASE_URL_ENV] = baseUrl;
-    if (oauthHost !== undefined) env[KIMI_CODE_OAUTH_HOST_ENV] = oauthHost;
+    if (baseUrl !== undefined) env[ZIMI_CODE_BASE_URL_ENV] = baseUrl;
+    if (oauthHost !== undefined) env[ZIMI_CODE_OAUTH_HOST_ENV] = oauthHost;
     return env;
   }
 }
@@ -527,7 +527,7 @@ export function installResolvedMarketplacePlugin(
   return service.installPlugin(input, { resolved, requiredSkill });
 }
 
-function withManagedKimiPluginEnv(
+function withManagedZimiPluginEnv(
   pluginServers: Record<string, McpServerConfig>,
   managedEnv: Record<string, string>,
 ): Record<string, McpServerConfig> {
@@ -540,7 +540,7 @@ function withManagedKimiPluginEnv(
   return out;
 }
 
-function withManagedKimiPluginEnvOnEntries(
+function withManagedZimiPluginEnvOnEntries(
   entries: readonly PluginMcpServerEntry[],
   managedEnv: Record<string, string>,
 ): readonly PluginMcpServerEntry[] {

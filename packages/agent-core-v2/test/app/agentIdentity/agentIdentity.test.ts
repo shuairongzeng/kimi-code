@@ -164,7 +164,7 @@ describe('AgentIdentityService freeze', () => {
   it('ignores a config edit made after the freeze', async () => {
     const { identity, config } = createIdentity(
       { name: 'Acme' },
-      { hostRequestHeaders: { 'User-Agent': 'kimi-code-cli/1.0' } },
+      { hostRequestHeaders: { 'User-Agent': 'zimi-code-cli/1.0' } },
     );
     const before = await identity.resolved();
     expect(before.displayName).toBe('Acme');
@@ -191,7 +191,7 @@ describe('AgentIdentityService freeze', () => {
 });
 
 describe('buildAgentIdentitySnapshot products', () => {
-  const HOST = { 'User-Agent': 'kimi-code-cli/1.2.3 (darwin)', 'X-Msh-Device-Id': 'device-1' };
+  const HOST = { 'User-Agent': 'zimi-code-cli/1.2.3 (darwin)', 'X-Msh-Device-Id': 'device-1' };
 
   it('rewrites only the product token across every product when a slug is claimed', () => {
     const snapshot = buildAgentIdentitySnapshot({ slug: 'acme', hostRequestHeaders: HOST });
@@ -232,7 +232,7 @@ describe('buildAgentIdentitySnapshot products', () => {
     (key) => {
       const snapshot = buildAgentIdentitySnapshot({
         slug: 'acme',
-        hostRequestHeaders: { [key]: 'kimi-code-cli/1.2.3', 'X-Msh-Device-Id': 'device-1' },
+        hostRequestHeaders: { [key]: 'zimi-code-cli/1.2.3', 'X-Msh-Device-Id': 'device-1' },
       });
       expect(snapshot.thirdPartyUserAgent).toBe('acme/1.2.3');
       expect(snapshot.outboundUserAgent).toBe('acme/1.2.3');
@@ -245,9 +245,9 @@ describe('buildAgentIdentitySnapshot products', () => {
 
   it('passes a lowercase spelling through untouched when no identity is claimed', () => {
     const snapshot = buildAgentIdentitySnapshot({
-      hostRequestHeaders: { 'user-agent': 'kimi-code-cli/1.2.3' },
+      hostRequestHeaders: { 'user-agent': 'zimi-code-cli/1.2.3' },
     });
-    expect(snapshot.thirdPartyUserAgent).toBe('kimi-code-cli/1.2.3');
-    expect(snapshot.requestHeaders).toEqual({ 'user-agent': 'kimi-code-cli/1.2.3' });
+    expect(snapshot.thirdPartyUserAgent).toBe('zimi-code-cli/1.2.3');
+    expect(snapshot.requestHeaders).toEqual({ 'user-agent': 'zimi-code-cli/1.2.3' });
   });
 });

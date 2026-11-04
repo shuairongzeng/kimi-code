@@ -40,7 +40,7 @@ function runningGhost(taskId: string): Extract<AgentTaskInfo, { kind: 'process' 
 beforeEach(async () => {
   sessionDir = join(
     tmpdir(),
-    `kimi-hb-stale-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    `zimi-hb-stale-${Date.now()}-${Math.random().toString(36).slice(2)}`,
   );
   await mkdir(sessionDir, { recursive: true });
   persistence = createAgentTaskPersistence(sessionDir);

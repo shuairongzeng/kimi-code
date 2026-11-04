@@ -12,7 +12,7 @@ export interface CreateLoggerOptions {
 export function createServerLogger(opts: CreateLoggerOptions): ServerLogger {
   const base: LoggerOptions = {
     level: opts.level,
-    base: { name: 'kimi-server-v2' },
+    base: { name: 'zimi-server-v2' },
     timestamp: pino.stdTimeFunctions.isoTime,
   };
   return opts.stream === undefined ? pino(base) : pino(base, opts.stream);

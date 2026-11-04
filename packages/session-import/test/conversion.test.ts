@@ -78,7 +78,7 @@ describe('session conversion', () => {
     ].join('\n') }] }]);
     expect(body(result.messages)).not.toContain('metadata-only-sentinel');
     const lines = (await readFile(result.historyPath, 'utf8')).trimEnd().split('\n').map(line => JSON.parse(line));
-    expect(lines[0]).toMatchObject({ format: 'kimi-import-history', version: 1, source: 'claude-code', sourceId: 'example-session' });
+    expect(lines[0]).toMatchObject({ format: 'zimi-import-history', version: 1, source: 'claude-code', sourceId: 'example-session' });
     expect(lines[1]).toMatchObject({ type: 'turn', user: 'Original request 中文🙂' });
     expect(JSON.stringify(lines)).toContain('metadata-only-sentinel');
     expect(await readFile(paths.sourcePath)).toEqual(originalBytes);

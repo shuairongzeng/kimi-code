@@ -1,15 +1,15 @@
-import type { ITelemetryService } from '@moonshot-ai/agent-core-v2/app/telemetry/telemetry';
+import type { ITelemetryService } from '@zimi-ai/agent-core-v2/app/telemetry/telemetry';
 import {
   MAX_IMAGE_EDGE_PX,
   READ_IMAGE_BYTE_BUDGET,
   compressBase64ForModel as v2CompressBase64ForModel,
   compressImageForModel as v2CompressImageForModel,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import type {
   CompressBase64Result,
   CompressImageResult,
   ImageCompressionCaptionInput,
-} from '@moonshot-ai/agent-core-v2/agent/media/image-compress';
+} from '@zimi-ai/agent-core-v2/agent/media/image-compress';
 
 import type { ImageConfig } from '#/config/index';
 import type { TelemetryClient, TelemetryProperties } from '#/telemetry';
@@ -39,12 +39,12 @@ export class ImageLimits {
   }
 
   maxEdgePx(): number {
-    return positiveIntFromEnv(this.env, 'KIMI_IMAGE_MAX_EDGE_PX') ?? this.config?.maxEdgePx ?? MAX_IMAGE_EDGE_PX;
+    return positiveIntFromEnv(this.env, 'ZIMI_IMAGE_MAX_EDGE_PX') ?? this.config?.maxEdgePx ?? MAX_IMAGE_EDGE_PX;
   }
 
   readByteBudget(): number {
     return (
-      positiveIntFromEnv(this.env, 'KIMI_IMAGE_READ_BYTE_BUDGET') ?? this.config?.readByteBudget ?? READ_IMAGE_BYTE_BUDGET
+      positiveIntFromEnv(this.env, 'ZIMI_IMAGE_READ_BYTE_BUDGET') ?? this.config?.readByteBudget ?? READ_IMAGE_BYTE_BUDGET
     );
   }
 }

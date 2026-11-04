@@ -26,7 +26,7 @@ describe('config.toml writeback preservation', () => {
   let homeDir: string;
 
   beforeEach(() => {
-    homeDir = mkdtempSync(join(tmpdir(), 'kimi-v2-writeback-'));
+    homeDir = mkdtempSync(join(tmpdir(), 'zimi-v2-writeback-'));
   });
 
   afterEach(() => {

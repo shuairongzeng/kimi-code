@@ -683,7 +683,7 @@ describe('AgentToolDedupeService', () => {
       });
     }
 
-    it('injects no reminders and never force-stops when KIMI_CODE_REPEAT_BREAKER is 0', async () => {
+    it('injects no reminders and never force-stops when ZIMI_CODE_REPEAT_BREAKER is 0', async () => {
       const h = disabledHarness();
       h.registry.register(new EchoTool('Read'));
       let last: ToolResult | undefined;
@@ -696,7 +696,7 @@ describe('AgentToolDedupeService', () => {
       expect(h.loop.queue.hasPendingRequests()).toBe(false);
     });
 
-    it('keeps same-step dedupe active when KIMI_CODE_REPEAT_BREAKER is 0', async () => {
+    it('keeps same-step dedupe active when ZIMI_CODE_REPEAT_BREAKER is 0', async () => {
       const h = disabledHarness();
       const tool = new EchoTool('Read');
       h.registry.register(tool);

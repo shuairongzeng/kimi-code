@@ -85,7 +85,7 @@ export async function readSessionDetail(home: string, sessionId: string): Promis
     const agents = await discoverAgentsFromDisk(sessionDir);
     return { sessionId, sessionDir, workDir, state: null, agents, imported: false, importMeta: null };
   }
-  if (state.custom?.['imported_from_kimi_cli'] === true) return null;
+  if (state.custom?.['imported_from_zimi_cli'] === true) return null;
   const agents = await inventoryAgents(sessionDir, state);
   return {
     sessionId,
@@ -102,7 +102,7 @@ export async function readSessionDetail(home: string, sessionId: string): Promis
  *  directory is `imported/<id>/`, the workDir comes from the manifest, and
  *  agent homedirs are re-derived from the local extraction (state.json holds
  *  the exporting machine's absolute paths, which do not exist here). The
- *  `imported_from_kimi_cli` hide-filter is intentionally NOT applied — the
+ *  `imported_from_zimi_cli` hide-filter is intentionally NOT applied — the
  *  user imported this bundle deliberately. */
 async function readImportedDetail(home: string, importId: string): Promise<SessionDetail | null> {
   const sessionDir = importedDirOf(home, importId);
@@ -194,7 +194,7 @@ async function tryReadSummary(
   }
   // Local migrated-CLI sessions are hidden; an imported bundle is shown
   // regardless because the user chose to import it.
-  if (!imported && state.custom?.['imported_from_kimi_cli'] === true) return null;
+  if (!imported && state.custom?.['imported_from_zimi_cli'] === true) return null;
 
   const mainWirePath = join(sessionDir, 'agents', 'main', 'wire.jsonl');
   const mainExists = await pathExists(mainWirePath);

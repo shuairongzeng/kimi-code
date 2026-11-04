@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { resolveKimiRegionDetailed } from '@moonshot-ai/kimi-code-oauth';
+import { resolveZimiRegionDetailed } from '@zimi-ai/zimi-code-oauth';
 
 import {
   resetUnexpectedErrorHandler,
@@ -57,10 +57,10 @@ function baseOptions(
       clientIdentity: { ...stubClientIdentity, version: '1.0.0' },
     },
     resolveRegion: () =>
-      resolveKimiRegionDetailed({
+      resolveZimiRegionDetailed({
         env,
         homeDir: dir === '' ? undefined : dir,
-        readMarker: env['KIMI_CODE_REGION_MARKER'] !== 'off',
+        readMarker: env['ZIMI_CODE_REGION_MARKER'] !== 'off',
       }),
     deviceId: 'dev',
     appName: 'test-app',
@@ -73,26 +73,26 @@ describe('CloudAppender', () => {
   let homeDir: string;
   let savedOauthHost: string | undefined;
   let savedLegacyOauthHost: string | undefined;
-  let savedKimiHome: string | undefined;
+  let savedZimiHome: string | undefined;
 
   beforeEach(() => {
     homeDir = mkdtempSync(join(tmpdir(), 'cloud-appender-'));
-    savedOauthHost = process.env['KIMI_CODE_OAUTH_HOST'];
-    savedLegacyOauthHost = process.env['KIMI_OAUTH_HOST'];
-    savedKimiHome = process.env['KIMI_CODE_HOME'];
-    delete process.env['KIMI_CODE_OAUTH_HOST'];
-    delete process.env['KIMI_OAUTH_HOST'];
-    process.env['KIMI_CODE_HOME'] = homeDir;
+    savedOauthHost = process.env['ZIMI_CODE_OAUTH_HOST'];
+    savedLegacyOauthHost = process.env['ZIMI_OAUTH_HOST'];
+    savedZimiHome = process.env['ZIMI_CODE_HOME'];
+    delete process.env['ZIMI_CODE_OAUTH_HOST'];
+    delete process.env['ZIMI_OAUTH_HOST'];
+    process.env['ZIMI_CODE_HOME'] = homeDir;
   });
 
   afterEach(() => {
     rmSync(homeDir, { recursive: true, force: true });
-    if (savedOauthHost === undefined) delete process.env['KIMI_CODE_OAUTH_HOST'];
-    else process.env['KIMI_CODE_OAUTH_HOST'] = savedOauthHost;
-    if (savedLegacyOauthHost === undefined) delete process.env['KIMI_OAUTH_HOST'];
-    else process.env['KIMI_OAUTH_HOST'] = savedLegacyOauthHost;
-    if (savedKimiHome === undefined) delete process.env['KIMI_CODE_HOME'];
-    else process.env['KIMI_CODE_HOME'] = savedKimiHome;
+    if (savedOauthHost === undefined) delete process.env['ZIMI_CODE_OAUTH_HOST'];
+    else process.env['ZIMI_CODE_OAUTH_HOST'] = savedOauthHost;
+    if (savedLegacyOauthHost === undefined) delete process.env['ZIMI_OAUTH_HOST'];
+    else process.env['ZIMI_OAUTH_HOST'] = savedLegacyOauthHost;
+    if (savedZimiHome === undefined) delete process.env['ZIMI_CODE_HOME'];
+    else process.env['ZIMI_CODE_HOME'] = savedZimiHome;
   });
 
   it('sends a flattened, prefixed payload with user_id and context', async () => {
@@ -132,7 +132,7 @@ describe('CloudAppender', () => {
   });
 
   it('sends to the global collector when the env pins the global region', async () => {
-    process.env['KIMI_CODE_OAUTH_HOST'] = 'https://auth.kimi.ai';
+    process.env['ZIMI_CODE_OAUTH_HOST'] = 'https://auth.kimi.ai';
     const requests: CapturedRequest[] = [];
     const appender = new CloudAppender(
       baseOptions({
@@ -177,7 +177,7 @@ describe('CloudAppender', () => {
     const appender = new CloudAppender(
       baseOptions({
         homeDir,
-        bootstrapEnv: { KIMI_CODE_REGION_MARKER: 'off' },
+        bootstrapEnv: { ZIMI_CODE_REGION_MARKER: 'off' },
         fetchImpl: makeFetch((req) => {
           requests.push(req);
           return okResponse();
@@ -192,10 +192,10 @@ describe('CloudAppender', () => {
     expect(requests[0]?.url).toBe('https://telemetry-logs.kimi.com/v1/event');
   });
 
-  it('honors KIMI_CODE_REGION_MARKER=off so embedded servers ignore the install marker', async () => {
+  it('honors ZIMI_CODE_REGION_MARKER=off so embedded servers ignore the install marker', async () => {
     writeFileSync(join(homeDir, 'region'), 'global\n');
-    const savedMarkerFlag = process.env['KIMI_CODE_REGION_MARKER'];
-    process.env['KIMI_CODE_REGION_MARKER'] = 'off';
+    const savedMarkerFlag = process.env['ZIMI_CODE_REGION_MARKER'];
+    process.env['ZIMI_CODE_REGION_MARKER'] = 'off';
     try {
       const requests: CapturedRequest[] = [];
       const appender = new CloudAppender(
@@ -214,8 +214,8 @@ describe('CloudAppender', () => {
       expect(requests).toHaveLength(1);
       expect(requests[0]?.url).toBe('https://telemetry-logs.kimi.com/v1/event');
     } finally {
-      if (savedMarkerFlag === undefined) delete process.env['KIMI_CODE_REGION_MARKER'];
-      else process.env['KIMI_CODE_REGION_MARKER'] = savedMarkerFlag;
+      if (savedMarkerFlag === undefined) delete process.env['ZIMI_CODE_REGION_MARKER'];
+      else process.env['ZIMI_CODE_REGION_MARKER'] = savedMarkerFlag;
     }
   });
 

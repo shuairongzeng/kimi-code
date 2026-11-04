@@ -1261,14 +1261,14 @@ describe('ReadTool', () => {
     );
 
     const result = await execute(tool, {
-      path: '/home/user/.kimi-code/sessions/ws/session/agents/main/wire.jsonl',
+      path: '/home/user/.zimi-code/sessions/ws/session/agents/main/wire.jsonl',
     });
     const output = toolContentString(result);
 
     expect(output).toContain(long);
     expect(output).not.toContain('...');
     expect(result.note).not.toContain('were truncated');
-    expect(result.note).toContain('Kimi Code agent event log');
+    expect(result.note).toContain('Zimi Code agent event log');
     expect(result.spillExempt).toBe(true);
   });
 
@@ -1290,7 +1290,7 @@ describe('ReadTool', () => {
       readConfig(500_000),
     );
     const result = await execute(tool, {
-      path: '/home/user/.kimi-code/sessions/ws/session/agents/main/wire.jsonl',
+      path: '/home/user/.zimi-code/sessions/ws/session/agents/main/wire.jsonl',
       line_offset: 1,
       n_lines: 1,
       max_chars: 500_000,

@@ -59,7 +59,7 @@ describe('production auth wiring', () => {
   const sockets: WebSocket[] = [];
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-auth-wiring-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-auth-wiring-'));
     await boot();
   });
 
@@ -134,7 +134,7 @@ describe('production auth wiring', () => {
     const token = (await readFile(join(home as string, 'server.token'), 'utf8')).trim();
     const wsUrl = `ws://127.0.0.1:${(server as RunningServer).port}/api/v1/ws`;
 
-    const { ws, firstFrame } = await openConn(wsUrl, [`kimi-code.bearer.${token}`]);
+    const { ws, firstFrame } = await openConn(wsUrl, [`zimi-code.bearer.${token}`]);
     sockets.push(ws);
     expect(firstFrame).toMatchObject({ type: 'server_hello' });
 

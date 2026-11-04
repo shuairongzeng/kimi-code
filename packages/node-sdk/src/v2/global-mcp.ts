@@ -15,9 +15,9 @@
 import {
   McpServerConfigSchema,
   type McpServerConfig,
-} from '@moonshot-ai/agent-core-v2/mcpCore/config-schema';
+} from '@zimi-ai/agent-core-v2/mcpCore/config-schema';
 
-import { ErrorCodes, KimiError } from '#/errors';
+import { ErrorCodes, ZimiError } from '#/errors';
 import type { McpServerConfig as GlobalMcpServerConfig } from '#/mcp';
 
 /** Byte-identical port of v1's `mcpConfigWithoutName`. */
@@ -34,7 +34,7 @@ export function mcpConfigWithoutName(server: GlobalMcpServerConfig): McpServerCo
 export function parseInlineMcpServer(server: GlobalMcpServerConfig): GlobalMcpServerConfig {
   const parsed = McpServerConfigSchema.safeParse(server);
   if (!parsed.success) {
-    throw new KimiError(
+    throw new ZimiError(
       ErrorCodes.CONFIG_INVALID,
       `Invalid MCP server "${server.name}": ${parsed.error.message}`,
     );
@@ -52,7 +52,7 @@ export function parseReconnectMcpServerConfig(
 ): McpServerConfig {
   const parsed = McpServerConfigSchema.safeParse(config);
   if (!parsed.success) {
-    throw new KimiError(
+    throw new ZimiError(
       ErrorCodes.CONFIG_INVALID,
       `Invalid MCP server config for "${name}": ${parsed.error.message}`,
     );
@@ -63,5 +63,5 @@ export function parseReconnectMcpServerConfig(
 export function normalizeServerName(name: string): string {
   const normalized = name.trim();
   if (normalized.length > 0) return normalized;
-  throw new KimiError(ErrorCodes.REQUEST_INVALID, 'MCP server name cannot be empty');
+  throw new ZimiError(ErrorCodes.REQUEST_INVALID, 'MCP server name cannot be empty');
 }

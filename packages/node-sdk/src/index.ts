@@ -1,26 +1,26 @@
-import type { KimiHarnessEnvironmentOptions } from '#/kimi-harness';
-export { KimiHarness } from '#/kimi-harness';
-export type { KimiHarnessEnvironmentOptions, KimiHarnessRuntimeOptions } from '#/kimi-harness';
+import type { ZimiHarnessEnvironmentOptions } from '#/zimi-harness';
+export { ZimiHarness } from '#/zimi-harness';
+export type { ZimiHarnessEnvironmentOptions, ZimiHarnessRuntimeOptions } from '#/zimi-harness';
 export { Session } from '#/session';
-export { KimiAuthFacade } from '#/auth';
+export { ZimiAuthFacade } from '#/auth';
 export {
-  createKimiHarness,
+  createZimiHarness,
   SDKRpcClientV2,
   type SDKRpcClientV2Options,
 } from '#/sdk-rpc-client-v2';
 export {
-  createKimiConfigRpc,
-  KimiConfigRpcClient,
-  type KimiConfigRpc,
-  type KimiConfigValidationIssue,
-  type KimiConfigValidationPathSegment,
-  type ResolveKimiConfigPathInput,
-  type ValidateKimiConfigTomlInput,
+  createZimiConfigRpc,
+  ZimiConfigRpcClient,
+  type ZimiConfigRpc,
+  type ZimiConfigValidationIssue,
+  type ZimiConfigValidationPathSegment,
+  type ResolveZimiConfigPathInput,
+  type ValidateZimiConfigTomlInput,
 } from '#/config-rpc';
 export { SDKRpcClientBase } from '#/rpc';
 export type { ConfigSectionChange } from '#/rpc';
-export { KimiForCodingProvider } from '#/kimi-code-model-provider';
-export type { KimiForCodingProviderOptions } from '#/kimi-code-model-provider';
+export { ZimiForCodingProvider } from '#/zimi-code-model-provider';
+export type { ZimiForCodingProviderOptions } from '#/zimi-code-model-provider';
 
 export {
   applyCatalogProvider,
@@ -47,15 +47,15 @@ export type {
 
 export {
   ErrorCodes,
-  KimiError,
-  type KimiErrorCode,
-  type KimiErrorInfo,
-  type KimiErrorOptions,
-  type KimiErrorPayload,
-  KIMI_ERROR_INFO,
-  fromKimiErrorPayload,
-  isKimiError,
-  toKimiErrorPayload,
+  ZimiError,
+  type ZimiErrorCode,
+  type ZimiErrorInfo,
+  type ZimiErrorOptions,
+  type ZimiErrorPayload,
+  ZIMI_ERROR_INFO,
+  fromZimiErrorPayload,
+  isZimiError,
+  toZimiErrorPayload,
 } from '#/errors';
 
 export {
@@ -69,7 +69,7 @@ export {
   computeUpdateStatus,
   isMissingMarketplaceTokenError,
   isTrustedPluginMarketplaceUrl,
-  KIMI_CODE_PLUGIN_MARKETPLACE_URL_ENV,
+  ZIMI_CODE_PLUGIN_MARKETPLACE_URL_ENV,
   parsePluginMarketplace,
   marketplaceEntryInstallableOnHost,
   marketplaceEntrySupportsClient,
@@ -80,17 +80,17 @@ export {
   PLUGIN_MARKETPLACE_TIERS,
   readPluginMarketplace,
   withLatestVersions,
-} from '@moonshot-ai/agent-core-v2/app/plugin/marketplace';
-export { PluginAvailabilityStore } from '@moonshot-ai/agent-core-v2/app/plugin/availability';
-export { resolveKimiHome } from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2/app/plugin/marketplace';
+export { PluginAvailabilityStore } from '@zimi-ai/agent-core-v2/app/plugin/availability';
+export { resolveZimiHome } from '@zimi-ai/agent-core-v2';
 export type { LogContext, LogLevel, LogPayload, Logger } from '#/logging/index';
 
 export { effectiveModelAlias, loadRuntimeConfigSafe } from '#/config/index';
-export { resolveConfigPath } from '@moonshot-ai/agent-core-v2';
+export { resolveConfigPath } from '@zimi-ai/agent-core-v2';
 export { limitAgentReplayByTurns } from '#/replay';
-export { parseAgentFileText, resolveAgentPath } from '@moonshot-ai/agent-core-v2';
+export { parseAgentFileText, resolveAgentPath } from '@zimi-ai/agent-core-v2';
 export { SECONDARY_DERIVED_MODEL_ALIAS } from '#/config/index';
-export { PRIMARY_SUBAGENT_MODEL_CHOICE } from '@moonshot-ai/agent-core-v2/session/subagent/configSection';
+export { PRIMARY_SUBAGENT_MODEL_CHOICE } from '@zimi-ai/agent-core-v2/session/subagent/configSection';
 
 export { installGlobalProxyDispatcher } from '#/proxy';
 
@@ -105,7 +105,7 @@ export {
   sessionMediaOriginalsDir,
   IMAGE_BYTE_BUDGET,
   MAX_IMAGE_EDGE_PX,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 export { compressBase64ForModel, compressImageForModel, ImageLimits } from '#/image';
 export type {
   CompressImageOptions,
@@ -131,22 +131,22 @@ export {
   isDaemonFileUrl,
   matchSingleMediaPathTag,
   parseDaemonFileUrl,
-} from '@moonshot-ai/agent-core-v2/agent/media/mediaRef';
+} from '@zimi-ai/agent-core-v2/agent/media/mediaRef';
 export type {
   DaemonFileRef,
   MediaKind,
-} from '@moonshot-ai/agent-core-v2/agent/media/mediaRef';
+} from '@zimi-ai/agent-core-v2/agent/media/mediaRef';
 
 export type {
-  KimiAuthCompleteFeedbackUploadInput,
-  KimiAuthCompleteFeedbackUploadPart,
-  KimiAuthCreateFeedbackUploadUrlInput,
-  KimiAuthCreateFeedbackUploadUrlOk,
-  KimiAuthCreateFeedbackUploadUrlResult,
-  KimiAuthFeedbackUploadPart,
-  KimiAuthLoginResult,
-  KimiAuthLogoutResult,
-  KimiAuthSubmitFeedbackInput,
+  ZimiAuthCompleteFeedbackUploadInput,
+  ZimiAuthCompleteFeedbackUploadPart,
+  ZimiAuthCreateFeedbackUploadUrlInput,
+  ZimiAuthCreateFeedbackUploadUrlOk,
+  ZimiAuthCreateFeedbackUploadUrlResult,
+  ZimiAuthFeedbackUploadPart,
+  ZimiAuthLoginResult,
+  ZimiAuthLogoutResult,
+  ZimiAuthSubmitFeedbackInput,
 } from '#/auth';
 
 export * from '#/events';

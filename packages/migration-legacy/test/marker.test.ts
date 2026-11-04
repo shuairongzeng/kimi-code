@@ -2,7 +2,7 @@
  * Scenario: legacy migration marker persistence and prompt suppression.
  * Responsibilities: preserve run history and decide whether one target still needs migration.
  * Wiring: real temporary filesystem; no stubbed collaborators.
- * Run: pnpm --filter @moonshot-ai/migration-legacy test -- marker.test.ts
+ * Run: pnpm --filter @zimi-ai/migration-legacy test -- marker.test.ts
  */
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
 import { mkdtemp, rm, readFile, writeFile, mkdir } from 'node:fs/promises';
@@ -73,7 +73,7 @@ describe('marker', () => {
     const firstTarget = join(dir, 'first-target');
     const secondTarget = join(dir, 'second-target');
     await writeFile(
-      join(dir, '.migrated-to-kimi-code'),
+      join(dir, '.migrated-to-zimi-code'),
       JSON.stringify({
         version: 1,
         first_migrated_at: '2026-05-16T10:00:00Z',
@@ -118,7 +118,7 @@ describe('marker', () => {
   });
 
   it('readMarker returns undefined when file is corrupt', async () => {
-    await writeFile(join(dir, '.migrated-to-kimi-code'), 'not-json', 'utf-8');
+    await writeFile(join(dir, '.migrated-to-zimi-code'), 'not-json', 'utf-8');
     expect(await readMarker(dir)).toBeUndefined();
   });
 
@@ -126,7 +126,7 @@ describe('marker', () => {
     // A partially-written/hand-edited marker: treating it as absent avoids
     // appendMarkerRun throwing on `[...existing.runs, run]`.
     await writeFile(
-      join(dir, '.migrated-to-kimi-code'),
+      join(dir, '.migrated-to-zimi-code'),
       JSON.stringify({ version: 1, target_path: '/foo' }),
       'utf-8',
     );
@@ -142,7 +142,7 @@ describe('marker', () => {
   it('suppresses migration when the completed marker names the same target', async () => {
     const targetHome = join(dir, 'target');
     await writeFile(
-      join(dir, '.migrated-to-kimi-code'),
+      join(dir, '.migrated-to-zimi-code'),
       JSON.stringify({ target_path: targetHome }),
       'utf-8',
     );
@@ -152,7 +152,7 @@ describe('marker', () => {
 
   it('does not suppress migration when the completed marker names another target', async () => {
     await writeFile(
-      join(dir, '.migrated-to-kimi-code'),
+      join(dir, '.migrated-to-zimi-code'),
       JSON.stringify({ target_path: join(dir, 'first-target') }),
       'utf-8',
     );
@@ -163,7 +163,7 @@ describe('marker', () => {
   });
 
   it('suppresses migration when an old marker has no target path', async () => {
-    await writeFile(join(dir, '.migrated-to-kimi-code'), '{}', 'utf-8');
+    await writeFile(join(dir, '.migrated-to-zimi-code'), '{}', 'utf-8');
 
     expect(
       shouldSuppressMigration({ sourceHome: dir, targetHome: join(dir, 'target') }),
@@ -171,7 +171,7 @@ describe('marker', () => {
   });
 
   it('suppresses migration when the completed marker is corrupt', async () => {
-    await writeFile(join(dir, '.migrated-to-kimi-code'), 'not-json', 'utf-8');
+    await writeFile(join(dir, '.migrated-to-zimi-code'), 'not-json', 'utf-8');
 
     expect(
       shouldSuppressMigration({ sourceHome: dir, targetHome: join(dir, 'target') }),
@@ -181,22 +181,22 @@ describe('marker', () => {
   it('suppresses migration when the target contains the skip marker', async () => {
     const targetHome = join(dir, 'target');
     await mkdir(targetHome, { recursive: true });
-    await writeFile(join(targetHome, '.skip-migration-from-kimi-cli'), '', 'utf-8');
+    await writeFile(join(targetHome, '.skip-migration-from-zimi-cli'), '', 'utf-8');
 
     expect(shouldSuppressMigration({ sourceHome: dir, targetHome })).toBe(true);
   });
 
   it('suppresses migration when Windows drive letters differ only by case', async () => {
     await writeFile(
-      join(dir, '.migrated-to-kimi-code'),
-      JSON.stringify({ target_path: 'C:\\Users\\Example\\.kimi-code' }),
+      join(dir, '.migrated-to-zimi-code'),
+      JSON.stringify({ target_path: 'C:\\Users\\Example\\.zimi-code' }),
       'utf-8',
     );
 
     expect(
       shouldSuppressMigration({
         sourceHome: dir,
-        targetHome: 'c:\\Users\\Example\\.kimi-code',
+        targetHome: 'c:\\Users\\Example\\.zimi-code',
       }),
     ).toBe(true);
   });

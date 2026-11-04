@@ -111,7 +111,7 @@ describe('TowerSpawnTool', () => {
     acquire = vi.fn(() => gate);
     release = vi.fn();
     completion = deferred();
-    callerModelAlias = 'kimi-code';
+    callerModelAlias = 'zimi-code';
     secondaryModel = undefined;
     subagentTimeoutMs = undefined;
     thinkingEnabled = undefined;
@@ -269,7 +269,7 @@ describe('TowerSpawnTool', () => {
     expect(tool.description).toContain('Available models (pass via model):');
     expect(tool.description).toContain('- cheap/fast [default]: fast and cheap');
     expect(tool.description).toContain('- smart/slow: careful and thorough');
-    expect(tool.description).toContain('- primary (= kimi-code): your current model and thinking level');
+    expect(tool.description).toContain('- primary (= zimi-code): your current model and thinking level');
     expect(tool.description).toContain(
       'The [default] marker is the worker pool default, not the reviewer default.',
     );
@@ -281,7 +281,7 @@ describe('TowerSpawnTool', () => {
     secondaryModel = { model: 'cheap/fast' };
     expect(properties()['model']?.type).toBe('string');
     expect(tool.description).toContain('- cheap/fast [default]');
-    expect(tool.description).toContain('- primary (= kimi-code): your current model and thinking level');
+    expect(tool.description).toContain('- primary (= zimi-code): your current model and thinking level');
   });
 
   it('refuses when tower mode is not active', async () => {
@@ -432,7 +432,7 @@ describe('TowerSpawnTool', () => {
     );
 
     expect(createAgent).toHaveBeenCalledWith({
-      binding: { profile: 'tower-worker', model: 'kimi-code', thinking: 'off' },
+      binding: { profile: 'tower-worker', model: 'zimi-code', thinking: 'off' },
       labels: { parentAgentId: 'main' },
     });
     expect(runAgent).toHaveBeenCalledWith(
@@ -524,7 +524,7 @@ describe('TowerSpawnTool', () => {
       kind: 'agent',
       agentId: 'agent-7',
       subagentType: 'tower-worker',
-      model: 'kimi-code',
+      model: 'zimi-code',
       thinkingEffort: 'high',
     });
   });
@@ -565,15 +565,15 @@ describe('TowerSpawnTool', () => {
       const result = await execute(argsFor(kind, 'primary'));
 
       expect(result.isError).toBeUndefined();
-      expect(result.output).toContain('model: kimi-code');
+      expect(result.output).toContain('model: zimi-code');
       expect(createAgent).toHaveBeenCalledWith({
-        binding: { profile: 'tower-worker', model: 'kimi-code', thinking: 'off' },
+        binding: { profile: 'tower-worker', model: 'zimi-code', thinking: 'off' },
         labels: { parentAgentId: 'main' },
       });
       const task = registerTask.mock.calls[0]?.[0] as SubagentTask;
-      expect(task.model).toBe('kimi-code');
+      expect(task.model).toBe('zimi-code');
       const activityLog = await readFile(join(repo, '.tower/comms/log/activity.log'), 'utf8');
-      expect(activityLog).toMatch(/spawn .*model=kimi-code/);
+      expect(activityLog).toMatch(/spawn .*model=zimi-code/);
     },
   );
 
@@ -653,9 +653,9 @@ describe('TowerSpawnTool', () => {
     const result = await execute(WORKER_ARGS);
 
     expect(result.isError).toBeUndefined();
-    expect(result.output).toContain('model: kimi-code');
+    expect(result.output).toContain('model: zimi-code');
     const activityLog = await readFile(join(repo, '.tower/comms/log/activity.log'), 'utf8');
-    expect(activityLog).toMatch(/spawn .*model=kimi-code/);
+    expect(activityLog).toMatch(/spawn .*model=zimi-code/);
   });
 
   it('binds reviewers to the tower model even when the secondary model is configured', async () => {
@@ -668,9 +668,9 @@ describe('TowerSpawnTool', () => {
     });
 
     expect(result.isError).toBeUndefined();
-    expect(result.output).toContain('model: kimi-code');
+    expect(result.output).toContain('model: zimi-code');
     expect(createAgent).toHaveBeenCalledWith({
-      binding: { profile: 'tower-worker', model: 'kimi-code', thinking: 'off' },
+      binding: { profile: 'tower-worker', model: 'zimi-code', thinking: 'off' },
       labels: { parentAgentId: 'main' },
     });
   });
@@ -680,7 +680,7 @@ describe('TowerSpawnTool', () => {
 
     expect(result.isError).toBeUndefined();
     expect(createAgent).toHaveBeenCalledWith({
-      binding: { profile: 'tower-worker', model: 'kimi-code', thinking: 'off' },
+      binding: { profile: 'tower-worker', model: 'zimi-code', thinking: 'off' },
       labels: { parentAgentId: 'main' },
     });
   });
@@ -716,7 +716,7 @@ describe('TowerSpawnTool', () => {
 
     expect(result.isError).toBeUndefined();
     expect(createAgent).toHaveBeenCalledWith({
-      binding: { profile: 'tower-worker', model: 'kimi-code', thinking: 'off' },
+      binding: { profile: 'tower-worker', model: 'zimi-code', thinking: 'off' },
       labels: { parentAgentId: 'main' },
     });
   });
@@ -756,7 +756,7 @@ describe('TowerSpawnTool', () => {
     expect(result.isError).toBeUndefined();
     expect(result.output).toContain('review_target: feat/build-gemm');
     expect(createAgent).toHaveBeenCalledWith({
-      binding: { profile: 'tower-worker', model: 'kimi-code', thinking: 'off' },
+      binding: { profile: 'tower-worker', model: 'zimi-code', thinking: 'off' },
       labels: { parentAgentId: 'main' },
     });
     expect(result.output).toContain('A reviewer is one-shot');

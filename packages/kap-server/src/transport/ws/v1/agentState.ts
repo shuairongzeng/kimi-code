@@ -9,7 +9,7 @@ import {
   planKey,
   type IAgentScopeHandle,
   type ServiceIdentifier,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 
 import type {
   AgentState,

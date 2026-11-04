@@ -18,17 +18,17 @@ import { appendMarkerRun, readMarker, writeMarker } from './marker.js';
 const DEFAULT_MIGRATOR_VERSION = '0.1.1';
 
 const CONFIG_CONFLICT_NOTICE =
-  'Your existing config.toml could not be parsed; migrated copy saved to ~/.kimi-code/config.migrated-from-kimi-cli.toml — please review and merge manually.';
+  'Your existing config.toml could not be parsed; migrated copy saved to ~/.zimi-code/config.migrated-from-zimi-cli.toml — please review and merge manually.';
 
 const TUI_CONFLICT_NOTICE =
-  'Your existing tui.toml had user modifications; migrated copy saved to ~/.kimi-code/tui.migrated-from-kimi-cli.toml — please review and merge manually.';
+  'Your existing tui.toml had user modifications; migrated copy saved to ~/.zimi-code/tui.migrated-from-zimi-cli.toml — please review and merge manually.';
 
 export interface RunMigrationInput {
   readonly plan: MigrationPlan;
   readonly scope: MigrationScope;
   readonly source: string;
   readonly target: string;
-  /** Legacy plans dir; defaults to `~/.kimi/plans` per kimi-cli's hardcode. */
+  /** Legacy plans dir; defaults to `~/.zimi/plans` per zimi-cli's hardcode. */
   readonly plansSourceDir?: string;
   readonly migratorVersion?: string;
   readonly onProgress?: (msg: string) => void;

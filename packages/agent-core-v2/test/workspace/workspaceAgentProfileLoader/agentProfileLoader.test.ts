@@ -148,7 +148,7 @@ async function withFixture(run: (fixture: Fixture) => Promise<void>): Promise<vo
       return realpath(p);
     };
     const [homeDir, osHomeDir, workDir, extraDir] = await Promise.all([
-      make('kimi-home'),
+      make('zimi-home'),
       make('os-home'),
       make('work'),
       make('extra-agents'),
@@ -366,7 +366,7 @@ describe('agent profile loaders + session catalog', () => {
       await writeAgent(join(fixture.homeDir, 'agents'), 'shared.md', agentMd('shared', 'from user'));
       await writeAgent(join(fixture.homeDir, 'agents'), 'user-only.md', agentMd('user-only', 'user agent'));
       await writeAgent(
-        join(fixture.workDir, '.kimi-code', 'agents'),
+        join(fixture.workDir, '.zimi-code', 'agents'),
         'shared.md',
         agentMd('shared', 'from project'),
       );
@@ -393,7 +393,7 @@ describe('agent profile loaders + session catalog', () => {
       await writeAgent(fixture.extraDir, 'shared.md', agentMd('shared', 'from extra'));
       await writeAgent(fixture.extraDir, 'user-extra.md', agentMd('user-extra', 'from extra'));
       await writeAgent(
-        join(fixture.workDir, '.kimi-code', 'agents'),
+        join(fixture.workDir, '.zimi-code', 'agents'),
         'shared.md',
         agentMd('shared', 'from project'),
       );
@@ -545,11 +545,11 @@ describe('agent profile loaders + session catalog', () => {
   it('skips invalid workspace files and still loads valid ones', async () => {
     await withFixture(async (fixture) => {
       const badPath = await writeAgent(
-        join(fixture.workDir, '.kimi-code', 'agents'),
+        join(fixture.workDir, '.zimi-code', 'agents'),
         'bad.md',
         '---\nname: bad\n---\n\nbody\n',
       );
-      await writeAgent(join(fixture.workDir, '.kimi-code', 'agents'), 'good.md', agentMd('good', 'valid'));
+      await writeAgent(join(fixture.workDir, '.zimi-code', 'agents'), 'good.md', agentMd('good', 'valid'));
       await withStack(fixture, undefined, async (stack) => {
         await stack.ready();
 
@@ -565,7 +565,7 @@ describe('agent profile loaders + session catalog', () => {
   it('keeps the builtin default when a same-name file does not opt in to override', async () => {
     await withFixture(async (fixture) => {
       await writeAgent(
-        join(fixture.workDir, '.kimi-code', 'agents'),
+        join(fixture.workDir, '.zimi-code', 'agents'),
         'agent.md',
         agentMd('agent', 'project default override'),
       );
@@ -588,7 +588,7 @@ describe('agent profile loaders + session catalog', () => {
   it('lets a file profile explicitly override the builtin default', async () => {
     await withFixture(async (fixture) => {
       await writeAgent(
-        join(fixture.workDir, '.kimi-code', 'agents'),
+        join(fixture.workDir, '.zimi-code', 'agents'),
         'agent.md',
         agentMd('agent', 'project default override', true),
       );
@@ -609,7 +609,7 @@ describe('agent profile loaders + session catalog', () => {
         agentMd('agent', 'user default override', true),
       );
       await writeAgent(
-        join(fixture.workDir, '.kimi-code', 'agents'),
+        join(fixture.workDir, '.zimi-code', 'agents'),
         'agent.md',
         agentMd('agent', 'project default without override'),
       );
@@ -730,7 +730,7 @@ describe('agent profile loaders + session catalog', () => {
     await withFixture(async (fixture) => {
       await writeFile(join(fixture.homeDir, 'SYSTEM.md'), 'system md prompt');
       await writeAgent(
-        join(fixture.workDir, '.kimi-code', 'agents'),
+        join(fixture.workDir, '.zimi-code', 'agents'),
         'agent.md',
         agentMd('agent', 'project default override', true),
       );
@@ -763,7 +763,7 @@ describe('agent profile loaders + session catalog', () => {
   it('rescans the workspace source when a project agent file changes on disk', async () => {
     watchMockState.mode = 'real';
     await withFixture(async (fixture) => {
-      await mkdir(join(fixture.workDir, '.kimi-code', 'agents'), { recursive: true });
+      await mkdir(join(fixture.workDir, '.zimi-code', 'agents'), { recursive: true });
       await withStack(fixture, undefined, async (stack) => {
         await stack.ready();
         expect(stack.catalog.get('watched-agent')).toBeUndefined();
@@ -780,7 +780,7 @@ describe('agent profile loaders + session catalog', () => {
         });
         await new Promise((resolve) => setTimeout(resolve, 300));
         await writeAgent(
-          join(fixture.workDir, '.kimi-code', 'agents'),
+          join(fixture.workDir, '.zimi-code', 'agents'),
           'watched-agent.md',
           agentMd('watched-agent', 'from watch'),
         );

@@ -1,15 +1,15 @@
 import { readApiErrorMessage } from './api-error';
 import { isRecord } from './utils';
-import { parseKimiCodeCustomHeaders } from './identity';
-import { parseSupportsThinkingType, parseThinkEfforts } from './managed-kimi-code';
-import { MANAGED_KIMI_MODEL_FIELDS, mergeRefreshedModelAlias } from './model-alias-merge';
+import { parseZimiCodeCustomHeaders } from './identity';
+import { parseSupportsThinkingType, parseThinkEfforts } from './managed-zimi-code';
+import { MANAGED_ZIMI_MODEL_FIELDS, mergeRefreshedModelAlias } from './model-alias-merge';
 import type {
-  ManagedKimiCodeModelInfo,
-  ManagedKimiConfigShape,
-  ManagedKimiModelAlias,
-} from './managed-kimi-code';
+  ManagedZimiCodeModelInfo,
+  ManagedZimiConfigShape,
+  ManagedZimiModelAlias,
+} from './managed-zimi-code';
 
-export type { ManagedKimiConfigShape };
+export type { ManagedZimiConfigShape };
 
 export interface OpenPlatformDefinition {
   readonly id: string;
@@ -21,15 +21,15 @@ export interface OpenPlatformDefinition {
 
 export const OPEN_PLATFORMS: readonly OpenPlatformDefinition[] = [
   {
-    id: 'moonshot-cn',
-    name: 'Kimi Platform (API key · platform.kimi.com)',
+    id: 'zimi-cn',
+    name: 'Zimi Platform (API key · platform.zimi.com)',
     baseUrl: 'https://api.moonshot.cn/v1',
     consoleUrl: 'https://platform.kimi.com',
     allowedPrefixes: ['kimi-k'],
   },
   {
-    id: 'moonshot-ai',
-    name: 'Kimi Platform (API key · platform.kimi.ai)',
+    id: 'zimi-ai',
+    name: 'Zimi Platform (API key · platform.zimi.ai)',
     baseUrl: 'https://api.moonshot.ai/v1',
     consoleUrl: 'https://platform.kimi.ai',
     allowedPrefixes: ['kimi-k'],
@@ -44,7 +44,7 @@ export function isOpenPlatformId(id: string): boolean {
   return OPEN_PLATFORMS.some((p) => p.id === id);
 }
 
-function toModelInfo(item: unknown): ManagedKimiCodeModelInfo | undefined {
+function toModelInfo(item: unknown): ManagedZimiCodeModelInfo | undefined {
   if (!isRecord(item) || typeof item['id'] !== 'string' || item['id'].length === 0) {
     return undefined;
   }
@@ -75,7 +75,7 @@ function toModelInfo(item: unknown): ManagedKimiCodeModelInfo | undefined {
   };
 }
 
-export function capabilitiesForModel(model: ManagedKimiCodeModelInfo): string[] | undefined {
+export function capabilitiesForModel(model: ManagedZimiCodeModelInfo): string[] | undefined {
   const caps = new Set<string>();
   // supports_thinking_type is the full three-state declaration and wins over
   // the legacy supports_reasoning boolean; absent (older servers) falls back.
@@ -113,10 +113,10 @@ export async function fetchOpenPlatformModels(
   apiKey: string,
   fetchImpl: typeof fetch = fetch,
   signal?: AbortSignal,
-): Promise<ManagedKimiCodeModelInfo[]> {
+): Promise<ManagedZimiCodeModelInfo[]> {
   const res = await fetchImpl(`${platform.baseUrl.replace(/\/+$/, '')}/models`, {
     headers: {
-      ...parseKimiCodeCustomHeaders(),
+      ...parseZimiCodeCustomHeaders(),
       Authorization: `Bearer ${apiKey}`,
       Accept: 'application/json',
     },
@@ -134,13 +134,13 @@ export async function fetchOpenPlatformModels(
   }
   return payload['data']
     .map((item) => toModelInfo(item))
-    .filter((item): item is ManagedKimiCodeModelInfo => item !== undefined);
+    .filter((item): item is ManagedZimiCodeModelInfo => item !== undefined);
 }
 
 export function filterModelsByPrefix(
-  models: ManagedKimiCodeModelInfo[],
+  models: ManagedZimiCodeModelInfo[],
   platform: OpenPlatformDefinition,
-): ManagedKimiCodeModelInfo[] {
+): ManagedZimiCodeModelInfo[] {
   if (!platform.allowedPrefixes || platform.allowedPrefixes.length === 0) {
     return models;
   }
@@ -154,11 +154,11 @@ export interface ApplyOpenPlatformResult {
 }
 
 export function applyOpenPlatformConfig(
-  config: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
   options: {
     readonly platform: OpenPlatformDefinition;
-    readonly models: readonly ManagedKimiCodeModelInfo[];
-    readonly selectedModel: ManagedKimiCodeModelInfo;
+    readonly models: readonly ManagedZimiCodeModelInfo[];
+    readonly selectedModel: ManagedZimiCodeModelInfo;
     readonly thinking: boolean;
     /** Concrete thinking effort to persist (e.g. 'low'/'high'/'max'). Omit
      * for boolean models, where thinking is simply enabled with no effort. */
@@ -184,7 +184,7 @@ export function applyOpenPlatformConfig(
   } = (existing ?? {}) as Record<string, unknown>;
   config.providers[providerKey] = {
     ...preserved,
-    type: 'kimi',
+    type: 'zimi',
     baseUrl: options.platform.baseUrl,
     ...options.credential,
   };
@@ -204,7 +204,7 @@ export function applyOpenPlatformConfig(
   for (const model of options.models) {
     const aliasKey = `${providerKey}/${model.id}`;
     const existing = isRecord(existingModels[aliasKey]) ? existingModels[aliasKey] : {};
-    const remoteAlias: ManagedKimiModelAlias = {
+    const remoteAlias: ManagedZimiModelAlias = {
       provider: providerKey,
       model: model.id,
       maxContextSize: model.contextLength,
@@ -216,7 +216,7 @@ export function applyOpenPlatformConfig(
     existingModels[aliasKey] = mergeRefreshedModelAlias(
       existing,
       remoteAlias,
-      MANAGED_KIMI_MODEL_FIELDS,
+      MANAGED_ZIMI_MODEL_FIELDS,
     );
   }
 
@@ -232,7 +232,7 @@ export function applyOpenPlatformConfig(
 }
 
 export function removeOpenPlatformConfig(
-  config: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
   platformId: string,
 ): void {
   delete config.providers[platformId];

@@ -53,7 +53,7 @@ describe.each(SCENARIOS)('migration snapshot: %s', (name) => {
       .replace(/"createdAt":\s*("[^"]*"|\d+)/, '"createdAt": "<REDACTED>"')
       .replace(/"updatedAt":\s*("[^"]*"|\d+)/, '"updatedAt": "<REDACTED>"')
       .replace(/"imported_at": ".+?"/, '"imported_at": "<REDACTED>"')
-      .replace(/"kimi_cli_source_path": ".+?"/, '"kimi_cli_source_path": "<REDACTED>"')
+      .replace(/"zimi_cli_source_path": ".+?"/, '"zimi_cli_source_path": "<REDACTED>"')
       .replaceAll('\\\\', '/')
       .split(target.replaceAll('\\', '/'))
       .join('<TARGET>');

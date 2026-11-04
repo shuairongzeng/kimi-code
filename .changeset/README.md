@@ -10,19 +10,19 @@ Current publishable packages:
 
 | Package | Directory | Description |
 | --- | --- | --- |
-| `@moonshot-ai/kimi-code` | `apps/kimi-code` | CLI / TUI application — provides the `kimi` command after install |
-| `@moonshot-ai/kimi-code-sdk` | `packages/node-sdk` | Public TypeScript SDK |
+| `@zimi-ai/zimi-code` | `apps/zimi-code` | CLI / TUI application — provides the `zimi` command after install |
+| `@zimi-ai/zimi-code-sdk` | `packages/node-sdk` | Public TypeScript SDK |
 
 All other workspace packages are private internal packages, are not published to npm, and are excluded via `ignore` in `.changeset/config.json`:
 
-- `@moonshot-ai/kimi-code-oauth`
-- `@moonshot-ai/kimi-telemetry`
-- `@moonshot-ai/migration-legacy`
-- `@moonshot-ai/vis`
-- `@moonshot-ai/vis-server`
-- `@moonshot-ai/vis-web`
+- `@zimi-ai/zimi-code-oauth`
+- `@zimi-ai/zimi-telemetry`
+- `@zimi-ai/migration-legacy`
+- `@zimi-ai/vis`
+- `@zimi-ai/vis-server`
+- `@zimi-ai/vis-web`
 
-Version impact from internal dependencies must be judged manually. The published artifacts for CLI and SDK bundle internal workspace packages into the artifact itself; runtime `dependencies` of published packages must not include any `@moonshot-ai/*` internal workspace packages.
+Version impact from internal dependencies must be judged manually. The published artifacts for CLI and SDK bundle internal workspace packages into the artifact itself; runtime `dependencies` of published packages must not include any `@zimi-ai/*` internal workspace packages.
 
 The repository's `.changeset/config.json` sets `updateInternalDependencies: "patch"`. Because internal packages are not published, you still need to manually select all affected publishable packages in the changeset — do not rely solely on automatic dependency bumps to express user-visible changes.
 
@@ -30,12 +30,12 @@ Example scenarios:
 
 | Change | Changeset selection |
 | --- | --- |
-| Only modifies TUI behavior in `@moonshot-ai/kimi-code` | Add `patch` / `minor` / `major` to `@moonshot-ai/kimi-code` |
+| Only modifies TUI behavior in `@zimi-ai/zimi-code` | Add `patch` / `minor` / `major` to `@zimi-ai/zimi-code` |
 | Only modifies internal packages, no user-visible change in SDK / CLI | Usually no changeset needed |
-| Internal package fix changes the CLI user experience | Add a changeset to `@moonshot-ai/kimi-code` describing the user-visible fix |
-| Internal package adds a new capability exposed by the SDK | Add a changeset to `@moonshot-ai/kimi-code-sdk` |
-| SDK behavior change affects CLI user experience | Add changesets to both `@moonshot-ai/kimi-code-sdk` and `@moonshot-ai/kimi-code` |
-| Provider abstraction change affects SDK / CLI | Add changesets to the affected `@moonshot-ai/kimi-code-sdk` and/or `@moonshot-ai/kimi-code` |
+| Internal package fix changes the CLI user experience | Add a changeset to `@zimi-ai/zimi-code` describing the user-visible fix |
+| Internal package adds a new capability exposed by the SDK | Add a changeset to `@zimi-ai/zimi-code-sdk` |
+| SDK behavior change affects CLI user experience | Add changesets to both `@zimi-ai/zimi-code-sdk` and `@zimi-ai/zimi-code` |
+| Provider abstraction change affects SDK / CLI | Add changesets to the affected `@zimi-ai/zimi-code-sdk` and/or `@zimi-ai/zimi-code` |
 | Test-only, internal refactor, docs, or private debug tooling changes | Usually no changeset needed |
 
 ## Prerequisite: NPM Trusted Publishing (OIDC)
@@ -44,7 +44,7 @@ This repository uses npm's **Trusted Publishing** (OIDC-based) for publishing �
 
 ### Configuration steps
 
-1. Open each publishable package's page on the npm website, e.g. `https://www.npmjs.com/package/@moonshot-ai/kimi-code`.
+1. Open each publishable package's page on the npm website, e.g. `https://www.npmjs.com/package/@zimi-ai/zimi-code`.
 2. Go to **Settings** -> **Publishing access**.
 3. Find **Automate publishing with GitHub Actions** or **Add trusted publisher**.
 4. Click **Add a new trusted publisher**.
@@ -53,8 +53,8 @@ Fill in the following:
 
 | Field | Value |
 | --- | --- |
-| GitHub Organization | `MoonshotAI` |
-| GitHub Repository | `kimi-code` |
+| GitHub Organization | `ZimiAI` |
+| GitHub Repository | `zimi-code` |
 | GitHub Workflow | `release.yml` |
 | Environment | leave empty |
 
@@ -142,9 +142,9 @@ The root-level `pnpm run publish` first runs typecheck, lint, sherif, test, buil
 - Every PR that affects publishable-package behavior or public API should include a corresponding changeset.
 - Changeset files must be committed to the repository — release PRs are only triggered after they're merged.
 - Release PRs require human review and approval. They do not publish before merge; merging the approved PR automatically publishes after its commit passes CI.
-- Do not add release changesets for private internal packages; only select `@moonshot-ai/kimi-code` and `@moonshot-ai/kimi-code-sdk`.
-- If a change in an underlying internal package alters user-visible behavior or public API of a publishable package, add a changeset to the affected publishable package. For example, when a bug fixed in `@moonshot-ai/agent-core-v2` resolves an issue CLI users encounter, add a changeset to `@moonshot-ai/kimi-code` describing the user-visible fix.
-- `@moonshot-ai/kimi-code` is the official CLI package name; after a global install it provides the `kimi` command.
+- Do not add release changesets for private internal packages; only select `@zimi-ai/zimi-code` and `@zimi-ai/zimi-code-sdk`.
+- If a change in an underlying internal package alters user-visible behavior or public API of a publishable package, add a changeset to the affected publishable package. For example, when a bug fixed in `@zimi-ai/agent-core-v2` resolves an issue CLI users encounter, add a changeset to `@zimi-ai/zimi-code` describing the user-visible fix.
+- `@zimi-ai/zimi-code` is the official CLI package name; after a global install it provides the `zimi` command.
 - Make sure each publishable package on npm has a Trusted Publisher configured.
 
 ## References

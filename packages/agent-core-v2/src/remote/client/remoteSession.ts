@@ -55,7 +55,7 @@ export class RemoteSession {
       let connection: RemoteExecConnection;
       try {
         connection = await RemoteExecConnection.connect(bridge, {
-          clientName: 'kimi-code',
+          clientName: 'zimi-code',
           clientVersion: options.clientVersion ?? '0.0.0',
           minExecutorVersion: options.minExecutorVersion,
           initializeTimeoutMs: options.initializeTimeoutMs,
@@ -132,7 +132,7 @@ async function detectSshPlatform(
   env: NodeJS.ProcessEnv | undefined,
   timeoutMs: number,
 ): Promise<'posix' | 'windows'> {
-  const probes = ['uname -s', powerShellCommand("[Console]::WriteLine('KIMI_WINDOWS')")];
+  const probes = ['uname -s', powerShellCommand("[Console]::WriteLine('ZIMI_WINDOWS')")];
   for (const [index, command] of probes.entries()) {
     const launcher = resolveSshCommand(host, command, env !== undefined);
     const result = await new Promise<{ stdout: string; stderr: string; code: number | null }>((resolve, reject) => {
@@ -163,7 +163,7 @@ async function detectSshPlatform(
     }
     if (result.code === 0 && output) {
       if (index === 0) return /^(?:MINGW|MSYS|CYGWIN)/i.test(output) ? 'windows' : 'posix';
-      if (output === 'KIMI_WINDOWS') return 'windows';
+      if (output === 'ZIMI_WINDOWS') return 'windows';
     }
     if (index === probes.length - 1) {
       throw new HandshakeError(`Could not detect the SSH target platform: ${result.stderr.trim() || result.stdout.trim() || `probe exited with code ${result.code}`}`, {

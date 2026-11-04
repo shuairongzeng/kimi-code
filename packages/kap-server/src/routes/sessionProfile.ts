@@ -5,9 +5,9 @@ import {
   ISessionMetadata,
   resumeSessionById,
   type Scope,
-} from '@moonshot-ai/agent-core-v2';
-import type { SessionWireFields } from '@moonshot-ai/agent-core-v2/app/sessionLegacy/sessionLegacy';
-import type { UpdateSessionProfileRequest } from '@moonshot-ai/agent-core-v2/app/sessionLegacy/sessionProtocol';
+} from '@zimi-ai/agent-core-v2';
+import type { SessionWireFields } from '@zimi-ai/agent-core-v2/app/sessionLegacy/sessionLegacy';
+import type { UpdateSessionProfileRequest } from '@zimi-ai/agent-core-v2/app/sessionLegacy/sessionProtocol';
 
 export async function updateSessionProfile(
   core: Scope,

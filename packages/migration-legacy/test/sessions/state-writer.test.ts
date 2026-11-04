@@ -25,7 +25,7 @@ describe('writeSessionState', () => {
       sessionId: 'ses_old-uuid',
       workdirPath: '/Users/me/proj',
       lastUserPrompt: 'irrelevant',
-      sourcePath: '/Users/me/.kimi/sessions/x/y',
+      sourcePath: '/Users/me/.zimi/sessions/x/y',
       oldSessionUuid: 'old-uuid',
       wireProtocolFromOld: '1.10',
       createdAtMs: 1000,
@@ -34,10 +34,10 @@ describe('writeSessionState', () => {
     expect(meta.title).toBe('My chat');
     expect(meta.isCustomTitle).toBe(true);
     // `agents.main.homedir` must be the agent's record directory under the
-    // session dir — kimi-core reads `wire.jsonl` from here on resume.
+    // session dir — zimi-core reads `wire.jsonl` from here on resume.
     expect(meta.agents.main.homedir).toBe(join(dir, 'agents', 'main'));
-    expect(meta.custom.imported_from_kimi_cli).toBe(true);
-    expect(meta.custom.kimi_cli_session_id).toBe('old-uuid');
+    expect(meta.custom.imported_from_zimi_cli).toBe(true);
+    expect(meta.custom.zimi_cli_session_id).toBe('old-uuid');
   });
 
   it('falls back to lastUserPrompt prefix when no custom_title', async () => {

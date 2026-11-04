@@ -2,7 +2,7 @@
  * Probe the Requester problem boundary, in two parts.
  *
  * Part 1 — real config: bootstraps the agent-core-v2 App scope on the REAL
- * Kimi home (`KIMI_CODE_HOME` or `~/.kimi-code`), resolves `IModelCatalog`
+ * Zimi home (`ZIMI_CODE_HOME` or `~/.zimi-code`), resolves `IModelCatalog`
  * with the providers/auth from `config.toml`, lists every provider/model, and
  * pings every configured model through its `Requester` (one tiny live
  * request per model, real credentials). This is the "does the assembled
@@ -36,9 +36,9 @@
  *   pnpm -C packages/klient smoke:boundary
  *
  * Env:
- *   KIMI_CODE_HOME        — default `~/.kimi-code`
- *   KIMI_BOUNDARY_MODELS  — comma-separated model ids to ping (default: all)
- *   KIMI_BOUNDARY_SKIP_LIVE — set to `1` to skip part 1 (no real API calls)
+ *   ZIMI_CODE_HOME        — default `~/.zimi-code`
+ *   ZIMI_BOUNDARY_MODELS  — comma-separated model ids to ping (default: all)
+ *   ZIMI_BOUNDARY_SKIP_LIVE — set to `1` to skip part 1 (no real API calls)
  */
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { homedir } from 'node:os';
@@ -48,36 +48,36 @@ import { EXAMPLE_CLIENT_IDENTITY } from './identity.js';
 
 import type { AddressInfo } from 'node:net';
 
-import { bootstrap, logSeed, resolveLoggingConfig } from '@moonshot-ai/agent-core-v2';
-import { isError2 } from '@moonshot-ai/agent-core-v2/_base/errors/errors';
-import { IConfigService } from '@moonshot-ai/agent-core-v2/app/config/config';
-import { UNKNOWN_CAPABILITY } from '@moonshot-ai/agent-core-v2/llm-adapter/contract/capability';
+import { bootstrap, logSeed, resolveLoggingConfig } from '@zimi-ai/agent-core-v2';
+import { isError2 } from '@zimi-ai/agent-core-v2/_base/errors/errors';
+import { IConfigService } from '@zimi-ai/agent-core-v2/app/config/config';
+import { UNKNOWN_CAPABILITY } from '@zimi-ai/agent-core-v2/llm-adapter/contract/capability';
 import {
   APIContextOverflowError,
   APIStatusError,
   ChatProviderError,
   isAbortError,
   isToolExchangeAdjacencyError,
-} from '@moonshot-ai/agent-core-v2/llm-adapter/contract/errors';
+} from '@zimi-ai/agent-core-v2/llm-adapter/contract/errors';
 import {
   createOAuthCredentialProvider,
   createStaticCredentialProvider,
-} from '@moonshot-ai/agent-core-v2/human/credentials/credentials';
+} from '@zimi-ai/agent-core-v2/human/credentials/credentials';
 import type {
   ToolCall,
   ToolDescription as Tool,
-} from '@moonshot-ai/agent-core-v2/human/llm/message';
-import type { LlmCredentialProvider } from '@moonshot-ai/agent-core-v2/human/llm-requester/requester';
-import type { Model } from '@moonshot-ai/agent-core-v2/llm-adapter/model/catalog';
-import { IModelCatalog } from '@moonshot-ai/agent-core-v2/llm-adapter/model/catalog';
+} from '@zimi-ai/agent-core-v2/human/llm/message';
+import type { LlmCredentialProvider } from '@zimi-ai/agent-core-v2/human/llm-requester/requester';
+import type { Model } from '@zimi-ai/agent-core-v2/llm-adapter/model/catalog';
+import { IModelCatalog } from '@zimi-ai/agent-core-v2/llm-adapter/model/catalog';
 import {
   generateModel,
   type ModelRequestEvent,
   type ModelRequestInput,
   type ModelRequestParams,
-} from '@moonshot-ai/agent-core-v2/llm-adapter/model/generate';
-import { IProtocolAdapterRegistry } from '@moonshot-ai/agent-core-v2/llm-adapter/protocol/protocol';
-import { ProtocolAdapterRegistry } from '@moonshot-ai/agent-core-v2/llm-adapter/protocol/protocolAdapterRegistry';
+} from '@zimi-ai/agent-core-v2/llm-adapter/model/generate';
+import { IProtocolAdapterRegistry } from '@zimi-ai/agent-core-v2/llm-adapter/protocol/protocol';
+import { ProtocolAdapterRegistry } from '@zimi-ai/agent-core-v2/llm-adapter/protocol/protocolAdapterRegistry';
 
 interface Requester {
   readonly model: Model;
@@ -110,7 +110,7 @@ const tick = (ms: number): Promise<void> =>
 // ---------------------------------------------------------------------------
 
 async function probeRealConfig(): Promise<void> {
-  const homeDir = process.env['KIMI_CODE_HOME'] ?? join(homedir(), '.kimi-code');
+  const homeDir = process.env['ZIMI_CODE_HOME'] ?? join(homedir(), '.zimi-code');
   console.log(`\n=== part 1: real config (${homeDir}/config.toml) ===`);
   const { app } = bootstrap({ homeDir, clientIdentity: EXAMPLE_CLIENT_IDENTITY }, [
     ...logSeed(resolveLoggingConfig({ homeDir, env: process.env })),
@@ -130,7 +130,7 @@ async function probeRealConfig(): Promise<void> {
     }
 
     const models = await catalog.listModels();
-    const filter = process.env['KIMI_BOUNDARY_MODELS']?.split(',').map((s) => s.trim());
+    const filter = process.env['ZIMI_BOUNDARY_MODELS']?.split(',').map((s) => s.trim());
     const targets = models.filter((m) => filter === undefined || filter.includes(m.model));
     assert(targets.length > 0, 'at least one configured model to ping');
 
@@ -807,7 +807,7 @@ async function probeBoundaries(): Promise<void> {
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
-  if (process.env['KIMI_BOUNDARY_SKIP_LIVE'] !== '1') {
+  if (process.env['ZIMI_BOUNDARY_SKIP_LIVE'] !== '1') {
     await probeRealConfig();
   }
   await probeBoundaries();

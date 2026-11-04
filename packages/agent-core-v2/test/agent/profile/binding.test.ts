@@ -93,7 +93,7 @@ describe('AgentProfileService.bind', () => {
   });
 
   beforeEach(async () => {
-    homeDir = await mkdtemp(join(tmpdir(), 'kimi-bind-home-'));
+    homeDir = await mkdtemp(join(tmpdir(), 'zimi-bind-home-'));
   });
 
   afterEach(async () => {
@@ -123,7 +123,7 @@ describe('AgentProfileService.bind', () => {
     expect(svc.data().modelAlias).toBe(MOCK_MODEL);
     expect(svc.isRunnable()).toBe(true);
     expect(svc.getActiveToolNames()?.length).toBeGreaterThan(0);
-    expect(svc.getSystemPrompt()).toContain('Kimi Code CLI');
+    expect(svc.getSystemPrompt()).toContain('Zimi Code CLI');
   });
 
   it('unions discovered agent profiles into the bound subagents for the main agent', async () => {
@@ -293,7 +293,7 @@ describe('AgentProfileService.bind', () => {
       profileName: DEFAULT_AGENT_PROFILE_NAME,
       modelAlias: MOCK_MODEL,
       thinkingEffort: 'on',
-      systemPrompt: expect.stringContaining('Kimi Code CLI'),
+      systemPrompt: expect.stringContaining('Zimi Code CLI'),
       activeToolNames: expect.arrayContaining(['Read', 'Write', 'Bash']),
       disallowedTools: [],
     });
@@ -384,7 +384,7 @@ describe('AgentProfileService.bind', () => {
   });
 
   it('keeps the system prompt frozen after a default bind when AGENTS.md changes', async () => {
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-bind-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-bind-work-'));
     try {
       await writeFile(join(workDir, 'AGENTS.md'), 'v1 instructions', 'utf-8');
       ctx = createTestAgent(hostEnvironmentServices(homeDir), { cwd: workDir });
@@ -475,11 +475,11 @@ describe('AgentProfileService.bind', () => {
       {
         initialConfig: {
           providers: {
-            kimi: { type: 'kimi', apiKey: 'test-key', baseUrl: 'https://api.example.test/v1' },
+            zimi: { type: 'zimi', apiKey: 'test-key', baseUrl: 'https://api.example.test/v1' },
           },
           models: {
-            'kimi-code/kimi-for-coding': {
-              provider: 'kimi',
+            'zimi-code/kimi-for-coding': {
+              provider: 'zimi',
               model: 'kimi-for-coding',
               maxContextSize: 1_000_000,
               capabilities: ['thinking'],
@@ -495,14 +495,14 @@ describe('AgentProfileService.bind', () => {
     await expect(
       svc.bind({
         profile: DEFAULT_AGENT_PROFILE_NAME,
-        model: 'kimi-code/kimi-for-coding',
+        model: 'zimi-code/kimi-for-coding',
         thinking: 'ultra',
         strictThinking: true,
       }),
     ).rejects.toThrow(/not supported by model/);
 
     expect(svc.data().profileName).toBeUndefined();
-    await svc.bind({ profile: DEFAULT_AGENT_PROFILE_NAME, model: 'kimi-code/kimi-for-coding' });
+    await svc.bind({ profile: DEFAULT_AGENT_PROFILE_NAME, model: 'zimi-code/kimi-for-coding' });
     expect(svc.data().profileName).toBe(DEFAULT_AGENT_PROFILE_NAME);
   });
 
@@ -511,11 +511,11 @@ describe('AgentProfileService.bind', () => {
       {
         initialConfig: {
           providers: {
-            kimi: { type: 'kimi', apiKey: 'test-key', baseUrl: 'https://api.example.test/v1' },
+            zimi: { type: 'zimi', apiKey: 'test-key', baseUrl: 'https://api.example.test/v1' },
           },
           models: {
-            'kimi-code/kimi-for-coding': {
-              provider: 'kimi',
+            'zimi-code/kimi-for-coding': {
+              provider: 'zimi',
               model: 'kimi-for-coding',
               maxContextSize: 1_000_000,
               capabilities: ['thinking'],
@@ -530,7 +530,7 @@ describe('AgentProfileService.bind', () => {
 
     await svc.bind({
       profile: DEFAULT_AGENT_PROFILE_NAME,
-      model: 'kimi-code/kimi-for-coding',
+      model: 'zimi-code/kimi-for-coding',
       thinking: 'ultra',
     });
 
@@ -583,7 +583,7 @@ describe('AgentToolPolicyService tool denylist', () => {
   let homeDir: string;
 
   beforeEach(async () => {
-    homeDir = await mkdtemp(join(tmpdir(), 'kimi-deny-home-'));
+    homeDir = await mkdtemp(join(tmpdir(), 'zimi-deny-home-'));
   });
 
   afterEach(async () => {
@@ -713,7 +713,7 @@ describe('AgentToolPolicyService global [tools] config', () => {
   let homeDir: string;
 
   beforeEach(async () => {
-    homeDir = await mkdtemp(join(tmpdir(), 'kimi-tools-config-home-'));
+    homeDir = await mkdtemp(join(tmpdir(), 'zimi-tools-config-home-'));
   });
 
   afterEach(async () => {
@@ -796,7 +796,7 @@ describe('AgentToolPolicyService.setSessionDisabledTools', () => {
   let homeDir: string;
 
   beforeEach(async () => {
-    homeDir = await mkdtemp(join(tmpdir(), 'kimi-session-deny-home-'));
+    homeDir = await mkdtemp(join(tmpdir(), 'zimi-session-deny-home-'));
   });
 
   afterEach(async () => {
@@ -1038,7 +1038,7 @@ describe('AgentToolPolicyService executor enforcement', () => {
   });
 
   beforeEach(async () => {
-    homeDir = await mkdtemp(join(tmpdir(), 'kimi-executor-policy-home-'));
+    homeDir = await mkdtemp(join(tmpdir(), 'zimi-executor-policy-home-'));
   });
 
   afterEach(async () => {
@@ -1219,7 +1219,7 @@ describe('AgentProfileService tool-pattern warnings', () => {
   let homeDir: string;
 
   beforeEach(async () => {
-    homeDir = await mkdtemp(join(tmpdir(), 'kimi-tool-pattern-home-'));
+    homeDir = await mkdtemp(join(tmpdir(), 'zimi-tool-pattern-home-'));
   });
 
   afterEach(async () => {
@@ -1363,8 +1363,8 @@ describe('agentsMdReminder seeding', () => {
   });
 
   beforeEach(async () => {
-    homeDir = await mkdtemp(join(tmpdir(), 'kimi-seed-home-'));
-    workDir = await mkdtemp(join(tmpdir(), 'kimi-seed-work-'));
+    homeDir = await mkdtemp(join(tmpdir(), 'zimi-seed-home-'));
+    workDir = await mkdtemp(join(tmpdir(), 'zimi-seed-work-'));
   });
 
   afterEach(async () => {
@@ -1427,8 +1427,8 @@ describe('change-notifier belief seeding', () => {
   });
 
   beforeEach(async () => {
-    homeDir = await mkdtemp(join(tmpdir(), 'kimi-belief-home-'));
-    workDir = await mkdtemp(join(tmpdir(), 'kimi-belief-work-'));
+    homeDir = await mkdtemp(join(tmpdir(), 'zimi-belief-home-'));
+    workDir = await mkdtemp(join(tmpdir(), 'zimi-belief-work-'));
   });
 
   afterEach(async () => {

@@ -56,12 +56,12 @@ describe('migrateOneSession (tiny-hello-world fixture)', () => {
       workdirPath: '/Users/me/proj',
       targetHome,
     });
-    // The dir we wrote carries `imported_from_kimi_cli`, so a re-run is an
+    // The dir we wrote carries `imported_from_zimi_cli`, so a re-run is an
     // idempotent skip, not a real collision.
     expect(second.outcome).toBe('already-migrated');
   });
 
-  it('reports conflict when an unrelated kimi-code session occupies the dir', async () => {
+  it('reports conflict when an unrelated zimi-code session occupies the dir', async () => {
     const first = await migrateOneSession({
       source: { uuid: 'tiny-uuid', sessionDir: join(FIXTURES, 'tiny-hello-world'), contextPath: join(join(FIXTURES, 'tiny-hello-world'), 'context.jsonl') },
       workdirPath: '/Users/me/proj',
@@ -69,7 +69,7 @@ describe('migrateOneSession (tiny-hello-world fixture)', () => {
     });
     expect(first.outcome).toBe('migrated');
     const targetDir = (first as Extract<MigrateOneResult, { outcome: 'migrated' }>).targetDir;
-    // Overwrite state.json with a non-migrated (real) kimi-code session.
+    // Overwrite state.json with a non-migrated (real) zimi-code session.
     await writeFile(join(targetDir, 'state.json'), JSON.stringify({ title: 'real' }), 'utf-8');
     const second = await migrateOneSession({
       source: { uuid: 'tiny-uuid', sessionDir: join(FIXTURES, 'tiny-hello-world'), contextPath: join(join(FIXTURES, 'tiny-hello-world'), 'context.jsonl') },
@@ -89,7 +89,7 @@ describe('migrateOneSession (tiny-hello-world fixture)', () => {
     // Simulate a prior run killed after the dir + wire.jsonl were written but
     // before state.json — exactly the debris a hard crash leaves, since a
     // crash bypasses the in-process cleanup. Without state.json this is not a
-    // real kimi-code session, so it must be re-migrated, not reported as a
+    // real zimi-code session, so it must be re-migrated, not reported as a
     // permanent conflict that strands the session forever.
     await mkdir(join(targetDir, 'agents', 'main'), { recursive: true });
     await writeFile(join(targetDir, 'agents', 'main', 'wire.jsonl'), '{"type":"metadata"}\n');
@@ -101,7 +101,7 @@ describe('migrateOneSession (tiny-hello-world fixture)', () => {
     });
     expect(result.outcome).toBe('migrated');
     const state = JSON.parse(await readFile(join(targetDir, 'state.json'), 'utf-8'));
-    expect(state.custom.imported_from_kimi_cli).toBe(true);
+    expect(state.custom.imported_from_zimi_cli).toBe(true);
   });
 
   it('re-migrates a target dir whose state.json is corrupt', async () => {
@@ -113,7 +113,7 @@ describe('migrateOneSession (tiny-hello-world fixture)', () => {
     );
     // Simulate a crash mid-write of state.json: the dir + wire.jsonl exist and
     // state.json is present but unparseable. It is migration debris (the path
-    // is `ses_<uuid>`), not a real kimi-code session, so it must be
+    // is `ses_<uuid>`), not a real zimi-code session, so it must be
     // re-migrated, not reported as a permanent conflict.
     await mkdir(join(targetDir, 'agents', 'main'), { recursive: true });
     await writeFile(join(targetDir, 'agents', 'main', 'wire.jsonl'), '{"type":"metadata"}\n');
@@ -126,7 +126,7 @@ describe('migrateOneSession (tiny-hello-world fixture)', () => {
     });
     expect(result.outcome).toBe('migrated');
     const state = JSON.parse(await readFile(join(targetDir, 'state.json'), 'utf-8'));
-    expect(state.custom.imported_from_kimi_cli).toBe(true);
+    expect(state.custom.imported_from_zimi_cli).toBe(true);
   });
 
   it('stamps written artifacts with the original wire_mtime', async () => {
@@ -183,7 +183,7 @@ describe('migrateOneSession (tiny-hello-world fixture)', () => {
 
   it('reports outcome "empty" — not "failed" — when the context has no messages', async () => {
     // A context.jsonl with only markers (e.g. a session the user cleared in
-    // kimi-cli) carries no migratable conversation. That is an empty session,
+    // zimi-cli) carries no migratable conversation. That is an empty session,
     // not a migration failure.
     const srcDir = join(targetHome, 'src-empty-context');
     await mkdir(srcDir, { recursive: true });
@@ -336,7 +336,7 @@ describe('migrateOneSession with a pre-existing old-format import', () => {
       JSON.stringify({
         id: 'ses_old-import-uuid',
         title: 'old import',
-        custom: { imported_from_kimi_cli: true, kimi_cli_session_id: 'old-import-uuid' },
+        custom: { imported_from_zimi_cli: true, zimi_cli_session_id: 'old-import-uuid' },
       }),
     );
 
@@ -391,7 +391,7 @@ describe('migrateOneSession todo list migration', () => {
       ],
     });
     const state = JSON.parse(await readFile(join(targetDir, 'state.json'), 'utf-8'));
-    expect(state.custom.imported_from_kimi_cli).toBe(true);
+    expect(state.custom.imported_from_zimi_cli).toBe(true);
   });
 });
 

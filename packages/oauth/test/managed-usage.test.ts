@@ -3,10 +3,10 @@ import { afterEach, describe, it, expect, vi } from 'vitest';
 import {
   fetchManagedUsage,
   formatDuration,
-  isManagedKimiCode,
-  isManagedKimiCodeBaseUrl,
-  kimiCodeBaseUrl,
-  kimiCodeUsageUrl,
+  isManagedZimiCode,
+  isManagedZimiCodeBaseUrl,
+  zimiCodeBaseUrl,
+  zimiCodeUsageUrl,
   managedUsageResultSchema,
   parseManagedUsagePayload,
 } from '../src/managed-usage';
@@ -16,60 +16,60 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
-describe('kimiCodeBaseUrl', () => {
-  it('strips trailing slashes from the KIMI_CODE_BASE_URL override', () => {
+describe('zimiCodeBaseUrl', () => {
+  it('strips trailing slashes from the ZIMI_CODE_BASE_URL override', () => {
     // The env value must be normalized at the source: provision persists it
     // verbatim while the model refresh rewrites it normalized, and the
     // deep-equal diff between the two shapes would fire a spurious
     // providers-changed event mid-login.
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'https://gw.example.com/');
-    expect(kimiCodeBaseUrl()).toBe('https://gw.example.com');
-    expect(kimiCodeUsageUrl()).toBe('https://gw.example.com/usages');
+    vi.stubEnv('ZIMI_CODE_BASE_URL', 'https://gw.example.com/');
+    expect(zimiCodeBaseUrl()).toBe('https://gw.example.com');
+    expect(zimiCodeUsageUrl()).toBe('https://gw.example.com/usages');
   });
 });
 
-describe('isManagedKimiCodeBaseUrl', () => {
+describe('isManagedZimiCodeBaseUrl', () => {
   it('matches both official managed endpoints, with or without a trailing slash', () => {
-    expect(isManagedKimiCodeBaseUrl('https://api.kimi.com/coding/v1')).toBe(true);
-    expect(isManagedKimiCodeBaseUrl('https://api.kimi.com/coding/v1/')).toBe(true);
-    expect(isManagedKimiCodeBaseUrl('https://api.kimi.ai/coding/v1')).toBe(true);
-    expect(isManagedKimiCodeBaseUrl('https://api.kimi.ai/coding/v1/')).toBe(true);
+    expect(isManagedZimiCodeBaseUrl('https://api.kimi.com/coding/v1')).toBe(true);
+    expect(isManagedZimiCodeBaseUrl('https://api.kimi.com/coding/v1/')).toBe(true);
+    expect(isManagedZimiCodeBaseUrl('https://api.kimi.ai/coding/v1')).toBe(true);
+    expect(isManagedZimiCodeBaseUrl('https://api.kimi.ai/coding/v1/')).toBe(true);
   });
 
-  it('matches against the KIMI_CODE_BASE_URL override as the sole benchmark', () => {
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'https://gw.example.com/coding/v1/');
-    expect(isManagedKimiCodeBaseUrl('https://gw.example.com/coding/v1')).toBe(true);
-    expect(isManagedKimiCodeBaseUrl('https://api.kimi.com/coding/v1')).toBe(false);
-    expect(isManagedKimiCodeBaseUrl('https://api.kimi.ai/coding/v1')).toBe(false);
+  it('matches against the ZIMI_CODE_BASE_URL override as the sole benchmark', () => {
+    vi.stubEnv('ZIMI_CODE_BASE_URL', 'https://gw.example.com/coding/v1/');
+    expect(isManagedZimiCodeBaseUrl('https://gw.example.com/coding/v1')).toBe(true);
+    expect(isManagedZimiCodeBaseUrl('https://api.kimi.com/coding/v1')).toBe(false);
+    expect(isManagedZimiCodeBaseUrl('https://api.kimi.ai/coding/v1')).toBe(false);
   });
 
   it('is case-insensitive on the origin but strict on the path', () => {
-    expect(isManagedKimiCodeBaseUrl('https://API.KIMI.COM/coding/v1')).toBe(true);
-    expect(isManagedKimiCodeBaseUrl('https://api.kimi.com/CODING/v1')).toBe(false);
+    expect(isManagedZimiCodeBaseUrl('https://API.ZIMI.COM/coding/v1')).toBe(true);
+    expect(isManagedZimiCodeBaseUrl('https://api.kimi.com/CODING/v1')).toBe(false);
   });
 
   it('rejects other paths on the managed host and other hosts entirely', () => {
-    expect(isManagedKimiCodeBaseUrl('https://api.kimi.com/coding/v2')).toBe(false);
-    expect(isManagedKimiCodeBaseUrl('https://api.kimi.com/v1')).toBe(false);
-    expect(isManagedKimiCodeBaseUrl('https://gateway.example.com/coding/v1')).toBe(false);
-    expect(isManagedKimiCodeBaseUrl('https://api.moonshot.cn/v1')).toBe(false);
+    expect(isManagedZimiCodeBaseUrl('https://api.kimi.com/coding/v2')).toBe(false);
+    expect(isManagedZimiCodeBaseUrl('https://api.kimi.com/v1')).toBe(false);
+    expect(isManagedZimiCodeBaseUrl('https://gateway.example.com/coding/v1')).toBe(false);
+    expect(isManagedZimiCodeBaseUrl('https://api.moonshot.cn/v1')).toBe(false);
   });
 
   it('rejects undefined and unparseable values', () => {
-    expect(isManagedKimiCodeBaseUrl(undefined)).toBe(false);
-    expect(isManagedKimiCodeBaseUrl('')).toBe(false);
-    expect(isManagedKimiCodeBaseUrl('not a url')).toBe(false);
+    expect(isManagedZimiCodeBaseUrl(undefined)).toBe(false);
+    expect(isManagedZimiCodeBaseUrl('')).toBe(false);
+    expect(isManagedZimiCodeBaseUrl('not a url')).toBe(false);
   });
 });
 
-describe('isManagedKimiCode', () => {
-  it('matches only the kimi-code managed provider', () => {
-    expect(isManagedKimiCode('managed:kimi-code')).toBe(true);
-    expect(isManagedKimiCode('managed:moonshot-ai')).toBe(false);
-    expect(isManagedKimiCode('openai')).toBe(false);
-    expect(isManagedKimiCode('')).toBe(false);
-    expect(isManagedKimiCode(null)).toBe(false);
-    expect(isManagedKimiCode()).toBe(false);
+describe('isManagedZimiCode', () => {
+  it('matches only the zimi-code managed provider', () => {
+    expect(isManagedZimiCode('managed:zimi-code')).toBe(true);
+    expect(isManagedZimiCode('managed:zimi-ai')).toBe(false);
+    expect(isManagedZimiCode('openai')).toBe(false);
+    expect(isManagedZimiCode('')).toBe(false);
+    expect(isManagedZimiCode(null)).toBe(false);
+    expect(isManagedZimiCode()).toBe(false);
   });
 });
 
@@ -256,7 +256,7 @@ describe('fetchManagedUsage', () => {
     expect(result).toEqual({
       kind: 'error',
       status: 404,
-      message: 'Usage endpoint not available. Try Kimi For Coding.',
+      message: 'Usage endpoint not available. Try Zimi For Coding.',
     });
   });
 

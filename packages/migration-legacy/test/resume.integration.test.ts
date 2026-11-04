@@ -4,9 +4,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { encodeWorkDirKey } from '@moonshot-ai/agent-core-v2/_base/utils/workdir-slug';
-import { reduceContextTranscript } from '@moonshot-ai/agent-core-v2';
-import { groupMessagesIntoSnapshot } from '@moonshot-ai/transcript';
+import { encodeWorkDirKey } from '@zimi-ai/agent-core-v2/_base/utils/workdir-slug';
+import { reduceContextTranscript } from '@zimi-ai/agent-core-v2';
+import { groupMessagesIntoSnapshot } from '@zimi-ai/transcript';
 
 import { migrateOneSession, type MigrateOneResult } from '../src/sessions/migrate-one.js';
 import { importedSessionDir, writeImportedSession } from '../src/imported-session.js';
@@ -52,7 +52,7 @@ describe('migrated session is discoverable by agent-core-v2', () => {
     const sessions = await listSessionsV2(targetHome);
     const migrated = sessions.find((s) => s.id === 'ses_integ-uuid');
     expect(migrated).toBeDefined();
-    expect(migrated?.custom?.['imported_from_kimi_cli']).toBe(true);
+    expect(migrated?.custom?.['imported_from_zimi_cli']).toBe(true);
     expect(migrated?.cwd).toBe(WORK_DIR);
   });
 

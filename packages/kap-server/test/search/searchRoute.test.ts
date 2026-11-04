@@ -2,9 +2,9 @@ import { mkdir, mkdtemp, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-process.env['KIMI_CODE_SEARCH_WORKER'] = '1';
+process.env['ZIMI_CODE_SEARCH_WORKER'] = '1';
 
-import { ISessionIndex, type SessionSummary } from '@moonshot-ai/agent-core-v2';
+import { ISessionIndex, type SessionSummary } from '@zimi-ai/agent-core-v2';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { type RunningServer, startServer } from '../../src/start';
@@ -64,7 +64,7 @@ describe('server-v2 /api/v1/search', () => {
   let base: string;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-search-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-search-'));
     const sessionDir = join(home, 'sessions', WS, 's1', 'agents', 'main');
     await mkdir(sessionDir, { recursive: true });
     await writeFile(
@@ -112,7 +112,7 @@ describe('server-v2 /api/v1/search', () => {
       host: '127.0.0.1',
       port: 0,
       homeDir: home,
-      env: { ...process.env, KIMI_CODE_GLOBAL_SEARCH: '1' },
+      env: { ...process.env, ZIMI_CODE_GLOBAL_SEARCH: '1' },
       logLevel: 'silent',
       seeds: [[ISessionIndex, stubSessionIndex(summaries)]],
     });
@@ -216,7 +216,7 @@ describe('server-v2 session routes with the global search DB unavailable', () =>
   let base: string;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-search-down-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-search-down-'));
     await writeFile(join(home, 'search-index'), 'not a minidb directory', 'utf8');
   });
 
@@ -238,7 +238,7 @@ describe('server-v2 session routes with the global search DB unavailable', () =>
       host: '127.0.0.1',
       port: 0,
       homeDir: home as string,
-      env: { ...process.env, KIMI_CODE_GLOBAL_SEARCH: '1' },
+      env: { ...process.env, ZIMI_CODE_GLOBAL_SEARCH: '1' },
       logLevel: 'silent',
     });
     base = `http://127.0.0.1:${server.port}`;
@@ -312,7 +312,7 @@ describe('server-v2 /api/v1/search with global search off by default', () => {
   let base: string;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-search-off-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-search-off-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',

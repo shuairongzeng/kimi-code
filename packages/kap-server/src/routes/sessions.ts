@@ -41,9 +41,9 @@ import {
   type Scope,
   type SessionSummary,
   type SubagentModelPoolSnapshot,
-} from '@moonshot-ai/agent-core-v2';
-import { ISessionLockService } from '@moonshot-ai/agent-core-v2/persistence/interface/sessionLock';
-import { SessionMetaUpdated } from '@moonshot-ai/agent-core-v2/session/sessionMetadata/sessionMetaEvents';
+} from '@zimi-ai/agent-core-v2';
+import { ISessionLockService } from '@zimi-ai/agent-core-v2/persistence/interface/sessionLock';
+import { SessionMetaUpdated } from '@zimi-ai/agent-core-v2/session/sessionMetadata/sessionMetaEvents';
 import { ErrorCode } from '../protocol/error-codes';
 import { pageResponseSchema } from '../protocol/pagination';
 import { toProtocolMessage } from '../services/messages/messageProjection';

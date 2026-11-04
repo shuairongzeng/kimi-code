@@ -1,20 +1,20 @@
-import type { ContextSpliced } from '@moonshot-ai/agent-core-v2/agent/contextMemory/contextEvents';
-import type { HookResult } from '@moonshot-ai/agent-core-v2/features/externalHooks/agent/agentExternalHooksService';
+import type { ContextSpliced } from '@zimi-ai/agent-core-v2/agent/contextMemory/contextEvents';
+import type { HookResult } from '@zimi-ai/agent-core-v2/features/externalHooks/agent/agentExternalHooksService';
 import type {
   CompactionBlocked,
   CompactionCancelled,
   CompactionCompleted,
   CompactionStarted,
-} from '@moonshot-ai/agent-core-v2/agent/fullCompaction/compactionOps';
+} from '@zimi-ai/agent-core-v2/agent/fullCompaction/compactionOps';
 import {
   daemonFileRefFromPart,
   type ContextUndone,
   type CronFired,
   type GoalUpdated,
-} from '@moonshot-ai/agent-core-v2';
-import type { ContentPart } from '@moonshot-ai/agent-core-v2/human/llm/message';
-import { isUserPromptSubmitHookPart } from '@moonshot-ai/agent-core-v2/agent/contextMemory/hookParts';
-import { annotateBundledSkillParts, isSkillActivationPart } from '@moonshot-ai/agent-core-v2/human/agent/origin';
+} from '@zimi-ai/agent-core-v2';
+import type { ContentPart } from '@zimi-ai/agent-core-v2/human/llm/message';
+import { isUserPromptSubmitHookPart } from '@zimi-ai/agent-core-v2/agent/contextMemory/hookParts';
+import { annotateBundledSkillParts, isSkillActivationPart } from '@zimi-ai/agent-core-v2/human/agent/origin';
 import {
   turnPromptText,
   type AssistantDelta,
@@ -25,11 +25,11 @@ import {
   type TurnStepInterrupted,
   type TurnStepRetrying,
   type TurnStepStarted,
-} from '@moonshot-ai/agent-core-v2/agent/loop/turnEvents';
-import type { TurnEnded, TurnPrompt, TurnSteer } from '@moonshot-ai/agent-core-v2/agent/loop/turnOps';
-import type { AgentErrorEvent } from '@moonshot-ai/agent-core-v2/agent/mcp/mcpEvents';
-import type { PluginCommandActivated } from '@moonshot-ai/agent-core-v2/agent/pluginCommand/pluginCommand';
-import type { WarningIssued } from '@moonshot-ai/agent-core-v2/agent/profile/profileOps';
+} from '@zimi-ai/agent-core-v2/agent/loop/turnEvents';
+import type { TurnEnded, TurnPrompt, TurnSteer } from '@zimi-ai/agent-core-v2/agent/loop/turnOps';
+import type { AgentErrorEvent } from '@zimi-ai/agent-core-v2/agent/mcp/mcpEvents';
+import type { PluginCommandActivated } from '@zimi-ai/agent-core-v2/agent/pluginCommand/pluginCommand';
+import type { WarningIssued } from '@zimi-ai/agent-core-v2/agent/profile/profileOps';
 import type {
   PromptAborted,
   PromptCompleted,
@@ -37,21 +37,21 @@ import type {
   PromptStarted,
   PromptSteered,
   PromptSubmitted,
-} from '@moonshot-ai/agent-core-v2/agent/prompt/promptEvents';
-import type { SkillActivated } from '@moonshot-ai/agent-core-v2/features/skill/skillOps';
-import type { TaskNotified } from '@moonshot-ai/agent-core-v2/agent/task/taskOps';
+} from '@zimi-ai/agent-core-v2/agent/prompt/promptEvents';
+import type { SkillActivated } from '@zimi-ai/agent-core-v2/features/skill/skillOps';
+import type { TaskNotified } from '@zimi-ai/agent-core-v2/agent/task/taskOps';
 import type {
   PermissionApprovalRequested,
   PermissionApprovalResolved,
-} from '@moonshot-ai/agent-core-v2/agent/toolApproval/toolApprovalService';
+} from '@zimi-ai/agent-core-v2/agent/toolApproval/toolApprovalService';
 import type {
   ToolCallStarted,
   ToolProgress,
   ToolResultEvent,
-} from '@moonshot-ai/agent-core-v2/agent/toolExecutor/toolExecutorEvents';
-import type { AgentStatusUpdated } from '@moonshot-ai/agent-core-v2/agent/usage/usageEvents';
-import type { PlanRevision } from '@moonshot-ai/agent-core-v2/features/plan/planOps';
-import type { SubagentSpawned } from '@moonshot-ai/agent-core-v2/session/subagent/mirrorAgentRun';
+} from '@zimi-ai/agent-core-v2/agent/toolExecutor/toolExecutorEvents';
+import type { AgentStatusUpdated } from '@zimi-ai/agent-core-v2/agent/usage/usageEvents';
+import type { PlanRevision } from '@zimi-ai/agent-core-v2/features/plan/planOps';
+import type { SubagentSpawned } from '@zimi-ai/agent-core-v2/session/subagent/mirrorAgentRun';
 import {
   projectTranscriptUserOrigin,
   projectTranscriptUserTurnOrigin,
@@ -74,7 +74,7 @@ import {
   type TurnHeader,
   type TurnOrigin,
   type TurnState,
-} from '@moonshot-ai/transcript';
+} from '@zimi-ai/transcript';
 
 import { interactionOutcome } from '../../protocol/interaction-wire';
 import { toWireQuestion } from '../../protocol/question-wire';

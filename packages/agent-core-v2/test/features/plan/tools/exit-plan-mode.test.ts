@@ -31,7 +31,7 @@ function planService(): IAgentPlanService {
       ({
         id: 'test-plan',
         content: '# Plan',
-        path: '/tmp/kimi-plan.md',
+        path: '/tmp/zimi-plan.md',
       } satisfies NonNullable<PlanData>),
   };
 }
@@ -131,7 +131,7 @@ describe('ExitPlanMode review display', () => {
     expect(display).toEqual({
       kind: 'plan_review',
       plan: '# Plan',
-      path: '/tmp/kimi-plan.md',
+      path: '/tmp/zimi-plan.md',
     });
   });
 
@@ -141,7 +141,7 @@ describe('ExitPlanMode review display', () => {
     expect(display).toEqual({
       kind: 'plan_review',
       plan: '# Plan',
-      path: '/tmp/kimi-plan.md',
+      path: '/tmp/zimi-plan.md',
       options,
     });
   });
@@ -173,7 +173,7 @@ describe('ExitPlanMode review display', () => {
     const service: IAgentPlanService = {
       ...planService(),
       recordRevision,
-      status: async () => ({ id: 'test-plan', content: '   ', path: '/tmp/kimi-plan.md' }),
+      status: async () => ({ id: 'test-plan', content: '   ', path: '/tmp/zimi-plan.md' }),
     };
 
     const result = await executeTool(new ExitPlanModeTool(service), {

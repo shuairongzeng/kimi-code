@@ -56,8 +56,8 @@ describe('WorkspaceTrustService', () => {
   let configChanges: Emitter<ConfigSectionChangedEvent>;
 
   beforeEach(() => {
-    homeDir = mkdtempSync(join(tmpdir(), 'kimi-workspace-trust-home-'));
-    cwd = mkdtempSync(join(tmpdir(), 'kimi-workspace-trust-cwd-'));
+    homeDir = mkdtempSync(join(tmpdir(), 'zimi-workspace-trust-home-'));
+    cwd = mkdtempSync(join(tmpdir(), 'zimi-workspace-trust-cwd-'));
     disposables = new DisposableStore();
     workspaceTrustEnabled = true;
     configChanges = disposables.add(new Emitter<ConfigSectionChangedEvent>());
@@ -136,7 +136,7 @@ describe('WorkspaceTrustService', () => {
     expect(await service.get()).toBe(false);
   });
 
-  it('honors KIMI_CODE_TRUST_WORKSPACE only when it parses as true', async () => {
+  it('honors ZIMI_CODE_TRUST_WORKSPACE only when it parses as true', async () => {
     const { service: trusted } = createService(cwd, undefined, {
       [TRUST_WORKSPACE_ENV]: '1',
     });
@@ -200,7 +200,7 @@ describe('WorkspaceTrustService', () => {
     expect(await restored.service.get()).toBe(true);
   });
 
-  it('keeps persistence semantics under KIMI_CODE_TRUST_WORKSPACE', async () => {
+  it('keeps persistence semantics under ZIMI_CODE_TRUST_WORKSPACE', async () => {
     const events: WorkspaceTrustChange[] = [];
     const { service, states } = createService(cwd, events, {
       [TRUST_WORKSPACE_ENV]: '1',
@@ -384,7 +384,7 @@ describe('WorkspaceTrustService', () => {
   });
 
   it('tracks different roots independently', async () => {
-    const other = mkdtempSync(join(tmpdir(), 'kimi-workspace-trust-other-'));
+    const other = mkdtempSync(join(tmpdir(), 'zimi-workspace-trust-other-'));
     try {
       const { service: first } = createService(cwd);
       await first.ready;
@@ -529,8 +529,8 @@ describe('WorkspaceTrustService', () => {
   });
 
   it('discloses skills and source paths from additional workspace dirs', async () => {
-    const secondary = mkdtempSync(join(tmpdir(), 'kimi-workspace-trust-secondary-'));
-    const skillRoot = join(secondary, '.kimi-code', 'skills');
+    const secondary = mkdtempSync(join(tmpdir(), 'zimi-workspace-trust-secondary-'));
+    const skillRoot = join(secondary, '.zimi-code', 'skills');
     const skillDir = join(skillRoot, 'trust-secondary');
     await mkdir(skillDir, { recursive: true });
     await writeFile(
@@ -552,7 +552,7 @@ describe('WorkspaceTrustService', () => {
       {
         readAdditionalDirs: async () => ({
           projectRoot: cwd,
-          configPath: join(cwd, '.kimi-code', 'local.toml'),
+          configPath: join(cwd, '.zimi-code', 'local.toml'),
           additionalDirs: [],
         }),
         resolveAdditionalDirs: async (_baseDir: string, dirs: readonly string[]) => [...dirs],
@@ -589,8 +589,8 @@ describe('WorkspaceTrustService', () => {
       name: 'reload-secondary',
       description: 'Reload secondary',
       source: 'project' as const,
-      path: '/secondary/.kimi-code/skills/reload-secondary/SKILL.md',
-      dir: '/secondary/.kimi-code/skills/reload-secondary',
+      path: '/secondary/.zimi-code/skills/reload-secondary/SKILL.md',
+      dir: '/secondary/.zimi-code/skills/reload-secondary',
       metadata: { type: 'prompt' as const },
       content: 'Reload secondary',
     };
@@ -607,7 +607,7 @@ describe('WorkspaceTrustService', () => {
       {
         readAdditionalDirs: async () => ({
           projectRoot: cwd,
-          configPath: join(cwd, '.kimi-code', 'local.toml'),
+          configPath: join(cwd, '.zimi-code', 'local.toml'),
           additionalDirs: [],
         }),
         resolveAdditionalDirs: async (_baseDir: string, dirs: readonly string[]) => [...dirs],
@@ -635,8 +635,8 @@ describe('WorkspaceTrustService', () => {
   });
 
   it('expands home-relative pending dirs without discovering their skills', async () => {
-    const secondary = mkdtempSync(join(tmpdir(), 'kimi-workspace-trust-home-'));
-    const skillRoot = join(secondary, '.kimi-code', 'skills');
+    const secondary = mkdtempSync(join(tmpdir(), 'zimi-workspace-trust-home-'));
+    const skillRoot = join(secondary, '.zimi-code', 'skills');
     await mkdir(join(skillRoot, 'home-only'), { recursive: true });
     await writeFile(
       join(skillRoot, 'home-only', 'SKILL.md'),

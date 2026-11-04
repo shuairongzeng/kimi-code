@@ -1,11 +1,11 @@
 /**
  * Scenario: v2 wiring — the harness talks to the in-process agent-core-v2
- * engine (klient memory transport) instead of the v1 KimiCore RPC pair.
+ * engine (klient memory transport) instead of the v1 ZimiCore RPC pair.
  * Responsibilities: v2-client behaviors the v1↔v2 parity gate does not
  * compare (engine telemetry forwarding, host request headers, the Windows
  * Git Bash probe, workspace trust, the config write cascade, deleteSession,
  * foldAgentWireReplay).
- * Wiring: real v2 engine bootstrapped on a temp KIMI_CODE_HOME; remote provider calls are stubbed.
+ * Wiring: real v2 engine bootstrapped on a temp ZIMI_CODE_HOME; remote provider calls are stubbed.
  * Run: pnpm exec vitest run test/sdk-rpc-client-v2.test.ts
  */
 import { execFile } from 'node:child_process';
@@ -16,24 +16,24 @@ import { promisify } from 'node:util';
 
 import {
   FileTokenStorage,
-  resolveKimiCodeOAuthRef,
-  resolveKimiTokenStorageName,
-} from '@moonshot-ai/kimi-code-oauth';
+  resolveZimiCodeOAuthRef,
+  resolveZimiTokenStorageName,
+} from '@zimi-ai/zimi-code-oauth';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   buildDaemonFileUrl,
-  createKimiHarness,
+  createZimiHarness,
   ErrorCodes,
-  fromKimiErrorPayload,
+  fromZimiErrorPayload,
   isDaemonFileUrl,
-  isKimiError,
-  KimiHarness,
+  isZimiError,
+  ZimiHarness,
   limitAgentReplayByTurns,
   SDKRpcClientBase,
   SDKRpcClientV2,
   Session,
-  toKimiErrorPayload,
+  toZimiErrorPayload,
   type Event,
 } from '#/index';
 import { foldAgentWireReplay } from '#/v2/resume-replay';
@@ -71,32 +71,32 @@ import {
   OsProcessErrors,
   APIProviderRateLimitError,
   APIStatusError,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 
-import { ISessionMediaStore } from '@moonshot-ai/agent-core-v2/agent/media/sessionMediaStore';
-import { CapabilityService } from '@moonshot-ai/agent-core-v2/app/capability/capabilityService';
-import { ISessionAgentProfileCatalog } from '@moonshot-ai/agent-core-v2/session/sessionAgentProfileCatalog/sessionAgentProfileCatalog';
-import { attachmentFileSource } from '@moonshot-ai/agent-core-v2/agent/tools/fileReadSource';
-import { HostFileSystem } from '@moonshot-ai/agent-core-v2/os/backends/node-local/hostFsService';
-import { HostProcessService } from '@moonshot-ai/agent-core-v2/os/backends/node-local/hostProcessService';
-import { FakeEnvironment } from '@moonshot-ai/agent-core-v2/environment/fakeEnvironment';
-import { RemoteEnvironmentProviderFactory } from '@moonshot-ai/agent-core-v2/remote';
+import { ISessionMediaStore } from '@zimi-ai/agent-core-v2/agent/media/sessionMediaStore';
+import { CapabilityService } from '@zimi-ai/agent-core-v2/app/capability/capabilityService';
+import { ISessionAgentProfileCatalog } from '@zimi-ai/agent-core-v2/session/sessionAgentProfileCatalog/sessionAgentProfileCatalog';
+import { attachmentFileSource } from '@zimi-ai/agent-core-v2/agent/tools/fileReadSource';
+import { HostFileSystem } from '@zimi-ai/agent-core-v2/os/backends/node-local/hostFsService';
+import { HostProcessService } from '@zimi-ai/agent-core-v2/os/backends/node-local/hostProcessService';
+import { FakeEnvironment } from '@zimi-ai/agent-core-v2/environment/fakeEnvironment';
+import { RemoteEnvironmentProviderFactory } from '@zimi-ai/agent-core-v2/remote';
 
-import { McpOAuthService as McpOAuthServiceV2 } from '@moonshot-ai/agent-core-v2/mcpCore/oauth/service';
-import { TowerStore } from '@moonshot-ai/agent-core-v2/features/tower/protocol/store';
+import { McpOAuthService as McpOAuthServiceV2 } from '@zimi-ai/agent-core-v2/mcpCore/oauth/service';
+import { TowerStore } from '@zimi-ai/agent-core-v2/features/tower/protocol/store';
 
 import { TEST_IDENTITY } from './test-identity';
 import {
   resetModelsDevUpstreamForTest,
   setModelsDevUpstreamForTest,
-} from '@moonshot-ai/agent-core-v2/app/kosongConfig/modelsDevUpstream';
+} from '@zimi-ai/agent-core-v2/app/kosongConfig/modelsDevUpstream';
 import { recordingTelemetry, type TelemetryRecord } from './telemetry';
 
 const hostEnvProbe = vi.hoisted(() => ({ failWithMissingShell: false }));
 
-vi.mock('@moonshot-ai/agent-core-v2/_base/execEnv/environmentProbe', async (importOriginal) => {
+vi.mock('@zimi-ai/agent-core-v2/_base/execEnv/environmentProbe', async (importOriginal) => {
   const actual = await importOriginal<
-    typeof import('@moonshot-ai/agent-core-v2/_base/execEnv/environmentProbe')
+    typeof import('@zimi-ai/agent-core-v2/_base/execEnv/environmentProbe')
   >();
   return {
     ...actual,
@@ -134,10 +134,10 @@ function stubProcessPlatform(platform: NodeJS.Platform): () => void {
   };
 }
 
-async function makeHarness(): Promise<{ harness: KimiHarness; homeDir: string }> {
-  const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
+async function makeHarness(): Promise<{ harness: ZimiHarness; homeDir: string }> {
+  const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-'));
   tempDirs.push(homeDir);
-  return { harness: createKimiHarness({ homeDir, identity: TEST_IDENTITY }), homeDir };
+  return { harness: createZimiHarness({ homeDir, identity: TEST_IDENTITY }), homeDir };
 }
 
 /** Whether the persisted session directory exists under `<home>/sessions/<bucket>/<id>`. */
@@ -176,8 +176,8 @@ async function findSessionDir(homeDir: string, sessionId: string): Promise<strin
 describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
   it('forwards process-stop authorization through harness and session capability installs', async () => {
     const status = {
-      id: 'kimi-cu' as const,
-      displayName: 'Kimi Computer Use',
+      id: 'zimi-cu' as const,
+      displayName: 'Zimi Computer Use',
       description: 'Computer operations on Windows',
       supported: true,
       state: 'partial' as const,
@@ -190,12 +190,12 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
     const session = new Session({ id: 'capability-test', workDir: homeDir, rpc: client });
     try {
       for (const api of [harness, session]) {
-        expect(await api.installCapability('kimi-cu')).toMatchObject({
+        expect(await api.installCapability('zimi-cu')).toMatchObject({
           install: { confirmationRequired: 'stop-processes' },
         });
-        expect(install).toHaveBeenLastCalledWith('kimi-cu', undefined);
-        await api.installCapability('kimi-cu', { stopRunningProcesses: true });
-        expect(install).toHaveBeenLastCalledWith('kimi-cu', { stopRunningProcesses: true });
+        expect(install).toHaveBeenLastCalledWith('zimi-cu', undefined);
+        await api.installCapability('zimi-cu', { stopRunningProcesses: true });
+        expect(install).toHaveBeenLastCalledWith('zimi-cu', { stopRunningProcesses: true });
       }
     } finally {
       install.mockRestore();
@@ -205,8 +205,8 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
   });
 
   it('loads explicit agent files for native print sessions', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-print-'));
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-print-work-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-print-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-print-work-'));
     tempDirs.push(homeDir, workDir);
     const agentFile = join(homeDir, 'reviewer.md');
     await writeFile(agentFile, '---\nname: print-reviewer\ndescription: Reviews code.\n---\n\nReview the project.\n');
@@ -229,7 +229,7 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
 
   it('exposes the validated environment binding through Session', async () => {
     const { harness } = await makeHarness();
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
     const session = await harness.createSession({ id: 'ses_environment', workDir });
     try {
@@ -244,8 +244,8 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
 
   it('keeps an explicit local cwd on the session the next session inherits', async () => {
     const { harness } = await makeHarness();
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-local-cwd-work-'));
-    const sessionDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-local-cwd-session-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-local-cwd-work-'));
+    const sessionDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-local-cwd-session-'));
     tempDirs.push(workDir, sessionDir);
     const session = await harness.createSession({
       id: 'ses_local_cwd',
@@ -282,13 +282,13 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
     ].join('\n');
   }
 
-  async function makeEnvironmentHarness(options: { readonly defaultCwd?: string } = {}): Promise<{ harness: KimiHarness; client: SDKRpcClientV2; homeDir: string }> {
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_FLAG', 'false');
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
+  async function makeEnvironmentHarness(options: { readonly defaultCwd?: string } = {}): Promise<{ harness: ZimiHarness; client: SDKRpcClientV2; homeDir: string }> {
+    vi.stubEnv('ZIMI_CODE_EXPERIMENTAL_FLAG', 'false');
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-'));
     tempDirs.push(homeDir);
     await writeFile(join(homeDir, 'config.toml'), runtimeConfigToml(options.defaultCwd ?? '/remote/work'), 'utf-8');
     const client = new SDKRpcClientV2({ homeDir, identity: TEST_IDENTITY });
-    const harness = new KimiHarness(client, {
+    const harness = new ZimiHarness(client, {
       identity: client.identity,
       homeDir: client.homeDir,
       configPath: client.configPath,
@@ -339,13 +339,13 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
       config: '[environments\n',
     },
   ])('rejects implicit local creation with $name and allows explicit local', async ({ config }) => {
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_FLAG', 'false');
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-invalid-env-work-'));
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-invalid-env-home-'));
+    vi.stubEnv('ZIMI_CODE_EXPERIMENTAL_FLAG', 'false');
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-invalid-env-work-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-invalid-env-home-'));
     tempDirs.push(workDir, homeDir);
     await writeFile(join(homeDir, 'config.toml'), config, 'utf-8');
     const client = new SDKRpcClientV2({ homeDir, identity: TEST_IDENTITY });
-    const harness = new KimiHarness(client, {
+    const harness = new ZimiHarness(client, {
       identity: client.identity,
       homeDir: client.homeDir,
       configPath: client.configPath,
@@ -365,8 +365,8 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
   });
 
   it('resolves creation defaults without creating a session', async () => {
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-default-work-'));
-    const remoteDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-default-target-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-default-work-'));
+    const remoteDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-default-target-'));
     tempDirs.push(workDir, remoteDir);
     const { harness, client } = await makeEnvironmentHarness({ defaultCwd: remoteDir });
     const provider = await attachFakeBoxEnvironment(client);
@@ -386,8 +386,8 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
   });
 
   it('resolves relative additional directories against the same remote cwd on cold resume', async () => {
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-resume-local-'));
-    const target = await mkdtemp(join(tmpdir(), 'kimi-sdk-resume-target-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-resume-local-'));
+    const target = await mkdtemp(join(tmpdir(), 'zimi-sdk-resume-target-'));
     const remoteDir = join(target, 'project');
     const sharedDir = join(target, 'shared');
     tempDirs.push(workDir, target);
@@ -408,9 +408,9 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
   });
 
   it('keeps remote AGENTS.md change notifications on the session workdir across reloads', async () => {
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-agents-local-'));
-    const remoteDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-agents-remote-'));
-    const remoteHome = await mkdtemp(join(tmpdir(), 'kimi-sdk-agents-home-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-agents-local-'));
+    const remoteDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-agents-remote-'));
+    const remoteHome = await mkdtemp(join(tmpdir(), 'zimi-sdk-agents-home-'));
     tempDirs.push(workDir, remoteDir, remoteHome);
     const remoteAgentsMd = join(remoteDir, 'AGENTS.md');
     const remotePersonalAgentsMd = join(remoteHome, '.agents', 'AGENTS.md');
@@ -452,14 +452,14 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
   });
 
   it('keeps launch-directory project agents out of remote sessions, which read only user agents', async () => {
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-profiles-local-'));
-    const remoteDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-profiles-remote-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-profiles-local-'));
+    const remoteDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-profiles-remote-'));
     tempDirs.push(workDir, remoteDir);
     const agentMd = (name: string): string => `---\nname: ${name}\ndescription: ${name} agent\n---\n\nYou are ${name}.\n`;
-    await mkdir(join(workDir, '.kimi-code', 'agents'), { recursive: true });
-    await writeFile(join(workDir, '.kimi-code', 'agents', 'launch-project.md'), agentMd('launch-project'));
-    await mkdir(join(remoteDir, '.kimi-code', 'agents'), { recursive: true });
-    await writeFile(join(remoteDir, '.kimi-code', 'agents', 'remote-project.md'), agentMd('remote-project'));
+    await mkdir(join(workDir, '.zimi-code', 'agents'), { recursive: true });
+    await writeFile(join(workDir, '.zimi-code', 'agents', 'launch-project.md'), agentMd('launch-project'));
+    await mkdir(join(remoteDir, '.zimi-code', 'agents'), { recursive: true });
+    await writeFile(join(remoteDir, '.zimi-code', 'agents', 'remote-project.md'), agentMd('remote-project'));
     const { harness, client, homeDir } = await makeEnvironmentHarness({ defaultCwd: remoteDir });
     await mkdir(join(homeDir, 'agents'), { recursive: true });
     await writeFile(join(homeDir, 'agents', 'personal.md'), agentMd('personal'));
@@ -482,8 +482,8 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
   });
 
   it('persists the creation binding in session meta and fails resume loudly when the environment cannot connect', async () => {
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-meta-work-'));
-    const remoteDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-meta-remote-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-meta-work-'));
+    const remoteDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-meta-remote-'));
     tempDirs.push(workDir, remoteDir);
     const { harness, client, homeDir } = await makeEnvironmentHarness({ defaultCwd: remoteDir });
     const provider = await attachFakeBoxEnvironment(client);
@@ -509,8 +509,8 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
   });
 
   it('resumes an explicit local cwd from session metadata', async () => {
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-local-resume-work-'));
-    const sessionDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-local-resume-cwd-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-local-resume-work-'));
+    const sessionDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-local-resume-cwd-'));
     tempDirs.push(workDir, sessionDir);
     const { harness } = await makeHarness();
     const created = await harness.createSession({
@@ -528,8 +528,8 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
   });
 
   it('keeps attached originals readable in remote sessions, forks and cold resumes without staging files', async () => {
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-attachment-work-'));
-    const remoteDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-attachment-target-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-attachment-work-'));
+    const remoteDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-attachment-target-'));
     tempDirs.push(workDir, remoteDir);
     const { harness, client, homeDir } = await makeEnvironmentHarness({ defaultCwd: remoteDir });
     const provider = await attachFakeBoxEnvironment(client);
@@ -541,7 +541,7 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
     try {
       const session = await harness.createSession({ workDir, environmentId: 'fake-box' });
       const reference = await session.attachFile(bytes, { name: 'original.png', mimeType: 'image/png' });
-      expect(reference).toMatch(/^kimi-file:\/\/f_attachment_/);
+      expect(reference).toMatch(/^zimi-file:\/\/f_attachment_/);
       expect(await read(session.id, reference)).toEqual(bytes);
       const fork = await harness.forkSession({ id: session.id });
       expect(await read(fork.id, reference)).toEqual(bytes);
@@ -586,8 +586,8 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
   }
 
   it('waits for the remote environment provider attach before resuming a remote-bound session', async () => {
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-race-work-'));
-    const remoteDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-race-remote-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-race-work-'));
+    const remoteDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-race-remote-'));
     tempDirs.push(workDir, remoteDir);
     const { harness, client, homeDir } = await makeEnvironmentHarness({ defaultCwd: remoteDir });
     const provider = await attachFakeBoxEnvironment(client);
@@ -631,7 +631,7 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
   });
 
   it('reports global MCP authorization without probing when verify is false', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-'));
     tempDirs.push(homeDir);
     const implicitOAuthUrl = 'https://implicit-oauth.example.test/mcp';
     const authorizedUrl = 'https://authorized.example.test/mcp';
@@ -715,7 +715,7 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
       null,
       { statusCode: undefined },
     );
-    expect(toKimiErrorPayload(rateLimit)).toMatchObject({
+    expect(toZimiErrorPayload(rateLimit)).toMatchObject({
       code: ErrorCodes.PROVIDER_RATE_LIMIT,
       message: 'backend stream rate limit',
       details: { statusCode: undefined, requestId: 'req-stream' },
@@ -723,7 +723,7 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
     });
 
     const message = '<html><title>Backend title</title><body>Backend body</body></html>\r\n';
-    expect(toKimiErrorPayload(new APIStatusError(502, message))).toMatchObject({
+    expect(toZimiErrorPayload(new APIStatusError(502, message))).toMatchObject({
       message,
     });
 
@@ -736,7 +736,7 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
       undefined,
       true,
     );
-    expect(toKimiErrorPayload(retryableClientError)).toMatchObject({
+    expect(toZimiErrorPayload(retryableClientError)).toMatchObject({
       code: ErrorCodes.PROVIDER_API_ERROR,
       message: 'explicitly retryable',
       retryable: true,
@@ -751,20 +751,20 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
       undefined,
       false,
     );
-    expect(toKimiErrorPayload(deterministicServerError)).toMatchObject({
+    expect(toZimiErrorPayload(deterministicServerError)).toMatchObject({
       code: ErrorCodes.PROVIDER_API_ERROR,
       message: 'explicitly deterministic',
       retryable: false,
     });
 
     for (const error of [retryableClientError, deterministicServerError]) {
-      const revived = fromKimiErrorPayload(toKimiErrorPayload(error));
-      expect(toKimiErrorPayload(revived).retryable).toBe(error.retryable);
+      const revived = fromZimiErrorPayload(toZimiErrorPayload(error));
+      expect(toZimiErrorPayload(revived).retryable).toBe(error.retryable);
     }
   });
 
-  it('restates engine MCP management Error2s as KimiError, undeclared codes as internal', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
+  it('restates engine MCP management Error2s as ZimiError, undeclared codes as internal', async () => {
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-'));
     tempDirs.push(homeDir);
     const client = new SDKRpcClientV2({ homeDir, identity: TEST_IDENTITY });
     try {
@@ -788,28 +788,28 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
           }),
         );
         const oauthError = await captureRejection(client.listGlobalMcpServers());
-        expect(isKimiError(oauthError)).toBe(true);
+        expect(isZimiError(oauthError)).toBe(true);
         expect(oauthError).toMatchObject({
           code: 'mcp.oauth_failed',
           message: 'OAuth flow timed out',
           details: { flowId: 'flow-1' },
         });
-        expect(toKimiErrorPayload(oauthError)).toMatchObject({
+        expect(toZimiErrorPayload(oauthError)).toMatchObject({
           code: 'mcp.oauth_failed',
           message: 'OAuth flow timed out',
         });
 
         // A code this build's registry does not declare (a newer engine than
         // the pinned SDK) restates as `internal` instead of minting an
-        // undeclared KimiError code the serializer would reject.
+        // undeclared ZimiError code the serializer would reject.
         listSpy.mockRejectedValueOnce(new Error2('mcp.future_code' as never, 'from a newer engine'));
         const unknownError = await captureRejection(client.listGlobalMcpServers());
-        expect(isKimiError(unknownError)).toBe(true);
+        expect(isZimiError(unknownError)).toBe(true);
         expect(unknownError).toMatchObject({
           code: ErrorCodes.INTERNAL,
           message: 'from a newer engine',
         });
-        expect(toKimiErrorPayload(unknownError)).toMatchObject({
+        expect(toZimiErrorPayload(unknownError)).toMatchObject({
           code: ErrorCodes.INTERNAL,
           message: 'from a newer engine',
         });
@@ -822,8 +822,8 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
   });
 
   it('returns prompt identities and delivery state from the v2 steer APIs', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(homeDir, workDir);
     const client = new SDKRpcClientV2({ homeDir, identity: TEST_IDENTITY });
     try {
@@ -872,9 +872,9 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
     }
   });
 
-  it('restates engine session-lock Error2s as KimiError on the conflict-handled entry points', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+  it('restates engine session-lock Error2s as ZimiError on the conflict-handled entry points', async () => {
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(homeDir, workDir);
     const client = new SDKRpcClientV2({ homeDir, identity: TEST_IDENTITY });
     try {
@@ -961,7 +961,7 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
       for (const { name, rejectWith, call } of entryPoints) {
         rejectWith(occupied);
         const error = await captureRejection(call());
-        expect(isKimiError(error), name).toBe(true);
+        expect(isZimiError(error), name).toBe(true);
         expect(error, name).toMatchObject({
           code: occupied.code,
           message: occupied.message,
@@ -982,8 +982,8 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
   });
 
   it('reloads a stale session, runs the stale-reload handler, then retries or rethrows', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(homeDir, workDir);
     const client = new SDKRpcClientV2({ homeDir, identity: TEST_IDENTITY });
     const mainOf = async () => {
@@ -1024,7 +1024,7 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
   });
 
   it('close() awaits the MCP OAuth service shutdown', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-'));
     tempDirs.push(homeDir);
     const client = new SDKRpcClientV2({ homeDir, identity: TEST_IDENTITY });
     // Activate the OnDemand OAuth service, then gate its shutdown behind a
@@ -1062,7 +1062,7 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
   });
 
   it('close() resolves promptly when the MCP OAuth service was never used', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-'));
     tempDirs.push(homeDir);
     const client = new SDKRpcClientV2({ homeDir, identity: TEST_IDENTITY });
     // Nothing touched IMcpOAuthService: close() force-activates the OnDemand
@@ -1073,15 +1073,15 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
   });
 
   it('seeds the host request headers (User-Agent + X-Msh-*) into the engine', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-'));
     tempDirs.push(homeDir);
     const client = new SDKRpcClientV2({ homeDir, identity: TEST_IDENTITY });
     try {
       // Without this seed the managed vendors go out with the SDK's default
       // User-Agent and no X-Msh-* — the interactive-v2 path's identity bug.
       const headers = client.engineAccessor.get(IHostRequestHeaders).headers;
-      expect(headers['User-Agent']).toBe(`kimi-code-cli/${TEST_IDENTITY.version}`);
-      expect(headers['X-Msh-Platform']).toBe('kimi_code_cli');
+      expect(headers['User-Agent']).toBe(`zimi-code-cli/${TEST_IDENTITY.version}`);
+      expect(headers['X-Msh-Platform']).toBe('zimi_code_cli');
       expect(headers['X-Msh-Version']).toBe(TEST_IDENTITY.version);
       expect(headers['X-Msh-Device-Id']).toBeTruthy();
     } finally {
@@ -1093,9 +1093,9 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
     hostEnvProbe.failWithMissingShell = true;
     const restorePlatform = stubProcessPlatform('win32');
     try {
-      const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
+      const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-'));
       tempDirs.push(homeDir);
-      const harness = createKimiHarness({ homeDir, identity: TEST_IDENTITY });
+      const harness = createZimiHarness({ homeDir, identity: TEST_IDENTITY });
       try {
         await expect(harness.ensureConfigFile()).rejects.toBeInstanceOf(HostProcessError);
         await expect(harness.ensureConfigFile()).rejects.toMatchObject({
@@ -1114,9 +1114,9 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
     hostEnvProbe.failWithMissingShell = true;
     const restorePlatform = stubProcessPlatform('darwin');
     try {
-      const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
+      const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-'));
       tempDirs.push(homeDir);
-      const harness = createKimiHarness({ homeDir, identity: TEST_IDENTITY });
+      const harness = createZimiHarness({ homeDir, identity: TEST_IDENTITY });
       try {
         await expect(harness.ensureConfigFile()).resolves.toBeUndefined();
       } finally {
@@ -1173,16 +1173,16 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
   });
 
   it('emits one complete metadata event when a generated title is applied', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-'));
     tempDirs.push(homeDir);
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
     const titleBaseUrl = 'https://api.example.test/coding/v1';
-    const titleOAuthRef = resolveKimiCodeOAuthRef({ baseUrl: titleBaseUrl });
+    const titleOAuthRef = resolveZimiCodeOAuthRef({ baseUrl: titleBaseUrl });
     // Storage names strip the `oauth/` prefix (FileTokenStorage rejects
     // namespaced keys); the engine resolves the same name when reading.
     await new FileTokenStorage(join(homeDir, 'credentials')).save(
-      resolveKimiTokenStorageName({ oauthKey: titleOAuthRef.key }),
+      resolveZimiTokenStorageName({ oauthKey: titleOAuthRef.key }),
       {
         accessToken: 'test-access-token',
         refreshToken: 'test-refresh-token',
@@ -1207,11 +1207,11 @@ provider = "stub"
 model = "stub"
 max_context_size = 1000
 
-[providers."managed:kimi-code"]
-type = "kimi"
+[providers."managed:zimi-code"]
+type = "zimi"
 base_url = "${titleBaseUrl}"
 
-[providers."managed:kimi-code".oauth]
+[providers."managed:zimi-code".oauth]
 storage = "file"
 key = "${titleOAuthRef.key}"
 `,
@@ -1227,7 +1227,7 @@ key = "${titleOAuthRef.key}"
       }
       throw new Error(`Unexpected fetch: ${url}`);
     });
-    const harness = createKimiHarness({ homeDir, identity: TEST_IDENTITY });
+    const harness = createZimiHarness({ homeDir, identity: TEST_IDENTITY });
 
     try {
       const session = await harness.createSession({ id: 'ses_generated_title_event', workDir });
@@ -1236,7 +1236,7 @@ key = "${titleOAuthRef.key}"
         "session 'source-session'",
       );
       await expect(
-        harness.auth.getCachedAccessToken('managed:kimi-code', {
+        harness.auth.getCachedAccessToken('managed:zimi-code', {
           storage: titleOAuthRef.storage,
           key: titleOAuthRef.key,
         }),
@@ -1277,14 +1277,14 @@ key = "${titleOAuthRef.key}"
   });
 
   it('serializes a temporary title-generation close against a public resume', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-'));
     tempDirs.push(homeDir);
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
     const titleBaseUrl = 'https://api.example.test/coding/v1';
-    const titleOAuthRef = resolveKimiCodeOAuthRef({ baseUrl: titleBaseUrl });
+    const titleOAuthRef = resolveZimiCodeOAuthRef({ baseUrl: titleBaseUrl });
     await new FileTokenStorage(join(homeDir, 'credentials')).save(
-      resolveKimiTokenStorageName({ oauthKey: titleOAuthRef.key }),
+      resolveZimiTokenStorageName({ oauthKey: titleOAuthRef.key }),
       {
         accessToken: 'test-access-token',
         refreshToken: 'test-refresh-token',
@@ -1309,11 +1309,11 @@ provider = "stub"
 model = "stub"
 max_context_size = 1000
 
-[providers."managed:kimi-code"]
-type = "kimi"
+[providers."managed:zimi-code"]
+type = "zimi"
 base_url = "${titleBaseUrl}"
 
-[providers."managed:kimi-code".oauth]
+[providers."managed:zimi-code".oauth]
 storage = "file"
 key = "${titleOAuthRef.key}"
 `,
@@ -1411,7 +1411,7 @@ key = "${titleOAuthRef.key}"
 
   it('re-resumes a fresh session facade while the public close is in flight', async () => {
     const { harness } = await makeHarness();
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
 
     try {
@@ -1436,7 +1436,7 @@ key = "${titleOAuthRef.key}"
 
   it('rejects one of two concurrent creates with the same explicit session id', async () => {
     const { harness } = await makeHarness();
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
 
     try {
@@ -1461,7 +1461,7 @@ key = "${titleOAuthRef.key}"
 
   it('coalesces concurrent public resumes onto one session facade', async () => {
     const { harness } = await makeHarness();
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
 
     try {
@@ -1484,7 +1484,7 @@ key = "${titleOAuthRef.key}"
 
   it('does not coalesce resumes with different options onto one facade', async () => {
     const { harness } = await makeHarness();
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
 
     try {
@@ -1506,7 +1506,7 @@ key = "${titleOAuthRef.key}"
 
   it('reports the title state in the resumed summary', async () => {
     const { harness } = await makeHarness();
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
 
     try {
@@ -1525,8 +1525,8 @@ key = "${titleOAuthRef.key}"
   });
 
   it('folds the resumed main agent replay from the persisted wire on cold and live resumes', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-resume-fold-'));
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-resume-fold-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(homeDir, workDir);
     const client = new SDKRpcClientV2({ homeDir, identity: TEST_IDENTITY });
 
@@ -1586,8 +1586,8 @@ key = "${titleOAuthRef.key}"
   });
 
   it('rejects a resume whose engine restore fails without an unhandled rejection from the overlapped fold', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-resume-fail-'));
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-resume-fail-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(homeDir, workDir);
     const client = new SDKRpcClientV2({ homeDir, identity: TEST_IDENTITY });
     const unhandled: unknown[] = [];
@@ -1614,11 +1614,11 @@ key = "${titleOAuthRef.key}"
         'utf-8',
       );
       const mainFailure = await client.resumeSession({ id: 'ses_resume_fail' }).catch((error: unknown) => error);
-      expect(isKimiError(mainFailure)).toBe(true);
+      expect(isZimiError(mainFailure)).toBe(true);
       expect(mainFailure).toMatchObject({ code: ErrorCodes.WIRE_VERSION_TOO_LOW });
-      expect(toKimiErrorPayload(mainFailure)).toMatchObject({
+      expect(toZimiErrorPayload(mainFailure)).toMatchObject({
         code: ErrorCodes.WIRE_VERSION_TOO_LOW,
-        message: expect.stringContaining('Upgrade Kimi Code'),
+        message: expect.stringContaining('Upgrade Zimi Code'),
       });
       await expect(client.reloadSession({ sessionId: 'ses_resume_fail' })).rejects.toMatchObject({
         code: ErrorCodes.WIRE_VERSION_TOO_LOW,
@@ -1666,10 +1666,10 @@ key = "${titleOAuthRef.key}"
 
   it('serves listWorkspaceSkills through the engineAccessor escape hatch', async () => {
     const { harness, homeDir } = await makeHarness();
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
     await writeSkill(join(homeDir, 'skills', 'demo-user-skill'), 'demo-user-skill');
-    await writeSkill(join(workDir, '.kimi-code', 'skills', 'demo-project-skill'), 'demo-project-skill');
+    await writeSkill(join(workDir, '.zimi-code', 'skills', 'demo-project-skill'), 'demo-project-skill');
     try {
       const skills = await harness.listWorkspaceSkills(workDir);
       const byName = new Map(skills.map((skill) => [skill.name, skill]));
@@ -1689,12 +1689,12 @@ key = "${titleOAuthRef.key}"
   describe('workspace additional directory discovery', () => {
     it('loads legacy project directories without a session and releases the workspace lease', async () => {
       const { harness } = await makeHarness();
-      const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
-      const extraDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-extra-'));
+      const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
+      const extraDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-extra-'));
       tempDirs.push(workDir, extraDir);
-      await mkdir(join(workDir, '.kimi-code'), { recursive: true });
+      await mkdir(join(workDir, '.zimi-code'), { recursive: true });
       await writeFile(
-        join(workDir, '.kimi-code', 'local.toml'),
+        join(workDir, '.zimi-code', 'local.toml'),
         `[workspace]\nadditional_dir = [${JSON.stringify(extraDir)}]\n`,
       );
       const client = harness['rpc'] as SDKRpcClientV2;
@@ -1713,8 +1713,8 @@ key = "${titleOAuthRef.key}"
 
     it('loads registry directories without a session', async () => {
       const { harness } = await makeHarness();
-      const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
-      const extraDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-extra-'));
+      const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
+      const extraDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-extra-'));
       tempDirs.push(workDir, extraDir);
       const client = harness['rpc'] as SDKRpcClientV2;
       const workspaces = client.engineAccessor.get(IWorkspaceService);
@@ -1730,8 +1730,8 @@ key = "${titleOAuthRef.key}"
 
     it('waits for workspace directories before returning them', async () => {
       const { harness } = await makeHarness();
-      const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
-      const extraDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-extra-'));
+      const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
+      const extraDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-extra-'));
       tempDirs.push(workDir, extraDir);
       const client = harness['rpc'] as SDKRpcClientV2;
       const manager = client.engineAccessor.get(IWorkspaceInstanceManager);
@@ -1783,7 +1783,7 @@ key = "${titleOAuthRef.key}"
 
   it('serves suggestFiles through the workspace handler fs service', async () => {
     const { harness } = await makeHarness();
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
     await mkdir(join(workDir, 'src'), { recursive: true });
     await writeFile(join(workDir, 'src', 'app.ts'), 'app');
@@ -1806,8 +1806,8 @@ key = "${titleOAuthRef.key}"
   });
 
   it('serves suggestFiles from a live remote session working directory', async () => {
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
-    const remoteDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-remote-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
+    const remoteDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-remote-'));
     tempDirs.push(workDir, remoteDir);
     await mkdir(join(workDir, 'src'), { recursive: true });
     await mkdir(join(remoteDir, 'src'), { recursive: true });
@@ -1841,7 +1841,7 @@ key = "${titleOAuthRef.key}"
 
   it('rejects an out-of-range suggestFiles limit before touching the engine', async () => {
     const { harness } = await makeHarness();
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
     try {
       for (const limit of [0, -1, 201, 1.5, Number.NaN, Number.POSITIVE_INFINITY]) {
@@ -1874,17 +1874,17 @@ key = "${titleOAuthRef.key}"
   });
 
   it('honors skillDirs (explicit dirs) over default user / project discovery', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-'));
     tempDirs.push(homeDir);
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
-    const explicitBase = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-explicit-'));
+    const explicitBase = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-explicit-'));
     tempDirs.push(explicitBase);
     const explicitDir = join(explicitBase, 'skills');
     await writeSkill(join(homeDir, 'skills', 'demo-user-skill'), 'demo-user-skill');
-    await writeSkill(join(workDir, '.kimi-code', 'skills', 'demo-project-skill'), 'demo-project-skill');
+    await writeSkill(join(workDir, '.zimi-code', 'skills', 'demo-project-skill'), 'demo-project-skill');
     await writeSkill(join(explicitDir, 'demo-explicit-skill'), 'demo-explicit-skill');
-    const harness = createKimiHarness({
+    const harness = createZimiHarness({
       homeDir,
       identity: TEST_IDENTITY,
       skillDirs: [explicitDir],
@@ -1913,7 +1913,7 @@ key = "${titleOAuthRef.key}"
   });
 
   it('serves the plugin catalog from the v2 engine on an empty home', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-'));
     tempDirs.push(homeDir);
     const rpc = new SDKRpcClientV2({ homeDir, identity: TEST_IDENTITY });
     try {
@@ -1926,11 +1926,11 @@ key = "${titleOAuthRef.key}"
   });
 
   it('returns origin and installedAt from a custom plugin install', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
-    const source = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-plugin-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-'));
+    const source = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-plugin-'));
     tempDirs.push(homeDir, source);
     await writeFile(
-      join(source, 'kimi.plugin.json'),
+      join(source, 'zimi.plugin.json'),
       JSON.stringify({ name: 'demo', version: '1.0.0' }),
     );
     const rpc = new SDKRpcClientV2({ homeDir, identity: TEST_IDENTITY });
@@ -2107,7 +2107,7 @@ key = "${titleOAuthRef.key}"
         defaultModel: 'acme/current',
         thinking: { enabled: true },
       });
-      const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+      const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
       tempDirs.push(workDir);
       const session = await harness.createSession({
         id: 'ses_retired_default',
@@ -2205,7 +2205,7 @@ key = "${titleOAuthRef.key}"
 
   it('deleteSession removes a session and rejects a missing id with session_not_found', async () => {
     const { harness, homeDir } = await makeHarness();
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
     try {
       const session = await harness.createSession({ workDir });
@@ -2229,10 +2229,10 @@ key = "${titleOAuthRef.key}"
   ])(
     'gates NotifyUser for all profiles and preserves fork prompts: %j',
     async ({ enabled, panel }) => {
-      vi.stubEnv('KIMI_CODE_EXPERIMENTAL_FLAG', '0');
-      vi.stubEnv('KIMI_CODE_EXPERIMENTAL_NOTIFY_USER', '');
-      const homeDir = await mkdtemp(join(tmpdir(), 'kimi-notify-home-'));
-      const workDir = await mkdtemp(join(tmpdir(), 'kimi-notify-work-'));
+      vi.stubEnv('ZIMI_CODE_EXPERIMENTAL_FLAG', '0');
+      vi.stubEnv('ZIMI_CODE_EXPERIMENTAL_NOTIFY_USER', '');
+      const homeDir = await mkdtemp(join(tmpdir(), 'zimi-notify-home-'));
+      const workDir = await mkdtemp(join(tmpdir(), 'zimi-notify-work-'));
       tempDirs.push(homeDir, workDir);
       const client = new SDKRpcClientV2({
         homeDir,
@@ -2385,10 +2385,10 @@ key = "${titleOAuthRef.key}"
   );
 
   it('reloads workspace dirs without duplicating agent reminders', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
-    const extraDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-extra-'));
-    const failureDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-failure-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
+    const extraDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-extra-'));
+    const failureDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-failure-'));
     tempDirs.push(homeDir, workDir, extraDir, failureDir);
     const client = new SDKRpcClientV2({ homeDir, identity: TEST_IDENTITY });
     try {
@@ -2476,9 +2476,9 @@ key = "${titleOAuthRef.key}"
   }, 15_000);
 
   it('serves getTodos from the live session todo state', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-'));
     tempDirs.push(homeDir);
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
     const client = new SDKRpcClientV2({ homeDir, identity: TEST_IDENTITY });
     try {
@@ -2522,10 +2522,10 @@ key = "${titleOAuthRef.key}"
   });
 
   it('serves setTowerMode and getStatus towerMode through the agent scope tower service', async () => {
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_TOWER', '1');
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
+    vi.stubEnv('ZIMI_CODE_EXPERIMENTAL_TOWER', '1');
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-'));
     tempDirs.push(homeDir);
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
     const client = new SDKRpcClientV2({ homeDir, identity: TEST_IDENTITY });
     try {
@@ -2561,11 +2561,11 @@ key = "${titleOAuthRef.key}"
   });
 
   it('rejects setTowerMode when the tower feature is unavailable', async () => {
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_TOWER', '0');
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_FLAG', '0');
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
+    vi.stubEnv('ZIMI_CODE_EXPERIMENTAL_TOWER', '0');
+    vi.stubEnv('ZIMI_CODE_EXPERIMENTAL_FLAG', '0');
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-'));
     tempDirs.push(homeDir);
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
     const client = new SDKRpcClientV2({ homeDir, identity: TEST_IDENTITY });
     try {
@@ -2587,9 +2587,9 @@ key = "${titleOAuthRef.key}"
   });
 
   it('exposes Session tower mode and status APIs on the v2 harness', async () => {
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_TOWER', '1');
+    vi.stubEnv('ZIMI_CODE_EXPERIMENTAL_TOWER', '1');
     const { harness } = await makeHarness();
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
     try {
       const session = await harness.createSession({ workDir });
@@ -2614,9 +2614,9 @@ key = "${titleOAuthRef.key}"
   });
 
   it('serves the initialized tower status as an engine-rendered text summary', async () => {
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_TOWER', '1');
+    vi.stubEnv('ZIMI_CODE_EXPERIMENTAL_TOWER', '1');
     const { harness } = await makeHarness();
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
     try {
       const exec = promisify(execFile);
@@ -2672,7 +2672,7 @@ key = "${titleOAuthRef.key}"
 describe('SDKRpcClientV2 workspace trust', () => {
   it('reports an untrusted workspace with the project MCP servers it gates', async () => {
     const { harness } = await makeHarness();
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
     await writeFile(
       join(workDir, '.mcp.json'),
@@ -2698,9 +2698,9 @@ describe('SDKRpcClientV2 workspace trust', () => {
       }),
       'utf-8',
     );
-    await mkdir(join(workDir, '.kimi-code'), { recursive: true });
+    await mkdir(join(workDir, '.zimi-code'), { recursive: true });
     await writeFile(
-      join(workDir, '.kimi-code', 'mcp.json'),
+      join(workDir, '.zimi-code', 'mcp.json'),
       JSON.stringify({ mcpServers: { 'nested-server': { command: 'nested-cmd' } } }),
       'utf-8',
     );
@@ -2718,7 +2718,7 @@ describe('SDKRpcClientV2 workspace trust', () => {
           name: 'nested-server',
           transport: 'stdio',
           command: 'nested-cmd',
-          origin: await realpath(join(workDir, '.kimi-code', 'mcp.json')),
+          origin: await realpath(join(workDir, '.zimi-code', 'mcp.json')),
         },
         {
           name: 'root-server',
@@ -2743,7 +2743,7 @@ describe('SDKRpcClientV2 workspace trust', () => {
 
   it('reports project servers that override same-named user entries', async () => {
     const { harness, homeDir } = await makeHarness();
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
     await writeFile(
       join(homeDir, 'mcp.json'),
@@ -2790,12 +2790,12 @@ describe('SDKRpcClientV2 workspace trust', () => {
 
   it('reports failed configuration and instruction sources while retaining readable instructions', async () => {
     const { harness } = await makeHarness();
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
     await writeFile(join(workDir, '.mcp.json'), '{not json', 'utf-8');
     await writeFile(join(workDir, 'AGENTS.md'), '# Project instructions\n', 'utf-8');
-    await mkdir(join(workDir, '.kimi-code'));
-    await symlink(join(workDir, 'missing.md'), join(workDir, '.kimi-code', 'AGENTS.md'));
+    await mkdir(join(workDir, '.zimi-code'));
+    await symlink(join(workDir, 'missing.md'), join(workDir, '.zimi-code', 'AGENTS.md'));
     try {
       const info = await harness.getWorkspaceTrustInfo(workDir);
       expect(info).toEqual({
@@ -2805,7 +2805,7 @@ describe('SDKRpcClientV2 workspace trust', () => {
         additionalDirSources: [],
         warnings: expect.arrayContaining([
           'Could not inspect MCP configuration.',
-          expect.stringContaining(join(workDir, '.kimi-code', 'AGENTS.md')),
+          expect.stringContaining(join(workDir, '.zimi-code', 'AGENTS.md')),
         ]),
         instructionSources: {
           agentsMdPaths: [await realpath(join(workDir, 'AGENTS.md'))],
@@ -2819,8 +2819,8 @@ describe('SDKRpcClientV2 workspace trust', () => {
 
   it('discloses additional directories and instruction sources of an untrusted workspace', async () => {
     const { harness } = await makeHarness();
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
-    const outsideDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-outside-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
+    const outsideDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-outside-'));
     tempDirs.push(workDir, outsideDir);
     const insideDir = join(workDir, 'sub');
     await mkdir(insideDir, { recursive: true });
@@ -2830,15 +2830,15 @@ describe('SDKRpcClientV2 workspace trust', () => {
     // the project and grants nothing new.
     await symlink(outsideDir, join(workDir, 'linked-dir'), 'dir');
     await symlink(insideDir, join(workDir, 'inner-link'), 'dir');
-    await mkdir(join(workDir, '.kimi-code'), { recursive: true });
+    await mkdir(join(workDir, '.zimi-code'), { recursive: true });
     await writeFile(
-      join(workDir, '.kimi-code', 'local.toml'),
+      join(workDir, '.zimi-code', 'local.toml'),
       `[workspace]\nadditional_dir = [${JSON.stringify(outsideDir)}, ".", "sub", "..cache", "linked-dir", "inner-link"]\n`,
       'utf-8',
     );
     await writeFile(join(outsideDir, 'AGENTS.md'), '# Demo\n', 'utf-8');
     await symlink(join(outsideDir, 'AGENTS.md'), join(workDir, 'AGENTS.md'), 'file');
-    const outsideSkills = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-skills-'));
+    const outsideSkills = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-skills-'));
     tempDirs.push(outsideSkills);
     await mkdir(join(outsideSkills, 'demo-skill'), { recursive: true });
     await writeFile(
@@ -2846,15 +2846,15 @@ describe('SDKRpcClientV2 workspace trust', () => {
       '---\nname: demo-skill\ndescription: Demo skill\n---\n\nDo demo things.\n',
       'utf-8',
     );
-    await symlink(outsideSkills, join(workDir, '.kimi-code', 'skills'), 'dir');
-    await mkdir(join(workDir, '.kimi-code', 'agents'), { recursive: true });
+    await symlink(outsideSkills, join(workDir, '.zimi-code', 'skills'), 'dir');
+    await mkdir(join(workDir, '.zimi-code', 'agents'), { recursive: true });
     await writeFile(
-      join(workDir, '.kimi-code', 'agents', 'demo-agent.md'),
+      join(workDir, '.zimi-code', 'agents', 'demo-agent.md'),
       '---\nname: demo-agent\ndescription: Demo agent\n---\n\nYou are demo-agent.\n',
       'utf-8',
     );
     await writeFile(
-      join(workDir, '.kimi-code', 'agents', 'clash-agent.md'),
+      join(workDir, '.zimi-code', 'agents', 'clash-agent.md'),
       '---\nname: agent\ndescription: Clashes with the builtin default without override\n---\n\nYou are not loaded.\n',
       'utf-8',
     );
@@ -2863,7 +2863,7 @@ describe('SDKRpcClientV2 workspace trust', () => {
       expect(info.trusted).toBe(false);
       expect(info.gatedAdditionalDirs).toEqual([
         await realpath(outsideDir),
-        // The symlinked .kimi-code/skills grants access to its real target.
+        // The symlinked .zimi-code/skills grants access to its real target.
         await realpath(outsideSkills),
       ]);
       // The project AGENTS.md is a symlink escaping the project, so its real
@@ -2872,13 +2872,13 @@ describe('SDKRpcClientV2 workspace trust', () => {
         await realpath(join(outsideDir, 'AGENTS.md')),
       ]);
       expect(info.additionalDirSources).toEqual([
-        await realpath(join(workDir, '.kimi-code', 'local.toml')),
+        await realpath(join(workDir, '.zimi-code', 'local.toml')),
         await realpath(outsideSkills),
       ]);
       expect(info.instructionSources.paths).toEqual([
         await realpath(join(outsideDir, 'AGENTS.md')),
         `${await realpath(outsideSkills)}/`,
-        `${await realpath(join(workDir, '.kimi-code', 'agents'))}/`,
+        `${await realpath(join(workDir, '.zimi-code', 'agents'))}/`,
       ]);
       expect(info.warnings).toEqual([]);
       expect(info.instructionSources.skills).toEqual(['demo-skill']);
@@ -2891,10 +2891,10 @@ describe('SDKRpcClientV2 workspace trust', () => {
   });
 
   it('resolves trust paths against the bound environment', async () => {
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-trust-local-'));
-    const remoteCwd = await mkdtemp(join(tmpdir(), 'kimi-sdk-trust-remote-'));
-    const remoteHome = await mkdtemp(join(tmpdir(), 'kimi-sdk-trust-remote-home-'));
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-trust-home-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-trust-local-'));
+    const remoteCwd = await mkdtemp(join(tmpdir(), 'zimi-sdk-trust-remote-'));
+    const remoteHome = await mkdtemp(join(tmpdir(), 'zimi-sdk-trust-remote-home-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-trust-home-'));
     const remoteAdditionalDir = join(remoteCwd, 'shared');
     const remoteHomeAdditionalDir = join(remoteHome, 'home-shared');
     tempDirs.push(workDir, remoteCwd, remoteHome, homeDir);
@@ -2905,9 +2905,9 @@ describe('SDKRpcClientV2 workspace trust', () => {
       `[environments.fake-box]\ntype = "ssh"\nhost = "example.com"\ndefaultCwd = ${JSON.stringify(remoteCwd)}\n`,
       'utf8',
     );
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_FLAG', 'false');
+    vi.stubEnv('ZIMI_CODE_EXPERIMENTAL_FLAG', 'false');
     const client = new SDKRpcClientV2({ homeDir, identity: TEST_IDENTITY });
-    const harness = new KimiHarness(client, {
+    const harness = new ZimiHarness(client, {
       identity: client.identity,
       homeDir: client.homeDir,
       configPath: client.configPath,
@@ -2960,10 +2960,10 @@ describe('SDKRpcClientV2 workspace trust', () => {
 
   it('resolves relative session-only dirs without loading their skills', async () => {
     const { harness } = await makeHarness();
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
-    const additionalDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-additional-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
+    const additionalDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-additional-'));
     tempDirs.push(workDir, additionalDir);
-    const skillRoot = join(additionalDir, '.kimi-code', 'skills');
+    const skillRoot = join(additionalDir, '.zimi-code', 'skills');
     await mkdir(join(skillRoot, 'startup-only'), { recursive: true });
     await writeFile(
       join(skillRoot, 'startup-only', 'SKILL.md'),
@@ -2989,28 +2989,28 @@ describe('SDKRpcClientV2 workspace trust', () => {
 
   it('points to the scanned agent directory for an effective workspace profile', async () => {
     const { harness } = await makeHarness();
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
-    const outsideDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-agent-source-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
+    const outsideDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-agent-source-'));
     tempDirs.push(workDir, outsideDir);
-    await mkdir(join(workDir, '.kimi-code', 'agents'), { recursive: true });
+    await mkdir(join(workDir, '.zimi-code', 'agents'), { recursive: true });
     await writeFile(
       join(outsideDir, 'override-agent.md'),
       '---\nname: agent\noverride: true\ndescription: Replaces the builtin default\n---\n\nYou are the override.\n',
       'utf-8',
     );
-    await symlink(join(outsideDir, 'override-agent.md'), join(workDir, '.kimi-code', 'agents', 'override-agent.md'));
+    await symlink(join(outsideDir, 'override-agent.md'), join(workDir, '.zimi-code', 'agents', 'override-agent.md'));
     try {
       const info = await harness.getWorkspaceTrustInfo(workDir);
       expect(info.instructionSources.agentProfiles).toEqual(['agent']);
-      expect(info.instructionSources.paths).toEqual([`${await realpath(join(workDir, '.kimi-code', 'agents'))}/`]);
+      expect(info.instructionSources.paths).toEqual([`${await realpath(join(workDir, '.zimi-code', 'agents'))}/`]);
     } finally {
       await harness.close();
     }
   });
 
-  it('trustWorkspace flips the state and persists the marker in the kimi home', async () => {
+  it('trustWorkspace flips the state and persists the marker in the zimi home', async () => {
     const { harness, homeDir } = await makeHarness();
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-work-'));
     tempDirs.push(workDir);
     try {
       await harness.trustWorkspace(workDir);
@@ -3022,7 +3022,7 @@ describe('SDKRpcClientV2 workspace trust', () => {
         warnings: [],
         instructionSources: { agentsMdPaths: [], skills: [], agentProfiles: [], paths: [] },
       });
-      // The trust marker lives in the kimi home, never in the checkout.
+      // The trust marker lives in the zimi home, never in the checkout.
       const markers = await readdir(join(homeDir, 'workspace-trust'));
       expect(markers.length).toBe(1);
       expect(await readdir(workDir)).not.toContain('workspace-trust');
@@ -3034,7 +3034,7 @@ describe('SDKRpcClientV2 workspace trust', () => {
 
 describe('foldAgentWireReplay', () => {
   it('folds a journal into v1 replay records and the tool store', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-fold-'));
+    const dir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-fold-'));
     tempDirs.push(dir);
     const wirePath = join(dir, 'wire.jsonl');
     const toolCalls = [
@@ -3195,7 +3195,7 @@ describe('foldAgentWireReplay', () => {
   });
 
   it('degrades to an empty fold on a missing or corrupt journal', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-fold-'));
+    const dir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-fold-'));
     tempDirs.push(dir);
     const empty = { replay: [], toolStore: {} };
     await expect(foldAgentWireReplay(join(dir, 'missing.jsonl'))).resolves.toEqual(empty);
@@ -3298,7 +3298,7 @@ describe('foldAgentWireReplay turn limiting', () => {
   }
 
   async function writeWire(records: readonly Record<string, unknown>[]): Promise<string> {
-    const dir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-fold-limit-'));
+    const dir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-fold-limit-'));
     tempDirs.push(dir);
     const wirePath = join(dir, 'wire.jsonl');
     await writeFile(
@@ -3866,12 +3866,12 @@ describe('foldAgentWireReplay turn limiting', () => {
 
 describe('SDKRpcClientV2 engine telemetry', () => {
   it('forwards engine-side events to the host-supplied telemetry client', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-tel-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-tel-'));
     tempDirs.push(homeDir);
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-tel-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-tel-work-'));
     tempDirs.push(workDir);
     const records: TelemetryRecord[] = [];
-    const harness = createKimiHarness({
+    const harness = createZimiHarness({
       homeDir,
       identity: TEST_IDENTITY,
       telemetry: recordingTelemetry(records),
@@ -3887,13 +3887,13 @@ describe('SDKRpcClientV2 engine telemetry', () => {
   });
 
   it('honors telemetry = false for engine-side events', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-tel-off-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-tel-off-'));
     tempDirs.push(homeDir);
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-tel-off-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-tel-off-work-'));
     tempDirs.push(workDir);
     await writeFile(join(homeDir, 'config.toml'), 'telemetry = false\n', 'utf-8');
     const records: TelemetryRecord[] = [];
-    const harness = createKimiHarness({
+    const harness = createZimiHarness({
       homeDir,
       identity: TEST_IDENTITY,
       telemetry: recordingTelemetry(records),
@@ -3909,13 +3909,13 @@ describe('SDKRpcClientV2 engine telemetry', () => {
   });
 
   it('emits session_started once per open, with the harness schema and enabled experimental flags', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-tel-flags-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-tel-flags-'));
     tempDirs.push(homeDir);
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-tel-flags-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-tel-flags-work-'));
     tempDirs.push(workDir);
     await writeFile(join(homeDir, 'config.toml'), '[experimental]\nsubagent_fork = true\n', 'utf-8');
     const records: TelemetryRecord[] = [];
-    const harness = createKimiHarness({
+    const harness = createZimiHarness({
       homeDir,
       identity: TEST_IDENTITY,
       telemetry: recordingTelemetry(records),
@@ -3930,7 +3930,7 @@ describe('SDKRpcClientV2 engine telemetry', () => {
         sessionId: session.id,
         properties: {
           client_id: '',
-          client_name: 'kimi-code-cli',
+          client_name: 'zimi-code-cli',
           client_version: '0.0.0-test',
           ui_mode: 'shell',
           resumed: false,
@@ -3957,9 +3957,9 @@ describe('SDKRpcClientV2 engine telemetry', () => {
   });
 
   it('keeps forwarding the engine session_started to a direct SDKRpcClientV2 consumer', async () => {
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-tel-direct-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-tel-direct-'));
     tempDirs.push(homeDir);
-    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-tel-direct-work-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'zimi-sdk-v2-tel-direct-work-'));
     tempDirs.push(workDir);
     const records: TelemetryRecord[] = [];
     const client = new SDKRpcClientV2({

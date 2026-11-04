@@ -22,7 +22,7 @@ import { StubConfigService } from '../../stubs';
 import { stubBootstrap } from '../bootstrap/stubs';
 import { stubAgentIdentity } from '../agentIdentity/stubs';
 
-const HOST_HEADERS = { 'User-Agent': 'kimi-test/1.0' };
+const HOST_HEADERS = { 'User-Agent': 'zimi-test/1.0' };
 
 const codes = ModelsDevImportErrors.codes;
 
@@ -211,7 +211,7 @@ describe('IModelsDevImportService', () => {
     const { config, imports } = createHost({
       providers: {},
       models: {},
-      defaultProvider: 'kimi',
+      defaultProvider: 'zimi',
       defaultModel: 'k2',
     });
 
@@ -234,7 +234,7 @@ describe('IModelsDevImportService', () => {
       model: 'gpt-4.1',
       maxContextSize: 1047576,
     });
-    expect(config.get('defaultProvider')).toBe('kimi');
+    expect(config.get('defaultProvider')).toBe('zimi');
     expect(config.get('defaultModel')).toBe('k2');
   });
 
@@ -244,7 +244,7 @@ describe('IModelsDevImportService', () => {
       providers: { openai: { type: 'openai', apiKey: 'sk-old' } },
       models: {
         'openai/gpt-4o': { provider: 'openai', model: 'gpt-4o', maxContextSize: 128000 },
-        k2: { provider: 'kimi', model: 'kimi-k2', maxContextSize: 131072 },
+        k2: { provider: 'zimi', model: 'kimi-k2', maxContextSize: 131072 },
       },
       secondaryModel: {
         defaultModel: 'k2',
@@ -418,7 +418,7 @@ describe('IModelsDevImportService', () => {
           type: 'openai',
           source: { kind: 'apiJson', url: REGISTRY_URL, apiKey: 'tok-1' },
         },
-        kimi: { type: 'kimi', apiKey: 'sk-kimi' },
+        zimi: { type: 'zimi', apiKey: 'sk-zimi' },
       },
       models: {
         'acme-old/gpt-y': { provider: 'acme-old', model: 'gpt-y', maxContextSize: 128000 },
@@ -440,7 +440,7 @@ describe('IModelsDevImportService', () => {
 
     const providers = config.inspect<ProvidersSection>(PROVIDERS_SECTION).userValue ?? {};
     expect(providers['acme-old']).toBeUndefined();
-    expect(providers['kimi']).toMatchObject({ type: 'kimi' });
+    expect(providers['zimi']).toMatchObject({ type: 'zimi' });
     expect(providers['acme-gpt']).toMatchObject({
       type: 'openai',
       baseUrl: 'https://acme.example/v1',
@@ -480,8 +480,8 @@ describe('IModelsDevImportService', () => {
     setModelsDevUpstreamForTest({
       fetchImpl: fetchJson({
         shadow: {
-          id: 'moonshot-cn',
-          name: 'Shadow Moonshot',
+          id: 'zimi-cn',
+          name: 'Shadow Zimi',
           api: 'https://shadow.example/v1',
           type: 'openai',
           models: { m1: { id: 'm1' } },

@@ -5,7 +5,7 @@ import { Readable, type Writable } from 'node:stream';
 import { createControlledPromise } from '@antfu/utils';
 import { LifecycleScope } from '#/app/scopes';
 import { type IAgentScopeHandle } from '#/_base/di/scope';
-import { Event, type Event as KimiEvent } from '#/_base/event';
+import { Event, type Event as ZimiEvent } from '#/_base/event';
 import { ILogService } from '#/_base/log/log';
 import { toInputJsonSchema } from '#/tool/input-schema';
 import { userCancellationReason } from '#/_base/utils/abort';
@@ -395,11 +395,11 @@ function createAgentLifecycleStub(options: AgentLifecycleStubOptions = {}): Agen
     hooks: {
       onWillStartAgentTask: hookSlot(),
     },
-    onDidStopAgentTask: Event.None as KimiEvent<AgentTaskStopHookContext>,
-    onDidCreate: Event.None as KimiEvent<AgentContext>,
-    onDidCreateScope: Event.None as KimiEvent<AgentScopeCreatedEvent>,
-    onWillClose: Event.None as KimiEvent<AgentContext>,
-    onDidClose: Event.None as KimiEvent<AgentContext>,
+    onDidStopAgentTask: Event.None as ZimiEvent<AgentTaskStopHookContext>,
+    onDidCreate: Event.None as ZimiEvent<AgentContext>,
+    onDidCreateScope: Event.None as ZimiEvent<AgentScopeCreatedEvent>,
+    onWillClose: Event.None as ZimiEvent<AgentContext>,
+    onDidClose: Event.None as ZimiEvent<AgentContext>,
     create: vi.fn(async (input = {}) => {
       if (options.createError !== undefined) throw options.createError;
       const agentId =

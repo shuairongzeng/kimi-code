@@ -1,5 +1,5 @@
 /**
- * Browser-safe entry for the device-code flow (`@moonshot-ai/kimi-code-oauth/device`).
+ * Browser-safe entry for the device-code flow (`@zimi-ai/zimi-code-oauth/device`).
  *
  * The package root re-exports `OAuthManager`, token storage, and the identity
  * helpers, which pull in `node:fs` / `node:os` / `proper-lockfile` — fine for
@@ -13,7 +13,7 @@
  * URI → poll → store the token); there is no manager here on purpose.
  */
 
-export { KIMI_CODE_FLOW_CONFIG } from './constants';
+export { ZIMI_CODE_FLOW_CONFIG } from './constants';
 export {
   OAuthConnectionError,
   OAuthError,

@@ -7,7 +7,7 @@ import {
   IModelService,
   type IAgentScopeHandle,
   type UsageStatus,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 
 export interface LegacyStatusSnapshot {
   readonly usage?: UsageStatus;

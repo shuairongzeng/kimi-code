@@ -2,7 +2,7 @@
  * Scenario: persisted Node SDK sessions are reopened and rendered by the VS Code replay adapter.
  * Responsibilities: restored tool displays and child-agent steps through the public resume state.
  * Wiring: Node SDK, core, storage, and HTTP provider adapter are real; only the remote provider is local.
- * Run: pnpm --filter kimi-code exec vitest run --config vitest.config.ts test/replay-resume.integration.test.ts
+ * Run: pnpm --filter zimi-code exec vitest run --config vitest.config.ts test/replay-resume.integration.test.ts
  */
 
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
@@ -11,11 +11,11 @@ import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 
 import {
-  createKimiHarness,
+  createZimiHarness,
   type Event,
-  type KimiHarness,
+  type ZimiHarness,
   type Session,
-} from "@moonshot-ai/kimi-code-sdk";
+} from "@zimi-ai/zimi-code-sdk";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
@@ -29,7 +29,7 @@ const MODEL_ALIAS = "vscode-replay-test";
 interface ReplayRig {
   readonly rootDir: string;
   readonly workDir: string;
-  readonly harness: KimiHarness;
+  readonly harness: ZimiHarness;
   readonly provider: FakeProviderHarness;
 }
 
@@ -40,19 +40,19 @@ afterEach(async () => {
 });
 
 async function createReplayRig(): Promise<ReplayRig> {
-  const rootDir = await mkdtemp(join(tmpdir(), "kimi-vscode-replay-"));
+  const rootDir = await mkdtemp(join(tmpdir(), "zimi-vscode-replay-"));
   const homeDir = join(rootDir, "home");
   const workDir = join(rootDir, "workspace");
   await Promise.all([mkdir(homeDir), mkdir(workDir)]);
   const provider = await createFakeProviderHarness();
-  const harness = createKimiHarness({
+  const harness = createZimiHarness({
     homeDir,
-    identity: { productName: "kimi-code-vscode", version: "test", platform: "kimi_code_vscode" },
+    identity: { productName: "zimi-code-vscode", version: "test", platform: "zimi_code_vscode" },
   });
   await harness.setConfig({
     providers: {
       local: {
-        type: "kimi",
+        type: "zimi",
         baseUrl: `${provider.baseUrl}/v1`,
         apiKey: "sk-test",
       },

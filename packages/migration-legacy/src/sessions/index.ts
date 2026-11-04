@@ -1,9 +1,9 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { OldKimiJsonSchema } from '../kimi-cli-schema.js';
+import { OldZimiJsonSchema } from '../zimi-cli-schema.js';
 import { ensureSessionIndexEntry } from '../session-index.js';
-import { sourceKimiJson, sourceSessionsDir } from '../paths.js';
+import { sourceZimiJson, sourceSessionsDir } from '../paths.js';
 import type { SessionsSummary } from '../types.js';
 import { classifyLegacySession } from './classify.js';
 import { migrateOneSession } from './migrate-one.js';
@@ -241,8 +241,8 @@ function resolveBucket(
 
 async function loadWorkdirs(sourceHome: string): Promise<WorkdirMeta[]> {
   try {
-    const text = await readFile(sourceKimiJson(sourceHome), 'utf-8');
-    const parsed = OldKimiJsonSchema.parse(JSON.parse(text));
+    const text = await readFile(sourceZimiJson(sourceHome), 'utf-8');
+    const parsed = OldZimiJsonSchema.parse(JSON.parse(text));
     return parsed.work_dirs.map((w) => ({ path: w.path, kaos: w.kaos }));
   } catch {
     return [];
@@ -293,7 +293,7 @@ function emptySummary(): SessionsSummary {
 }
 
 function unknownWorkdirReason(): string {
-  return 'No local workdir mapping was found for this legacy session bucket; kimi.json may be missing, unreadable, or not list the workdir.';
+  return 'No local workdir mapping was found for this legacy session bucket; zimi.json may be missing, unreadable, or not list the workdir.';
 }
 
 function unreadableSessionReason(): string {

@@ -18,8 +18,8 @@ import {
 const ENV_KEYS = [
   'OPENAI_API_KEY',
   'OPENAI_BASE_URL',
-  'KIMI_API_KEY',
-  'KIMI_BASE_URL',
+  'ZIMI_API_KEY',
+  'ZIMI_BASE_URL',
   'GOOGLE_API_KEY',
   'VERTEXAI_API_KEY',
 ] as const;
@@ -94,32 +94,32 @@ function modelWith(spec: {
 }
 
 describe('supportedProtocols', () => {
-  it('lists the four wire protocols and contains neither kimi nor vertexai', () => {
+  it('lists the four wire protocols and contains neither zimi nor vertexai', () => {
     const protocols = registry.supportedProtocols();
     expect(protocols).toHaveLength(4);
     expect([...protocols].toSorted()).toEqual(
       ['anthropic', 'google-genai', 'openai', 'openai_responses'].toSorted(),
     );
-    expect(protocols).not.toContain('kimi');
+    expect(protocols).not.toContain('zimi');
     expect(protocols).not.toContain('vertexai');
   });
 });
 
 describe('resolveAdapterIdentity', () => {
-  it('resolves the kimi pair registrations to their vendor protocol bindings', () => {
-    expect(registry.resolveAdapterIdentity('openai', 'kimi').baseId).toBe('openai');
-    expect(registry.resolveAdapterIdentity('openai', 'kimi').thinkingDriven).toBe(true);
-    expect(registry.resolveAdapterIdentity('openai', 'kimi').strictThinkingValidation).toBe(true);
-    expect(registry.resolveAdapterIdentity('anthropic', 'kimi').baseId).toBe('anthropic');
-    expect(registry.resolveAdapterIdentity('anthropic', 'kimi').thinkingDriven).toBe(true);
-    expect(registry.resolveAdapterIdentity('openai_responses', 'kimi').baseId).toBe(
+  it('resolves the zimi pair registrations to their vendor protocol bindings', () => {
+    expect(registry.resolveAdapterIdentity('openai', 'zimi').baseId).toBe('openai');
+    expect(registry.resolveAdapterIdentity('openai', 'zimi').thinkingDriven).toBe(true);
+    expect(registry.resolveAdapterIdentity('openai', 'zimi').strictThinkingValidation).toBe(true);
+    expect(registry.resolveAdapterIdentity('anthropic', 'zimi').baseId).toBe('anthropic');
+    expect(registry.resolveAdapterIdentity('anthropic', 'zimi').thinkingDriven).toBe(true);
+    expect(registry.resolveAdapterIdentity('openai_responses', 'zimi').baseId).toBe(
       'openai_responses',
     );
-    expect(registry.resolveAdapterIdentity('openai_responses', 'kimi').thinkingDriven).toBe(true);
+    expect(registry.resolveAdapterIdentity('openai_responses', 'zimi').thinkingDriven).toBe(true);
   });
 
   it('resolves unregistered pairs to the protocol itself with no vendor trait', () => {
-    const google = registry.resolveAdapterIdentity('google-genai', 'kimi');
+    const google = registry.resolveAdapterIdentity('google-genai', 'zimi');
     expect(google.baseId).toBe('google-genai');
     expect(google.thinkingDriven).toBeUndefined();
     const unknown = registry.resolveAdapterIdentity('openai', 'no-such-vendor');
@@ -136,12 +136,12 @@ describe('resolveAdapterIdentity', () => {
 
 describe('resolveProviderBaseId', () => {
   it('returns the pair registration’s baseProtocol — the protocol itself by construction', () => {
-    expect(registry.resolveProviderBaseId('openai', 'kimi')).toBe('openai');
-    expect(registry.resolveProviderBaseId('anthropic', 'kimi')).toBe('anthropic');
+    expect(registry.resolveProviderBaseId('openai', 'zimi')).toBe('openai');
+    expect(registry.resolveProviderBaseId('anthropic', 'zimi')).toBe('anthropic');
   });
 
   it('returns the protocol itself otherwise', () => {
-    expect(registry.resolveProviderBaseId('google-genai', 'kimi')).toBe('google-genai');
+    expect(registry.resolveProviderBaseId('google-genai', 'zimi')).toBe('google-genai');
     expect(registry.resolveProviderBaseId('openai', 'no-such-vendor')).toBe('openai');
     expect(registry.resolveProviderBaseId('openai')).toBe('openai');
   });
@@ -161,17 +161,17 @@ describe('resolveCapability', () => {
     expect(registry.resolveCapability('anthropic', 'claude-opus-4-1').thinking).toBe(true);
   });
 
-  it('kimi declares no vendor-level capability — the base catalog answers instead', () => {
-    expect(isUnknownCapability(registry.resolveCapability('openai', 'kimi-for-coding', 'kimi'))).toBe(
+  it('zimi declares no vendor-level capability — the base catalog answers instead', () => {
+    expect(isUnknownCapability(registry.resolveCapability('openai', 'kimi-for-coding', 'zimi'))).toBe(
       true,
     );
-    expect(registry.resolveCapability('openai', 'gpt-4o', 'kimi').image_in).toBe(true);
+    expect(registry.resolveCapability('openai', 'gpt-4o', 'zimi').image_in).toBe(true);
   });
 });
 
 describe('request gateway routes', () => {
-  it('routes kimi+openai to the kimi trait with the video upload media', () => {
-    const resolved = registry.request(modelWith({ protocol: 'openai', providerType: 'kimi' }));
+  it('routes zimi+openai to the zimi trait with the video upload media', () => {
+    const resolved = registry.request(modelWith({ protocol: 'openai', providerType: 'zimi' }));
     expect(contentsOf(resolved).model?.spec?.provider).toBe('openai');
     expect(contentsOf(resolved).model?.spec?.name).toBe('wire-model');
     expect(supportsLlmUpload(resolved, 'video')).toBe(true);
@@ -186,7 +186,7 @@ describe('request gateway routes', () => {
   });
 
   it('keeps stream business codes out of the real HTTP status at the registry boundary', () => {
-    const resolved = registry.request(modelWith({ protocol: 'openai', providerType: 'kimi' }));
+    const resolved = registry.request(modelWith({ protocol: 'openai', providerType: 'zimi' }));
     const decodeError = contentsOf(resolved).protocol?.base?.decodeError;
     const rawError = new RawOpenAISDKAPIError(
       429,
@@ -225,8 +225,8 @@ describe('request gateway routes', () => {
     expect(contentsOf(vertex).protocol?.options).toMatchObject({ vertexai: true });
   });
 
-  it('routes kimi+anthropic with media and explicit beta opt-in', async () => {
-    const resolved = registry.request(modelWith({ protocol: 'anthropic', providerType: 'kimi' }));
+  it('routes zimi+anthropic with media and explicit beta opt-in', async () => {
+    const resolved = registry.request(modelWith({ protocol: 'anthropic', providerType: 'zimi' }));
     expect(contentsOf(resolved).model?.spec?.provider).toBe('anthropic');
     expect(supportsLlmUpload(resolved, 'video')).toBe(true);
     expect(supportsLlmUpload(resolved, 'image')).toBe(true);
@@ -268,7 +268,7 @@ describe('request gateway routes', () => {
     }) as typeof fetch);
     const generate = async (providerOptions?: Model['providerOptions']) => {
       const routed = registry.request(
-        modelWith({ protocol: 'anthropic', providerType: 'kimi', providerOptions }),
+        modelWith({ protocol: 'anthropic', providerType: 'zimi', providerOptions }),
       );
       try {
         for await (const event of generateModel(
@@ -315,17 +315,17 @@ describe('request gateway routes', () => {
 });
 
 describe('resolveProviderEndpoint', () => {
-  it('resolves the kimi endpoint chain from process.env', () => {
-    process.env['KIMI_API_KEY'] = 'sk-kimi-env';
-    expect(resolveProviderEndpoint('kimi')).toEqual({
-      apiKey: 'sk-kimi-env',
+  it('resolves the zimi endpoint chain from process.env', () => {
+    process.env['ZIMI_API_KEY'] = 'sk-zimi-env';
+    expect(resolveProviderEndpoint('zimi')).toEqual({
+      apiKey: 'sk-zimi-env',
       baseUrl: 'https://api.moonshot.ai/v1',
     });
   });
 
   it('reads a caller-supplied env bag instead of process.env', () => {
-    process.env['KIMI_API_KEY'] = 'sk-kimi-env';
-    expect(resolveProviderEndpoint('kimi', { KIMI_BASE_URL: 'https://example.com/v1' })).toEqual({
+    process.env['ZIMI_API_KEY'] = 'sk-zimi-env';
+    expect(resolveProviderEndpoint('zimi', { ZIMI_BASE_URL: 'https://example.com/v1' })).toEqual({
       baseUrl: 'https://example.com/v1',
     });
   });
@@ -358,11 +358,11 @@ describe('resolveProviderEndpoint', () => {
   });
 });
 
-describe('kimi provider definitions', () => {
+describe('zimi provider definitions', () => {
   it('registers one definition per transport, with shared vendor-level facts', () => {
-    const native = getProviderDefinition('kimi', 'openai');
-    const anthropic = getProviderDefinition('kimi', 'anthropic');
-    const responses = getProviderDefinition('kimi', 'openai_responses');
+    const native = getProviderDefinition('zimi', 'openai');
+    const anthropic = getProviderDefinition('zimi', 'anthropic');
+    const responses = getProviderDefinition('zimi', 'openai_responses');
     expect(native?.baseProtocol).toBe('openai');
     expect(native?.requester).toBeDefined();
     expect(anthropic?.baseProtocol).toBe('anthropic');
@@ -371,8 +371,8 @@ describe('kimi provider definitions', () => {
     expect(responses?.requester).toBeDefined();
     for (const definition of [native, anthropic, responses]) {
       expect(definition?.endpoint).toEqual({
-        apiKeyEnv: 'KIMI_API_KEY',
-        baseUrlEnv: 'KIMI_BASE_URL',
+        apiKeyEnv: 'ZIMI_API_KEY',
+        baseUrlEnv: 'ZIMI_BASE_URL',
         defaultBaseUrl: 'https://api.moonshot.ai/v1',
       });
       expect(definition?.hostHeaders).toBe('full');
@@ -381,11 +381,11 @@ describe('kimi provider definitions', () => {
   });
 
   it('answers id-level queries and reports unregistered pairs', () => {
-    expect(getProviderDefinition('kimi')?.baseProtocol).toBe('openai');
-    expect(getProviderDefinitions('kimi')).toHaveLength(3);
-    expect(hasProviderDefinition('kimi')).toBe(true);
+    expect(getProviderDefinition('zimi')?.baseProtocol).toBe('openai');
+    expect(getProviderDefinitions('zimi')).toHaveLength(3);
+    expect(hasProviderDefinition('zimi')).toBe(true);
     expect(hasProviderDefinition('no-such-vendor')).toBe(false);
-    expect(getProviderDefinition('kimi', 'google-genai')).toBeUndefined();
+    expect(getProviderDefinition('zimi', 'google-genai')).toBeUndefined();
   });
 
   it('allows the same id on several protocols but rejects a duplicate (id, baseProtocol) pair', () => {
@@ -407,7 +407,7 @@ describe('kimi provider definitions', () => {
     ).toThrow(/already registered/);
     expect(() =>
       registerProviderDefinition({
-        id: 'kimi',
+        id: 'zimi',
         baseProtocol: 'openai',
       }),
     ).toThrow(/already registered/);

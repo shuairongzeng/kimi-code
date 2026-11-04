@@ -12,10 +12,10 @@ describe('web asset cache policy', () => {
   let assetsDir: string;
 
   beforeEach(async () => {
-    assetsDir = await mkdtemp(join(tmpdir(), 'kimi-web-assets-'));
+    assetsDir = await mkdtemp(join(tmpdir(), 'zimi-web-assets-'));
     await mkdir(join(assetsDir, 'assets'));
     await Promise.all([
-      writeFile(join(assetsDir, 'index.html'), '<main>Kimi</main>'),
+      writeFile(join(assetsDir, 'index.html'), '<main>Zimi</main>'),
       writeFile(join(assetsDir, 'assets', 'index-Dy7xs5tu.js'), 'export {};'),
       writeFile(join(assetsDir, 'assets', 'application-configuration.json'), '{}'),
       writeFile(join(assetsDir, 'favicon.svg'), '<svg></svg>'),

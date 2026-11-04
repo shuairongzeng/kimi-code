@@ -27,13 +27,13 @@ describe('skillRoots', () => {
   }
 
   describe('projectRoots', () => {
-    it('resolves the brand .kimi-code/skills directory at the .git root', async () => {
+    it('resolves the brand .zimi-code/skills directory at the .git root', async () => {
       await markGitRoot();
-      await mkdir(join(root, '.kimi-code/skills/commit'), { recursive: true });
+      await mkdir(join(root, '.zimi-code/skills/commit'), { recursive: true });
 
       const roots = await projectRoots(root);
 
-      expect(roots.some((r) => r.path.endsWith('.kimi-code/skills') && r.source === 'project')).toBe(
+      expect(roots.some((r) => r.path.endsWith('.zimi-code/skills') && r.source === 'project')).toBe(
         true,
       );
     });
@@ -47,27 +47,27 @@ describe('skillRoots', () => {
       expect(roots.some((r) => r.path.endsWith('.agents/skills') && r.source === 'project')).toBe(
         true,
       );
-      expect(roots.some((r) => r.path.endsWith('.kimi-code/skills'))).toBe(false);
+      expect(roots.some((r) => r.path.endsWith('.zimi-code/skills'))).toBe(false);
     });
 
     it('walks up from a child directory to the .git root', async () => {
       await markGitRoot();
-      await mkdir(join(root, '.kimi-code/skills/commit'), { recursive: true });
+      await mkdir(join(root, '.zimi-code/skills/commit'), { recursive: true });
       const child = join(root, 'src/pkg');
       await mkdir(child, { recursive: true });
 
       const roots = await projectRoots(child);
 
-      expect(roots.some((r) => r.path.endsWith('.kimi-code/skills'))).toBe(true);
+      expect(roots.some((r) => r.path.endsWith('.zimi-code/skills'))).toBe(true);
     });
 
     it('orders the brand directory before the generic directory', async () => {
       await markGitRoot();
-      await mkdir(join(root, '.kimi-code/skills'), { recursive: true });
+      await mkdir(join(root, '.zimi-code/skills'), { recursive: true });
       await mkdir(join(root, '.agents/skills'), { recursive: true });
 
       const roots = await projectRoots(root);
-      const brandIdx = roots.findIndex((r) => r.path.endsWith('.kimi-code/skills'));
+      const brandIdx = roots.findIndex((r) => r.path.endsWith('.zimi-code/skills'));
       const genericIdx = roots.findIndex((r) => r.path.endsWith('.agents/skills'));
 
       expect(brandIdx).toBeGreaterThanOrEqual(0);
@@ -78,7 +78,7 @@ describe('skillRoots', () => {
       const remoteRoot = '/remote/project';
       const fs = {
         stat: async (p: string) => {
-          if (p === `${remoteRoot}/.git` || p === `${remoteRoot}/.kimi-code/skills`) {
+          if (p === `${remoteRoot}/.git` || p === `${remoteRoot}/.zimi-code/skills`) {
             return { isFile: false, isDirectory: true, size: 0 };
           }
           throw new Error('ENOENT');
@@ -88,7 +88,7 @@ describe('skillRoots', () => {
 
       const roots = await projectRoots(remoteRoot, {}, fs);
 
-      expect(roots).toEqual([{ path: '/remote/project/.kimi-code/skills', source: 'project' }]);
+      expect(roots).toEqual([{ path: '/remote/project/.zimi-code/skills', source: 'project' }]);
     });
   });
 
@@ -96,8 +96,8 @@ describe('skillRoots', () => {
     it('preserves directory priority and deduplicates resolved skill roots', async () => {
       const primary = join(root, 'primary');
       const secondary = join(root, 'secondary');
-      const primarySkills = join(primary, '.kimi-code/skills');
-      const secondarySkills = join(secondary, '.kimi-code/skills');
+      const primarySkills = join(primary, '.zimi-code/skills');
+      const secondarySkills = join(secondary, '.zimi-code/skills');
       await mkdir(primarySkills, { recursive: true });
       await mkdir(secondarySkills, { recursive: true });
 

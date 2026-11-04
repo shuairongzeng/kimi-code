@@ -1,12 +1,12 @@
-import type { HostUiCapability } from '@moonshot-ai/agent-core-v2';
+import type { HostUiCapability } from '@zimi-ai/agent-core-v2';
 import type {
   ExportSessionManifest,
   ShellEnvironment,
-} from '@moonshot-ai/agent-core-v2/app/sessionExport/sessionExport';
-import type { EnvironmentStatus as SessionEnvironmentStatus } from '@moonshot-ai/agent-core-v2/environment/environment';
-import type { RemoteEnvironmentEntry } from '@moonshot-ai/agent-core-v2/remote/declaration/remoteEnvironmentDeclaration';
-import type { KimiHostIdentity, OAuthRefreshOutcome } from '@moonshot-ai/kimi-code-oauth';
-import type { ContentPart } from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2/app/sessionExport/sessionExport';
+import type { EnvironmentStatus as SessionEnvironmentStatus } from '@zimi-ai/agent-core-v2/environment/environment';
+import type { RemoteEnvironmentEntry } from '@zimi-ai/agent-core-v2/remote/declaration/remoteEnvironmentDeclaration';
+import type { ZimiHostIdentity, OAuthRefreshOutcome } from '@zimi-ai/zimi-code-oauth';
+import type { ContentPart } from '@zimi-ai/agent-core-v2';
 
 import type { ResumeSessionResult } from '#/replay';
 import type { PermissionMode } from '#/permission';
@@ -20,11 +20,11 @@ export type JsonPrimitive = string | number | boolean | null;
 export type JsonValue = JsonPrimitive | JsonValue[] | { readonly [key: string]: JsonValue };
 export type JsonObject = { readonly [key: string]: JsonValue };
 
-export type { ImportCustomRegistryOptions, ImportCustomRegistryResult } from '@moonshot-ai/klient';
+export type { ImportCustomRegistryOptions, ImportCustomRegistryResult } from '@zimi-ai/klient';
 export type {
   RefreshProviderModelsOptions,
   RefreshProviderModelsResponse,
-} from '@moonshot-ai/klient';
+} from '@zimi-ai/klient';
 
 export type Unsubscribe = () => void;
 
@@ -33,7 +33,7 @@ export interface AgentEnvironmentBinding {
   readonly cwd?: string;
 }
 
-export type { EnvironmentStatus as SessionEnvironmentStatus } from '@moonshot-ai/agent-core-v2/environment/environment';
+export type { EnvironmentStatus as SessionEnvironmentStatus } from '@zimi-ai/agent-core-v2/environment/environment';
 
 export type SessionEnvironmentType = 'local' | 'ssh' | 'docker' | 'command';
 
@@ -56,7 +56,7 @@ export interface SessionEnvironmentsInfo {
 
 export type { RemoteEnvironmentEntry };
 
-export type { CapabilityInstallOptions, CapabilityStatus } from '@moonshot-ai/agent-core-v2/app/capability/types';
+export type { CapabilityInstallOptions, CapabilityStatus } from '@zimi-ai/agent-core-v2/app/capability/types';
 
 export type {
   AgentReplayRecord,
@@ -88,8 +88,8 @@ export type {
   BackgroundConfig,
   ConfigDiagnostics,
   EnvironmentsConfig,
-  KimiConfig,
-  KimiConfigPatch,
+  ZimiConfig,
+  ZimiConfigPatch,
   LoopControl,
   ModelAlias,
   MoonshotServiceConfig,
@@ -104,7 +104,7 @@ export type {
   ExperimentalFeatureState,
   ExperimentalFlagMap,
   ExperimentalFlagSource,
-} from '@moonshot-ai/agent-core-v2/app/flag/flag';
+} from '@zimi-ai/agent-core-v2/app/flag/flag';
 export type {
   GoalBudgetLimits,
   GoalBudgetReport,
@@ -113,7 +113,7 @@ export type {
   GoalSnapshot,
   GoalStatus,
   GoalToolResult,
-} from '@moonshot-ai/agent-core-v2/features/goal/types';
+} from '@zimi-ai/agent-core-v2/features/goal/types';
 export type {
   PluginCommandDef,
   PluginGithubMetadata,
@@ -124,7 +124,7 @@ export type {
   PluginSource,
   PluginSummary,
   ReloadSummary,
-} from '@moonshot-ai/agent-core-v2/app/plugin/types';
+} from '@zimi-ai/agent-core-v2/app/plugin/types';
 export type {
   MarketplaceLocation,
   MarketplaceUpdateStatus,
@@ -138,14 +138,14 @@ export type {
   PluginMarketplacePlatform,
   PluginMarketplaceTier,
   ReadPluginMarketplaceOptions,
-} from '@moonshot-ai/agent-core-v2/app/plugin/marketplace';
-export type { InstallPluginInput } from '@moonshot-ai/agent-core-v2/app/plugin/plugin';
-export type { SkillSummary } from '@moonshot-ai/agent-core-v2/features/skill/catalog/types';
+} from '@zimi-ai/agent-core-v2/app/plugin/marketplace';
+export type { InstallPluginInput } from '@zimi-ai/agent-core-v2/app/plugin/plugin';
+export type { SkillSummary } from '@zimi-ai/agent-core-v2/features/skill/catalog/types';
 export type { ToolInfo } from '#/tool';
 export type {
   ExportSessionManifest,
   ShellEnvironment,
-} from '@moonshot-ai/agent-core-v2/app/sessionExport/sessionExport';
+} from '@zimi-ai/agent-core-v2/app/sessionExport/sessionExport';
 
 export interface CronTaskSnapshot {
   readonly id: string;
@@ -160,15 +160,15 @@ export interface GetCronTasksResult {
   readonly tasks: readonly CronTaskSnapshot[];
 }
 
-export type { KimiHostIdentity, OAuthRefreshOutcome };
+export type { ZimiHostIdentity, OAuthRefreshOutcome };
 // Host UI capabilities are an agent-core-v2 seam (`BootstrapInput.args.uiCapabilities`);
-// hosts name them through `KimiHarnessOptions.uiCapabilities`, so the type is public here.
+// hosts name them through `ZimiHarnessOptions.uiCapabilities`, so the type is public here.
 export type { HostUiCapability };
 export type { TelemetryClient, TelemetryContextPatch, TelemetryProperties };
-export type { ContentPart, Role, ThinkingEffort, ToolCall } from '@moonshot-ai/agent-core-v2';
+export type { ContentPart, Role, ThinkingEffort, ToolCall } from '@zimi-ai/agent-core-v2';
 // Contributed commands are an agent-core-v2 seam; the type is re-exported
 // from the v2 engine (v1 sessions report an empty command set).
-export type { AgentCommandInfo } from '@moonshot-ai/agent-core-v2/agent/command/agentCommand';
+export type { AgentCommandInfo } from '@zimi-ai/agent-core-v2/agent/command/agentCommand';
 
 export type { PermissionMode };
 
@@ -259,10 +259,10 @@ export interface GitStatusSummary {
 }
 
 /** Pull request of the current branch, as reported by `gh`. */
-export type { FsPullRequest as GitPullRequest } from '@moonshot-ai/agent-core-v2/app/git/git';
+export type { FsPullRequest as GitPullRequest } from '@zimi-ai/agent-core-v2/app/git/git';
 
 /** Metadata of one upload in the engine's daemon file store. */
-export type { FileMeta } from '@moonshot-ai/agent-core-v2/app/file/fileService';
+export type { FileMeta } from '@zimi-ai/agent-core-v2/app/file/fileService';
 
 /** Input for `uploadFile`: the upload's display name and MIME type. */
 export interface UploadFileOptions {
@@ -299,8 +299,8 @@ export interface PromptSubmissionResult {
   readonly steered: boolean;
 }
 
-export interface KimiHarnessOptions {
-  readonly identity?: KimiHostIdentity | undefined;
+export interface ZimiHarnessOptions {
+  readonly identity?: ZimiHostIdentity | undefined;
   readonly homeDir?: string | undefined;
   readonly configPath?: string | undefined;
   readonly autoLoadConfig?: boolean | undefined;
@@ -321,11 +321,11 @@ export interface KimiHarnessOptions {
    * re-enter a process whose entry runs `runSshAskpass` from the
    * `./ssh-askpass` subpath when `isSshAskpassEnvironment()` holds.
    */
-  readonly sshPassword?: KimiSshPasswordOptions;
+  readonly sshPassword?: ZimiSshPasswordOptions;
   readonly sessionStartedProperties?: TelemetryProperties;
 }
 
-export interface KimiSshPasswordOptions {
+export interface ZimiSshPasswordOptions {
   readonly prompt: (environmentId: string) => Promise<string | undefined>;
   readonly askpassCommand: readonly [string, ...string[]];
 }
@@ -351,7 +351,7 @@ export interface CreateSessionOptions {
   readonly agentFiles?: readonly string[];
   readonly sessionStartedProperties?: TelemetryProperties;
   /**
-   * Print-mode (`kimi -p`) only: when the main agent ends a turn while
+   * Print-mode (`zimi -p`) only: when the main agent ends a turn while
    * background subagents (`kind === 'agent'`) are still running, hold the turn
    * open and idle-wait until they all finish, flushing their completions into
    * the turn so the model can react before the run exits. Ignored by

@@ -1,4 +1,4 @@
-export type CapabilityId = 'kimi-cu' | 'kimi-webbridge';
+export type CapabilityId = 'zimi-cu' | 'zimi-webbridge';
 
 export type CapabilityReadiness = 'not_installed' | 'partial' | 'ready' | 'unsupported';
 

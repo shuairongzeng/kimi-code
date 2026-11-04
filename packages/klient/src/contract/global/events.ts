@@ -8,11 +8,11 @@
 
 import { z } from 'zod';
 
-import type { ConfigChangedEvent } from '@moonshot-ai/agent-core-v2/app/config/config';
-import type { ModelsChangedEvent } from '@moonshot-ai/agent-core-v2/llm-adapter/model/model';
-import type { ProvidersChangedEvent } from '@moonshot-ai/agent-core-v2/llm-adapter/provider/provider';
-import type { ReloadSummary } from '@moonshot-ai/agent-core-v2/app/plugin/types';
-import type { IProviderDiscoveryService } from '@moonshot-ai/agent-core-v2/app/kosongConfig/discovery';
+import type { ConfigChangedEvent } from '@zimi-ai/agent-core-v2/app/config/config';
+import type { ModelsChangedEvent } from '@zimi-ai/agent-core-v2/llm-adapter/model/model';
+import type { ProvidersChangedEvent } from '@zimi-ai/agent-core-v2/llm-adapter/provider/provider';
+import type { ReloadSummary } from '@zimi-ai/agent-core-v2/app/plugin/types';
+import type { IProviderDiscoveryService } from '@zimi-ai/agent-core-v2/app/kosongConfig/discovery';
 
 import { stringDeltaSchema } from '../helpers.js';
 import type { EventRegistration } from '../types.js';

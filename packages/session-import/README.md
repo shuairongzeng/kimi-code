@@ -3,12 +3,12 @@
 This Node.js package converts one external session into a single user message that carries the conversation, and session-owned attachments. It has no engine, provider, CLI, or UI dependency and does not create or resume a session.
 
 ```ts
-import { convertSession } from '@moonshot-ai/session-import';
+import { convertSession } from '@zimi-ai/session-import';
 
 const result = await convertSession({
   source: 'claude-code',
   sourcePath: '/example/source/session.jsonl',
-  attachmentDirectory: '/example/kimi-session/attachments',
+  attachmentDirectory: '/example/zimi-session/attachments',
   contextWindow: 262144,
 });
 

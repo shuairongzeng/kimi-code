@@ -1,4 +1,4 @@
-import type { KimiRegion } from './region';
+import type { ZimiRegion } from './region';
 
 export interface LocalRegionSignals {
   readonly timeZone?: string;
@@ -6,7 +6,7 @@ export interface LocalRegionSignals {
 }
 
 export interface LocalRegionDetection {
-  readonly region: KimiRegion;
+  readonly region: ZimiRegion;
   readonly confident: boolean;
 }
 
@@ -71,7 +71,7 @@ function localeVote(locale: string | undefined): SignalVote {
   return 'non-cn';
 }
 
-export function detectKimiRegionFromLocalSignals(
+export function detectZimiRegionFromLocalSignals(
   signals: LocalRegionSignals,
 ): LocalRegionDetection {
   const timeZone = timeZoneVote(signals.timeZone);

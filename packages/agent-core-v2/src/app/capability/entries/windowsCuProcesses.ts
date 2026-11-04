@@ -7,13 +7,13 @@ import type { CapabilityEntryContext } from './context';
 export function windowsCuProcessScript(stop: boolean): string {
   return `
 $ErrorActionPreference = 'Stop'
-$candidates = @($env:KIMI_CU_WINDOWS_EXE)
-if ($env:KIMI_CU_WINDOWS_HOME) { $candidates += (Join-Path $env:KIMI_CU_WINDOWS_HOME 'kimi-cu.exe') }
-if ($env:LOCALAPPDATA) { $candidates += (Join-Path $env:LOCALAPPDATA 'KimiCU\\kimi-cu.exe') }
-if ($env:ProgramFiles) { $candidates += (Join-Path $env:ProgramFiles 'KimiCU\\kimi-cu.exe') }
+$candidates = @($env:ZIMI_CU_WINDOWS_EXE)
+if ($env:ZIMI_CU_WINDOWS_HOME) { $candidates += (Join-Path $env:ZIMI_CU_WINDOWS_HOME 'zimi-cu.exe') }
+if ($env:LOCALAPPDATA) { $candidates += (Join-Path $env:LOCALAPPDATA 'ZimiCU\\zimi-cu.exe') }
+if ($env:ProgramFiles) { $candidates += (Join-Path $env:ProgramFiles 'ZimiCU\\zimi-cu.exe') }
 $paths = @($candidates | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | ForEach-Object { [IO.Path]::GetFullPath($_) })
 $sessionId = (Get-Process -Id $PID).SessionId
-$matched = @(Get-CimInstance Win32_Process -Filter "Name = 'kimi-cu.exe' AND SessionId = $sessionId" | Where-Object {
+$matched = @(Get-CimInstance Win32_Process -Filter "Name = 'zimi-cu.exe' AND SessionId = $sessionId" | Where-Object {
   $exe = $_.ExecutablePath
   if (-not $exe -or $paths -notcontains $exe) { return $false }
   $escaped = [regex]::Escape($exe)
@@ -26,13 +26,13 @@ foreach ($candidate in $matched) {
   try {
     $null = $process.Handle
     if ($process.HasExited) { continue }
-    if ($process.MainModule.FileName -ine $candidate.ExecutablePath) { throw 'Kimi Computer Use process identity changed; retry installation' }
+    if ($process.MainModule.FileName -ine $candidate.ExecutablePath) { throw 'Zimi Computer Use process identity changed; retry installation' }
     $created = $candidate.CreationDate.ToUniversalTime()
     if ([Math]::Abs(($process.StartTime.ToUniversalTime() - $created).TotalMilliseconds) -gt 1) {
-      throw 'Kimi Computer Use process identity changed; retry installation'
+      throw 'Zimi Computer Use process identity changed; retry installation'
     }
     $process.Kill()
-    if (-not $process.WaitForExit(10000)) { throw 'Kimi Computer Use process did not exit; retry installation' }
+    if (-not $process.WaitForExit(10000)) { throw 'Zimi Computer Use process did not exit; retry installation' }
   } finally { $process.Dispose() }
 }
 ` : ''}
@@ -54,7 +54,7 @@ export async function manageWindowsCuProcesses(
   if (result.code !== 0 || !/^\d+$/.test(result.stdout.trim())) {
     throw new Error2(
       CapabilityErrors.codes.CAPABILITY_PROCESS_CONTROL_FAILED,
-      `Failed to ${stop ? 'stop' : 'check'} Kimi Computer Use processes: ${
+      `Failed to ${stop ? 'stop' : 'check'} Zimi Computer Use processes: ${
         result.stderr.trim() || result.stdout.trim() || `exit code ${result.code}`
       }`,
     );
@@ -77,6 +77,6 @@ export async function findWindowsCuProcesses(
   }
   throw new Error2(
     CapabilityErrors.codes.CAPABILITY_PROCESS_CONTROL_FAILED,
-    `Failed to check Kimi Computer Use processes: ${failures.join('; ')}`,
+    `Failed to check Zimi Computer Use processes: ${failures.join('; ')}`,
   );
 }

@@ -2,11 +2,11 @@ import { join } from 'node:path';
 
 import {
   FileTokenStorage,
-  resolveKimiRemoteControlAuth,
-  resolveKimiTokenStorageName,
-  type KimiRemoteControlAuth,
+  resolveZimiRemoteControlAuth,
+  resolveZimiTokenStorageName,
+  type ZimiRemoteControlAuth,
   type TokenInfo,
-} from '@moonshot-ai/kimi-code-oauth';
+} from '@zimi-ai/zimi-code-oauth';
 
 import { resolveRemoteControlRelayOrigin } from './remote-control';
 
@@ -46,7 +46,7 @@ export interface RemoteControlDeviceClientOptions {
 }
 
 interface RemoteControlDeviceContext {
-  readonly auth: KimiRemoteControlAuth;
+  readonly auth: ZimiRemoteControlAuth;
   readonly relayOrigin: string;
   readonly cacheKey: string;
   readonly signal: AbortSignal;
@@ -116,7 +116,7 @@ export class RemoteControlDeviceClient {
   }
 
   private async context(): Promise<RemoteControlDeviceContext> {
-    const auth = resolveKimiRemoteControlAuth({
+    const auth = resolveZimiRemoteControlAuth({
       configuredOAuthHost: this.options.configuredOAuthHost?.(),
       configuredOAuthKey: this.options.configuredOAuthKey?.(),
       homeDir: this.options.homeDir,
@@ -127,10 +127,10 @@ export class RemoteControlDeviceClient {
     ).replace(/\/+$/, '');
     const storage = new FileTokenStorage(join(this.options.homeDir, 'credentials'));
     const token = await storage.load(
-      resolveKimiTokenStorageName({ oauthKey: auth.oauthKey }),
+      resolveZimiTokenStorageName({ oauthKey: auth.oauthKey }),
     );
     if (token?.refreshToken === undefined || token.refreshToken.length === 0) {
-      throw new RemoteControlDeviceClientError('Remote Control requires a Kimi login.');
+      throw new RemoteControlDeviceClientError('Remote Control requires a Zimi login.');
     }
     return {
       auth,

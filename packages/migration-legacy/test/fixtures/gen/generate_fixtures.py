@@ -1,19 +1,19 @@
-"""Regenerate the golden migration fixtures using kimi-cli's real serializers.
+"""Regenerate the golden migration fixtures using zimi-cli's real serializers.
 
 The committed fixtures under `../golden/` are produced by THIS script against a
-kimi-cli checkout, so the migration tests exercise the exact byte shapes the
+zimi-cli checkout, so the migration tests exercise the exact byte shapes the
 old CLI writes (config via `save_config`, sessions via kosong `Message` /
 `save_session_state`, metadata via `Metadata`), plus the historical formats
-kimi-cli itself still upgrades (`config.json`, flat `<uuid>.jsonl` sessions,
+zimi-cli itself still upgrades (`config.json`, flat `<uuid>.jsonl` sessions,
 `metadata.json`, title-only sessions).
 
-Usage (from the kimi-code repo):
+Usage (from the zimi-code repo):
 
-    cd ../../../kimi-cli && uv run python \
-        /path/to/kimi-code/packages/migration-legacy/test/fixtures/gen/generate_fixtures.py
+    cd ../../../zimi-cli && uv run python \
+        /path/to/zimi-code/packages/migration-legacy/test/fixtures/gen/generate_fixtures.py
 
 `--out` defaults to the sibling `golden/` directory next to this script.
-Re-run and commit the result whenever kimi-cli's on-disk formats change.
+Re-run and commit the result whenever zimi-cli's on-disk formats change.
 """
 
 import argparse
@@ -21,7 +21,7 @@ import json
 from hashlib import md5
 from pathlib import Path
 
-from kimi_cli.config import (
+from zimi_cli.config import (
     Config,
     LLMModel,
     LLMProvider,
@@ -29,9 +29,9 @@ from kimi_cli.config import (
     OAuthRef,
     save_config,
 )
-from kimi_cli.hooks.config import HookDef
-from kimi_cli.metadata import Metadata, WorkDirMeta
-from kimi_cli.session_state import SessionState, TodoItemState, save_session_state
+from zimi_cli.hooks.config import HookDef
+from zimi_cli.metadata import Metadata, WorkDirMeta
+from zimi_cli.session_state import SessionState, TodoItemState, save_session_state
 from kosong.message import (
     AudioURLPart,
     ImageURLPart,
@@ -75,11 +75,11 @@ def build_config() -> Config:
         merge_all_available_skills=True,
         extra_skill_dirs=["/work/extra-skills"],
         providers={
-            "managed:kimi-code": LLMProvider(
-                type="kimi",
+            "managed:zimi-code": LLMProvider(
+                type="zimi",
                 base_url="https://api.example.test/coding/v1",
                 api_key="sk-golden-managed",
-                oauth=OAuthRef(storage="file", key="oauth/kimi-code"),
+                oauth=OAuthRef(storage="file", key="oauth/zimi-code"),
             ),
             "vllm": LLMProvider(
                 type="openai_legacy",
@@ -100,7 +100,7 @@ def build_config() -> Config:
         },
         models={
             "golden-main": LLMModel(
-                provider="managed:kimi-code",
+                provider="managed:zimi-code",
                 model="kimi-for-coding",
                 max_context_size=262144,
                 capabilities={"image_in", "thinking"},
@@ -135,7 +135,7 @@ def main() -> None:
     parser.add_argument("--out", type=Path, default=Path(__file__).resolve().parent.parent / "golden")
     args = parser.parse_args()
     out: Path = args.out
-    home = out / ".kimi"
+    home = out / ".zimi"
     home.mkdir(parents=True, exist_ok=True)
 
     save_config(build_config(), config_file=home / "config.toml")
@@ -168,7 +168,7 @@ def main() -> None:
             WorkDirMeta(path=REMOTE_WORK_DIR, kaos="ssh"),
         ]
     )
-    (home / "kimi.json").write_text(
+    (home / "zimi.json").write_text(
         json.dumps(metadata.model_dump(mode="json"), indent=2, ensure_ascii=False),
         encoding="utf-8",
     )
@@ -188,7 +188,7 @@ def main() -> None:
 
     credentials = home / "credentials"
     credentials.mkdir(parents=True, exist_ok=True)
-    (credentials / "kimi-code.json").write_text(
+    (credentials / "zimi-code.json").write_text(
         json.dumps(
             {
                 "access_token": "golden-access",
@@ -342,7 +342,7 @@ def main() -> None:
         SessionState(),
     )
 
-    historical = out / ".kimi-historical-config"
+    historical = out / ".zimi-historical-config"
     historical.mkdir(parents=True, exist_ok=True)
     save_config(
         Config(

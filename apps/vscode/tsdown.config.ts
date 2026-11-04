@@ -19,14 +19,14 @@ export default defineConfig({
   sourcemap: false,
   plugins: [rawTextPlugin()],
   alias: {
-    '@moonshot-ai/kimi-code-sdk': resolve(root, '../../packages/node-sdk/src/index.ts'),
-    '@moonshot-ai/kimi-telemetry': resolve(root, '../../packages/telemetry/src/index.ts'),
-    '@moonshot-ai/migration-legacy': resolve(root, '../../packages/migration-legacy/src/index.ts'),
-    '@moonshot-ai/kimi-code-oauth/provider-credential': resolve(
+    '@zimi-ai/zimi-code-sdk': resolve(root, '../../packages/node-sdk/src/index.ts'),
+    '@zimi-ai/zimi-telemetry': resolve(root, '../../packages/telemetry/src/index.ts'),
+    '@zimi-ai/migration-legacy': resolve(root, '../../packages/migration-legacy/src/index.ts'),
+    '@zimi-ai/zimi-code-oauth/provider-credential': resolve(
       root,
       '../../packages/oauth/src/provider-credential.ts',
     ),
-    '@moonshot-ai/kimi-code-oauth': resolve(root, '../../packages/oauth/src/index.ts'),
+    '@zimi-ai/zimi-code-oauth': resolve(root, '../../packages/oauth/src/index.ts'),
   },
   define: {
     __EXTENSION_VERSION__: JSON.stringify(pkg.version),
@@ -41,7 +41,7 @@ export default defineConfig({
   },
   deps: {
     onlyBundle: false,
-    alwaysBundle: [/^@moonshot-ai\//, 'immer', 'zod'],
+    alwaysBundle: [/^@zimi-ai\//, 'immer', 'zod'],
     neverBundle: ['vscode'],
   },
   outputOptions: {

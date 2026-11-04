@@ -1,4 +1,4 @@
-import { TERMINAL_STATUSES, type AgentTaskInfo } from '@moonshot-ai/agent-core-v2/agent/task/types';
+import { TERMINAL_STATUSES, type AgentTaskInfo } from '@zimi-ai/agent-core-v2/agent/task/types';
 
 import type { TaskEventMessage, TaskState } from '../../../protocol/ws-task';
 

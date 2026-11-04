@@ -28,13 +28,13 @@ import {
 
 const REQUIRED_WEBVIEW_FILES = [
   'dist/webview.js',
-  'dist/kimi-banner-dark.svg',
-  'dist/kimi-banner-light.svg',
-  'dist/kimi-logo.png',
+  'dist/zimi-banner-dark.svg',
+  'dist/zimi-banner-light.svg',
+  'dist/zimi-logo.png',
 ];
 const FORBIDDEN_PATH_SEGMENTS = new Set([
-  '.kimi',
-  '.kimi-code',
+  '.zimi',
+  '.zimi-code',
   '.vscode',
   '__tests__',
   'cache',
@@ -98,7 +98,7 @@ const CONTRIBUTE_FIELDS = [
 ];
 
 export async function verifyVsix(vsixPath, target, options = {}) {
-  const extractionRoot = await mkdtemp(join(tmpdir(), 'kimi-vsix-audit-'));
+  const extractionRoot = await mkdtemp(join(tmpdir(), 'zimi-vsix-audit-'));
   try {
     await extractZip(vsixPath, extractionRoot);
     return await auditExtractedVsix(extractionRoot, target, options);
@@ -195,9 +195,9 @@ function verifyForbiddenFiles(files) {
       throw new Error(`Forbidden package file type in ${normalized}.`);
     }
     if (
-      lower.includes('kimi-agent-sdk') ||
+      lower.includes('zimi-agent-sdk') ||
       lower.includes('download-cli') ||
-      lower.includes('/bin/kimi/') ||
+      lower.includes('/bin/zimi/') ||
       /(^|\/)uv(?:\.exe)?$/.test(lower)
     ) {
       throw new Error(`Legacy CLI/runtime artifact found in ${normalized}.`);

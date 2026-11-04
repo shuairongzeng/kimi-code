@@ -32,7 +32,7 @@ import {
 } from '../harness';
 
 const MOCK_PROVIDER = {
-  type: 'kimi',
+  type: 'zimi',
   apiKey: 'test-key',
   model: 'mock-model',
 } as const;
@@ -403,7 +403,7 @@ describe('Agent resume', () => {
     const resumed = testAgent({
       persistence: new RecordingAgentPersistence(persistence.records as unknown as WireRecord[]),
       autoConfigure: false,
-      initialConfig: live.kimiConfig,
+      initialConfig: live.zimiConfig,
     });
     await resumed.restorePersisted();
     resumed.mockNextResponse({ type: 'text', text: 'Response after resume.' });
@@ -636,7 +636,7 @@ describe('Agent resume', () => {
         tokensAfter: 3,
       },
     ] as unknown as WireRecord[]);
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-bg-resume-delivered-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-bg-resume-delivered-'));
     try {
       const backgroundPersistence = createAgentTaskPersistence(homeDir);
       const ctx = testAgent(homeDirServices(homeDir), { autoConfigure: false, persistence });
@@ -728,7 +728,7 @@ describe('Agent resume', () => {
         origin: { kind: 'user' },
       },
     ] as unknown as WireRecord[]);
-    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-bg-resume-undelivered-'));
+    const homeDir = await mkdtemp(join(tmpdir(), 'zimi-bg-resume-undelivered-'));
     try {
       const backgroundPersistence = createAgentTaskPersistence(homeDir);
       const ctx = testAgent(homeDirServices(homeDir), { autoConfigure: false, persistence });

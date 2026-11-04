@@ -14,8 +14,8 @@ import { IHostProcessService } from '#/os/interface/hostProcess';
 
 import { ICapabilityService } from './capability';
 import { CapabilityErrors } from './errors';
-import { createKimiCuEntry } from './entries/kimiCu';
-import { createKimiWebbridgeEntry } from './entries/kimiWebbridge';
+import { createZimiCuEntry } from './entries/zimiCu';
+import { createZimiWebbridgeEntry } from './entries/zimiWebbridge';
 import type {
   CapabilityEntry,
   CapabilityId,
@@ -63,7 +63,7 @@ export class CapabilityService extends Disposable implements ICapabilityService 
       const ctx = {
         platform: process.platform,
         arch: process.arch,
-        kimiHomeDir: bootstrap.homeDir,
+        zimiHomeDir: bootstrap.homeDir,
         userHomeDir: homedir(),
         plugins,
         marketplace,
@@ -71,8 +71,8 @@ export class CapabilityService extends Disposable implements ICapabilityService 
         resolveRegion: () => regions.getRegionAsync(),
       };
       this.entries = new Map<CapabilityId, CapabilityEntry>([
-        ['kimi-cu', createKimiCuEntry(ctx)],
-        ['kimi-webbridge', createKimiWebbridgeEntry(ctx)],
+        ['zimi-cu', createZimiCuEntry(ctx)],
+        ['zimi-webbridge', createZimiWebbridgeEntry(ctx)],
       ]);
     }
   }

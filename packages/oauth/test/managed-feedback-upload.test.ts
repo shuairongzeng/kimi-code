@@ -3,8 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   fetchCompleteFeedbackUpload,
   fetchCreateFeedbackUploadUrl,
-  kimiCodeFeedbackUploadCompleteUrl,
-  kimiCodeFeedbackUploadUrl,
+  zimiCodeFeedbackUploadCompleteUrl,
+  zimiCodeFeedbackUploadUrl,
   type CreateFeedbackUploadUrlBody,
 } from '../src/managed-feedback-upload';
 
@@ -20,15 +20,15 @@ const SAMPLE_BODY: CreateFeedbackUploadUrlBody = {
   feedback_id: 3,
 };
 
-describe('kimiCodeFeedbackUploadUrl', () => {
+describe('zimiCodeFeedbackUploadUrl', () => {
   it('uses the feedback upload_url path', () => {
-    expect(kimiCodeFeedbackUploadUrl()).toBe('https://api.kimi.com/coding/v1/feedback/upload_url');
+    expect(zimiCodeFeedbackUploadUrl()).toBe('https://api.kimi.com/coding/v1/feedback/upload_url');
   });
 });
 
-describe('kimiCodeFeedbackUploadCompleteUrl', () => {
+describe('zimiCodeFeedbackUploadCompleteUrl', () => {
   it('uses the feedback upload_complete path', () => {
-    expect(kimiCodeFeedbackUploadCompleteUrl()).toBe(
+    expect(zimiCodeFeedbackUploadCompleteUrl()).toBe(
       'https://api.kimi.com/coding/v1/feedback/upload_complete',
     );
   });

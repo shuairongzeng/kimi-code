@@ -1,8 +1,8 @@
-import { parsePattern } from '@moonshot-ai/agent-core-v2/agent/permissionRules/matchesRule';
-import { EnvironmentsSectionSchema } from '@moonshot-ai/agent-core-v2/remote/declaration/remoteEnvironmentDeclaration';
+import { parsePattern } from '@zimi-ai/agent-core-v2/agent/permissionRules/matchesRule';
+import { EnvironmentsSectionSchema } from '@zimi-ai/agent-core-v2/remote/declaration/remoteEnvironmentDeclaration';
 import { z } from 'zod';
 
-import { ErrorCodes, KimiError } from '#/errors';
+import { ErrorCodes, ZimiError } from '#/errors';
 
 const HOOK_EVENT_TYPES = [
   'PreToolUse',
@@ -26,7 +26,7 @@ const HOOK_EVENT_TYPES = [
 export const ProviderTypeSchema = z.enum([
   'anthropic',
   'openai',
-  'kimi',
+  'zimi',
   'google-genai',
   'openai_responses',
   'vertexai',
@@ -227,8 +227,8 @@ export const MoonshotServiceConfigSchema = z.object({
 export type MoonshotServiceConfig = z.infer<typeof MoonshotServiceConfigSchema>;
 
 export const ServicesConfigSchema = z.object({
-  moonshotSearch: MoonshotServiceConfigSchema.optional(),
-  moonshotFetch: MoonshotServiceConfigSchema.optional(),
+  zimiSearch: MoonshotServiceConfigSchema.optional(),
+  zimiFetch: MoonshotServiceConfigSchema.optional(),
 });
 
 export type ServicesConfig = z.infer<typeof ServicesConfigSchema>;
@@ -293,7 +293,7 @@ export const McpServerConfigSchema = z.preprocess((raw) => {
 
 export type McpServerConfig = z.infer<typeof McpServerConfigSchema>;
 
-export const KimiConfigSchema = z.object({
+export const ZimiConfigSchema = z.object({
   providers: z.record(z.string(), ProviderConfigSchema).default({}),
   defaultProvider: z.string().optional(),
   defaultModel: z.string().optional(),
@@ -324,7 +324,7 @@ export const KimiConfigSchema = z.object({
   raw: z.record(z.string(), z.unknown()).optional(),
 });
 
-export type KimiConfig = z.infer<typeof KimiConfigSchema>;
+export type ZimiConfig = z.infer<typeof ZimiConfigSchema>;
 
 const ProviderConfigPatchSchema = ProviderConfigSchema.partial();
 const ModelAliasPatchSchema = ModelAliasSchema.partial();
@@ -340,11 +340,11 @@ const ModelCatalogConfigPatchSchema = ModelCatalogConfigSchema.partial();
 const ExperimentalConfigPatchSchema = ExperimentalConfigSchema;
 const MoonshotServiceConfigPatchSchema = MoonshotServiceConfigSchema.partial();
 const ServicesConfigPatchSchema = z.object({
-  moonshotSearch: MoonshotServiceConfigPatchSchema.optional(),
-  moonshotFetch: MoonshotServiceConfigPatchSchema.optional(),
+  zimiSearch: MoonshotServiceConfigPatchSchema.optional(),
+  zimiFetch: MoonshotServiceConfigPatchSchema.optional(),
 });
 
-export const KimiConfigPatchSchema = z
+export const ZimiConfigPatchSchema = z
   .object({
     providers: z.record(z.string(), ProviderConfigPatchSchema).optional(),
     defaultProvider: z.string().optional(),
@@ -376,19 +376,19 @@ export const KimiConfigPatchSchema = z
   })
   .strict();
 
-export type KimiConfigPatch = z.infer<typeof KimiConfigPatchSchema>;
+export type ZimiConfigPatch = z.infer<typeof ZimiConfigPatchSchema>;
 
-export function getDefaultConfig(): KimiConfig {
+export function getDefaultConfig(): ZimiConfig {
   return {
     providers: {},
   };
 }
 
-export function validateConfig(config: unknown): KimiConfig {
+export function validateConfig(config: unknown): ZimiConfig {
   try {
-    return KimiConfigSchema.parse(config);
+    return ZimiConfigSchema.parse(config);
   } catch (error) {
-    throw new KimiError(ErrorCodes.CONFIG_INVALID, `Invalid configuration: ${formatConfigValidationError(error)}`, {
+    throw new ZimiError(ErrorCodes.CONFIG_INVALID, `Invalid configuration: ${formatConfigValidationError(error)}`, {
       cause: error,
     });
   }

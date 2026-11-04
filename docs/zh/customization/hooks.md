@@ -1,6 +1,6 @@
 # Hooks
 
-Hooks（钩子）是一种自动触发机制：你预先告诉 Kimi Code CLI"每当发生 X，运行这个脚本"。脚本在你的本机执行，你可以在里面写任何逻辑。即使会话绑定了 [远程环境](../guides/remote-environment.md) 也是如此：钩子始终在运行 Kimi Code 的机器上执行，因此在远程会话中它们读到的是本机的文件和进程，而非目标环境的。典型的使用场景：
+Hooks（钩子）是一种自动触发机制：你预先告诉 Zimi Code CLI"每当发生 X，运行这个脚本"。脚本在你的本机执行，你可以在里面写任何逻辑。即使会话绑定了 [远程环境](../guides/remote-environment.md) 也是如此：钩子始终在运行 Zimi Code 的机器上执行，因此在远程会话中它们读到的是本机的文件和进程，而非目标环境的。典型的使用场景：
 
 - **安全拦截**：Agent 要执行 Shell 命令前，检查是否包含危险操作（如 `rm -rf`），包含则阻断执行
 - **桌面通知**：后台任务完成时，弹出系统通知提醒你回来查看结果
@@ -28,18 +28,18 @@ Hooks（钩子）是一种自动触发机制：你预先告诉 Kimi Code CLI"每
 下面这条 hook 会在每次后台任务完成时，在终端标题栏闪一下通知（macOS 需要安装 `terminal-notifier`）：
 
 ```toml
-# 写在 ~/.kimi-code/config.toml 里
+# 写在 ~/.zimi-code/config.toml 里
 [[hooks]]
 event = "Notification"           # 触发时机：后台任务状态变化时
 matcher = "task\\.completed"     # 只关心"已完成"的通知
-command = "terminal-notifier -title Kimi -message 'Task done'"
+command = "terminal-notifier -title Zimi -message 'Task done'"
 ```
 
 保存配置、重开会话，下次后台任务完成时就会弹出通知。
 
 ## 配置
 
-所有 hook 规则写在 `~/.kimi-code/config.toml` 的 `[[hooks]]` 数组里：
+所有 hook 规则写在 `~/.zimi-code/config.toml` 的 `[[hooks]]` 数组里：
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
@@ -54,7 +54,7 @@ command = "terminal-notifier -title Kimi -message 'Task done'"
 
 Hook 规则只存在于用户级 `config.toml` 和本地插件中，没有项目级 hook 文件，因此远程目标上检出的内容永远无法向你的会话注入 hook 定义。
 
-Hook 命令始终在运行 Kimi Code 的机器上执行，工作目录是当前会话的**本地**项目目录。会话绑定 [远程环境](../guides/remote-environment.md) 时，引用项目路径的 hook 操作的是这个本地目录（绑定的载体），而不是目标环境；暂不支持在目标环境上运行 hook，这仍是未来才可能设计的能力。
+Hook 命令始终在运行 Zimi Code 的机器上执行，工作目录是当前会话的**本地**项目目录。会话绑定 [远程环境](../guides/remote-environment.md) 时，引用项目路径的 hook 操作的是这个本地目录（绑定的载体），而不是目标环境；暂不支持在目标环境上运行 hook，这仍是未来才可能设计的能力。
 
 <details>
 <summary>进程组与超时处理</summary>
@@ -72,7 +72,7 @@ Hook 命令始终在运行 Kimi Code 的机器上执行，工作目录是当前�
   "hook_event_name": "PreToolUse",
   "session_id": "session_abc",
   "session_title": "修复登录页",
-  "client_type": "kimi_code_cli",
+  "client_type": "zimi_code_cli",
   "cwd": "/path/to/project"
 }
 ```
@@ -121,8 +121,8 @@ Hook 命令始终在运行 Kimi Code 的机器上执行，工作目录是当前�
 | `PermissionRequest` | 工具名 | — | 即将等待用户审批前触发 |
 | `PermissionResult` | 工具名 | — | 审批结束后触发 |
 | `SessionStart` | `startup` 或 `resume` | — | 新会话启动或历史会话恢复后触发；payload 含 `source`、`model`、`profile` |
-| `SessionEnd` | `exit` 或 `archive` | — | 会话关闭后触发；`archive` 表示会话被归档而非退出；`kimi web` 将空闲会话从内存卸载时不触发，之后归档或删除这个已卸载的会话也不触发；透明恢复不触发 `SessionStart` |
-| `SessionHeartbeat` | 空字符串 | — | 会话存活期间每 60 秒触发一次，仅配置本事件时计时器才运行；payload 含 `uptime_ms`；`kimi web` 卸载会话期间暂停，恢复后 `uptime_ms` 重新计时 |
+| `SessionEnd` | `exit` 或 `archive` | — | 会话关闭后触发；`archive` 表示会话被归档而非退出；`zimi web` 将空闲会话从内存卸载时不触发，之后归档或删除这个已卸载的会话也不触发；透明恢复不触发 `SessionStart` |
+| `SessionHeartbeat` | 空字符串 | — | 会话存活期间每 60 秒触发一次，仅配置本事件时计时器才运行；payload 含 `uptime_ms`；`zimi web` 卸载会话期间暂停，恢复后 `uptime_ms` 重新计时 |
 | `SubagentStart` | subagent 名称 | — | subagent 开始运行前触发 |
 | `SubagentStop` | subagent 名称 | — | subagent 成功完成后触发 |
 | `TaskStarted` | 任务类型（`agent`、`process` 或 `question`） | — | 后台任务启动时触发；payload 含 `task_id`、`description`、`detached` |
@@ -140,7 +140,7 @@ Hook 命令始终在运行 Kimi Code 的机器上执行，工作目录是当前�
 [[hooks]]
 event = "PreToolUse"
 matcher = "Bash"
-command = "node ~/.kimi-code/hooks/block-dangerous-bash.mjs"
+command = "node ~/.zimi-code/hooks/block-dangerous-bash.mjs"
 timeout = 5
 ```
 
@@ -162,7 +162,7 @@ process.stdin.on('end', () => {
 });
 ```
 
-阻断后，Kimi Code CLI 会把阻断原因写回上下文，模型可以据此选择更安全的替代方案。
+阻断后，Zimi Code CLI 会把阻断原因写回上下文，模型可以据此选择更安全的替代方案。
 
 ::: warning 注意
 此示例仅演示阻断机制，不是生产级的安全解析器。真实场景更适合用白名单，或用专门的 Shell 解析器处理引号、变量展开和多段命令。

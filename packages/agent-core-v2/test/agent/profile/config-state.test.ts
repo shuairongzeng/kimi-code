@@ -20,8 +20,8 @@ import {
 } from '../../harness';
 import { recordingTelemetry, type TelemetryRecord } from '../../app/telemetry/stubs';
 
-type TestKimiConfig = ReturnType<Parameters<typeof configServices>[0]>;
-type TestProtocolModelConfig = NonNullable<TestKimiConfig['models']>[string] &
+type TestZimiConfig = ReturnType<Parameters<typeof configServices>[0]>;
+type TestProtocolModelConfig = NonNullable<TestZimiConfig['models']>[string] &
   Pick<ModelRecord, 'protocol'>;
 type GenerateFn = Parameters<typeof llmGenerateServices>[0];
 
@@ -35,18 +35,18 @@ describe('ConfigState model capabilities', () => {
   let ctx: TestAgentContext;
   let profile: IAgentProfileService;
   let requester: LoopRequester;
-  let kimiConfig: TestKimiConfig;
+  let zimiConfig: TestZimiConfig;
   let generate: GenerateFn;
   let records: TelemetryRecord[];
 
   beforeEach(() => {
-    kimiConfig = {
+    zimiConfig = {
       providers: {},
     };
     generate = defaultGenerate();
     records = [];
     ctx = createTestAgent(
-      configServices(() => kimiConfig),
+      configServices(() => zimiConfig),
       llmGenerateServices({
         generate: (config, content, control) => generate.generate(config, content, control),
       }),
@@ -65,17 +65,17 @@ describe('ConfigState model capabilities', () => {
   });
 
   it('computes provider and model capabilities from config metadata', () => {
-    kimiConfig = {
+    zimiConfig = {
       providers: {
-        kimi: {
-          type: 'kimi',
+        zimi: {
+          type: 'zimi',
           apiKey: 'test-key',
           baseUrl: 'https://api.example.test/v1',
         },
       },
       models: {
-        'kimi-code/kimi-for-coding': {
-          provider: 'kimi',
+        'zimi-code/kimi-for-coding': {
+          provider: 'zimi',
           model: 'kimi-for-coding',
           maxContextSize: 1_000_000,
           supportEfforts: ['low', 'high'],
@@ -84,10 +84,10 @@ describe('ConfigState model capabilities', () => {
       },
     };
 
-    profile.update({ modelAlias: 'kimi-code/kimi-for-coding' });
+    profile.update({ modelAlias: 'zimi-code/kimi-for-coding' });
 
-    expect(profile.getModel()).toBe('kimi-code/kimi-for-coding');
-    expect(ctx.modelResolver.get('kimi-code/kimi-for-coding').name).toBe('kimi-for-coding');
+    expect(profile.getModel()).toBe('zimi-code/kimi-for-coding');
+    expect(ctx.modelResolver.get('zimi-code/kimi-for-coding').name).toBe('kimi-for-coding');
     expect(profile.getModelCapabilities()).toMatchObject({
       image_in: true,
       video_in: true,
@@ -99,24 +99,24 @@ describe('ConfigState model capabilities', () => {
   });
 
   it('republishes the model status slice on demand', () => {
-    kimiConfig = {
+    zimiConfig = {
       providers: {
-        kimi: {
-          type: 'kimi',
+        zimi: {
+          type: 'zimi',
           apiKey: 'test-key',
           baseUrl: 'https://api.example.test/v1',
         },
       },
       models: {
-        'kimi-code/kimi-for-coding': {
-          provider: 'kimi',
+        'zimi-code/kimi-for-coding': {
+          provider: 'zimi',
           model: 'kimi-for-coding',
           maxContextSize: 1_000_000,
           supportEfforts: ['low', 'high'],
         },
       },
     };
-    profile.update({ modelAlias: 'kimi-code/kimi-for-coding' });
+    profile.update({ modelAlias: 'zimi-code/kimi-for-coding' });
     const before = ctx.allEvents.filter((entry) => entry.event === 'agent.status.updated').length;
 
     profile.republishStatus();
@@ -124,7 +124,7 @@ describe('ConfigState model capabilities', () => {
     const statuses = ctx.allEvents.filter((entry) => entry.event === 'agent.status.updated');
     expect(statuses).toHaveLength(before + 1);
     expect(statuses.at(-1)?.args).toMatchObject({
-      model: 'kimi-code/kimi-for-coding',
+      model: 'zimi-code/kimi-for-coding',
       maxContextTokens: 1_000_000,
     });
   });
@@ -140,17 +140,17 @@ describe('ConfigState model capabilities', () => {
   });
 
   it('tracks thinking_toggle with the effort payload when effort changes', () => {
-    kimiConfig = {
+    zimiConfig = {
       providers: {
-        kimi: {
-          type: 'kimi',
+        zimi: {
+          type: 'zimi',
           apiKey: 'test-key',
           baseUrl: 'https://api.example.test/v1',
         },
       },
       models: {
-        'kimi-code/kimi-for-coding': {
-          provider: 'kimi',
+        'zimi-code/kimi-for-coding': {
+          provider: 'zimi',
           model: 'kimi-for-coding',
           maxContextSize: 1_000_000,
           capabilities: ['thinking'],
@@ -158,7 +158,7 @@ describe('ConfigState model capabilities', () => {
         },
       },
     };
-    profile.update({ modelAlias: 'kimi-code/kimi-for-coding' });
+    profile.update({ modelAlias: 'zimi-code/kimi-for-coding' });
     profile.setThinking('off');
     records.length = 0;
 
@@ -172,36 +172,36 @@ describe('ConfigState model capabilities', () => {
         effort: 'low',
         from: 'off',
         mode: 'agent',
-        model: 'kimi-code/kimi-for-coding',
+        model: 'zimi-code/kimi-for-coding',
         protocol: 'openai',
-        provider_type: 'kimi',
+        provider_type: 'zimi',
       },
     });
   });
 
   it('writes the bound model into the ambient telemetry context', () => {
-    kimiConfig = {
+    zimiConfig = {
       providers: {
-        kimi: {
-          type: 'kimi',
+        zimi: {
+          type: 'zimi',
           apiKey: 'test-key',
           baseUrl: 'https://api.example.test/v1',
         },
       },
       models: {
-        'kimi-code/kimi-for-coding': {
-          provider: 'kimi',
+        'zimi-code/kimi-for-coding': {
+          provider: 'zimi',
           model: 'kimi-for-coding',
           maxContextSize: 1_000_000,
         },
       },
     };
 
-    profile.update({ modelAlias: 'kimi-code/kimi-for-coding' });
+    profile.update({ modelAlias: 'zimi-code/kimi-for-coding' });
 
     expect(ctx.get(ITelemetryService).getContext()).toMatchObject({
-      model: 'kimi-code/kimi-for-coding',
-      provider_type: 'kimi',
+      model: 'zimi-code/kimi-for-coding',
+      provider_type: 'zimi',
       protocol: 'openai',
     });
   });
@@ -215,17 +215,17 @@ describe('ConfigState model capabilities', () => {
   });
 
   it('restores the ambient model after a cold resume', async () => {
-    kimiConfig = {
+    zimiConfig = {
       providers: {
-        kimi: {
-          type: 'kimi',
+        zimi: {
+          type: 'zimi',
           apiKey: 'test-key',
           baseUrl: 'https://api.example.test/v1',
         },
       },
       models: {
-        'kimi-code/kimi-for-coding': {
-          provider: 'kimi',
+        'zimi-code/kimi-for-coding': {
+          provider: 'zimi',
           model: 'kimi-for-coding',
           maxContextSize: 1_000_000,
         },
@@ -234,14 +234,14 @@ describe('ConfigState model capabilities', () => {
     const resumedRecords: TelemetryRecord[] = [];
     const resumed = createTestAgent(
       { autoConfigure: false },
-      configServices(() => kimiConfig),
+      configServices(() => zimiConfig),
       llmGenerateServices({
         generate: (config, content, control) => generate.generate(config, content, control),
       }),
       telemetryServices(recordingTelemetry(resumedRecords)),
       wireRecordPersistenceServices(
         new InMemoryWireRecordPersistence([
-          { type: 'config.update', agentId: 'main', modelAlias: 'kimi-code/kimi-for-coding' },
+          { type: 'config.update', agentId: 'main', modelAlias: 'zimi-code/kimi-for-coding' },
         ]),
       ),
     );
@@ -249,8 +249,8 @@ describe('ConfigState model capabilities', () => {
       await resumed.restorePersisted();
 
       expect(resumed.get(ITelemetryService).getContext()).toMatchObject({
-        model: 'kimi-code/kimi-for-coding',
-        provider_type: 'kimi',
+        model: 'zimi-code/kimi-for-coding',
+        provider_type: 'zimi',
         protocol: 'openai',
       });
     } finally {
@@ -258,25 +258,25 @@ describe('ConfigState model capabilities', () => {
     }
   });
 
-  it('does not infer Kimi capabilities from the provider catalogue', () => {
-    kimiConfig = {
+  it('does not infer Zimi capabilities from the provider catalogue', () => {
+    zimiConfig = {
       providers: {
-        kimi: {
-          type: 'kimi',
+        zimi: {
+          type: 'zimi',
           apiKey: 'test-key',
           baseUrl: 'https://api.example.test/v1',
         },
       },
       models: {
-        'kimi-code': {
-          provider: 'kimi',
-          model: 'kimi-code',
+        'zimi-code': {
+          provider: 'zimi',
+          model: 'zimi-code',
           maxContextSize: 128_000,
         },
       },
     };
 
-    profile.update({ modelAlias: 'kimi-code' });
+    profile.update({ modelAlias: 'zimi-code' });
 
     expect(profile.getModelCapabilities()).toMatchObject({
       image_in: false,
@@ -288,7 +288,7 @@ describe('ConfigState model capabilities', () => {
 
   it('uses model max output size as the LLM completion cap', async () => {
     let requestMaxTokens: unknown;
-    kimiConfig = {
+    zimiConfig = {
       providers: {
         deepseek: {
           type: 'openai',
@@ -330,27 +330,27 @@ describe('ConfigState model capabilities', () => {
 describe('ConfigState prompt cache hint', () => {
   let ctx: TestAgentContext;
   let profile: IAgentProfileService;
-  let kimiConfig: TestKimiConfig;
+  let zimiConfig: TestZimiConfig;
 
   beforeEach(() => {
-    kimiConfig = {
+    zimiConfig = {
       providers: {
-        kimi: {
-          type: 'kimi',
+        zimi: {
+          type: 'zimi',
           apiKey: 'test-key',
           baseUrl: 'https://api.example.test/v1',
         },
       },
       models: {
-        'kimi-code': {
-          provider: 'kimi',
-          model: 'kimi-code',
+        'zimi-code': {
+          provider: 'zimi',
+          model: 'zimi-code',
           maxContextSize: 128_000,
         },
       },
     };
     ctx = createTestAgent(
-      configServices(() => kimiConfig),
+      configServices(() => zimiConfig),
       modelProviderOptionServices({ promptCacheKey: 'session-test' }),
     );
     profile = ctx.get(IAgentProfileService);
@@ -365,11 +365,11 @@ describe('ConfigState prompt cache hint', () => {
   });
 
   it('uses session id as a provider prompt cache hint without storing it on Agent', () => {
-    profile.update({ modelAlias: 'kimi-code' });
+    profile.update({ modelAlias: 'zimi-code' });
 
-    const model = ctx.modelResolver.get('kimi-code');
+    const model = ctx.modelResolver.get('zimi-code');
     expect(model.protocol).toBe('openai');
-    expect(model.providerType).toBe('kimi');
+    expect(model.providerType).toBe('zimi');
     expect('sessionId' in ctx).toBe(false);
   });
 });
@@ -378,44 +378,44 @@ describe('ConfigState thinking clamp for always-thinking models', () => {
   let ctx: TestAgentContext;
   let profile: IAgentProfileService;
   let requester: LoopRequester;
-  let kimiConfig: TestKimiConfig;
+  let zimiConfig: TestZimiConfig;
   let capturedThinking: unknown;
 
   beforeEach(() => {
-    kimiConfig = {
-      providers: { kimi: { type: 'kimi', apiKey: 'test-key', baseUrl: 'https://api.example.test/v1' } },
+    zimiConfig = {
+      providers: { zimi: { type: 'zimi', apiKey: 'test-key', baseUrl: 'https://api.example.test/v1' } },
       models: {
-        'kimi-code/deep': {
-          provider: 'kimi',
-          model: 'kimi-deep-coder',
+        'zimi-code/deep': {
+          provider: 'zimi',
+          model: 'zimi-deep-coder',
           maxContextSize: 128_000,
           capabilities: ['thinking', 'always_thinking', 'tool_use'],
           supportEfforts: ['low', 'high', 'max'],
         },
-        'kimi-code/toggle': {
-          provider: 'kimi',
+        'zimi-code/toggle': {
+          provider: 'zimi',
           model: 'kimi-for-coding',
           maxContextSize: 128_000,
           capabilities: ['thinking'],
         },
-        'kimi-code/custom': {
-          provider: 'kimi',
-          model: 'kimi-custom-coder',
+        'zimi-code/custom': {
+          provider: 'zimi',
+          model: 'zimi-custom-coder',
           maxContextSize: 128_000,
           capabilities: ['thinking'],
           supportEfforts: ['low', 'medium', 'max'],
           defaultEffort: 'max',
         },
-        'kimi-code/ultra': {
-          provider: 'kimi',
-          model: 'kimi-ultra',
+        'zimi-code/ultra': {
+          provider: 'zimi',
+          model: 'zimi-ultra',
           maxContextSize: 128_000,
           capabilities: ['thinking'],
           supportEfforts: ['low', 'high', 'ultra'],
           defaultEffort: 'ultra',
         },
-        'kimi-code/compatible': {
-          provider: 'kimi',
+        'zimi-code/compatible': {
+          provider: 'zimi',
           protocol: 'anthropic',
           model: 'compatible-model',
           maxContextSize: 128_000,
@@ -427,7 +427,7 @@ describe('ConfigState thinking clamp for always-thinking models', () => {
     };
     capturedThinking = undefined;
     ctx = createTestAgent(
-      configServices(() => kimiConfig),
+      configServices(() => zimiConfig),
       llmGenerateServices(requesterFromGenerateFn(async (_provider, _systemPrompt, _tools, _history, _callbacks, options) => {
         capturedThinking = options?.thinking;
         return {
@@ -452,13 +452,13 @@ describe('ConfigState thinking clamp for always-thinking models', () => {
   });
 
   it('clamps thinkingLevel off to the configured effort', () => {
-    profile.update({ modelAlias: 'kimi-code/deep', thinkingLevel: 'off' });
+    profile.update({ modelAlias: 'zimi-code/deep', thinkingLevel: 'off' });
 
     expect(profile.data().thinkingLevel).toBe('high');
   });
 
   it('sends the clamped thinking effort in the per-turn intent after thinking was set off', async () => {
-    profile.update({ modelAlias: 'kimi-code/deep', thinkingLevel: 'off' });
+    profile.update({ modelAlias: 'zimi-code/deep', thinkingLevel: 'off' });
 
     await requester.request({}, undefined, new AbortController().signal);
 
@@ -466,48 +466,48 @@ describe('ConfigState thinking clamp for always-thinking models', () => {
   });
 
   it('keeps thinking off working for toggleable models', () => {
-    profile.update({ modelAlias: 'kimi-code/toggle', thinkingLevel: 'off' });
+    profile.update({ modelAlias: 'zimi-code/toggle', thinkingLevel: 'off' });
 
     expect(profile.data().thinkingLevel).toBe('off');
   });
 
   it('resolves an explicit on request to the model default effort', () => {
-    profile.update({ modelAlias: 'kimi-code/custom', thinkingLevel: 'on' });
+    profile.update({ modelAlias: 'zimi-code/custom', thinkingLevel: 'on' });
 
     expect(profile.data().thinkingLevel).toBe('max');
   });
 
   it('re-clamps when switching to an always-on model after thinking was off', () => {
-    profile.update({ modelAlias: 'kimi-code/toggle', thinkingLevel: 'off' });
+    profile.update({ modelAlias: 'zimi-code/toggle', thinkingLevel: 'off' });
     expect(profile.data().thinkingLevel).toBe('off');
 
-    profile.update({ modelAlias: 'kimi-code/deep' });
+    profile.update({ modelAlias: 'zimi-code/deep' });
     expect(profile.data().thinkingLevel).toBe('high');
   });
 
   it('falls back to the target default when a model switch carries an unsupported effort', () => {
-    profile.update({ modelAlias: 'kimi-code/ultra', thinkingLevel: 'ultra' });
+    profile.update({ modelAlias: 'zimi-code/ultra', thinkingLevel: 'ultra' });
 
-    profile.update({ modelAlias: 'kimi-code/custom' });
+    profile.update({ modelAlias: 'zimi-code/custom' });
 
     expect(profile.data().thinkingLevel).toBe('max');
   });
 
   it('projects an inherited concrete effort to on when switching to a boolean model', () => {
-    profile.update({ modelAlias: 'kimi-code/ultra', thinkingLevel: 'ultra' });
+    profile.update({ modelAlias: 'zimi-code/ultra', thinkingLevel: 'ultra' });
 
-    profile.update({ modelAlias: 'kimi-code/toggle' });
+    profile.update({ modelAlias: 'zimi-code/toggle' });
 
     expect(profile.data().thinkingLevel).toBe('on');
   });
 
-  it('rejects an unsupported effort explicitly set on the current Kimi model', () => {
-    profile.update({ modelAlias: 'kimi-code/custom' });
+  it('rejects an unsupported effort explicitly set on the current Zimi model', () => {
+    profile.update({ modelAlias: 'zimi-code/custom' });
 
     expect(() => {
       profile.setThinking('ultra');
     }).toThrow(
-      'Thinking effort "ultra" is not supported by model "kimi-code/custom"',
+      'Thinking effort "ultra" is not supported by model "zimi-code/custom"',
     );
   });
 
@@ -515,7 +515,7 @@ describe('ConfigState thinking clamp for always-thinking models', () => {
     [' HIGH ', 'high'],
     ['OFF', 'off'],
   ])('normalizes runtime effort %j to %s before validation', (input, expected) => {
-    profile.update({ modelAlias: 'kimi-code/ultra' });
+    profile.update({ modelAlias: 'zimi-code/ultra' });
 
     profile.setThinking(input);
 
@@ -523,15 +523,15 @@ describe('ConfigState thinking clamp for always-thinking models', () => {
   });
 
   it('uses the model default when the runtime effort is blank', () => {
-    profile.update({ modelAlias: 'kimi-code/custom', thinkingLevel: 'low' });
+    profile.update({ modelAlias: 'zimi-code/custom', thinkingLevel: 'low' });
 
     profile.setThinking('   ');
 
     expect(profile.data().thinkingLevel).toBe('max');
   });
 
-  it('preserves unlisted efforts with a warning for Kimi-managed Anthropic models', () => {
-    profile.update({ modelAlias: 'kimi-code/compatible', thinkingLevel: 'max' });
+  it('preserves unlisted efforts with a warning for Zimi-managed Anthropic models', () => {
+    profile.update({ modelAlias: 'zimi-code/compatible', thinkingLevel: 'max' });
 
     expect(() => {
       profile.setThinking('high');
@@ -549,7 +549,7 @@ describe('ConfigState thinking clamp for always-thinking models', () => {
   });
 
   it('clamps off to the model default for always-on models, on any transport', () => {
-    profile.update({ modelAlias: 'kimi-code/compatible', thinkingLevel: 'max' });
+    profile.update({ modelAlias: 'zimi-code/compatible', thinkingLevel: 'max' });
 
     expect(() => {
       profile.setThinking('off');
@@ -558,28 +558,28 @@ describe('ConfigState thinking clamp for always-thinking models', () => {
   });
 });
 
-describe('ConfigState.provider applies global KIMI_MODEL_* request config', () => {
+describe('ConfigState.provider applies global ZIMI_MODEL_* request config', () => {
   let ctx: TestAgentContext | undefined;
   let profile: IAgentProfileService;
   let requester: LoopRequester;
-  let kimiConfig: TestKimiConfig;
+  let zimiConfig: TestZimiConfig;
   let capturedProvider: unknown;
   let capturedOptions: Parameters<LegacyGenerateFn>[5];
 
   beforeEach(() => {
-    kimiConfig = {
-      providers: { kimi: { type: 'kimi', apiKey: 'test-key', baseUrl: 'https://api.example.test/v1' } },
+    zimiConfig = {
+      providers: { zimi: { type: 'zimi', apiKey: 'test-key', baseUrl: 'https://api.example.test/v1' } },
       models: {
-        'kimi-code': {
-          provider: 'kimi',
-          model: 'kimi-code',
+        'zimi-code': {
+          provider: 'zimi',
+          model: 'zimi-code',
           maxContextSize: 128_000,
           capabilities: ['thinking'],
         },
-        'kimi-code-anthropic': {
-          provider: 'kimi',
+        'zimi-code-anthropic': {
+          provider: 'zimi',
           protocol: 'anthropic',
-          model: 'kimi-code-anthropic',
+          model: 'zimi-code-anthropic',
           maxContextSize: 128_000,
           capabilities: ['thinking'],
           supportEfforts: ['low', 'high'],
@@ -601,7 +601,7 @@ describe('ConfigState.provider applies global KIMI_MODEL_* request config', () =
 
   function createAgentWithEnv(): void {
     ctx = createTestAgent(
-      configServices(() => kimiConfig),
+      configServices(() => zimiConfig),
       llmGenerateServices(requesterFromGenerateFn(async (provider, _systemPrompt, _tools, _history, _callbacks, options) => {
         capturedProvider = provider;
         capturedOptions = options;
@@ -618,11 +618,11 @@ describe('ConfigState.provider applies global KIMI_MODEL_* request config', () =
     requester = ctx.get(IAgentLoopService).requester;
   }
 
-  it('injects KIMI_MODEL_TEMPERATURE into the per-turn sampling intent (the compaction request also uses)', async () => {
-    vi.stubEnv('KIMI_MODEL_TEMPERATURE', '0.3');
+  it('injects ZIMI_MODEL_TEMPERATURE into the per-turn sampling intent (the compaction request also uses)', async () => {
+    vi.stubEnv('ZIMI_MODEL_TEMPERATURE', '0.3');
     createAgentWithEnv();
 
-    profile.update({ modelAlias: 'kimi-code' });
+    profile.update({ modelAlias: 'zimi-code' });
     await requester.request({}, undefined, new AbortController().signal);
 
     expect(capturedOptions?.sampling).toMatchObject({
@@ -630,32 +630,32 @@ describe('ConfigState.provider applies global KIMI_MODEL_* request config', () =
     });
   });
 
-  it('injects KIMI_MODEL_THINKING_KEEP into the per-turn thinking intent when thinking is on (so compaction keeps it)', async () => {
-    vi.stubEnv('KIMI_MODEL_THINKING_KEEP', 'all');
+  it('injects ZIMI_MODEL_THINKING_KEEP into the per-turn thinking intent when thinking is on (so compaction keeps it)', async () => {
+    vi.stubEnv('ZIMI_MODEL_THINKING_KEEP', 'all');
     createAgentWithEnv();
 
-    profile.update({ modelAlias: 'kimi-code', thinkingLevel: 'high' });
+    profile.update({ modelAlias: 'zimi-code', thinkingLevel: 'high' });
     await requester.request({}, undefined, new AbortController().signal);
 
     expect(capturedOptions?.thinking).toMatchObject({ effort: 'on', keep: 'all' });
   });
 
   it('does NOT inject thinking.keep into the per-turn intent when thinking is off', async () => {
-    vi.stubEnv('KIMI_MODEL_THINKING_KEEP', 'all');
+    vi.stubEnv('ZIMI_MODEL_THINKING_KEEP', 'all');
     createAgentWithEnv();
 
-    profile.update({ modelAlias: 'kimi-code', thinkingLevel: 'off' });
+    profile.update({ modelAlias: 'zimi-code', thinkingLevel: 'off' });
     await requester.request({}, undefined, new AbortController().signal);
 
     expect(capturedOptions?.thinking?.effort).toBe('off');
     expect(capturedOptions?.thinking?.keep).toBeUndefined();
   });
 
-  it('injects forced effort through the Anthropic protocol for a Kimi provider', async () => {
-    vi.stubEnv('KIMI_MODEL_THINKING_EFFORT', 'max');
+  it('injects forced effort through the Anthropic protocol for a Zimi provider', async () => {
+    vi.stubEnv('ZIMI_MODEL_THINKING_EFFORT', 'max');
     createAgentWithEnv();
 
-    profile.update({ modelAlias: 'kimi-code-anthropic', thinkingLevel: 'high' });
+    profile.update({ modelAlias: 'zimi-code-anthropic', thinkingLevel: 'high' });
     expect(profile.data().thinkingLevel).toBe('high');
     expect(profile.resolveModelContext().thinkingLevel).toBe('max');
     const statusEvent = ctx?.allEvents.findLast(
@@ -664,7 +664,7 @@ describe('ConfigState.provider applies global KIMI_MODEL_* request config', () =
         (event.args as { thinkingEffort?: unknown } | undefined)?.thinkingEffort !== undefined,
     );
     expect(statusEvent?.args).toMatchObject({
-      model: 'kimi-code-anthropic',
+      model: 'zimi-code-anthropic',
       thinkingEffort: 'max',
     });
 

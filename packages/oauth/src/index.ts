@@ -28,97 +28,97 @@ export type { LoginOptions, OAuthManagerOptions, OAuthRefreshOutcome } from './o
 export { OAuthManager, defaultRefreshThreshold, newInstanceId } from './oauth-manager';
 
 export {
-  assertKimiHostIdentity,
-  createKimiDefaultHeaders,
-  createKimiDeviceHeaders,
-  createKimiDeviceId,
-  createKimiUserAgent,
-  KIMI_CODE_CUSTOM_HEADERS_ENV,
-  KIMI_CODE_PLATFORM,
-  parseKimiCodeCustomHeaders,
-  readKimiDeviceId,
+  assertZimiHostIdentity,
+  createZimiDefaultHeaders,
+  createZimiDeviceHeaders,
+  createZimiDeviceId,
+  createZimiUserAgent,
+  ZIMI_CODE_CUSTOM_HEADERS_ENV,
+  ZIMI_CODE_PLATFORM,
+  parseZimiCodeCustomHeaders,
+  readZimiDeviceId,
   replaceUserAgentProduct,
 } from './identity';
-export type { KimiHostIdentity, KimiIdentityOptions } from './identity';
+export type { ZimiHostIdentity, ZimiIdentityOptions } from './identity';
 
-export { KIMI_CODE_FLOW_CONFIG } from './constants';
+export { ZIMI_CODE_FLOW_CONFIG } from './constants';
 
 export {
-  KIMI_REGION_MARKER_FILENAME,
-  KIMI_REGION_PROFILES,
-  kimiCdnContentUrl,
-  kimiRegionLoginHosts,
-  kimiRegionProfile,
-  kimiRegionSchema,
-  readKimiRegionMarker,
-  resolveKimiRegion,
-  resolveKimiRegionDetailed,
-  resolveKimiRegionFromParts,
-  resolveKimiRemoteControlAuth,
+  ZIMI_REGION_MARKER_FILENAME,
+  ZIMI_REGION_PROFILES,
+  zimiCdnContentUrl,
+  zimiRegionLoginHosts,
+  zimiRegionProfile,
+  zimiRegionSchema,
+  readZimiRegionMarker,
+  resolveZimiRegion,
+  resolveZimiRegionDetailed,
+  resolveZimiRegionFromParts,
+  resolveZimiRemoteControlAuth,
 } from './region';
 export type {
-  KimiRegion,
-  KimiRegionProfile,
-  KimiRegionResolution,
-  KimiRegionSource,
-  KimiRemoteControlAuth,
-  ResolveKimiRegionOptions,
-  ResolveKimiRegionParts,
+  ZimiRegion,
+  ZimiRegionProfile,
+  ZimiRegionResolution,
+  ZimiRegionSource,
+  ZimiRemoteControlAuth,
+  ResolveZimiRegionOptions,
+  ResolveZimiRegionParts,
 } from './region';
 
-export { createKimiRegionResolver, decideKimiRegion } from './region-resolver';
+export { createZimiRegionResolver, decideZimiRegion } from './region-resolver';
 export type {
-  CreateKimiRegionResolverOptions,
-  KimiRegionAuthRead,
-  KimiRegionAuthSnapshot,
-  KimiRegionCacheAction,
-  KimiRegionDecideInput,
-  KimiRegionDecision,
-  KimiRegionResolver,
+  CreateZimiRegionResolverOptions,
+  ZimiRegionAuthRead,
+  ZimiRegionAuthSnapshot,
+  ZimiRegionCacheAction,
+  ZimiRegionDecideInput,
+  ZimiRegionDecision,
+  ZimiRegionResolver,
 } from './region-resolver';
 
-export { collectLocalRegionSignals, detectKimiRegionFromLocalSignals } from './region-local';
+export { collectLocalRegionSignals, detectZimiRegionFromLocalSignals } from './region-local';
 export type { LocalRegionDetection, LocalRegionSignals } from './region-local';
 
 export {
   applyManagedApiKeyProviderModels,
-  applyManagedKimiCodeLogoutConfig,
-  applyManagedKimiCodeConfig,
-  clearManagedKimiCodeConfig,
-  fetchManagedKimiCodeModels,
-  kimiCodeEnvBaseUrl,
-  kimiCodeEnvOAuthHost,
-  KIMI_CODE_OAUTH_KEY,
-  KIMI_CODE_PLATFORM_ID,
-  KIMI_CODE_PROVIDER_NAME,
-  ManagedKimiCodeModelsAuthError,
-  provisionManagedKimiCodeConfig,
-  resolveKimiCodeLoginAuth,
-  resolveKimiCodeOAuthKey,
-  resolveKimiCodeOAuthRef,
-  resolveKimiCodeRuntimeAuth,
+  applyManagedZimiCodeLogoutConfig,
+  applyManagedZimiCodeConfig,
+  clearManagedZimiCodeConfig,
+  fetchManagedZimiCodeModels,
+  zimiCodeEnvBaseUrl,
+  zimiCodeEnvOAuthHost,
+  ZIMI_CODE_OAUTH_KEY,
+  ZIMI_CODE_PLATFORM_ID,
+  ZIMI_CODE_PROVIDER_NAME,
+  ManagedZimiCodeModelsAuthError,
+  provisionManagedZimiCodeConfig,
+  resolveZimiCodeLoginAuth,
+  resolveZimiCodeOAuthKey,
+  resolveZimiCodeOAuthRef,
+  resolveZimiCodeRuntimeAuth,
   toManagedModelAlias,
-} from './managed-kimi-code';
+} from './managed-zimi-code';
 export type {
-  FetchManagedKimiCodeModelsOptions,
-  ManagedKimiCodeApplyResult,
-  ManagedKimiCodeCleanupResult,
-  ManagedKimiCodeProtocol,
-  ManagedKimiEnv,
-  ManagedKimiLoginAuth,
-  ManagedKimiCodeModelInfo,
-  ManagedKimiCodeProvisionResult,
-  ManagedKimiConfigAdapter,
-  ManagedKimiConfigShape,
-  ManagedKimiOAuthRef,
-  ManagedKimiOAuthRefInput,
-  ManagedKimiRuntimeAuth,
-  ProvisionManagedKimiCodeConfigOptions,
-} from './managed-kimi-code';
+  FetchManagedZimiCodeModelsOptions,
+  ManagedZimiCodeApplyResult,
+  ManagedZimiCodeCleanupResult,
+  ManagedZimiCodeProtocol,
+  ManagedZimiEnv,
+  ManagedZimiLoginAuth,
+  ManagedZimiCodeModelInfo,
+  ManagedZimiCodeProvisionResult,
+  ManagedZimiConfigAdapter,
+  ManagedZimiConfigShape,
+  ManagedZimiOAuthRef,
+  ManagedZimiOAuthRefInput,
+  ManagedZimiRuntimeAuth,
+  ProvisionManagedZimiCodeConfigOptions,
+} from './managed-zimi-code';
 
 export {
   fetchManagedUserInfo,
-  kimiCodeUserInfoUrl,
+  zimiCodeUserInfoUrl,
   managedUserInfoPhoneSchema,
   managedUserInfoResultSchema,
   managedUserInfoSchema,
@@ -136,10 +136,10 @@ export {
   boosterWalletInfoSchema,
   fetchManagedUsage,
   formatDuration,
-  isManagedKimiCode,
-  isManagedKimiCodeBaseUrl,
-  kimiCodeBaseUrl,
-  kimiCodeUsageUrl,
+  isManagedZimiCode,
+  isManagedZimiCodeBaseUrl,
+  zimiCodeBaseUrl,
+  zimiCodeUsageUrl,
   managedQuotaEntrySchema,
   managedQuotaSchema,
   managedQuotaUsagesSchema,
@@ -156,14 +156,14 @@ export type {
   ManagedUsageResult,
 } from './managed-usage';
 
-export { fetchChatTitle, kimiCodeToolsUrl } from './managed-tools';
+export { fetchChatTitle, zimiCodeToolsUrl } from './managed-tools';
 export type {
   FetchChatTitleError,
   FetchChatTitleOk,
   FetchChatTitleResult,
 } from './managed-tools';
 
-export { fetchSubmitFeedback, kimiCodeFeedbackUrl } from './managed-feedback';
+export { fetchSubmitFeedback, zimiCodeFeedbackUrl } from './managed-feedback';
 export type {
   FetchSubmitFeedbackError,
   FetchSubmitFeedbackOk,
@@ -174,8 +174,8 @@ export type {
 export {
   fetchCompleteFeedbackUpload,
   fetchCreateFeedbackUploadUrl,
-  kimiCodeFeedbackUploadCompleteUrl,
-  kimiCodeFeedbackUploadUrl,
+  zimiCodeFeedbackUploadCompleteUrl,
+  zimiCodeFeedbackUploadUrl,
 } from './managed-feedback-upload';
 export type {
   CompleteFeedbackUploadBody,
@@ -238,18 +238,18 @@ export type {
   ProviderCredentialView,
 } from './provider-credential';
 
-export { KimiOAuthToolkit, resolveKimiTokenStorageName } from './toolkit';
+export { ZimiOAuthToolkit, resolveZimiTokenStorageName } from './toolkit';
 export type {
   AuthManagedUsageResult,
   AuthManagedUserInfoResult,
   AuthProviderStatus,
   AuthStatus,
   BearerTokenProvider,
-  KimiOAuthLoginOptions,
-  KimiOAuthLoginResult,
-  KimiOAuthLogoutResult,
-  KimiOAuthTokenRef,
-  KimiOAuthToolkitOptions,
+  ZimiOAuthLoginOptions,
+  ZimiOAuthLoginResult,
+  ZimiOAuthLogoutResult,
+  ZimiOAuthTokenRef,
+  ZimiOAuthToolkitOptions,
 } from './toolkit';
 
 export { refreshProviderModels } from './refreshProviderModels';

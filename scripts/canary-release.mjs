@@ -4,9 +4,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-export const PACKAGE_NAME = '@moonshot-ai/kimi-code';
+export const PACKAGE_NAME = '@zimi-ai/zimi-code';
 const TAG_PREFIX = `${PACKAGE_NAME}@`;
-const CLI_PACKAGE_JSON = new URL('../apps/kimi-code/package.json', import.meta.url);
+const CLI_PACKAGE_JSON = new URL('../apps/zimi-code/package.json', import.meta.url);
 const BASE_RE = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/;
 const CANARY_RE = /^((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*))-canary\.(\d{14})-([0-9a-f]{7})$/;
 const COMMIT_RE = /^[0-9a-f]{40}$/;
@@ -86,12 +86,12 @@ const NATIVE_TARGETS = ['linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64'
 export function requiredCanaryReleaseAssets() {
   return [
     ...NATIVE_TARGETS.flatMap((target) => [
-      `kimi-code-${target}.zip`,
-      `kimi-code-${target}.zip.sha256`,
-      `kimi-code-${target}.zst`,
-      `kimi-code-${target}.zst.sha256`,
-      `kimi-code-${target}.tar.gz`,
-      `kimi-code-${target}.tar.gz.sha256`,
+      `zimi-code-${target}.zip`,
+      `zimi-code-${target}.zip.sha256`,
+      `zimi-code-${target}.zst`,
+      `zimi-code-${target}.zst.sha256`,
+      `zimi-code-${target}.tar.gz`,
+      `zimi-code-${target}.tar.gz.sha256`,
     ]),
     'manifest.json',
     'canary.json',
@@ -187,7 +187,7 @@ function select() {
 
 function version() {
   const run = JSON.parse(execFileSync('gh', ['api', `repos/${env('GITHUB_REPOSITORY')}/actions/runs/${env('GITHUB_RUN_ID')}`], { encoding: 'utf8' }));
-  const outputDir = mkdtempSync(join(tmpdir(), 'kimi-code-canary-'));
+  const outputDir = mkdtempSync(join(tmpdir(), 'zimi-code-canary-'));
   try {
     const result = computeCanaryVersion({
       baseVersion: resolveCanaryBaseVersion({

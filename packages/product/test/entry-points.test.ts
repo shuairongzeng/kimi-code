@@ -79,7 +79,7 @@ describe('product entry points', () => {
     ['session-rating', 'session-rating/common/index.ts'],
     ['session-rating/node', 'session-rating/node/index.ts'],
   ])('resolves the %s public entry', (subpath, source) => {
-    expect(resolve(`@moonshot-ai/kimi-code-product/${subpath}`)).toBe(join(sourceRoot, source));
+    expect(resolve(`@zimi-ai/zimi-code-product/${subpath}`)).toBe(join(sourceRoot, source));
   });
 
   it('typechecks the public contract and all common modules without Node types', { timeout: 60_000 }, () => {
@@ -87,7 +87,7 @@ describe('product entry points', () => {
     writeFileSync(consumerPath, `
       import type {
         RatingOffer, RatingReport, RatingResponse, SurveyKind, SurveyResponse,
-      } from '@moonshot-ai/kimi-code-product/session-rating';
+      } from '@zimi-ai/zimi-code-product/session-rating';
       const survey: SurveyKind = 'session';
       const response: RatingResponse = 'good';
       export const dismissed: SurveyResponse = 'dismissed';

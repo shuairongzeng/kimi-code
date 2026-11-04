@@ -1,4 +1,4 @@
-import { replaceUserAgentProduct } from '@moonshot-ai/kimi-code-oauth';
+import { replaceUserAgentProduct } from '@zimi-ai/zimi-code-oauth';
 
 import { createDecorator, type ServiceIdentifier } from '#/_base/di/instantiation';
 

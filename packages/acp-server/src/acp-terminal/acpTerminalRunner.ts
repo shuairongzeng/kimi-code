@@ -15,7 +15,7 @@ import type {
   EnvironmentProviderAttachment,
   EnvironmentProviderFactory,
   EnvironmentProviderHost,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 
 import { AcpHostFileSystem, IAcpConnection, type IAcpTerminalHandle } from '../acp-fs';
 

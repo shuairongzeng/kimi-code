@@ -1,4 +1,4 @@
-# @moonshot-ai/kimi-code-sdk
+# @zimi-ai/zimi-code-sdk
 
 ## 0.23.0
 
@@ -30,7 +30,7 @@
 
 ### Minor Changes
 
-- [#3453](https://github.com/MoonshotAI/kimi-code/pull/3453) [`411572e`](https://github.com/MoonshotAI/kimi-code/commit/411572e166edee8581ba9c5a7f1bbf6c8b405606) Thanks [@Grapedge](https://github.com/Grapedge)! - Add `suggestFiles(workDir, { query, limit })` to `KimiHarness`: session-less fuzzy file suggestions from the agent-core-v2 workspace fs service, `undefined` on the v1 engine.
+- [#3453](https://github.com/MoonshotAI/kimi-code/pull/3453) [`411572e`](https://github.com/MoonshotAI/kimi-code/commit/411572e166edee8581ba9c5a7f1bbf6c8b405606) Thanks [@Grapedge](https://github.com/Grapedge)! - Add `suggestFiles(workDir, { query, limit })` to `ZimiHarness`: session-less fuzzy file suggestions from the agent-core-v2 workspace fs service, `undefined` on the v1 engine.
 
 ## 0.19.2
 
@@ -82,7 +82,7 @@
 
 - [#2843](https://github.com/MoonshotAI/kimi-code/pull/2843) [`c212ae9`](https://github.com/MoonshotAI/kimi-code/commit/c212ae9715371c0d7939c15e664acbe0d7cf7fc3) Thanks [@sailist](https://github.com/sailist)! - Show project MCP launch targets in the workspace trust prompt, default to declining trust, and resolve fd and stty binaries to absolute paths so untrusted workspaces cannot plant bare-name executables before confirmation.
 
-  `@moonshot-ai/kimi-code-sdk` contract change: `WorkspaceTrustInfo.gatedMcpServers` now carries structured `WorkspaceTrustMcpServerInfo` records (`name`, `transport`, and `command`/`args`/`cwd` or `url`) instead of plain strings, so SDK consumers rendering a trust prompt can show the full launch target.
+  `@zimi-ai/zimi-code-sdk` contract change: `WorkspaceTrustInfo.gatedMcpServers` now carries structured `WorkspaceTrustMcpServerInfo` records (`name`, `transport`, and `command`/`args`/`cwd` or `url`) instead of plain strings, so SDK consumers rendering a trust prompt can show the full launch target.
 
 ## 0.16.0
 
@@ -197,8 +197,8 @@
 - [#812](https://github.com/MoonshotAI/kimi-code/pull/812) [`c0eeca2`](https://github.com/MoonshotAI/kimi-code/commit/c0eeca24692edd736eecd3c2541d7566bac9f80f) - Added the ability to add extra workspace directories:
 
   - Use the `/add-dir <path>` command to add extra working directories to the current session, or remember them for the project.
-  - Use `kimi --add-dir <path>` to add them on startup.
-  - Project-level local config is now managed in `.kimi-code/local.toml`; we recommend adding it to your `.gitignore`.
+  - Use `zimi --add-dir <path>` to add them on startup.
+  - Project-level local config is now managed in `.zimi-code/local.toml`; we recommend adding it to your `.gitignore`.
 
 ### Patch Changes
 
@@ -210,7 +210,7 @@
 
 - [#838](https://github.com/MoonshotAI/kimi-code/pull/838) [`843a731`](https://github.com/MoonshotAI/kimi-code/commit/843a731097fc18b2e41ab0405b5fbcb6149ba55c) - Show the underlying connection error when OAuth token refresh fails after internal retries, instead of prompting for login. Token refresh failures are no longer re-retried at the agent loop level.
 
-- [#625](https://github.com/MoonshotAI/kimi-code/pull/625) [`9a8fea5`](https://github.com/MoonshotAI/kimi-code/commit/9a8fea5c85177cd887896108c05ba9e174f28250) - Add host-side config helpers `loadRuntimeConfigSafe` and `resolveConfigPath` for inspecting config without spinning up a full KimiCore.
+- [#625](https://github.com/MoonshotAI/kimi-code/pull/625) [`9a8fea5`](https://github.com/MoonshotAI/kimi-code/commit/9a8fea5c85177cd887896108c05ba9e174f28250) - Add host-side config helpers `loadRuntimeConfigSafe` and `resolveConfigPath` for inspecting config without spinning up a full ZimiCore.
 
 ## 0.9.3
 
@@ -252,7 +252,7 @@
 
 - [#383](https://github.com/MoonshotAI/kimi-code/pull/383) [`15d71b5`](https://github.com/MoonshotAI/kimi-code/commit/15d71b5130d949c35d9dc2641e807e08d72dce48) - Add /reload to reload the current session and apply updated config files, plus /reload-tui to reload only TUI preferences.
 
-- [#431](https://github.com/MoonshotAI/kimi-code/pull/431) [`6a4e4c7`](https://github.com/MoonshotAI/kimi-code/commit/6a4e4c75d4bf6db3fefbb5c115d7a7c324bcae16) - Add a doctor command for validating Kimi Code configuration files.
+- [#431](https://github.com/MoonshotAI/kimi-code/pull/431) [`6a4e4c7`](https://github.com/MoonshotAI/kimi-code/commit/6a4e4c75d4bf6db3fefbb5c115d7a7c324bcae16) - Add a doctor command for validating Zimi Code configuration files.
 
 ### Patch Changes
 
@@ -272,15 +272,15 @@
 
 ### Minor Changes
 
-- [#270](https://github.com/MoonshotAI/kimi-code/pull/270) [`ac37d74`](https://github.com/MoonshotAI/kimi-code/commit/ac37d7448458fdb73fbe00e35856dcf44a13f734) - Add experimental goal mode for longer tasks that need more than one turn. Turn it on with `KIMI_CODE_EXPERIMENTAL_GOAL_COMMAND=1` before you start Kimi.
+- [#270](https://github.com/MoonshotAI/kimi-code/pull/270) [`ac37d74`](https://github.com/MoonshotAI/kimi-code/commit/ac37d7448458fdb73fbe00e35856dcf44a13f734) - Add experimental goal mode for longer tasks that need more than one turn. Turn it on with `ZIMI_CODE_EXPERIMENTAL_GOAL_COMMAND=1` before you start Zimi.
 
-  Use `/goal <objective>` in the TUI when you want Kimi to keep working on one task across turns. For example:
+  Use `/goal <objective>` in the TUI when you want Zimi to keep working on one task across turns. For example:
 
   ```text
   /goal Fix the failing checkout test
   ```
 
-  Kimi shows the goal in the TUI and keeps progress visible while it works. Use `/goal status`, `/goal pause`, `/goal resume`, `/goal cancel`, and `/goal replace <objective>` to manage the goal. This feature is still experimental. Try it and tell us what would make it more useful.
+  Zimi shows the goal in the TUI and keeps progress visible while it works. Use `/goal status`, `/goal pause`, `/goal resume`, `/goal cancel`, and `/goal replace <objective>` to manage the goal. This feature is still experimental. Try it and tell us what would make it more useful.
 
 - [#315](https://github.com/MoonshotAI/kimi-code/pull/315) [`191059d`](https://github.com/MoonshotAI/kimi-code/commit/191059d40049d3bfd07661ac03bb961eac1407f7) - Add background structured questions so agents can continue while waiting for user answers.
 
@@ -298,13 +298,13 @@
 
 ### Minor Changes
 
-- [#221](https://github.com/MoonshotAI/kimi-code/pull/221) [`bab2da7`](https://github.com/MoonshotAI/kimi-code/commit/bab2da7b1c785d6deba25decb1411f8f5a70de8c) - Install plugins directly from GitHub repository URLs, and surface each install's origin and trust level (kimi-official, curated, third-party) in the plugin manager.
+- [#221](https://github.com/MoonshotAI/kimi-code/pull/221) [`bab2da7`](https://github.com/MoonshotAI/kimi-code/commit/bab2da7b1c785d6deba25decb1411f8f5a70de8c) - Install plugins directly from GitHub repository URLs, and surface each install's origin and trust level (zimi-official, curated, third-party) in the plugin manager.
 
 - [#118](https://github.com/MoonshotAI/kimi-code/pull/118) [`8913440`](https://github.com/MoonshotAI/kimi-code/commit/891344054111a05171963cfa524ef749c2855321) - Support querying sessions by sessionId or workDir in listSessions, and show a helpful cd command when resuming a session from a different working directory.
 
 ### Patch Changes
 
-- [#221](https://github.com/MoonshotAI/kimi-code/pull/221) [`bab2da7`](https://github.com/MoonshotAI/kimi-code/commit/bab2da7b1c785d6deba25decb1411f8f5a70de8c) - Restrict plugin trust badges to Kimi-hosted plugin CDN URL patterns.
+- [#221](https://github.com/MoonshotAI/kimi-code/pull/221) [`bab2da7`](https://github.com/MoonshotAI/kimi-code/commit/bab2da7b1c785d6deba25decb1411f8f5a70de8c) - Restrict plugin trust badges to Zimi-hosted plugin CDN URL patterns.
 
 ## 0.3.0
 
@@ -316,7 +316,7 @@
 
 ### Patch Changes
 
-- [#105](https://github.com/MoonshotAI/kimi-code/pull/105) [`d599183`](https://github.com/MoonshotAI/kimi-code/commit/d599183c8eccea813d7aa5ddd974e72139cbb63c) - Enhance `kimi export` to include more diagnostic information in the manifest.
+- [#105](https://github.com/MoonshotAI/kimi-code/pull/105) [`d599183`](https://github.com/MoonshotAI/kimi-code/commit/d599183c8eccea813d7aa5ddd974e72139cbb63c) - Enhance `zimi export` to include more diagnostic information in the manifest.
 
 ## 0.2.1
 

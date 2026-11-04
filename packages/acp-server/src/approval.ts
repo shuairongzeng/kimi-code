@@ -17,7 +17,7 @@ import type {
 import type {
   SessionApprovalRequest as ApprovalRequest,
   SessionApprovalResponse as ApprovalResponse,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 
 import { displayBlockToAcpContent } from './convert';
 import { acpToolCallId } from './events-map';
@@ -119,7 +119,7 @@ export function approvalRequestToPermissionOptions(
  *  - `approve_always` → `decision: 'approved'` with `scope: 'session'` so the
  *    engine installs a session-runtime allow rule for subsequent invocations.
  *  - `reject`        → `decision: 'rejected'`.
- *  - Legacy Python kimi-cli (< v0.9.0) ids `approve` / `approve_for_session`
+ *  - Legacy Python zimi-cli (< v0.9.0) ids `approve` / `approve_for_session`
  *    map like `approve_once` / `approve_always` so custom ACP clients built
  *    against the old SDK are not silently rejected.
  *  - Any other optionId → defensive `rejected` (rejecting is strictly safer
@@ -143,13 +143,13 @@ export function permissionResponseToApprovalResponse(
   }
   switch (optionId) {
     case APPROVE_ONCE_OPTION_ID:
-    // Legacy Python kimi-cli (< v0.9.0) used 'approve' as the allow-once
+    // Legacy Python zimi-cli (< v0.9.0) used 'approve' as the allow-once
     // optionId. Keep accepting it so custom ACP clients built against the
     // old SDK are not silently rejected.
     case 'approve':
       return { decision: 'approved' };
     case APPROVE_ALWAYS_OPTION_ID:
-    // Legacy Python kimi-cli (< v0.9.0) used 'approve_for_session' as the
+    // Legacy Python zimi-cli (< v0.9.0) used 'approve_for_session' as the
     // allow-always optionId. Same backward-compatibility rationale as the
     // 'approve' branch above.
     case 'approve_for_session':

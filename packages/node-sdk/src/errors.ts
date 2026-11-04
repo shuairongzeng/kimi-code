@@ -6,7 +6,7 @@ import {
   APIStatusError,
   APITimeoutError,
   ChatProviderError,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 
 export const ErrorCodes = {
   CONFIG_INVALID: 'config.invalid',
@@ -88,16 +88,16 @@ export const ErrorCodes = {
   INTERNAL: 'internal',
 } as const;
 
-export type KimiErrorCode = (typeof ErrorCodes)[keyof typeof ErrorCodes];
+export type ZimiErrorCode = (typeof ErrorCodes)[keyof typeof ErrorCodes];
 
-export interface KimiErrorInfo {
+export interface ZimiErrorInfo {
   readonly title: string;
   readonly retryable: boolean;
   readonly public: boolean;
   readonly action?: string;
 }
 
-export const KIMI_ERROR_INFO = {
+export const ZIMI_ERROR_INFO = {
   'config.invalid': {
     title: 'Invalid configuration',
     retryable: false,
@@ -376,10 +376,10 @@ export const KIMI_ERROR_INFO = {
     action: 'Check disk space and permissions on the session directory.',
   },
   'wire.version_too_low': {
-    title: 'Kimi Code upgrade required',
+    title: 'Zimi Code upgrade required',
     retryable: false,
     public: true,
-    action: 'Upgrade Kimi Code to the latest version to read this session.',
+    action: 'Upgrade Zimi Code to the latest version to read this session.',
   },
   'compaction.failed': {
     title: 'Compaction failed',
@@ -441,7 +441,7 @@ export const KIMI_ERROR_INFO = {
     title: 'Plugin state failed to load',
     retryable: true,
     public: true,
-    action: 'Fix the installed.json file under $KIMI_CODE_HOME/plugins/ and run /plugins reload.',
+    action: 'Fix the installed.json file under $ZIMI_CODE_HOME/plugins/ and run /plugins reload.',
   },
   'plugin.catalog_changed': {
     title: 'Plugin marketplace entry changed',
@@ -479,7 +479,7 @@ export const KIMI_ERROR_INFO = {
     title: 'Git Bash not found',
     retryable: false,
     public: true,
-    action: 'Install Git for Windows from https://gitforwindows.org/ or set KIMI_SHELL_PATH to a bash.exe.',
+    action: 'Install Git for Windows from https://gitforwindows.org/ or set ZIMI_SHELL_PATH to a bash.exe.',
   },
 
   not_implemented: {
@@ -494,62 +494,62 @@ export const KIMI_ERROR_INFO = {
     public: true,
     action: 'Inspect logs or report the issue with diagnostics.',
   },
-} as const satisfies Record<KimiErrorCode, KimiErrorInfo>;
+} as const satisfies Record<ZimiErrorCode, ZimiErrorInfo>;
 
-export function isKimiErrorCode(code: unknown): code is KimiErrorCode {
-  return typeof code === 'string' && Object.hasOwn(KIMI_ERROR_INFO, code);
+export function isZimiErrorCode(code: unknown): code is ZimiErrorCode {
+  return typeof code === 'string' && Object.hasOwn(ZIMI_ERROR_INFO, code);
 }
 
-export interface KimiErrorOptions {
+export interface ZimiErrorOptions {
   readonly details?: Record<string, unknown>;
   readonly cause?: unknown;
   readonly retryable?: boolean;
 }
 
-export class KimiError extends Error {
-  readonly code: KimiErrorCode;
+export class ZimiError extends Error {
+  readonly code: ZimiErrorCode;
   readonly details?: Record<string, unknown>;
   override readonly cause?: unknown;
   readonly retryable: boolean;
 
-  constructor(code: KimiErrorCode, message: string, options: KimiErrorOptions = {}) {
+  constructor(code: ZimiErrorCode, message: string, options: ZimiErrorOptions = {}) {
     super(message);
-    this.name = 'KimiError';
+    this.name = 'ZimiError';
     this.code = code;
     this.details = options.details;
     this.cause = options.cause;
-    this.retryable = options.retryable ?? KIMI_ERROR_INFO[code].retryable;
+    this.retryable = options.retryable ?? ZIMI_ERROR_INFO[code].retryable;
   }
 }
 
-export interface KimiErrorPayload {
-  readonly code: KimiErrorCode;
+export interface ZimiErrorPayload {
+  readonly code: ZimiErrorCode;
   readonly message: string;
   readonly name?: string;
   readonly details?: Record<string, unknown>;
   readonly retryable: boolean;
 }
 
-export function isKimiError(error: unknown): error is KimiError {
-  return error instanceof KimiError;
+export function isZimiError(error: unknown): error is ZimiError {
+  return error instanceof ZimiError;
 }
 
 export function makeErrorPayload(
-  code: KimiErrorCode,
+  code: ZimiErrorCode,
   message: string,
   options?: { readonly details?: Record<string, unknown>; readonly name?: string },
-): KimiErrorPayload {
+): ZimiErrorPayload {
   return {
     code,
     message,
     name: options?.name,
     details: options?.details,
-    retryable: KIMI_ERROR_INFO[code].retryable,
+    retryable: ZIMI_ERROR_INFO[code].retryable,
   };
 }
 
-export function toKimiErrorPayload(error: unknown): KimiErrorPayload {
-  if (isKimiError(error)) {
+export function toZimiErrorPayload(error: unknown): ZimiErrorPayload {
+  if (isZimiError(error)) {
     return {
       code: error.code,
       message: error.message,
@@ -560,7 +560,7 @@ export function toKimiErrorPayload(error: unknown): KimiErrorPayload {
   }
 
   if (error instanceof APIStatusError) {
-    const code: KimiErrorCode =
+    const code: ZimiErrorCode =
       error instanceof APIProviderQuotaExhaustedError
         ? ErrorCodes.PROVIDER_API_ERROR
         : error instanceof APIProviderRateLimitError || error.statusCode === 429
@@ -620,19 +620,19 @@ export function toKimiErrorPayload(error: unknown): KimiErrorPayload {
       code: ErrorCodes.INTERNAL,
       message: error.message,
       name: error.name,
-      retryable: KIMI_ERROR_INFO[ErrorCodes.INTERNAL].retryable,
+      retryable: ZIMI_ERROR_INFO[ErrorCodes.INTERNAL].retryable,
     };
   }
 
   return {
     code: ErrorCodes.INTERNAL,
     message: String(error),
-    retryable: KIMI_ERROR_INFO[ErrorCodes.INTERNAL].retryable,
+    retryable: ZIMI_ERROR_INFO[ErrorCodes.INTERNAL].retryable,
   };
 }
 
-export function fromKimiErrorPayload(payload: KimiErrorPayload): KimiError {
-  return new KimiError(payload.code, payload.message, {
+export function fromZimiErrorPayload(payload: ZimiErrorPayload): ZimiError {
+  return new ZimiError(payload.code, payload.message, {
     details: payload.details,
     retryable: payload.retryable,
   });

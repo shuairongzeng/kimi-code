@@ -6,9 +6,9 @@ import {
   type McpServerConfig,
   parseImageDataUrl,
   persistOriginalImage,
-} from '@moonshot-ai/agent-core-v2';
-import type { ToolResultEvent } from '@moonshot-ai/agent-core-v2/events';
-import type { ToolInputDisplay } from '@moonshot-ai/agent-core-v2/tool/toolInputDisplay';
+} from '@zimi-ai/agent-core-v2';
+import type { ToolResultEvent } from '@zimi-ai/agent-core-v2/events';
+import type { ToolInputDisplay } from '@zimi-ai/agent-core-v2/tool/toolInputDisplay';
 
 import { log } from './log';
 import { isHideOutputMarker } from './marker';

@@ -38,10 +38,10 @@ describe('ensureRgPath cached fallback', () => {
     });
 
     expect(resolution).toEqual({
-      path: '/home/remote/.kimi-code/bin/rg',
+      path: '/home/remote/.zimi-code/bin/rg',
       source: 'share-bin-cached',
     });
-    expect(probe.exec).toHaveBeenCalledWith(['/home/remote/.kimi-code/bin/rg', '--version']);
+    expect(probe.exec).toHaveBeenCalledWith(['/home/remote/.zimi-code/bin/rg', '--version']);
     expect(probe.exec).not.toHaveBeenCalledWith([getShareBinRgPath(), '--version']);
   });
 

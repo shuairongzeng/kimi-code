@@ -8,21 +8,21 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { fetchChatTitle, kimiCodeToolsUrl } from '../src/managed-tools';
+import { fetchChatTitle, zimiCodeToolsUrl } from '../src/managed-tools';
 
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
 });
 
-describe('kimiCodeToolsUrl', () => {
+describe('zimiCodeToolsUrl', () => {
   it('appends /tools to the default base URL', () => {
-    expect(kimiCodeToolsUrl()).toBe('https://api.kimi.com/coding/v1/tools');
+    expect(zimiCodeToolsUrl()).toBe('https://api.kimi.com/coding/v1/tools');
   });
 
-  it('honours KIMI_CODE_BASE_URL and trims trailing slashes', () => {
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'https://example.test/v9///');
-    expect(kimiCodeToolsUrl()).toBe('https://example.test/v9/tools');
+  it('honours ZIMI_CODE_BASE_URL and trims trailing slashes', () => {
+    vi.stubEnv('ZIMI_CODE_BASE_URL', 'https://example.test/v9///');
+    expect(zimiCodeToolsUrl()).toBe('https://example.test/v9/tools');
   });
 });
 

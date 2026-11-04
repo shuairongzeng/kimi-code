@@ -1,8 +1,8 @@
-# @moonshot-ai/kimi-code-sdk
+# @zimi-ai/zimi-code-sdk
 
-The TypeScript SDK for Kimi Code
+The TypeScript SDK for Zimi Code
 
-Part of the [Kimi Code](https://github.com/MoonshotAI/kimi-code) monorepo.
+Part of the [Zimi Code](https://github.com/ZimiAI/zimi-code) monorepo.
 
 See the main repository for documentation, issues, and contribution guidelines.
 

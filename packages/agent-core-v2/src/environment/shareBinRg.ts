@@ -8,9 +8,9 @@ export function isRemoteEnvironment(environment: Environment | undefined): envir
 }
 
 export function getShareBinRgPath(): string {
-  const override = process.env['KIMI_CODE_HOME'];
+  const override = process.env['ZIMI_CODE_HOME'];
   if (override !== undefined && override !== '') return join(override, 'bin', rgBinaryName());
-  return join(homedir(), '.kimi-code', 'bin', rgBinaryName());
+  return join(homedir(), '.zimi-code', 'bin', rgBinaryName());
 }
 
 export function shareBinRgPath(environment: Environment | undefined): string {
@@ -18,7 +18,7 @@ export function shareBinRgPath(environment: Environment | undefined): string {
     const homeDir = environment.host?.homeDir;
     if (homeDir !== undefined) {
       const binary = environment.host?.pathClass === 'win32' ? 'rg.exe' : 'rg';
-      return environment.path?.join(homeDir, '.kimi-code', 'bin', binary) ?? `${homeDir}/.kimi-code/bin/${binary}`;
+      return environment.path?.join(homeDir, '.zimi-code', 'bin', binary) ?? `${homeDir}/.zimi-code/bin/${binary}`;
     }
   }
   return getShareBinRgPath();

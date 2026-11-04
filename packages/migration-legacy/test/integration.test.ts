@@ -7,8 +7,8 @@ import { detectMigration, runMigration } from '../src/index.js';
 import { computeWorkdirBucket, oldMd5BucketName } from '../src/sessions/workdir-bucket.js';
 
 const FIXTURES = fileURLToPath(new URL('./fixtures', import.meta.url));
-const SOURCE_HOME = join(FIXTURES, 'multi-workdir', '.kimi');
-const MARKER_PATH = join(SOURCE_HOME, '.migrated-to-kimi-code');
+const SOURCE_HOME = join(FIXTURES, 'multi-workdir', '.zimi');
+const MARKER_PATH = join(SOURCE_HOME, '.migrated-to-zimi-code');
 const FIXTURE_CONFIG = join(SOURCE_HOME, 'config.toml');
 
 let tgt: string;
@@ -80,7 +80,7 @@ describe('runMigration (end-to-end on multi-workdir fixture)', () => {
       });
 
       expect(report.summary.sessions.sessionsFailed).toHaveLength(1);
-      await expect(readFile(join(src, '.migrated-to-kimi-code'), 'utf-8')).rejects.toThrow();
+      await expect(readFile(join(src, '.migrated-to-zimi-code'), 'utf-8')).rejects.toThrow();
     } finally {
       await rm(src, { recursive: true, force: true });
     }
@@ -175,7 +175,7 @@ describe('runMigration (end-to-end on multi-workdir fixture)', () => {
       });
 
       expect(report.summary.config.sourceUnreadable).toBe(true);
-      await expect(readFile(join(src, '.migrated-to-kimi-code'), 'utf-8')).rejects.toThrow();
+      await expect(readFile(join(src, '.migrated-to-zimi-code'), 'utf-8')).rejects.toThrow();
     } finally {
       await rm(src, { recursive: true, force: true });
     }
@@ -195,7 +195,7 @@ describe('runMigration (end-to-end on multi-workdir fixture)', () => {
       });
 
       expect(report.summary.mcp.sourceUnreadable).toBe(true);
-      await expect(readFile(join(src, '.migrated-to-kimi-code'), 'utf-8')).rejects.toThrow();
+      await expect(readFile(join(src, '.migrated-to-zimi-code'), 'utf-8')).rejects.toThrow();
     } finally {
       await rm(src, { recursive: true, force: true });
     }
@@ -208,7 +208,7 @@ describe('runMigration (end-to-end on multi-workdir fixture)', () => {
       const uuid = 'conflict-session';
       const bucket = join(src, 'sessions', oldMd5BucketName(workdir));
       await mkdir(join(bucket, uuid), { recursive: true });
-      await writeFile(join(src, 'kimi.json'), JSON.stringify({ work_dirs: [{ path: workdir }] }));
+      await writeFile(join(src, 'zimi.json'), JSON.stringify({ work_dirs: [{ path: workdir }] }));
       await writeFile(join(bucket, uuid, 'context.jsonl'), '{"role":"user","content":"hi"}\n');
 
       const foreignDir = join(
@@ -229,7 +229,7 @@ describe('runMigration (end-to-end on multi-workdir fixture)', () => {
       });
 
       expect(report.summary.sessions.sessionsConflicts).toHaveLength(1);
-      await expect(readFile(join(src, '.migrated-to-kimi-code'), 'utf-8')).rejects.toThrow();
+      await expect(readFile(join(src, '.migrated-to-zimi-code'), 'utf-8')).rejects.toThrow();
     } finally {
       await rm(src, { recursive: true, force: true });
     }
@@ -240,12 +240,12 @@ describe('runMigration (end-to-end on multi-workdir fixture)', () => {
     // single-owner. Copying a credential to a second install breaks login
     // for whichever side refreshes second. The migration must NOT copy
     // credentials — it leaves the legacy login alone and asks the user to
-    // run /login in kimi-code instead.
+    // run /login in zimi-code instead.
     const src = await mkdtemp(join(tmpdir(), 'oauth-src-'));
     try {
       await mkdir(join(src, 'credentials'), { recursive: true });
       await writeFile(
-        join(src, 'credentials', 'kimi-code.json'),
+        join(src, 'credentials', 'zimi-code.json'),
         JSON.stringify({
           access_token: 'a',
           refresh_token: 'r',
@@ -263,10 +263,10 @@ describe('runMigration (end-to-end on multi-workdir fixture)', () => {
       });
       // The credential must not be copied into the target.
       await expect(
-        readFile(join(tgt, 'credentials', 'kimi-code.json'), 'utf-8'),
+        readFile(join(tgt, 'credentials', 'zimi-code.json'), 'utf-8'),
       ).rejects.toThrow();
-      // The report tells the user to sign in again in kimi-code.
-      expect(report.notices.oauthLoginsRequiringRelogin).toContain('kimi-code');
+      // The report tells the user to sign in again in zimi-code.
+      expect(report.notices.oauthLoginsRequiringRelogin).toContain('zimi-code');
     } finally {
       await rm(src, { recursive: true, force: true });
     }

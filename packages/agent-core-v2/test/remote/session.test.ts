@@ -182,7 +182,7 @@ describe.skipIf(process.platform === 'win32')('SSH platform detection before exe
   let callsPath: string;
 
   beforeEach(async () => {
-    binDir = await mkdtemp(join(tmpdir(), 'kimi-ssh-probe-'));
+    binDir = await mkdtemp(join(tmpdir(), 'zimi-ssh-probe-'));
     callsPath = join(binDir, 'calls');
     const fakeSsh = join(binDir, 'ssh');
     await writeFile(fakeSsh, `#!${process.execPath}
@@ -199,9 +199,9 @@ if (mode === 'timeout') {
 } else if (command === 'uname -s') {
   if (mode === 'windows' || mode === 'unknown') process.exit(1);
   process.stdout.write(mode === 'msys' ? 'MINGW64_NT-10.0\\n' : 'Linux\\n');
-} else if (command.startsWith('powershell ') && Buffer.from(command.split(' ').at(-1), 'base64').toString('utf16le').includes('KIMI_WINDOWS')) {
+} else if (command.startsWith('powershell ') && Buffer.from(command.split(' ').at(-1), 'base64').toString('utf16le').includes('ZIMI_WINDOWS')) {
   if (mode === 'unknown') { process.stderr.write('powershell unavailable'); process.exit(127); }
-  process.stdout.write('KIMI_WINDOWS\\r\\n');
+  process.stdout.write('ZIMI_WINDOWS\\r\\n');
 } else {
   process.stderr.write('executor failed');
   process.exit(23);
@@ -230,18 +230,18 @@ if (mode === 'timeout') {
     expect(commands).toHaveLength(mode === 'windows' ? 3 : 2);
     expect(commands[0]).toBe('uname -s');
     if (mode === 'posix') {
-      expect(commands[1]).toBe(`"$HOME"'/.kimi-code/bin/kimi' 'exec-server' '--listen' 'stdio'`);
+      expect(commands[1]).toBe(`"$HOME"'/.zimi-code/bin/zimi' 'exec-server' '--listen' 'stdio'`);
     } else {
       expect(commands.at(-1)).toMatch(/^powershell .* -EncodedCommand [A-Za-z0-9+/=]+$/);
-      expect(Buffer.from(commands.at(-1)!.split(' ').at(-1)!, 'base64').toString('utf16le')).toContain('/.kimi-code/bin/kimi.exe');
+      expect(Buffer.from(commands.at(-1)!.split(' ').at(-1)!, 'base64').toString('utf16le')).toContain('/.zimi-code/bin/zimi.exe');
     }
   });
 
   it('keeps a bare executor invocation free of probes', async () => {
     await expect(RemoteSession.connect({
-      environmentId: 'example', launcher: { type: 'ssh', host: 'example.test', remoteBin: 'kimi.exe' },
+      environmentId: 'example', launcher: { type: 'ssh', host: 'example.test', remoteBin: 'zimi.exe' },
     })).rejects.toMatchObject({ kind: 'executor-exit', exitCode: 23 });
-    expect(await calls()).toEqual(['kimi.exe exec-server --listen stdio']);
+    expect(await calls()).toEqual(['zimi.exe exec-server --listen stdio']);
   });
 
   it('stops on authentication failure before probing another shell', async () => {
@@ -263,7 +263,7 @@ if (mode === 'timeout') {
   it('reports unsupported shells without passing remoteBin to a probe', async () => {
     vi.stubEnv('TEST_SSH_MODE', 'unknown');
     await expect(RemoteSession.connect({
-      environmentId: 'example', launcher: { type: 'ssh', host: 'example.test', remoteBin: '/opt/$(printf INJECTED)/kimi' },
+      environmentId: 'example', launcher: { type: 'ssh', host: 'example.test', remoteBin: '/opt/$(printf INJECTED)/zimi' },
     })).rejects.toMatchObject({ kind: 'executor-exit', message: expect.stringContaining('powershell unavailable') });
     const commands = await calls();
     expect(commands).toHaveLength(2);

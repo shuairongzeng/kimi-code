@@ -572,7 +572,7 @@ describe('event adapter (projects SDK events into the legacy Webview contract)',
     expect(isPreflightError('session.occupied')).toBe(true);
     expect(isPreflightError('session.stale')).toBe(true);
     expect(getUserMessage('session.occupied', 'fallback')).toBe(
-      'This session is in use by another Kimi Code process. Stop the session in that process or exit it, then try again.',
+      'This session is in use by another Zimi Code process. Stop the session in that process or exit it, then try again.',
     );
     expect(getUserMessage('session.stale', 'fallback')).not.toBe('fallback');
   });

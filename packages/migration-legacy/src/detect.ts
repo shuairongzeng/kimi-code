@@ -2,7 +2,7 @@ import { readFile, readdir, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { OldKimiJsonSchema } from './kimi-cli-schema.js';
+import { OldZimiJsonSchema } from './zimi-cli-schema.js';
 import { readSourceConfig } from './source-config.js';
 import { defaultPlansSourceDir } from './steps/plans.js';
 import {
@@ -11,7 +11,7 @@ import {
   sourceUserHistoryDir,
   sourcePluginsDir,
   sourceSessionsDir,
-  sourceKimiJson,
+  sourceZimiJson,
   sourceSkillsDir,
 } from './paths.js';
 import type {
@@ -69,16 +69,16 @@ export async function detectMigration(opts: { sourcePath: string; skillsSourcePa
   const detectedPlugins = await listDirSafe(sourcePluginsDir(src), () => true);
   const detectedMcpOauthServers = await detectMcpOauthServers(src);
 
-  // Reverse-lookup workdir from kimi.json
+  // Reverse-lookup workdir from zimi.json
   const workdirMap = new Map<string, WorkdirMeta>();
   try {
-    const text = await readFile(sourceKimiJson(src), 'utf-8');
-    const parsed = OldKimiJsonSchema.parse(JSON.parse(text));
+    const text = await readFile(sourceZimiJson(src), 'utf-8');
+    const parsed = OldZimiJsonSchema.parse(JSON.parse(text));
     for (const wd of parsed.work_dirs) {
       workdirMap.set(oldMd5BucketName(wd.path), { path: wd.path, kaos: wd.kaos });
     }
   } catch {
-    // no kimi.json or unparseable — sessions list will be empty
+    // no zimi.json or unparseable — sessions list will be empty
   }
 
   const workdirs: WorkDirEntry[] = [];
@@ -91,7 +91,7 @@ export async function detectMigration(opts: { sourcePath: string; skillsSourcePa
     for (const bucketName of bucketNames) {
       const bucketPath = join(sessionsRoot, bucketName);
       // Skip non-local-kaos buckets (`<kaos>_<md5>`), which cannot be
-      // represented by the local Kimi Code runtime. Every other unknown
+      // represented by the local Zimi Code runtime. Every other unknown
       // bucket is user data we failed to map and must remain visible.
       if (!MD5_HEX_RE.test(bucketName)) {
         const separator = bucketName.lastIndexOf('_');
@@ -174,7 +174,7 @@ export async function detectMigration(opts: { sourcePath: string; skillsSourcePa
 }
 
 function unknownWorkdirReason(): string {
-  return 'No local workdir mapping was found for this legacy session bucket; kimi.json may be missing, unreadable, or not list the workdir.';
+  return 'No local workdir mapping was found for this legacy session bucket; zimi.json may be missing, unreadable, or not list the workdir.';
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

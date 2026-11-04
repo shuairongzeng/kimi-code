@@ -17,8 +17,8 @@ import {
   resolveThinkingKeep,
   type ModelThinkingMetadata,
 } from '#/llm-requester/thinking';
-import { classifyKimiQuotaError } from '#/llm/builtin/provider/kimi/errors';
-import { createKimiOpenAIRequester, createOpenAIRequester, kimiEndpoint } from '#/llm-requester/factories';
+import { classifyZimiQuotaError } from '#/llm/builtin/provider/zimi/errors';
+import { createZimiOpenAIRequester, createOpenAIRequester, zimiEndpoint } from '#/llm-requester/factories';
 import type { LlmClientContext, LlmRequestEvent } from '#/llm-requester/requester';
 
 const model: LlmModel = {
@@ -29,9 +29,9 @@ const model: LlmModel = {
 };
 const messages: readonly Message[] = [createUserMessage('hi')];
 
-const kimiOpenAI = {
-  endpoint: kimiEndpoint,
-  classifyError: classifyKimiQuotaError,
+const zimiOpenAI = {
+  endpoint: zimiEndpoint,
+  classifyError: classifyZimiQuotaError,
 } as const;
 
 const THINKING_CAPABILITY: ModelCapability = {
@@ -112,11 +112,11 @@ function bodyMessages(body: Record<string, unknown>): Record<string, unknown>[] 
   return body['messages'] as Record<string, unknown>[];
 }
 
-describe('kimi openai thinking', () => {
+describe('zimi openai thinking', () => {
   it('encodes thinking configs and resolves thinking defaults and keep', async () => {
     const client = stubOpenAIClient(chatCompletionChunks());
-    const requester = createKimiOpenAIRequester({
-      ...kimiOpenAI,
+    const requester = createZimiOpenAIRequester({
+      ...zimiOpenAI,
       clientFactory: client.clientFactory,
     });
     const signal = new AbortController().signal;
@@ -205,8 +205,8 @@ describe('kimi openai thinking', () => {
       keep?: string;
     }): Promise<unknown> => {
       const client = stubOpenAIClient(chatCompletionChunks());
-      const requester = createKimiOpenAIRequester({
-        ...kimiOpenAI,
+      const requester = createZimiOpenAIRequester({
+        ...zimiOpenAI,
         clientFactory: client.clientFactory,
       });
       await requester.generate(
@@ -225,10 +225,10 @@ describe('kimi openai thinking', () => {
 });
 
 describe('openai requester thinking', () => {
-  it('sends kimi thinking params at the top level and flattens extra_body', async () => {
+  it('sends zimi thinking params at the top level and flattens extra_body', async () => {
     const client = stubOpenAIClient(chatCompletionChunks());
-    const requester = createKimiOpenAIRequester({
-      ...kimiOpenAI,
+    const requester = createZimiOpenAIRequester({
+      ...zimiOpenAI,
       clientFactory: client.clientFactory,
     });
     await requester.generate(
@@ -247,8 +247,8 @@ describe('openai requester thinking', () => {
 
   it('sends disabled thinking for off', async () => {
     const client = stubOpenAIClient(chatCompletionChunks());
-    const requester = createKimiOpenAIRequester({
-      ...kimiOpenAI,
+    const requester = createZimiOpenAIRequester({
+      ...zimiOpenAI,
       clientFactory: client.clientFactory,
     });
     await requester.generate(
@@ -333,10 +333,10 @@ describe('openai requester thinking', () => {
     expect(syntaxError(noOffEffort)).toContain('offEffort');
   });
 
-  it('preserves on and concrete efforts in the kimi custom thinking path', async () => {
+  it('preserves on and concrete efforts in the zimi custom thinking path', async () => {
     const client = stubOpenAIClient(chatCompletionChunks());
-    const requester = createKimiOpenAIRequester({
-      ...kimiOpenAI,
+    const requester = createZimiOpenAIRequester({
+      ...zimiOpenAI,
       clientFactory: client.clientFactory,
     });
     const signal = new AbortController().signal;
@@ -451,8 +451,8 @@ describe('openai requester thinking', () => {
         { content: 'ok' },
       ]),
     );
-    const inboundRequester = createKimiOpenAIRequester({
-      ...kimiOpenAI,
+    const inboundRequester = createZimiOpenAIRequester({
+      ...zimiOpenAI,
       clientFactory: inbound.clientFactory,
     });
     const accumulator = createMessageAccumulator();
@@ -490,8 +490,8 @@ describe('openai requester thinking', () => {
     finished.content.splice(1, 0, { type: 'think', think: '续' });
 
     const outbound = stubOpenAIClient(chatCompletionChunks());
-    const outboundRequester = createKimiOpenAIRequester({
-      ...kimiOpenAI,
+    const outboundRequester = createZimiOpenAIRequester({
+      ...zimiOpenAI,
       clientFactory: outbound.clientFactory,
     });
     await outboundRequester.generate(
@@ -624,8 +624,8 @@ describe('openai requester thinking', () => {
 
   it('echoes an empty reasoning_content on think-less assistant messages only when keeping all', async () => {
     const preserving = stubOpenAIClient(chatCompletionChunks());
-    const preservingRequester = createKimiOpenAIRequester({
-      ...kimiOpenAI,
+    const preservingRequester = createZimiOpenAIRequester({
+      ...zimiOpenAI,
       clientFactory: preserving.clientFactory,
     });
     await preservingRequester.generate(
@@ -636,8 +636,8 @@ describe('openai requester thinking', () => {
     expect(bodyMessages(preserving.body())[1]!['reasoning_content']).toBe('');
 
     const plain = stubOpenAIClient(chatCompletionChunks());
-    const plainRequester = createKimiOpenAIRequester({
-      ...kimiOpenAI,
+    const plainRequester = createZimiOpenAIRequester({
+      ...zimiOpenAI,
       clientFactory: plain.clientFactory,
     });
     await plainRequester.generate(
@@ -729,7 +729,7 @@ describe('openai requester thinking', () => {
       ]),
     ];
     const requester = createOpenAIRequester();
-    const kimiRequester = createKimiOpenAIRequester();
+    const zimiRequester = createZimiOpenAIRequester();
     try {
       await requester.generate(
         { model: httpModel },
@@ -751,12 +751,12 @@ describe('openai requester thinking', () => {
         { messages: switchedHistory },
         { signal: new AbortController().signal },
       );
-      await kimiRequester.generate(
+      await zimiRequester.generate(
         { model: httpModel },
         { messages },
         { signal: new AbortController().signal },
       );
-      await kimiRequester.generate(
+      await zimiRequester.generate(
         { model: httpModel, thinking: { effort: 'off' } },
         { messages: reasoningHistory },
         { signal: new AbortController().signal },
@@ -770,9 +770,9 @@ describe('openai requester thinking', () => {
       const switchedAssistant = bodyMessages(bodies[3])[1];
       expect(switchedAssistant['reasoning_content']).toBe('from-b');
       expect(switchedAssistant['reasoning']).toBe('unmarked');
-      const kimiAssistant = bodyMessages(bodies[5])[1];
-      expect(kimiAssistant['reasoning']).toBe('cached');
-      expect('reasoning_content' in kimiAssistant).toBe(false);
+      const zimiAssistant = bodyMessages(bodies[5])[1];
+      expect(zimiAssistant['reasoning']).toBe('cached');
+      expect('reasoning_content' in zimiAssistant).toBe(false);
     } finally {
       await new Promise<void>((resolve, reject) => {
         server.close((error) => {

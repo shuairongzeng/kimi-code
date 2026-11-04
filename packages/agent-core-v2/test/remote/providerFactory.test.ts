@@ -95,7 +95,7 @@ const NOOP_LOG = {
   error: () => {},
 } as unknown as ILogService;
 
-beforeEach(() => vi.stubEnv('KIMI_CODE_WATCH', 'false'));
+beforeEach(() => vi.stubEnv('ZIMI_CODE_WATCH', 'false'));
 afterEach(() => vi.unstubAllEnvs());
 
 interface HostServices {
@@ -379,7 +379,7 @@ describe('SSH password fallback', () => {
     const prompt = vi.fn(async () => 'secret');
     const factory = new RemoteEnvironmentProviderFactory({
       connect,
-      sshPassword: { prompt, askpassCommand: ['/bin/kimi'] },
+      sshPassword: { prompt, askpassCommand: ['/bin/zimi'] },
     });
     const attachment = await factory.attach(fakeHost(baseServices(registry, { config: config.service }), registry));
     const target = registry.current('dev-box')!;
@@ -389,7 +389,7 @@ describe('SSH password fallback', () => {
     expect(connect).toHaveBeenCalledTimes(2);
     expect(connect.mock.calls[0]![0].sshAuth).toBeUndefined();
     expect(connect.mock.calls[1]![0].sshAuth).toEqual({
-      password: 'secret', command: ['/bin/kimi'],
+      password: 'secret', command: ['/bin/zimi'],
     });
 
     produced[0]!.close({ reason: 'offline' });
@@ -417,7 +417,7 @@ describe('SSH password fallback', () => {
     });
     const factory = new RemoteEnvironmentProviderFactory({
       connect,
-      sshPassword: { prompt: async () => undefined, askpassCommand: ['/bin/kimi'] },
+      sshPassword: { prompt: async () => undefined, askpassCommand: ['/bin/zimi'] },
     });
     const attachment = await factory.attach(fakeHost(baseServices(registry), registry));
 

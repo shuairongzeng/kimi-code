@@ -192,7 +192,7 @@ function stubProfileCatalog(name = 'default'): ISessionAgentProfileCatalog {
   } as unknown as ISessionAgentProfileCatalog;
 }
 
-function stubModelService(model = 'kimi-test'): IModelService {
+function stubModelService(model = 'zimi-test'): IModelService {
   return {
     _serviceBrand: undefined,
     getDefaultModel: () => model,
@@ -783,7 +783,7 @@ describe('IExternalHooksRunnerService integration', () => {
       {
         event: 'Notification',
         matcher: 'permission_prompt',
-        command: 'notify-send Kimi',
+        command: 'notify-send Zimi',
         timeout: 5,
       },
     ];

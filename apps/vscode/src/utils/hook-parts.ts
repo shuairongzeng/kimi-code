@@ -1,4 +1,4 @@
-import type { ContentPart } from "@moonshot-ai/kimi-code-sdk";
+import type { ContentPart } from "@zimi-ai/zimi-code-sdk";
 
 export function isUserPromptSubmitHookPart(
   part: ContentPart,

@@ -7,7 +7,7 @@ import {
   type IAgentLifecycleService,
   type IAgentScopeHandle,
   type IDisposable,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 
 import type {
   AgentEventMessage,

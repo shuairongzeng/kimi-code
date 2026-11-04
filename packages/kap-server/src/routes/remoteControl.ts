@@ -7,10 +7,10 @@ import {
   type RemoteControlLock,
   type RemoteControlManager,
   type RemoteControlStatusInfo,
-} from '@moonshot-ai/remote-control';
-import { createKimiDeviceId } from '@moonshot-ai/kimi-code-oauth';
+} from '@zimi-ai/remote-control';
+import { createZimiDeviceId } from '@zimi-ai/zimi-code-oauth';
 
-import type { ITelemetryService } from '@moonshot-ai/agent-core-v2';
+import type { ITelemetryService } from '@zimi-ai/agent-core-v2';
 
 import { errEnvelope, okEnvelope } from '../envelope';
 import { requestLog } from '../lib/requestLog';
@@ -264,7 +264,7 @@ export function registerRemoteControlRoutes(
         const status = opts.service.status();
         const holder = await inspectRemoteControlLock(opts.homeDir);
         const isLocal =
-          req.params.id === createKimiDeviceId(opts.homeDir) ||
+          req.params.id === createZimiDeviceId(opts.homeDir) ||
           status.deviceId === req.params.id ||
           holder?.deviceId === req.params.id;
         if (!isLocal) {
@@ -309,7 +309,7 @@ export function registerRemoteControlRoutes(
         const status = opts.service.status();
         const holder = await inspectRemoteControlLock(opts.homeDir);
         const isLocal =
-          req.params.id === createKimiDeviceId(opts.homeDir) ||
+          req.params.id === createZimiDeviceId(opts.homeDir) ||
           status.deviceId === req.params.id ||
           holder?.deviceId === req.params.id;
         if (!isLocal) {
@@ -365,7 +365,7 @@ export async function acquireRemoteControlStartGate(
     try {
       return await acquireRemoteControlLock(homeDir, {
         localOrigin: REMOTE_CONTROL_LOGOUT_GATE_ORIGIN,
-        deviceId: createKimiDeviceId(homeDir),
+        deviceId: createZimiDeviceId(homeDir),
         url: '',
       });
     } catch (error) {

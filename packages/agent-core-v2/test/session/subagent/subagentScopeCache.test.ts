@@ -303,7 +303,7 @@ describe('resolveSubagentScopeCacheSize', () => {
   it('throws for non-integer or non-numeric values', () => {
     for (const raw of ['2.5', 'abc']) {
       expect(() => resolveSubagentScopeCacheSize({ [SUBAGENT_SCOPE_CACHE_SIZE_ENV]: raw })).toThrow(
-        /KIMI_CODE_SUBAGENT_SCOPE_CACHE_SIZE.*integer/,
+        /ZIMI_CODE_SUBAGENT_SCOPE_CACHE_SIZE.*integer/,
       );
     }
   });
@@ -330,7 +330,7 @@ describe('resolveSubagentScopeEvictTimeoutMs', () => {
     for (const raw of ['2.5', 'abc', '0', '-10']) {
       expect(() =>
         resolveSubagentScopeEvictTimeoutMs({ [SUBAGENT_SCOPE_EVICT_TIMEOUT_ENV]: raw }),
-      ).toThrow(/KIMI_CODE_SUBAGENT_SCOPE_EVICT_TIMEOUT_MS.*positive integer/);
+      ).toThrow(/ZIMI_CODE_SUBAGENT_SCOPE_EVICT_TIMEOUT_MS.*positive integer/);
     }
   });
 });
@@ -359,7 +359,7 @@ describe('SessionSubagentScopeCacheService', () => {
       _serviceBrand: undefined,
       sessionId: 'sess_test',
       workspaceId: 'ws_test',
-      sessionDir: '/tmp/kimi-subagentScopeCache-test',
+      sessionDir: '/tmp/zimi-subagentScopeCache-test',
       metaScope: 'test',
       scope: (subKey?: string) =>
         subKey === undefined || subKey === ''
@@ -398,8 +398,8 @@ describe('SessionSubagentScopeCacheService', () => {
     });
     ix.stub(IBootstrapService, {
       _serviceBrand: undefined,
-      homeDir: '/tmp/kimi-subagentScopeCache-home',
-      cwd: '/tmp/kimi-subagentScopeCache-home',
+      homeDir: '/tmp/zimi-subagentScopeCache-home',
+      cwd: '/tmp/zimi-subagentScopeCache-home',
       getEnv: () => undefined,
     } as unknown as IBootstrapService);
     ix.stub(IFlagService, {
@@ -409,7 +409,7 @@ describe('SessionSubagentScopeCacheService', () => {
     ix.stub(ISessionNotify, { _serviceBrand: undefined, ready: Promise.resolve(), enabled: false });
     ix.stub(ISessionWorkspaceContext, {
       _serviceBrand: undefined,
-      workDir: '/tmp/kimi-subagentScopeCache-work',
+      workDir: '/tmp/zimi-subagentScopeCache-work',
       additionalDirs: [],
       setWorkDir: () => {},
     } as unknown as ISessionWorkspaceContext);

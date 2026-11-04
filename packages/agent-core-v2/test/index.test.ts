@@ -468,7 +468,7 @@ describe('AgentRecords persistence metadata', () => {
     expect(failure).toMatchObject({
       code: 'wire.version_too_low',
       message:
-        'This session requires a newer version of Kimi Code. Upgrade Kimi Code to the latest version to read this session.',
+        'This session requires a newer version of Zimi Code. Upgrade Zimi Code to the latest version to read this session.',
       details: {
         minReaderVersion: '9.9',
         readerVersion: WIRE_PROTOCOL_VERSION,

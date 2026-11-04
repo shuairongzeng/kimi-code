@@ -26,7 +26,7 @@ import { z } from 'zod';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Error2 } from '#/errors';
-import { KIMI_MCP_CLIENT_NAME } from '#/mcpCore/client-shared';
+import { ZIMI_MCP_CLIENT_NAME } from '#/mcpCore/client-shared';
 import { McpConnectionManager, type McpConnectionManagerOptions, type McpServerEntry } from '#/mcpCore/connection-manager';
 import { McpOAuthService } from '#/mcpCore/oauth/service';
 import type { StoredMcpOAuthTokens } from '#/mcpCore/oauth/provider';
@@ -365,7 +365,7 @@ describe('McpConnectionManager', () => {
   }, 15000);
 
   it('starts stdio servers in stdioCwd when config.cwd is omitted', async () => {
-    const cwd = mkdtempSync(join(tmpdir(), 'kimi-mcp-manager-cwd-'));
+    const cwd = mkdtempSync(join(tmpdir(), 'zimi-mcp-manager-cwd-'));
     const cm = createManager({ stdioCwd: cwd });
     try {
       await cm.connectAll({
@@ -404,7 +404,7 @@ describe('McpConnectionManager', () => {
       if (resolved === undefined) throw new Error('Expected mock MCP server to connect');
       const result = await resolved.client.callTool('whoami', {});
       expect((result.content[0] as { type: 'text'; text: string }).text).toBe(
-        KIMI_MCP_CLIENT_NAME,
+        ZIMI_MCP_CLIENT_NAME,
       );
     } finally {
       await cm.shutdown();
@@ -1247,7 +1247,7 @@ describe('McpConnectionManager', () => {
           transport: 'stdio',
           command: process.execPath,
           args: [crashAfterConnectFixture],
-          env: { KIMI_TEST_MCP_EXIT_AFTER_MS: '500', KIMI_TEST_MCP_STDERR: 'fatal: out of memory' },
+          env: { ZIMI_TEST_MCP_EXIT_AFTER_MS: '500', ZIMI_TEST_MCP_STDERR: 'fatal: out of memory' },
           startupTimeoutMs: 4_000,
         },
       });
@@ -1280,13 +1280,13 @@ describe('McpConnectionManager', () => {
           transport: 'stdio',
           command: process.execPath,
           args: [stderrThenExitFixture],
-          env: { KIMI_TEST_MCP_STDERR: 'fatal: missing API token KIMI_X' },
+          env: { ZIMI_TEST_MCP_STDERR: 'fatal: missing API token ZIMI_X' },
           startupTimeoutMs: 4_000,
         },
       });
       const entry = cm.get('nope');
       expect(entry?.status).toBe('failed');
-      expect(entry?.error).toContain('fatal: missing API token KIMI_X');
+      expect(entry?.error).toContain('fatal: missing API token ZIMI_X');
     } finally {
       await cm.shutdown();
     }

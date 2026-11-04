@@ -12,10 +12,10 @@ import type {
   ILogService,
   ISessionIndex,
   SessionSummary,
-} from '@moonshot-ai/agent-core-v2';
-import { DATABASE_SECTION } from '@moonshot-ai/agent-core-v2';
-import { MiniDb } from '@moonshot-ai/minidb';
-import { TranscriptStore, type TranscriptOperation } from '@moonshot-ai/transcript';
+} from '@zimi-ai/agent-core-v2';
+import { DATABASE_SECTION } from '@zimi-ai/agent-core-v2';
+import { MiniDb } from '@zimi-ai/minidb';
+import { TranscriptStore, type TranscriptOperation } from '@zimi-ai/transcript';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SearchIndexCore, type SyncSessionInput } from '../../src/search/indexCore';

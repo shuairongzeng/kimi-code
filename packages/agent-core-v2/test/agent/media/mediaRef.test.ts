@@ -59,26 +59,26 @@ describe('media kind classification', () => {
 
 describe('daemon file URL', () => {
   it('builds and parses a bare reference', () => {
-    expect(buildDaemonFileUrl('file_1')).toBe('kimi-file://file_1');
-    expect(parseDaemonFileUrl('kimi-file://file_1')).toEqual({ fileId: 'file_1' });
+    expect(buildDaemonFileUrl('file_1')).toBe('zimi-file://file_1');
+    expect(parseDaemonFileUrl('zimi-file://file_1')).toEqual({ fileId: 'file_1' });
   });
 
   it('strips a legacy `?path=` query at parse time', () => {
-    expect(parseDaemonFileUrl('kimi-file://file_1?path=%2Fa%20b%2Fclip.mp4')).toEqual({
+    expect(parseDaemonFileUrl('zimi-file://file_1?path=%2Fa%20b%2Fclip.mp4')).toEqual({
       fileId: 'file_1',
     });
-    expect(parseDaemonFileUrl('kimi-file://file_1?path=')).toEqual({ fileId: 'file_1' });
-    expect(parseDaemonFileUrl('kimi-file://file_1?path=%E0%A4%A')).toEqual({ fileId: 'file_1' });
+    expect(parseDaemonFileUrl('zimi-file://file_1?path=')).toEqual({ fileId: 'file_1' });
+    expect(parseDaemonFileUrl('zimi-file://file_1?path=%E0%A4%A')).toEqual({ fileId: 'file_1' });
   });
 
   it('rejects non-daemon URLs and empty file ids', () => {
-    expect(isDaemonFileUrl('kimi-file://file_1')).toBe(true);
+    expect(isDaemonFileUrl('zimi-file://file_1')).toBe(true);
     expect(isDaemonFileUrl('ms://file_1')).toBe(false);
     expect(parseDaemonFileUrl('ms://prov-1')).toBeUndefined();
     expect(parseDaemonFileUrl('data:video/mp4;base64,AAAA')).toBeUndefined();
     expect(parseDaemonFileUrl('https://example.com/clip.mp4')).toBeUndefined();
-    expect(parseDaemonFileUrl('kimi-file://')).toBeUndefined();
-    expect(parseDaemonFileUrl('kimi-file://?path=%2Fa')).toBeUndefined();
+    expect(parseDaemonFileUrl('zimi-file://')).toBeUndefined();
+    expect(parseDaemonFileUrl('zimi-file://?path=%2Fa')).toBeUndefined();
   });
 
   it('extracts references from media parts with the part-implied kind', () => {

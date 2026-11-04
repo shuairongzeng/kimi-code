@@ -12,16 +12,16 @@ import {
   type ProviderConfig,
   type ProvidersSection,
   type Scope,
-} from '@moonshot-ai/agent-core-v2';
-import { reconcileProviderCredentialUpdate } from '@moonshot-ai/kimi-code-oauth/provider-credential';
-import { setDefaultModelResponseSchema } from '@moonshot-ai/agent-core-v2/llm-adapter/model/catalog';
-import { refreshProviderModelsResponseSchema } from '@moonshot-ai/agent-core-v2/app/kosongConfig/discovery';
+} from '@zimi-ai/agent-core-v2';
+import { reconcileProviderCredentialUpdate } from '@zimi-ai/zimi-code-oauth/provider-credential';
+import { setDefaultModelResponseSchema } from '@zimi-ai/agent-core-v2/llm-adapter/model/catalog';
+import { refreshProviderModelsResponseSchema } from '@zimi-ai/agent-core-v2/app/kosongConfig/discovery';
 import {
   DEFAULT_MODEL_SECTION,
   DEFAULT_PROVIDER_SECTION,
   MODELS_SECTION,
   PROVIDERS_SECTION,
-} from '@moonshot-ai/agent-core-v2/app/kosongConfig/configSection';
+} from '@zimi-ai/agent-core-v2/app/kosongConfig/configSection';
 import { z } from 'zod';
 
 import { errEnvelope, okEnvelope } from '../envelope';

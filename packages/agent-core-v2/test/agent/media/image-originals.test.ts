@@ -21,7 +21,7 @@ describe('persistOriginalImage', () => {
     const bytes = new Uint8Array(49 * 1024 * 1024).fill(0xab);
     const files = new Map<string, FakeFile>();
     const persisted = await persistOriginalImage(bytes, 'image/png', {
-      dir: '/remote/tmp/kimi-code/original-images',
+      dir: '/remote/tmp/zimi-code/original-images',
       fs: createFakeFs(files),
       path: posixPath,
     });

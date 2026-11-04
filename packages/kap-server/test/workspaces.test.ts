@@ -4,8 +4,8 @@ import { join } from 'node:path';
 
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { IAtomicDocumentStore, IWorkspaceInstanceManager } from '@moonshot-ai/agent-core-v2';
-import { encodeWorkDirKey } from '@moonshot-ai/agent-core-v2/_base/utils/workdir-slug';
+import { IAtomicDocumentStore, IWorkspaceInstanceManager } from '@zimi-ai/agent-core-v2';
+import { encodeWorkDirKey } from '@zimi-ai/agent-core-v2/_base/utils/workdir-slug';
 
 import { type RunningServer, startServer } from '../src/start';
 import { TEST_HOST_IDENTITY } from './helpers/hostIdentity';
@@ -40,7 +40,7 @@ describe('server-v2 /api/v1/workspaces', () => {
   let base: string;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-workspaces-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-workspaces-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -393,9 +393,9 @@ describe('server-v2 /api/v1/workspaces', () => {
     const root = home as string;
     const extra = join(root, 'toml-extra');
     await mkdir(extra, { recursive: true });
-    await mkdir(join(root, '.kimi-code'), { recursive: true });
+    await mkdir(join(root, '.zimi-code'), { recursive: true });
     await writeFile(
-      join(root, '.kimi-code', 'local.toml'),
+      join(root, '.zimi-code', 'local.toml'),
       `[workspace]\nadditional_dir = ["${extra}"]\n`,
       'utf8',
     );
@@ -404,7 +404,7 @@ describe('server-v2 /api/v1/workspaces', () => {
     expect(created.body.code).toBe(0);
     expect(created.body.data.additional_dirs).toEqual([]);
     expect(created.body.data.kind).toBe('managed');
-    const text = await readFile(join(root, '.kimi-code', 'local.toml'), 'utf8');
+    const text = await readFile(join(root, '.zimi-code', 'local.toml'), 'utf8');
     expect(text).toContain('toml-extra');
   });
 
@@ -412,9 +412,9 @@ describe('server-v2 /api/v1/workspaces', () => {
     const root = home as string;
     const extra = join(root, 'toml-import');
     await mkdir(extra, { recursive: true });
-    await mkdir(join(root, '.kimi-code'), { recursive: true });
+    await mkdir(join(root, '.zimi-code'), { recursive: true });
     await writeFile(
-      join(root, '.kimi-code', 'local.toml'),
+      join(root, '.zimi-code', 'local.toml'),
       `[workspace]\nadditional_dir = ["${extra}"]\n`,
       'utf8',
     );
@@ -427,7 +427,7 @@ describe('server-v2 /api/v1/workspaces', () => {
 
     const created = await postJson<WorkspaceWire>('/api/v1/workspaces', { root });
     expect(created.body.data.additional_dirs).toEqual([]);
-    const text = await readFile(join(root, '.kimi-code', 'local.toml'), 'utf8');
+    const text = await readFile(join(root, '.zimi-code', 'local.toml'), 'utf8');
     expect(text).toContain('toml-import');
 
     const missing = await getJson<{ additional_dirs: string[] }>(
@@ -491,7 +491,7 @@ describe('server-v2 /api/v1/workspaces', () => {
   });
 
   it('reads and writes trust without materializing the workspace runtime', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'kimi-server-v2-workspaces-trust-no-runtime-'));
+    const root = await mkdtemp(join(tmpdir(), 'zimi-server-v2-workspaces-trust-no-runtime-'));
     try {
       const created = await postJson<WorkspaceWire>('/api/v1/workspaces', { root });
       expect(created.body.code).toBe(0);
@@ -522,7 +522,7 @@ describe('server-v2 /api/v1/workspaces', () => {
   });
 
   it('returns trust storage errors with their original message and request id', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'kimi-server-v2-workspaces-trust-error-'));
+    const root = await mkdtemp(join(tmpdir(), 'zimi-server-v2-workspaces-trust-error-'));
     try {
       const created = await postJson<WorkspaceWire>('/api/v1/workspaces', { root });
       const id = created.body.data.id;
@@ -549,7 +549,7 @@ describe('server-v2 /api/v1/workspaces', () => {
   });
 
   it('returns trust write and delete failures and allows later mutations to succeed', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'kimi-server-v2-workspaces-trust-mutation-error-'));
+    const root = await mkdtemp(join(tmpdir(), 'zimi-server-v2-workspaces-trust-mutation-error-'));
     try {
       const created = await postJson<WorkspaceWire>('/api/v1/workspaces', { root });
       const id = created.body.data.id;
@@ -585,11 +585,11 @@ describe('server-v2 /api/v1/workspaces', () => {
   });
 
   it('reloads project config when trust initialization recovers to an existing marker', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'kimi-server-v2-workspaces-trust-recovery-'));
+    const root = await mkdtemp(join(tmpdir(), 'zimi-server-v2-workspaces-trust-recovery-'));
     try {
-      await mkdir(join(root, '.kimi-code'), { recursive: true });
+      await mkdir(join(root, '.zimi-code'), { recursive: true });
       await writeFile(
-        join(root, '.kimi-code', 'mcp.json'),
+        join(root, '.zimi-code', 'mcp.json'),
         JSON.stringify({ mcpServers: { projectOnly: { command: 'project-only' } } }),
         'utf8',
       );
@@ -639,12 +639,12 @@ describe('server-v2 /api/v1/workspaces', () => {
   });
 
   it('reloads project config after a failed initial read under the environment override', async () => {
-    vi.stubEnv('KIMI_CODE_TRUST_WORKSPACE', '1');
-    const root = await mkdtemp(join(tmpdir(), 'kimi-server-v2-workspaces-trust-env-recovery-'));
+    vi.stubEnv('ZIMI_CODE_TRUST_WORKSPACE', '1');
+    const root = await mkdtemp(join(tmpdir(), 'zimi-server-v2-workspaces-trust-env-recovery-'));
     try {
-      await mkdir(join(root, '.kimi-code'), { recursive: true });
+      await mkdir(join(root, '.zimi-code'), { recursive: true });
       await writeFile(
-        join(root, '.kimi-code', 'mcp.json'),
+        join(root, '.zimi-code', 'mcp.json'),
         JSON.stringify({ mcpServers: { projectOnly: { command: 'project-only' } } }),
         'utf8',
       );
@@ -690,7 +690,7 @@ describe('server-v2 /api/v1/workspaces', () => {
   });
 
   it('shares route trust changes with an already materialized workspace', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'kimi-server-v2-workspaces-trust-shared-'));
+    const root = await mkdtemp(join(tmpdir(), 'zimi-server-v2-workspaces-trust-shared-'));
     const created = await postJson<WorkspaceWire>('/api/v1/workspaces', { root });
     expect(created.body.code).toBe(0);
     const id = created.body.data.id;
@@ -718,9 +718,9 @@ describe('server-v2 /api/v1/workspaces', () => {
     }
   });
 
-  it('reports the effective trust state after untrust while KIMI_CODE_TRUST_WORKSPACE is set', async () => {
-    vi.stubEnv('KIMI_CODE_TRUST_WORKSPACE', '1');
-    const root = await mkdtemp(join(tmpdir(), 'kimi-server-v2-workspaces-trust-env-'));
+  it('reports the effective trust state after untrust while ZIMI_CODE_TRUST_WORKSPACE is set', async () => {
+    vi.stubEnv('ZIMI_CODE_TRUST_WORKSPACE', '1');
+    const root = await mkdtemp(join(tmpdir(), 'zimi-server-v2-workspaces-trust-env-'));
     try {
       const created = await postJson<WorkspaceWire>('/api/v1/workspaces', { root });
       expect(created.body.code).toBe(0);

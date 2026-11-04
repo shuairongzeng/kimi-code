@@ -16,10 +16,10 @@ export const McpSectionSchema = z.object({
 
 export type McpSection = z.infer<typeof McpSectionSchema>;
 
-export const MCP_STARTUP_TIMEOUT_ENV = 'KIMI_MCP_STARTUP_TIMEOUT_MS';
-export const MCP_TOOL_TIMEOUT_ENV = 'KIMI_MCP_TOOL_TIMEOUT_MS';
-export const MCP_RECONNECT_INITIAL_DELAY_ENV = 'KIMI_MCP_RECONNECT_INITIAL_DELAY_MS';
-export const MCP_RECONNECT_MAX_DELAY_ENV = 'KIMI_MCP_RECONNECT_MAX_DELAY_MS';
+export const MCP_STARTUP_TIMEOUT_ENV = 'ZIMI_MCP_STARTUP_TIMEOUT_MS';
+export const MCP_TOOL_TIMEOUT_ENV = 'ZIMI_MCP_TOOL_TIMEOUT_MS';
+export const MCP_RECONNECT_INITIAL_DELAY_ENV = 'ZIMI_MCP_RECONNECT_INITIAL_DELAY_MS';
+export const MCP_RECONNECT_MAX_DELAY_ENV = 'ZIMI_MCP_RECONNECT_MAX_DELAY_MS';
 
 function parseTimeoutMsEnv(raw: string): number | undefined {
   const parsed = Number(raw);

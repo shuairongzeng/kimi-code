@@ -24,7 +24,7 @@ export const capabilityInstallProgressSchema = z.object({
 });
 
 export const capabilityStatusSchema = z.object({
-  id: z.enum(['kimi-cu', 'kimi-webbridge']),
+  id: z.enum(['zimi-cu', 'zimi-webbridge']),
   pluginId: z.string().optional(),
   displayName: z.string(),
   description: z.string(),

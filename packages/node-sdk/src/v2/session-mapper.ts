@@ -13,7 +13,7 @@ import type {
   AgentMeta as V2AgentMeta,
   SessionMeta as V2SessionMeta,
   SessionSummary as V2SessionSummary,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 
 import { resolve, win32 } from 'node:path';
 

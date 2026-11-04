@@ -3,12 +3,12 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
-  applyManagedKimiCodeConfig,
-  KIMI_CODE_PROVIDER_NAME,
-  KimiOAuthToolkit,
-  resolveKimiCodeOAuthKey,
-  resolveKimiTokenStorageName,
-  type ManagedKimiConfigShape,
+  applyManagedZimiCodeConfig,
+  ZIMI_CODE_PROVIDER_NAME,
+  ZimiOAuthToolkit,
+  resolveZimiCodeOAuthKey,
+  resolveZimiTokenStorageName,
+  type ManagedZimiConfigShape,
   type TokenInfo,
   type TokenStorage,
 } from '../src';
@@ -45,9 +45,9 @@ function token(accessToken: string): TokenInfo {
 }
 
 const TEST_IDENTITY = {
-  productName: 'kimi-code-cli',
+  productName: 'zimi-code-cli',
   version: '0.0.0-test',
-  platform: 'kimi_code_cli',
+  platform: 'zimi_code_cli',
 } as const;
 
 afterEach(() => {
@@ -77,43 +77,43 @@ function fetchInputUrl(input: unknown): string {
   throw new TypeError('expected fetch input to be a string, URL, or Request');
 }
 
-describe('resolveKimiTokenStorageName', () => {
+describe('resolveZimiTokenStorageName', () => {
   it('maps config oauth keys to the file storage token name', () => {
     expect(
-      resolveKimiTokenStorageName({
-        providerName: KIMI_CODE_PROVIDER_NAME,
-        oauthKey: 'oauth/kimi-code',
+      resolveZimiTokenStorageName({
+        providerName: ZIMI_CODE_PROVIDER_NAME,
+        oauthKey: 'oauth/zimi-code',
       }),
-    ).toBe('kimi-code');
-    expect(resolveKimiTokenStorageName({ oauthKey: 'kimi-code' })).toBe('kimi-code');
+    ).toBe('zimi-code');
+    expect(resolveZimiTokenStorageName({ oauthKey: 'zimi-code' })).toBe('zimi-code');
     expect(
-      resolveKimiTokenStorageName({ oauthKey: 'oauth/kimi-code-env-0123456789abcdef' }),
-    ).toBe('kimi-code-env-0123456789abcdef');
+      resolveZimiTokenStorageName({ oauthKey: 'oauth/zimi-code-env-0123456789abcdef' }),
+    ).toBe('zimi-code-env-0123456789abcdef');
   });
 
   it('accepts non-managed providers with a valid key and rejects unsafe token keys', () => {
     expect(
-      resolveKimiTokenStorageName({
+      resolveZimiTokenStorageName({
         providerName: 'custom',
-        oauthKey: 'oauth/kimi-code',
+        oauthKey: 'oauth/zimi-code',
       }),
-    ).toBe('kimi-code');
+    ).toBe('zimi-code');
     expect(
-      resolveKimiTokenStorageName({
-        providerName: 'kimi-code-anthropic',
-        oauthKey: 'oauth/kimi-code',
+      resolveZimiTokenStorageName({
+        providerName: 'zimi-code-anthropic',
+        oauthKey: 'oauth/zimi-code',
       }),
-    ).toBe('kimi-code');
-    expect(() => resolveKimiTokenStorageName({ oauthKey: '../kimi-code' })).toThrow(/Invalid/);
+    ).toBe('zimi-code');
+    expect(() => resolveZimiTokenStorageName({ oauthKey: '../zimi-code' })).toThrow(/Invalid/);
   });
 });
 
-describe('KimiOAuthToolkit', () => {
+describe('ZimiOAuthToolkit', () => {
   it('can be constructed without host identity', async () => {
     const storage = new MemoryTokenStorage();
-    storage.tokens.set('kimi-code', token('access-1'));
-    const toolkit = new KimiOAuthToolkit({
-      homeDir: join('/tmp', 'kimi-oauth-toolkit-test'),
+    storage.tokens.set('zimi-code', token('access-1'));
+    const toolkit = new ZimiOAuthToolkit({
+      homeDir: join('/tmp', 'zimi-oauth-toolkit-test'),
       storage,
       now: () => 100,
     });
@@ -123,25 +123,25 @@ describe('KimiOAuthToolkit', () => {
 
   it('reports status and exposes a bearer token provider', async () => {
     const storage = new MemoryTokenStorage();
-    storage.tokens.set('kimi-code', token('access-1'));
-    const toolkit = new KimiOAuthToolkit({
-      homeDir: join('/tmp', 'kimi-oauth-toolkit-test'),
+    storage.tokens.set('zimi-code', token('access-1'));
+    const toolkit = new ZimiOAuthToolkit({
+      homeDir: join('/tmp', 'zimi-oauth-toolkit-test'),
       identity: TEST_IDENTITY,
       storage,
       now: () => 100,
     });
 
     await expect(toolkit.status()).resolves.toEqual({
-      providers: [{ providerName: KIMI_CODE_PROVIDER_NAME, hasToken: true }],
+      providers: [{ providerName: ZIMI_CODE_PROVIDER_NAME, hasToken: true }],
     });
     await expect(toolkit.tokenProvider().getAccessToken()).resolves.toBe('access-1');
   });
 
   it('resolves bearer token providers using the configured oauth key', async () => {
     const storage = new MemoryTokenStorage();
-    storage.tokens.set('custom-kimi-code', token('custom-access'));
-    const toolkit = new KimiOAuthToolkit({
-      homeDir: join('/tmp', 'kimi-oauth-toolkit-test'),
+    storage.tokens.set('custom-zimi-code', token('custom-access'));
+    const toolkit = new ZimiOAuthToolkit({
+      homeDir: join('/tmp', 'zimi-oauth-toolkit-test'),
       identity: TEST_IDENTITY,
       storage,
       now: () => 100,
@@ -149,7 +149,7 @@ describe('KimiOAuthToolkit', () => {
 
     await expect(
       toolkit
-        .tokenProvider(KIMI_CODE_PROVIDER_NAME, { key: 'oauth/custom-kimi-code' })
+        .tokenProvider(ZIMI_CODE_PROVIDER_NAME, { key: 'oauth/custom-zimi-code' })
         .getAccessToken(),
     ).resolves.toBe('custom-access');
   });
@@ -157,11 +157,11 @@ describe('KimiOAuthToolkit', () => {
   it('refreshes configured bearer token refs against their OAuth host', async () => {
     const storage = new MemoryTokenStorage();
     const oauthHost = 'https://auth.dev.example.test';
-    const oauthKey = resolveKimiCodeOAuthKey({
+    const oauthKey = resolveZimiCodeOAuthKey({
       oauthHost,
       baseUrl: 'https://api.dev.example.test/coding/v1',
     });
-    storage.tokens.set(resolveKimiTokenStorageName({ oauthKey }), {
+    storage.tokens.set(resolveZimiTokenStorageName({ oauthKey }), {
       ...token('expired-dev-access'),
       expiresAt: 100,
     });
@@ -181,13 +181,13 @@ describe('KimiOAuthToolkit', () => {
       );
     });
     vi.stubGlobal('fetch', fetchImpl);
-    const toolkit = new KimiOAuthToolkit({
-      homeDir: join('/tmp', 'kimi-oauth-toolkit-test'),
+    const toolkit = new ZimiOAuthToolkit({
+      homeDir: join('/tmp', 'zimi-oauth-toolkit-test'),
       identity: TEST_IDENTITY,
       storage,
       now: () => 1_000,
       flowConfig: {
-        name: 'kimi-code',
+        name: 'zimi-code',
         oauthHost: 'https://auth.kimi.com',
         clientId: 'test-client-id',
       },
@@ -195,14 +195,14 @@ describe('KimiOAuthToolkit', () => {
 
     await expect(
       toolkit
-        .tokenProvider(KIMI_CODE_PROVIDER_NAME, { key: oauthKey, oauthHost })
+        .tokenProvider(ZIMI_CODE_PROVIDER_NAME, { key: oauthKey, oauthHost })
         .getAccessToken(),
     ).resolves.toBe('rotated-dev-access');
   });
 
   it('does not reuse a cached OAuth manager across different hosts for the same token key', async () => {
     const storage = new MemoryTokenStorage();
-    storage.tokens.set('custom-kimi-code', {
+    storage.tokens.set('custom-zimi-code', {
       ...token('expired-custom-access'),
       expiresAt: 100,
     });
@@ -221,13 +221,13 @@ describe('KimiOAuthToolkit', () => {
       );
     });
     vi.stubGlobal('fetch', fetchImpl);
-    const toolkit = new KimiOAuthToolkit({
-      homeDir: join('/tmp', 'kimi-oauth-toolkit-test'),
+    const toolkit = new ZimiOAuthToolkit({
+      homeDir: join('/tmp', 'zimi-oauth-toolkit-test'),
       identity: TEST_IDENTITY,
       storage,
       now: () => 1_000,
       flowConfig: {
-        name: 'kimi-code',
+        name: 'zimi-code',
         oauthHost: 'https://auth.kimi.com',
         clientId: 'test-client-id',
       },
@@ -235,16 +235,16 @@ describe('KimiOAuthToolkit', () => {
 
     await expect(
       toolkit
-        .tokenProvider(KIMI_CODE_PROVIDER_NAME, {
-          key: 'oauth/custom-kimi-code',
+        .tokenProvider(ZIMI_CODE_PROVIDER_NAME, {
+          key: 'oauth/custom-zimi-code',
           oauthHost: 'https://auth.one.test/',
         })
         .getAccessToken({ force: true }),
     ).resolves.toBe('rotated-1');
     await expect(
       toolkit
-        .tokenProvider(KIMI_CODE_PROVIDER_NAME, {
-          key: 'oauth/custom-kimi-code',
+        .tokenProvider(ZIMI_CODE_PROVIDER_NAME, {
+          key: 'oauth/custom-zimi-code',
           oauthHost: 'https://auth.two.test',
         })
         .getAccessToken({ force: true }),
@@ -258,12 +258,12 @@ describe('KimiOAuthToolkit', () => {
 
   it('returns the cached access token without refreshing it', async () => {
     const storage = new MemoryTokenStorage();
-    storage.tokens.set('kimi-code', {
+    storage.tokens.set('zimi-code', {
       ...token('cached-access'),
       expiresAt: 1,
     });
-    const toolkit = new KimiOAuthToolkit({
-      homeDir: join('/tmp', 'kimi-oauth-toolkit-test'),
+    const toolkit = new ZimiOAuthToolkit({
+      homeDir: join('/tmp', 'zimi-oauth-toolkit-test'),
       identity: TEST_IDENTITY,
       storage,
       now: () => 10_000,
@@ -274,22 +274,22 @@ describe('KimiOAuthToolkit', () => {
 
   it('resolves cached access tokens using the configured oauth key', async () => {
     const storage = new MemoryTokenStorage();
-    storage.tokens.set('custom-kimi-code', token('custom-cached-access'));
-    const toolkit = new KimiOAuthToolkit({
-      homeDir: join('/tmp', 'kimi-oauth-toolkit-test'),
+    storage.tokens.set('custom-zimi-code', token('custom-cached-access'));
+    const toolkit = new ZimiOAuthToolkit({
+      homeDir: join('/tmp', 'zimi-oauth-toolkit-test'),
       identity: TEST_IDENTITY,
       storage,
       now: () => 100,
     });
 
     await expect(
-      toolkit.getCachedAccessToken(KIMI_CODE_PROVIDER_NAME, { key: 'oauth/custom-kimi-code' }),
+      toolkit.getCachedAccessToken(ZIMI_CODE_PROVIDER_NAME, { key: 'oauth/custom-zimi-code' }),
     ).resolves.toBe('custom-cached-access');
   });
 
   it('returns undefined when no cached access token exists', async () => {
-    const toolkit = new KimiOAuthToolkit({
-      homeDir: join('/tmp', 'kimi-oauth-toolkit-test'),
+    const toolkit = new ZimiOAuthToolkit({
+      homeDir: join('/tmp', 'zimi-oauth-toolkit-test'),
       identity: TEST_IDENTITY,
       storage: new MemoryTokenStorage(),
       now: () => 100,
@@ -303,8 +303,8 @@ describe('KimiOAuthToolkit', () => {
     const write = vi.fn();
     const fetchImpl = vi.fn(async () => managedModelsResponse()) as unknown as typeof fetch;
     const config = { providers: {} };
-    const toolkit = new KimiOAuthToolkit({
-      homeDir: join('/tmp', 'kimi-oauth-toolkit-test'),
+    const toolkit = new ZimiOAuthToolkit({
+      homeDir: join('/tmp', 'zimi-oauth-toolkit-test'),
       identity: TEST_IDENTITY,
       storage,
       now: () => 100,
@@ -313,24 +313,24 @@ describe('KimiOAuthToolkit', () => {
         read: () => config,
         write,
         apply: (target, input) => {
-          target.providers[KIMI_CODE_PROVIDER_NAME] = {
-            type: 'kimi',
+          target.providers[ZIMI_CODE_PROVIDER_NAME] = {
+            type: 'zimi',
             apiKey: '',
           };
           return {
-            defaultModel: `kimi-code/${input.models[0]?.id ?? 'unknown'}`,
+            defaultModel: `zimi-code/${input.models[0]?.id ?? 'unknown'}`,
             defaultThinking: true,
           };
         },
       },
     });
 
-    storage.tokens.set('kimi-code', token('access-1'));
+    storage.tokens.set('zimi-code', token('access-1'));
     await expect(toolkit.login()).resolves.toMatchObject({
-      providerName: KIMI_CODE_PROVIDER_NAME,
+      providerName: ZIMI_CODE_PROVIDER_NAME,
       ok: true,
       provision: {
-        defaultModel: 'kimi-code/kimi-for-coding',
+        defaultModel: 'zimi-code/kimi-for-coding',
       },
     });
     expect(write).toHaveBeenCalledWith(config);
@@ -344,8 +344,8 @@ describe('KimiOAuthToolkit', () => {
       const onDeviceCode = vi.fn();
       const config = { providers: {} };
       const oauthHost = 'https://auth.test';
-      const oauthKey = resolveKimiCodeOAuthKey({ oauthHost });
-      storage.tokens.set(resolveKimiTokenStorageName({ oauthKey }), token('stale-access'));
+      const oauthKey = resolveZimiCodeOAuthKey({ oauthHost });
+      storage.tokens.set(resolveZimiTokenStorageName({ oauthKey }), token('stale-access'));
       const fetchMock = vi
         .fn()
         .mockResolvedValueOnce(
@@ -376,14 +376,14 @@ describe('KimiOAuthToolkit', () => {
         );
       });
       vi.stubGlobal('fetch', oauthFetch);
-      const toolkit = new KimiOAuthToolkit({
-        homeDir: join('/tmp', 'kimi-oauth-toolkit-test'),
+      const toolkit = new ZimiOAuthToolkit({
+        homeDir: join('/tmp', 'zimi-oauth-toolkit-test'),
         identity: TEST_IDENTITY,
         storage,
         now: () => 100,
         fetchImpl,
         flowConfig: {
-          name: 'kimi-code',
+          name: 'zimi-code',
           oauthHost,
           clientId: 'test-client-id',
         },
@@ -391,12 +391,12 @@ describe('KimiOAuthToolkit', () => {
           read: () => config,
           write,
           apply: (target, input) => {
-            target.providers[KIMI_CODE_PROVIDER_NAME] = {
-              type: 'kimi',
+            target.providers[ZIMI_CODE_PROVIDER_NAME] = {
+              type: 'zimi',
               apiKey: '',
             };
             return {
-              defaultModel: `kimi-code/${input.models[0]?.id ?? 'unknown'}`,
+              defaultModel: `zimi-code/${input.models[0]?.id ?? 'unknown'}`,
               defaultThinking: true,
             };
           },
@@ -404,10 +404,10 @@ describe('KimiOAuthToolkit', () => {
       });
 
       await expect(toolkit.login(undefined, { onDeviceCode })).resolves.toMatchObject({
-        providerName: KIMI_CODE_PROVIDER_NAME,
+        providerName: ZIMI_CODE_PROVIDER_NAME,
         ok: true,
         provision: {
-          defaultModel: 'kimi-code/kimi-for-coding',
+          defaultModel: 'zimi-code/kimi-for-coding',
         },
       });
       expect(fetchMock).toHaveBeenCalledTimes(2);
@@ -427,15 +427,15 @@ describe('KimiOAuthToolkit', () => {
 
   it('uses a scoped credential slot for non-default OAuth login environments', async () => {
     const storage = new MemoryTokenStorage();
-    storage.tokens.set('kimi-code', token('prod-access'));
-    const config: ManagedKimiConfigShape = { providers: {} };
+    storage.tokens.set('zimi-code', token('prod-access'));
+    const config: ManagedZimiConfigShape = { providers: {} };
     const devBaseUrl = 'https://api.dev.example.test/coding/v1';
     const devOauthHost = 'https://auth.dev.example.test';
-    const devOauthKey = resolveKimiCodeOAuthKey({
+    const devOauthKey = resolveZimiCodeOAuthKey({
       oauthHost: devOauthHost,
       baseUrl: devBaseUrl,
     });
-    const devStorageName = resolveKimiTokenStorageName({ oauthKey: devOauthKey });
+    const devStorageName = resolveZimiTokenStorageName({ oauthKey: devOauthKey });
     const write = vi.fn();
     const fetchMock = vi.fn(async (_input: unknown, _init?: RequestInit) =>
       managedModelsResponse(),
@@ -468,32 +468,32 @@ describe('KimiOAuthToolkit', () => {
       );
     });
     vi.stubGlobal('fetch', oauthFetch);
-    const toolkit = new KimiOAuthToolkit({
-      homeDir: join('/tmp', 'kimi-oauth-toolkit-test'),
+    const toolkit = new ZimiOAuthToolkit({
+      homeDir: join('/tmp', 'zimi-oauth-toolkit-test'),
       identity: TEST_IDENTITY,
       storage,
       now: () => 100,
       fetchImpl: fetchMock as unknown as typeof fetch,
       flowConfig: {
-        name: 'kimi-code',
+        name: 'zimi-code',
         oauthHost: devOauthHost,
         clientId: 'test-client-id',
       },
       configAdapter: {
         read: () => config,
         write,
-        apply: applyManagedKimiCodeConfig,
+        apply: applyManagedZimiCodeConfig,
       },
     });
 
     await expect(toolkit.login(undefined, { baseUrl: devBaseUrl })).resolves.toMatchObject({
-      providerName: KIMI_CODE_PROVIDER_NAME,
+      providerName: ZIMI_CODE_PROVIDER_NAME,
       ok: true,
     });
     expect(oauthFetch).toHaveBeenCalledTimes(2);
-    expect(storage.tokens.get('kimi-code')?.accessToken).toBe('prod-access');
+    expect(storage.tokens.get('zimi-code')?.accessToken).toBe('prod-access');
     expect(storage.tokens.get(devStorageName)?.accessToken).toBe('dev-access');
-    expect(config.providers[KIMI_CODE_PROVIDER_NAME]?.oauth).toEqual({
+    expect(config.providers[ZIMI_CODE_PROVIDER_NAME]?.oauth).toEqual({
       storage: 'file',
       key: devOauthKey,
       oauthHost: devOauthHost,
@@ -506,8 +506,8 @@ describe('KimiOAuthToolkit', () => {
   it('starts a new device flow when the stored refresh token is invalid', async () => {
     const storage = new MemoryTokenStorage();
     const oauthHost = 'https://auth.test';
-    const oauthKey = resolveKimiCodeOAuthKey({ oauthHost });
-    const storageName = resolveKimiTokenStorageName({ oauthKey });
+    const oauthKey = resolveZimiCodeOAuthKey({ oauthHost });
+    const storageName = resolveZimiTokenStorageName({ oauthKey });
     storage.tokens.set(storageName, {
       ...token('stale-access'),
       refreshToken: 'revoked-refresh',
@@ -551,20 +551,20 @@ describe('KimiOAuthToolkit', () => {
       );
     }) as unknown as typeof fetch;
     vi.stubGlobal('fetch', fetchImpl);
-    const toolkit = new KimiOAuthToolkit({
-      homeDir: join('/tmp', 'kimi-oauth-toolkit-test'),
+    const toolkit = new ZimiOAuthToolkit({
+      homeDir: join('/tmp', 'zimi-oauth-toolkit-test'),
       identity: TEST_IDENTITY,
       storage,
       now: () => 100,
       flowConfig: {
-        name: 'kimi-code',
+        name: 'zimi-code',
         oauthHost,
         clientId: 'test-client-id',
       },
     });
 
     await expect(toolkit.login(undefined, { onDeviceCode })).resolves.toMatchObject({
-      providerName: KIMI_CODE_PROVIDER_NAME,
+      providerName: ZIMI_CODE_PROVIDER_NAME,
       ok: true,
     });
     expect(onDeviceCode).toHaveBeenCalledTimes(1);
@@ -573,7 +573,7 @@ describe('KimiOAuthToolkit', () => {
 
   it('propagates the managed quota response', async () => {
     const storage = new MemoryTokenStorage();
-    storage.tokens.set('kimi-code', token('access-1'));
+    storage.tokens.set('zimi-code', token('access-1'));
     const fetchImpl = vi.fn(async (_input: unknown, _init?: RequestInit) =>
       new Response(
         JSON.stringify({
@@ -597,8 +597,8 @@ describe('KimiOAuthToolkit', () => {
       ),
     ) as unknown as typeof fetch;
     vi.stubGlobal('fetch', fetchImpl);
-    const toolkit = new KimiOAuthToolkit({
-      homeDir: join('/tmp', 'kimi-oauth-toolkit-test'),
+    const toolkit = new ZimiOAuthToolkit({
+      homeDir: join('/tmp', 'zimi-oauth-toolkit-test'),
       identity: TEST_IDENTITY,
       storage,
       now: () => 100,
@@ -625,7 +625,7 @@ describe('KimiOAuthToolkit', () => {
 
   it('returns null extraUsage when the payload has no boosterWallet', async () => {
     const storage = new MemoryTokenStorage();
-    storage.tokens.set('kimi-code', token('access-1'));
+    storage.tokens.set('zimi-code', token('access-1'));
     const fetchImpl = vi.fn(async (_input: unknown, _init?: RequestInit) =>
       new Response(
         JSON.stringify({
@@ -638,8 +638,8 @@ describe('KimiOAuthToolkit', () => {
       ),
     ) as unknown as typeof fetch;
     vi.stubGlobal('fetch', fetchImpl);
-    const toolkit = new KimiOAuthToolkit({
-      homeDir: join('/tmp', 'kimi-oauth-toolkit-test'),
+    const toolkit = new ZimiOAuthToolkit({
+      homeDir: join('/tmp', 'zimi-oauth-toolkit-test'),
       identity: TEST_IDENTITY,
       storage,
       now: () => 100,
@@ -658,7 +658,7 @@ describe('KimiOAuthToolkit', () => {
 
   it('propagates the managed profile response', async () => {
     const storage = new MemoryTokenStorage();
-    storage.tokens.set('kimi-code', token('access-1'));
+    storage.tokens.set('zimi-code', token('access-1'));
     const fetchImpl = vi.fn(async (_input: unknown, _init?: RequestInit) =>
       new Response(
         JSON.stringify({
@@ -677,8 +677,8 @@ describe('KimiOAuthToolkit', () => {
       ),
     ) as unknown as typeof fetch;
     vi.stubGlobal('fetch', fetchImpl);
-    const toolkit = new KimiOAuthToolkit({
-      homeDir: join('/tmp', 'kimi-oauth-toolkit-test'),
+    const toolkit = new ZimiOAuthToolkit({
+      homeDir: join('/tmp', 'zimi-oauth-toolkit-test'),
       identity: TEST_IDENTITY,
       storage,
       now: () => 100,
@@ -703,13 +703,13 @@ describe('KimiOAuthToolkit', () => {
 
   it('normalizes managed profile fetch errors into the error result', async () => {
     const storage = new MemoryTokenStorage();
-    storage.tokens.set('kimi-code', token('access-1'));
+    storage.tokens.set('zimi-code', token('access-1'));
     const fetchImpl = vi.fn(
       async () => new Response('', { status: 401 }),
     ) as unknown as typeof fetch;
     vi.stubGlobal('fetch', fetchImpl);
-    const toolkit = new KimiOAuthToolkit({
-      homeDir: join('/tmp', 'kimi-oauth-toolkit-test'),
+    const toolkit = new ZimiOAuthToolkit({
+      homeDir: join('/tmp', 'zimi-oauth-toolkit-test'),
       identity: TEST_IDENTITY,
       storage,
       now: () => 100,
@@ -724,29 +724,29 @@ describe('KimiOAuthToolkit', () => {
 
   it('removes managed config on logout when an adapter supports cleanup', async () => {
     const storage = new MemoryTokenStorage();
-    storage.tokens.set('kimi-code', token('access-1'));
-    const config = { providers: { [KIMI_CODE_PROVIDER_NAME]: { type: 'kimi' } } };
+    storage.tokens.set('zimi-code', token('access-1'));
+    const config = { providers: { [ZIMI_CODE_PROVIDER_NAME]: { type: 'zimi' } } };
     const write = vi.fn();
     const remove = vi.fn();
-    const toolkit = new KimiOAuthToolkit({
-      homeDir: join('/tmp', 'kimi-oauth-toolkit-test'),
+    const toolkit = new ZimiOAuthToolkit({
+      homeDir: join('/tmp', 'zimi-oauth-toolkit-test'),
       identity: TEST_IDENTITY,
       storage,
       now: () => 100,
       configAdapter: {
         read: () => config,
         write,
-        apply: () => ({ defaultModel: 'kimi-code/kimi-for-coding', defaultThinking: true }),
+        apply: () => ({ defaultModel: 'zimi-code/kimi-for-coding', defaultThinking: true }),
         remove,
       },
     });
 
     await expect(toolkit.logout()).resolves.toMatchObject({
-      providerName: KIMI_CODE_PROVIDER_NAME,
+      providerName: ZIMI_CODE_PROVIDER_NAME,
       ok: true,
     });
     expect(remove).toHaveBeenCalledWith(config);
     expect(write).toHaveBeenCalledWith(config);
-    await expect(storage.load('kimi-code')).resolves.toBeUndefined();
+    await expect(storage.load('zimi-code')).resolves.toBeUndefined();
   });
 });

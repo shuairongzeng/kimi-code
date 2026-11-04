@@ -1,4 +1,4 @@
-import type { Scope } from '@moonshot-ai/agent-core-v2';
+import type { Scope } from '@zimi-ai/agent-core-v2';
 
 import { requestLog } from '../lib/requestLog';
 import { reservePromptId, type PromptIdReservation } from '../routes/prompts';

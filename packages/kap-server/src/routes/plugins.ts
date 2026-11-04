@@ -11,7 +11,7 @@ import {
   pluginClientForIdentity,
   type PluginMarketplace,
   type Scope,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import { z } from 'zod';
 
 import { errEnvelope, okEnvelope } from '../envelope';
@@ -75,9 +75,9 @@ async function removePluginAction(ctx: PluginActionCtx): Promise<void> {
 }
 
 const CAPABILITY_ROW_IDS: Readonly<Record<string, string>> = {
-  'kimi-cu': 'kimi-cu',
-  'kimi-cu-win': 'kimi-cu',
-  'kimi-browser-extension': 'kimi-webbridge',
+  'zimi-cu': 'zimi-cu',
+  'zimi-cu-win': 'zimi-cu',
+  'zimi-browser-extension': 'zimi-webbridge',
 };
 
 export function registerPluginsRoutes(
@@ -121,7 +121,7 @@ export function registerPluginsRoutes(
       const client = pluginClientForIdentity(bootstrap.clientIdentity.platform);
       const entries: PluginMarketplaceEntryWire[] = [];
       for (const entry of marketplace.plugins) {
-        if (entry.id === 'kimi-webbridge') continue;
+        if (entry.id === 'zimi-webbridge') continue;
         if (!marketplaceEntryVisibleOnHost(entry, client, bootstrap.platform)) continue;
         const capabilityId =
           marketplaceIsDefault ? CAPABILITY_ROW_IDS[entry.id] : undefined;
@@ -136,8 +136,8 @@ export function registerPluginsRoutes(
         const byIdRecord = byId.get(entry.id);
         const record =
           capability !== undefined
-            ? capability.id === 'kimi-webbridge'
-              ? (byIdRecord ?? byId.get('kimi-webbridge'))
+            ? capability.id === 'zimi-webbridge'
+              ? (byIdRecord ?? byId.get('zimi-webbridge'))
               : byIdRecord
             : (byCatalogId.get(entry.id) ??
               (byIdRecord?.origin === 'unknown' ? byIdRecord : undefined));

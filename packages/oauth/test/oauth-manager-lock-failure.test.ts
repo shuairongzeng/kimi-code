@@ -35,12 +35,12 @@ class InMemoryStorage implements TokenStorage {
   }
 
   async list(): Promise<string[]> {
-    return this.token === undefined ? [] : ['kimi-code'];
+    return this.token === undefined ? [] : ['zimi-code'];
   }
 }
 
 const config: OAuthFlowConfig = {
-  name: 'kimi-code',
+  name: 'zimi-code',
   oauthHost: 'https://unused.test',
   clientId: 'test-client-id',
 };
@@ -63,7 +63,7 @@ describe('OAuthManager refresh lock failure', () => {
   beforeEach(() => {
     dir = join(
       tmpdir(),
-      `kimi-oauth-lock-failure-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      `zimi-oauth-lock-failure-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     );
     mkdirSync(dir, { recursive: true });
     lockMock.lock.mockReset();

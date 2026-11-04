@@ -26,7 +26,7 @@ describe('launcher lowering', () => {
         '-o',
         'StrictHostKeyChecking=accept-new',
         'dev-box',
-        `"$HOME"'/.kimi-code/bin/kimi' 'exec-server' '--listen' 'stdio'`,
+        `"$HOME"'/.zimi-code/bin/zimi' 'exec-server' '--listen' 'stdio'`,
       ],
     });
   });
@@ -48,7 +48,7 @@ describe('launcher lowering', () => {
       '-o',
       'StrictHostKeyChecking=accept-new',
       'dev-box',
-      `"$HOME"'/.kimi-code/bin/kimi' 'exec-server' '--listen' 'stdio'`,
+      `"$HOME"'/.zimi-code/bin/zimi' 'exec-server' '--listen' 'stdio'`,
     ]);
   });
 });
@@ -73,19 +73,19 @@ describe('launcher operand validation', () => {
 
 describe('ssh remote command quoting', () => {
   it('quotes shell metacharacters in remoteBin against remote re-parsing', () => {
-    const resolved = resolveLauncher({ type: 'ssh', host: 'dev-box', remoteBin: '/opt/$(whoami)/kimi' });
-    expect(resolved.args.at(-1)).toBe(`'/opt/$(whoami)/kimi' 'exec-server' '--listen' 'stdio'`);
+    const resolved = resolveLauncher({ type: 'ssh', host: 'dev-box', remoteBin: '/opt/$(whoami)/zimi' });
+    expect(resolved.args.at(-1)).toBe(`'/opt/$(whoami)/zimi' 'exec-server' '--listen' 'stdio'`);
   });
 
   it('invokes a bare executor name without POSIX-only quoting', () => {
-    expect(resolveLauncher({ type: 'ssh', host: 'dev-box', remoteBin: 'kimi' }).args.at(-1)).toBe(
-      'kimi exec-server --listen stdio',
+    expect(resolveLauncher({ type: 'ssh', host: 'dev-box', remoteBin: 'zimi' }).args.at(-1)).toBe(
+      'zimi exec-server --listen stdio',
     );
-    expect(resolveLauncher({ type: 'ssh', host: 'dev-box', remoteBin: 'kimi.exe' }).args.at(-1)).toBe(
-      'kimi.exe exec-server --listen stdio',
+    expect(resolveLauncher({ type: 'ssh', host: 'dev-box', remoteBin: 'zimi.exe' }).args.at(-1)).toBe(
+      'zimi.exe exec-server --listen stdio',
     );
-    expect(resolveLauncher({ type: 'ssh', host: 'dev-box', remoteBin: 'kimi-dev' }).args.at(-1)).toBe(
-      'kimi-dev exec-server --listen stdio',
+    expect(resolveLauncher({ type: 'ssh', host: 'dev-box', remoteBin: 'zimi-dev' }).args.at(-1)).toBe(
+      'zimi-dev exec-server --listen stdio',
     );
   });
 
@@ -96,14 +96,14 @@ describe('ssh remote command quoting', () => {
   });
 
   it('keeps tilde prefixes expandable while quoting the remainder', () => {
-    expect(resolveLauncher({ type: 'ssh', host: 'dev-box', remoteBin: '~/bin/kimi' }).args.at(-1)).toBe(
-      `"$HOME"'/bin/kimi' 'exec-server' '--listen' 'stdio'`,
+    expect(resolveLauncher({ type: 'ssh', host: 'dev-box', remoteBin: '~/bin/zimi' }).args.at(-1)).toBe(
+      `"$HOME"'/bin/zimi' 'exec-server' '--listen' 'stdio'`,
     );
-    expect(resolveLauncher({ type: 'ssh', host: 'dev-box', remoteBin: '~/bin dir/kimi' }).args.at(-1)).toBe(
-      `"$HOME"'/bin dir/kimi' 'exec-server' '--listen' 'stdio'`,
+    expect(resolveLauncher({ type: 'ssh', host: 'dev-box', remoteBin: '~/bin dir/zimi' }).args.at(-1)).toBe(
+      `"$HOME"'/bin dir/zimi' 'exec-server' '--listen' 'stdio'`,
     );
-    expect(resolveLauncher({ type: 'ssh', host: 'dev-box', remoteBin: '~deploy/bin/kimi' }).args.at(-1)).toBe(
-      `~deploy/'bin/kimi' 'exec-server' '--listen' 'stdio'`,
+    expect(resolveLauncher({ type: 'ssh', host: 'dev-box', remoteBin: '~deploy/bin/zimi' }).args.at(-1)).toBe(
+      `~deploy/'bin/zimi' 'exec-server' '--listen' 'stdio'`,
     );
     expect(resolveLauncher({ type: 'ssh', host: 'dev-box', remoteBin: '~' }).args.at(-1)).toBe(
       `"$HOME" 'exec-server' '--listen' 'stdio'`,
@@ -111,8 +111,8 @@ describe('ssh remote command quoting', () => {
   });
 
   it('escapes single quotes inside remoteBin', () => {
-    const resolved = resolveLauncher({ type: 'ssh', host: 'dev-box', remoteBin: `/opt/it's/kimi` });
-    expect(resolved.args.at(-1)).toBe(`'/opt/it'\\''s/kimi' 'exec-server' '--listen' 'stdio'`);
+    const resolved = resolveLauncher({ type: 'ssh', host: 'dev-box', remoteBin: `/opt/it's/zimi` });
+    expect(resolved.args.at(-1)).toBe(`'/opt/it'\\''s/zimi' 'exec-server' '--listen' 'stdio'`);
   });
 });
 
@@ -124,21 +124,21 @@ describe('ssh remote command tilde expansion through a local shell', () => {
 
   it('expands the default remoteBin via $HOME', () => {
     const command = resolveLauncher({ type: 'ssh', host: 'dev-box' }).args.at(-1)!;
-    expect(expandBinWord(command)).toBe(`${process.env['HOME']}/.kimi-code/bin/kimi`);
+    expect(expandBinWord(command)).toBe(`${process.env['HOME']}/.zimi-code/bin/zimi`);
   });
 
   it('expands a ~user remoteBin via tilde expansion', () => {
     const username = userInfo().username;
-    const command = resolveLauncher({ type: 'ssh', host: 'dev-box', remoteBin: `~${username}/bin/kimi` }).args.at(-1)!;
-    expect(expandBinWord(command)).toBe(`${userInfo().homedir}/bin/kimi`);
+    const command = resolveLauncher({ type: 'ssh', host: 'dev-box', remoteBin: `~${username}/bin/zimi` }).args.at(-1)!;
+    expect(expandBinWord(command)).toBe(`${userInfo().homedir}/bin/zimi`);
   });
 });
 
 describe('complete SSH executor commands', () => {
   it.each(['exit 1', 'exit 23'])('preserves executor failure without a second launch: %s', async (exit) => {
-    const dir = await mkdtemp(join(tmpdir(), 'kimi-executor-exit-'));
+    const dir = await mkdtemp(join(tmpdir(), 'zimi-executor-exit-'));
     try {
-      const bin = join(dir, 'kimi');
+      const bin = join(dir, 'zimi');
       const calls = join(dir, 'calls');
       await writeFile(bin, `#!/bin/sh\nprintf 'called\\n' >> "$CALLS"\n${exit}\n`);
       await chmod(bin, 0o700);
@@ -153,7 +153,7 @@ describe('complete SSH executor commands', () => {
   });
 
   it.each(['$(printf INJECTED >&2)', '`printf INJECTED >&2`', 'a"b', "it's", 'a b'])('executes the literal path containing %s', async (name) => {
-    const dir = await mkdtemp(join(tmpdir(), 'kimi-executor-literal-'));
+    const dir = await mkdtemp(join(tmpdir(), 'zimi-executor-literal-'));
     try {
       const bin = join(dir, name);
       await writeFile(bin, '#!/bin/sh\nprintf "%s\\n" "$@"\n');
@@ -169,9 +169,9 @@ describe('complete SSH executor commands', () => {
   });
 
   it.each([
-    [undefined, "($env:USERPROFILE + '/.kimi-code/bin/kimi.exe')"],
-    ['~/bin dir/kimi.exe', "($env:USERPROFILE + '/bin dir/kimi.exe')"],
-    [String.raw`C:\Program Files\it's $env:PATH $(whoami) & Kimi\kimi.exe`, String.raw`'C:\Program Files\it''s $env:PATH $(whoami) & Kimi\kimi.exe'`],
+    [undefined, "($env:USERPROFILE + '/.zimi-code/bin/zimi.exe')"],
+    ['~/bin dir/zimi.exe', "($env:USERPROFILE + '/bin dir/zimi.exe')"],
+    [String.raw`C:\Program Files\it's $env:PATH $(whoami) & Zimi\zimi.exe`, String.raw`'C:\Program Files\it''s $env:PATH $(whoami) & Zimi\zimi.exe'`],
   ])('encodes the entire Windows script with a literal executable: %s', (remoteBin, executable) => {
     const command = resolveLauncher({ type: 'ssh', host: 'example.test', remoteBin }, false, 'windows').args.at(-1)!;
     expect(command).toMatch(/^powershell -NoLogo -NoProfile -NonInteractive -EncodedCommand [A-Za-z0-9+/=]+$/);
@@ -213,7 +213,7 @@ describe('command launcher environment', () => {
 describe('command launcher executor invocation', () => {
   it('appends the default remoteBin and exec-server after the transport args', () => {
     const resolved = resolveLauncher({ type: 'command', program: process.execPath, args: ['ssh', 'i-1', '--'] });
-    expect(resolved.args).toEqual(['ssh', 'i-1', '--', '~/.kimi-code/bin/kimi', 'exec-server']);
+    expect(resolved.args).toEqual(['ssh', 'i-1', '--', '~/.zimi-code/bin/zimi', 'exec-server']);
   });
 
   it('appends a configured remoteBin', () => {
@@ -221,30 +221,30 @@ describe('command launcher executor invocation', () => {
       type: 'command',
       program: process.execPath,
       args: ['exec', '-i', 'dev-pod', '--'],
-      remoteBin: '/root/.kimi-code/bin/kimi',
+      remoteBin: '/root/.zimi-code/bin/zimi',
     });
-    expect(resolved.args).toEqual(['exec', '-i', 'dev-pod', '--', '/root/.kimi-code/bin/kimi', 'exec-server']);
+    expect(resolved.args).toEqual(['exec', '-i', 'dev-pod', '--', '/root/.zimi-code/bin/zimi', 'exec-server']);
   });
 
   it('appends to an empty argv', () => {
     expect(resolveLauncher({ type: 'command', program: process.execPath }).args).toEqual([
-      '~/.kimi-code/bin/kimi',
+      '~/.zimi-code/bin/zimi',
       'exec-server',
     ]);
   });
 
   it.each([
-    [['ssh', 'i-1', '--', '/opt/kimi', 'exec-server']],
-    [['ssh', 'i-1', '--', '/opt/kimi', 'exec-server', '--listen', 'stdio']],
-    [['compute', 'ssh', 'dev-vm', '--command', '~/.kimi-code/bin/kimi exec-server']],
-    [['compute', 'ssh', 'dev-vm', '--command=~/.kimi-code/bin/kimi exec-server']],
+    [['ssh', 'i-1', '--', '/opt/zimi', 'exec-server']],
+    [['ssh', 'i-1', '--', '/opt/zimi', 'exec-server', '--listen', 'stdio']],
+    [['compute', 'ssh', 'dev-vm', '--command', '~/.zimi-code/bin/zimi exec-server']],
+    [['compute', 'ssh', 'dev-vm', '--command=~/.zimi-code/bin/zimi exec-server']],
   ])('leaves argv that already invokes exec-server untouched: %j', (args) => {
     expect(resolveLauncher({ type: 'command', program: process.execPath, args, remoteBin: '/ignored' }).args).toEqual(args);
   });
 
   it('does not mistake an operand that merely contains exec-server for an invocation', () => {
     const resolved = resolveLauncher({ type: 'command', program: process.execPath, args: ['ssh', 'my-exec-server-01', '--'] });
-    expect(resolved.args.slice(-2)).toEqual(['~/.kimi-code/bin/kimi', 'exec-server']);
+    expect(resolved.args.slice(-2)).toEqual(['~/.zimi-code/bin/zimi', 'exec-server']);
   });
 
   it('rejects a remoteBin that would read as an option', () => {

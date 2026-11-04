@@ -89,7 +89,7 @@ function stubReminder(reminders: { content: string; variant: string }[]): IAgent
   } as unknown as IAgentReminderService;
 }
 
-const BOOTSTRAP_HOME = '/kimi-home';
+const BOOTSTRAP_HOME = '/zimi-home';
 
 function stubBootstrap(): IBootstrapService {
   return {

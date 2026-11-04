@@ -1,8 +1,8 @@
 /**
  * First-launch migration prompt: pure decision mapping + prompter contract.
  *
- * This module owns the *decision tree* a user walks through when kimi-code
- * detects a legacy `~/.kimi/` install on first launch. It is deliberately
+ * This module owns the *decision tree* a user walks through when zimi-code
+ * detects a legacy `~/.zimi/` install on first launch. It is deliberately
  * decoupled from any rendering: the renderer (pi-tui modal / readline / etc.)
  * gathers the two logical choices and feeds them to `resolveMigrationScope`,
  * which maps them into a `MigrationScope` (or a short-circuit decision).

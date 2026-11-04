@@ -5,7 +5,7 @@ import { homedir, tmpdir } from 'node:os';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 
-import { kimiRegionProfile, resolveKimiRegion, type KimiRegion } from '@moonshot-ai/kimi-code-oauth';
+import { zimiRegionProfile, resolveZimiRegion, type ZimiRegion } from '@zimi-ai/zimi-code-oauth';
 import { extract as extractTar } from 'tar';
 import { type Entry, fromBuffer as yauzlFromBuffer } from 'yauzl';
 import { basename, dirname, join } from 'pathe';
@@ -54,7 +54,7 @@ export interface EnsureRgPathOptions {
   readonly signal?: AbortSignal | undefined;
   readonly allowCachedFallback?: boolean;
   readonly environment?: Environment | undefined;
-  readonly resolveRegion?: () => KimiRegion | undefined;
+  readonly resolveRegion?: () => ZimiRegion | undefined;
 }
 
 function rgBinaryName(): string {
@@ -62,14 +62,14 @@ function rgBinaryName(): string {
 }
 
 function getShareDir(): string {
-  const override = process.env['KIMI_CODE_HOME'];
+  const override = process.env['ZIMI_CODE_HOME'];
   if (override !== undefined && override !== '') return override;
-  return join(homedir(), '.kimi-code');
+  return join(homedir(), '.zimi-code');
 }
 
-function rgBaseUrl(resolveRegion: (() => KimiRegion | undefined) | undefined): string {
-  const region = resolveRegion?.() ?? resolveKimiRegion();
-  return `${kimiRegionProfile(region).cdnBase}/rg`;
+function rgBaseUrl(resolveRegion: (() => ZimiRegion | undefined) | undefined): string {
+  const region = resolveRegion?.() ?? resolveZimiRegion();
+  return `${zimiRegionProfile(region).cdnBase}/rg`;
 }
 
 function throwIfAborted(signal: AbortSignal | undefined): void {
@@ -159,7 +159,7 @@ async function installRemoteRg(
   environment: Environment,
   binDir: string,
   binPath: string,
-  resolveRegion: (() => KimiRegion | undefined) | undefined,
+  resolveRegion: (() => ZimiRegion | undefined) | undefined,
 ): Promise<void> {
   const host = environment.host;
   if (host === undefined) {
@@ -233,7 +233,7 @@ let downloadPromise: Promise<RgResolution> | undefined;
 async function downloadRgWithLock(
   probe: RgProbe,
   shareDir: string,
-  resolveRegion: (() => KimiRegion | undefined) | undefined,
+  resolveRegion: (() => ZimiRegion | undefined) | undefined,
 ): Promise<RgResolution> {
   if (downloadPromise !== undefined) return downloadPromise;
   downloadPromise = (async () => {
@@ -306,7 +306,7 @@ interface RgArchive {
 
 function rgArchiveForTarget(
   target: string,
-  resolveRegion: (() => KimiRegion | undefined) | undefined,
+  resolveRegion: (() => ZimiRegion | undefined) | undefined,
 ): RgArchive {
   const isWindows = target.includes('windows');
   const archiveExt = isWindows ? 'zip' : 'tar.gz';
@@ -374,7 +374,7 @@ async function extractRgArchive(archive: RgArchive, target: string, archivePath:
 
 async function downloadAndInstallRg(
   shareDir: string,
-  resolveRegion: (() => KimiRegion | undefined) | undefined,
+  resolveRegion: (() => ZimiRegion | undefined) | undefined,
 ): Promise<string> {
   const target = detectTarget();
   if (target === undefined) {
@@ -390,7 +390,7 @@ async function downloadAndInstallRg(
   await mkdir(binDir, { recursive: true });
   const destination = join(binDir, rgBinaryName());
 
-  const tmp = await mkdtemp(join(tmpdir(), 'kimi-rg-'));
+  const tmp = await mkdtemp(join(tmpdir(), 'zimi-rg-'));
   try {
     const archivePath = join(tmp, archive.archiveName);
     await fetchRgArchive(archive, archivePath);
@@ -416,10 +416,10 @@ async function downloadAndInstallRg(
 
 async function downloadRgBinary(
   target: string,
-  resolveRegion: (() => KimiRegion | undefined) | undefined,
+  resolveRegion: (() => ZimiRegion | undefined) | undefined,
 ): Promise<Uint8Array> {
   const archive = rgArchiveForTarget(target, resolveRegion);
-  const tmp = await mkdtemp(join(tmpdir(), 'kimi-rg-'));
+  const tmp = await mkdtemp(join(tmpdir(), 'zimi-rg-'));
   try {
     const archivePath = join(tmp, archive.archiveName);
     await fetchRgArchive(archive, archivePath);

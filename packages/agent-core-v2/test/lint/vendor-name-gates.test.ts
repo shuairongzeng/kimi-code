@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SRC_ROOT = join(__dirname, '..', '..', 'src');
 
-const VENDOR_GATE_RE = /[!=]==?\s*'kimi'|'kimi'\s*[!=]==?|\bcase\s+'kimi'\s*:/;
+const VENDOR_GATE_RE = /[!=]==?\s*'zimi'|'zimi'\s*[!=]==?|\bcase\s+'zimi'\s*:/;
 
 interface GateHit {
   readonly file: string;
@@ -52,27 +52,27 @@ describe('vendor-name gates', () => {
   it('flags vendor compares and switch cases in code', () => {
     const hits = findVendorGates(
       [
-        `if (provider.type === 'kimi') return;`,
-        `if (provider?.type !== 'kimi' || provider.oauth === undefined) return;`,
-        `const managed = 'kimi' === vendor;`,
-        `switch (type) { case 'kimi': break; }`,
-        `if (type == 'kimi') return;`,
+        `if (provider.type === 'zimi') return;`,
+        `if (provider?.type !== 'zimi' || provider.oauth === undefined) return;`,
+        `const managed = 'zimi' === vendor;`,
+        `switch (type) { case 'zimi': break; }`,
+        `if (type == 'zimi') return;`,
       ].join('\n'),
       'fixture.ts',
     );
     expect(hits.map((hit) => hit.line)).toEqual([1, 2, 3, 4, 5]);
   });
 
-  it('ignores comments, brand/env names, and kimi as data', () => {
+  it('ignores comments, brand/env names, and zimi as data', () => {
     const hits = findVendorGates(
       [
-        '// v1 `provider.type === \'kimi\'` gate restored.',
-        ' * `provider.type === \'kimi\'` parity): strict validation',
-        '/* legacy: provider.type === \'kimi\' */',
-        'const home = process.env.KIMI_CODE_HOME;',
-        `const event = { provider_type: 'kimi' };`,
-        `const provider = { type: 'kimi', oauth };`,
-        `registerProviderDefinition({ id: 'kimi', ...rest });`,
+        '// v1 `provider.type === \'zimi\'` gate restored.',
+        ' * `provider.type === \'zimi\'` parity): strict validation',
+        '/* legacy: provider.type === \'zimi\' */',
+        'const home = process.env.ZIMI_CODE_HOME;',
+        `const event = { provider_type: 'zimi' };`,
+        `const provider = { type: 'zimi', oauth };`,
+        `registerProviderDefinition({ id: 'zimi', ...rest });`,
       ].join('\n'),
       'fixture.ts',
     );

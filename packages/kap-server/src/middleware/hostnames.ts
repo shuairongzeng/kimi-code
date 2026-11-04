@@ -18,7 +18,7 @@ export interface HostCheck {
 }
 
 export function parseAllowedHosts(env: NodeJS.ProcessEnv = process.env): string[] {
-  const raw = env['KIMI_CODE_ALLOWED_HOSTS'];
+  const raw = env['ZIMI_CODE_ALLOWED_HOSTS'];
   if (raw === undefined) {
     return [];
   }
@@ -29,7 +29,7 @@ export function parseAllowedHosts(env: NodeJS.ProcessEnv = process.env): string[
 }
 
 export function isHostCheckDisabled(env: NodeJS.ProcessEnv = process.env): boolean {
-  return env['KIMI_CODE_DISABLE_HOST_CHECK'] === '1';
+  return env['ZIMI_CODE_DISABLE_HOST_CHECK'] === '1';
 }
 
 export function stripPort(host: string): string {
@@ -55,7 +55,7 @@ export function formatHostErrorMessage(host: string | undefined): string {
   const normalizedHost = host === undefined || host.length === 0 ? undefined : stripPort(host);
   const hostLabel = normalizedHost ?? '<missing>';
   const hostArg = normalizedHost ?? '<host>';
-  return `Invalid Host header: ${hostLabel}; allow this host with KIMI_CODE_ALLOWED_HOSTS=${hostArg} or 'kimi web --allowed-host ${hostArg}'.`;
+  return `Invalid Host header: ${hostLabel}; allow this host with ZIMI_CODE_ALLOWED_HOSTS=${hostArg} or 'zimi web --allowed-host ${hostArg}'.`;
 }
 
 export function isAllowedHost(host: string | undefined, opts: HostCheckOptions): boolean {

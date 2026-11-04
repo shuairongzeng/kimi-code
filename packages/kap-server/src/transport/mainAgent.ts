@@ -4,7 +4,7 @@ import {
   MAIN_AGENT_ID,
   type IAgentScopeHandle,
   type ISessionScopeHandle,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 
 export { MAIN_AGENT_ID };
 

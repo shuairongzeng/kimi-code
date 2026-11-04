@@ -1,4 +1,4 @@
-// Public API surface for the kimi-cli → kimi-code migration tool.
+// Public API surface for the zimi-cli → zimi-code migration tool.
 
 export * from './types.js';
 export { detectMigration } from './detect.js';

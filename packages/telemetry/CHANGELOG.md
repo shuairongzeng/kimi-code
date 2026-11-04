@@ -1,4 +1,4 @@
-# @moonshot-ai/kimi-telemetry
+# @zimi-ai/zimi-telemetry
 
 ## 0.2.0
 

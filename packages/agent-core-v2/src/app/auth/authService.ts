@@ -2,26 +2,26 @@ import { randomUUID } from 'node:crypto';
 
 import {
   DeviceCodeTimeoutError,
-  KIMI_CODE_PLATFORM_ID,
-  KIMI_CODE_PROVIDER_NAME,
-  KimiOAuthToolkit,
-  kimiCodeBaseUrl,
-  kimiRegionLoginHosts,
+  ZIMI_CODE_PLATFORM_ID,
+  ZIMI_CODE_PROVIDER_NAME,
+  ZimiOAuthToolkit,
+  zimiCodeBaseUrl,
+  zimiRegionLoginHosts,
   OAuthError,
-  applyManagedKimiCodeConfig,
-  clearManagedKimiCodeConfig,
-  fetchManagedKimiCodeModels,
-  resolveKimiCodeLoginAuth,
-  resolveKimiCodeOAuthRef,
-  resolveKimiCodeRuntimeAuth,
+  applyManagedZimiCodeConfig,
+  clearManagedZimiCodeConfig,
+  fetchManagedZimiCodeModels,
+  resolveZimiCodeLoginAuth,
+  resolveZimiCodeOAuthRef,
+  resolveZimiCodeRuntimeAuth,
   type AuthManagedUserInfoResult,
   type AuthManagedUsageResult,
   type BearerTokenProvider,
   type DeviceAuthorization,
-  type KimiRegion,
-  type ManagedKimiConfigShape,
-} from '@moonshot-ai/kimi-code-oauth';
-import { declaredProviderCredential } from '@moonshot-ai/kimi-code-oauth/provider-credential';
+  type ZimiRegion,
+  type ManagedZimiConfigShape,
+} from '@zimi-ai/zimi-code-oauth';
+import { declaredProviderCredential } from '@zimi-ai/zimi-code-oauth/provider-credential';
 import type {
   OAuthFlowSnapshot,
   OAuthFlowStart,
@@ -65,7 +65,7 @@ import {
 import { isOAuthCatalogVendor } from '#/llm-adapter/provider/provider-definition';
 import { ITelemetryService } from '#/app/telemetry/telemetry';
 import { IRegionService } from '#/app/region/region';
-import { kimiRegionEnv } from '#/app/region/regionService';
+import { zimiRegionEnv } from '#/app/region/regionService';
 
 import {
   AuthCredentialEnvMissingError,
@@ -124,14 +124,14 @@ export class OAuthService extends Disposable implements IOAuthService {
   }
 
   async startLogin(
-    provider = KIMI_CODE_PROVIDER_NAME,
+    provider = ZIMI_CODE_PROVIDER_NAME,
     options: OAuthLoginOptions = {},
   ): Promise<OAuthFlowStart> {
     this.log.info('oauth startLogin: enter', { provider });
     const configured = this.providerService.get(provider);
     const region =
       options.region ??
-      (provider === KIMI_CODE_PROVIDER_NAME &&
+      (provider === ZIMI_CODE_PROVIDER_NAME &&
       configured?.oauth === undefined &&
       configured?.baseUrl === undefined
         ? await this.regionService.getRegionAsync()
@@ -231,13 +231,13 @@ export class OAuthService extends Disposable implements IOAuthService {
     return this.toFlowStart(state, device);
   }
 
-  getFlow(provider = KIMI_CODE_PROVIDER_NAME): OAuthFlowSnapshot | undefined {
+  getFlow(provider = ZIMI_CODE_PROVIDER_NAME): OAuthFlowSnapshot | undefined {
     const state = this.flows.get(provider);
     if (state === undefined || state.device === undefined) return undefined;
     return this.toSnapshot(state, state.device);
   }
 
-  cancelLogin(provider = KIMI_CODE_PROVIDER_NAME): Promise<OAuthLoginCancelResponse> {
+  cancelLogin(provider = ZIMI_CODE_PROVIDER_NAME): Promise<OAuthLoginCancelResponse> {
     const state = this.flows.get(provider);
     if (state === undefined || state.status !== 'pending') {
       return Promise.resolve({ cancelled: false, status: state?.status ?? 'cancelled' });
@@ -247,9 +247,9 @@ export class OAuthService extends Disposable implements IOAuthService {
     return Promise.resolve({ cancelled: true, status: 'cancelled' });
   }
 
-  async logout(provider = KIMI_CODE_PROVIDER_NAME): Promise<OAuthLogoutResponse> {
+  async logout(provider = ZIMI_CODE_PROVIDER_NAME): Promise<OAuthLogoutResponse> {
     const oauthRef =
-      provider === KIMI_CODE_PROVIDER_NAME
+      provider === ZIMI_CODE_PROVIDER_NAME
         ? this.resolveRuntimeOAuthRef(provider)
         : this.readOAuthRefOptional(provider);
     const result = await this.toolkit.logout(provider, oauthRef);
@@ -258,7 +258,7 @@ export class OAuthService extends Disposable implements IOAuthService {
     return { logged_out: true, provider: result.providerName };
   }
 
-  async status(provider = KIMI_CODE_PROVIDER_NAME): Promise<AuthStatus> {
+  async status(provider = ZIMI_CODE_PROVIDER_NAME): Promise<AuthStatus> {
     this.log.info('oauth status: enter', { provider });
     const oauthRef = this.readOAuthRefOptional(provider);
     try {
@@ -282,9 +282,9 @@ export class OAuthService extends Disposable implements IOAuthService {
     return this.toolkit.getCachedAccessToken(provider, this.resolveRuntimeOAuthRef(provider, oauthRef));
   }
 
-  getManagedUsage(provider = KIMI_CODE_PROVIDER_NAME): Promise<AuthManagedUsageResult> {
+  getManagedUsage(provider = ZIMI_CODE_PROVIDER_NAME): Promise<AuthManagedUsageResult> {
     const configured = this.providerService.get(provider);
-    const auth = resolveKimiCodeRuntimeAuth({
+    const auth = resolveZimiCodeRuntimeAuth({
       configuredBaseUrl: configured?.baseUrl,
       configuredOAuthRef: configured?.oauth,
     });
@@ -294,9 +294,9 @@ export class OAuthService extends Disposable implements IOAuthService {
     });
   }
 
-  getManagedUserInfo(provider = KIMI_CODE_PROVIDER_NAME): Promise<AuthManagedUserInfoResult> {
+  getManagedUserInfo(provider = ZIMI_CODE_PROVIDER_NAME): Promise<AuthManagedUserInfoResult> {
     const configured = this.providerService.get(provider);
-    const auth = resolveKimiCodeRuntimeAuth({
+    const auth = resolveZimiCodeRuntimeAuth({
       configuredBaseUrl: configured?.baseUrl,
       configuredOAuthRef: configured?.oauth,
     });
@@ -332,33 +332,33 @@ export class OAuthService extends Disposable implements IOAuthService {
       await this.config.reload();
     } catch (error) {
       failed.push({
-        provider: KIMI_CODE_PROVIDER_NAME,
+        provider: ZIMI_CODE_PROVIDER_NAME,
         reason: error instanceof Error ? error.message : String(error),
       });
       finish();
       throw error;
     }
     const current = this.readUserConfigShape();
-    const provider = current.providers[KIMI_CODE_PROVIDER_NAME];
+    const provider = current.providers[ZIMI_CODE_PROVIDER_NAME];
     if (!isOAuthCatalogProvider(provider)) {
       return finish();
     }
 
     try {
-      const declared = declaredProviderCredential(provider, KIMI_CODE_PROVIDER_NAME);
+      const declared = declaredProviderCredential(provider, ZIMI_CODE_PROVIDER_NAME);
       if (declared.kind === 'conflict') throw new Error(declared.message);
-      const auth = resolveKimiCodeRuntimeAuth({
+      const auth = resolveZimiCodeRuntimeAuth({
         configuredBaseUrl: provider.baseUrl,
         configuredOAuthRef: provider.oauth,
       });
-      const tokenProvider = this.resolveTokenProvider(KIMI_CODE_PROVIDER_NAME, auth.oauthRef);
+      const tokenProvider = this.resolveTokenProvider(ZIMI_CODE_PROVIDER_NAME, auth.oauthRef);
       if (tokenProvider === undefined) {
         throw new Error2(ErrorCodes.AUTH_TOKEN_MISSING, 'OAuth token provider is not configured.', {
-          details: { provider_id: KIMI_CODE_PROVIDER_NAME },
+          details: { provider_id: ZIMI_CODE_PROVIDER_NAME },
         });
       }
       const token = await tokenProvider.getAccessToken();
-      const models = await fetchManagedKimiCodeModels({
+      const models = await fetchManagedZimiCodeModels({
         accessToken: token,
         baseUrl: auth.baseUrl,
       });
@@ -368,7 +368,7 @@ export class OAuthService extends Disposable implements IOAuthService {
 
       await this.config.reload();
       const fresh = this.readUserConfigShape();
-      const freshProvider = fresh.providers[KIMI_CODE_PROVIDER_NAME];
+      const freshProvider = fresh.providers[ZIMI_CODE_PROVIDER_NAME];
       if (!isOAuthCatalogProvider(freshProvider)) {
         return finish();
       }
@@ -382,7 +382,7 @@ export class OAuthService extends Disposable implements IOAuthService {
       }
 
       const next = structuredClone(fresh);
-      applyManagedKimiCodeConfig(next, {
+      applyManagedZimiCodeConfig(next, {
         models,
         baseUrl: auth.baseUrl,
         oauthKey: auth.oauthRef.key,
@@ -392,18 +392,18 @@ export class OAuthService extends Disposable implements IOAuthService {
       const refreshedAliasKeys = providerRefreshAliasKeys(
         fresh,
         next,
-        KIMI_CODE_PROVIDER_NAME,
-        `${KIMI_CODE_PLATFORM_ID}/`,
+        ZIMI_CODE_PROVIDER_NAME,
+        `${ZIMI_CODE_PLATFORM_ID}/`,
       );
       restoreProviderAliases(
         next,
-        preserveUserProviderAliases(fresh, KIMI_CODE_PROVIDER_NAME, refreshedAliasKeys),
+        preserveUserProviderAliases(fresh, ZIMI_CODE_PROVIDER_NAME, refreshedAliasKeys),
       );
       restoreDefaultSelection(next, fresh.defaultModel, fresh.thinking?.enabled);
       clampDanglingDefault(next);
 
-      if (providerModelsEqual(fresh, next, KIMI_CODE_PROVIDER_NAME, refreshedAliasKeys)) {
-        unchanged.push(KIMI_CODE_PROVIDER_NAME);
+      if (providerModelsEqual(fresh, next, ZIMI_CODE_PROVIDER_NAME, refreshedAliasKeys)) {
+        unchanged.push(ZIMI_CODE_PROVIDER_NAME);
       } else {
         const { added, removed } = computeChanges(
           collectModelIdsForAliases(fresh, refreshedAliasKeys),
@@ -414,15 +414,15 @@ export class OAuthService extends Disposable implements IOAuthService {
         await this.config.replace(DEFAULT_MODEL_SECTION, next.defaultModel);
         await this.config.replace(THINKING_SECTION, next.thinking);
         changed.push({
-          provider_id: KIMI_CODE_PROVIDER_NAME,
-          provider_name: 'Kimi Code',
+          provider_id: ZIMI_CODE_PROVIDER_NAME,
+          provider_name: 'Zimi Code',
           added,
           removed,
         });
       }
     } catch (error) {
       failed.push({
-        provider: KIMI_CODE_PROVIDER_NAME,
+        provider: ZIMI_CODE_PROVIDER_NAME,
         reason: error instanceof Error ? error.message : String(error),
       });
     }
@@ -434,47 +434,47 @@ export class OAuthService extends Disposable implements IOAuthService {
     return result;
   }
 
-  private readUserConfigShape(): ManagedKimiConfigShape {
+  private readUserConfigShape(): ManagedZimiConfigShape {
     const providers =
       this.config.inspect<Record<string, ProviderConfig>>(PROVIDERS_SECTION).userValue ?? {};
     const models = this.config.inspect<Record<string, ModelRecord>>(MODELS_SECTION).userValue ?? {};
     const services =
-      this.config.inspect<ManagedKimiConfigShape['services']>(SERVICES_SECTION).userValue;
+      this.config.inspect<ManagedZimiConfigShape['services']>(SERVICES_SECTION).userValue;
     const defaultModel = this.config.inspect<string>(DEFAULT_MODEL_SECTION).userValue;
     const thinking =
-      this.config.inspect<ManagedKimiConfigShape['thinking']>(THINKING_SECTION).userValue;
+      this.config.inspect<ManagedZimiConfigShape['thinking']>(THINKING_SECTION).userValue;
     return {
-      providers: { ...providers } as ManagedKimiConfigShape['providers'],
-      models: { ...models } as ManagedKimiConfigShape['models'],
+      providers: { ...providers } as ManagedZimiConfigShape['providers'],
+      models: { ...models } as ManagedZimiConfigShape['models'],
       services: services === undefined ? undefined : { ...services },
       defaultModel,
       thinking: thinking === undefined ? undefined : { ...thinking },
     };
   }
 
-  getRegion(): KimiRegion {
+  getRegion(): ZimiRegion {
     return this.regionService.current().region;
   }
 
-  getRegionAsync(): Promise<KimiRegion> {
+  getRegionAsync(): Promise<ZimiRegion> {
     return this.regionService.getRegionAsync();
   }
 
   private resolveLoginAuth(
     provider: string,
-    region?: KimiRegion,
+    region?: ZimiRegion,
   ): {
     readonly oauthRef: OAuthRef | undefined;
     readonly baseUrl: string | undefined;
     readonly oauthHost: string | undefined;
   } {
     const config = this.providerService.get(provider);
-    if (provider !== KIMI_CODE_PROVIDER_NAME) {
+    if (provider !== ZIMI_CODE_PROVIDER_NAME) {
       return { oauthRef: config?.oauth, baseUrl: undefined, oauthHost: undefined };
     }
-    const env = kimiRegionEnv(this.bootstrap);
-    const hosts = region === undefined ? undefined : kimiRegionLoginHosts(region, env);
-    const loginAuth = resolveKimiCodeLoginAuth({
+    const env = zimiRegionEnv(this.bootstrap);
+    const hosts = region === undefined ? undefined : zimiRegionLoginHosts(region, env);
+    const loginAuth = resolveZimiCodeLoginAuth({
       configuredBaseUrl: config?.baseUrl,
       configuredOAuthRef: config?.oauth,
       requestedBaseUrl: hosts?.baseUrl,
@@ -483,7 +483,7 @@ export class OAuthService extends Disposable implements IOAuthService {
     });
     const oauthRef =
       loginAuth.oauthRef ??
-      resolveKimiCodeOAuthRef({
+      resolveZimiCodeOAuthRef({
         oauthHost: loginAuth.oauthHost,
         baseUrl: loginAuth.baseUrl,
       });
@@ -499,9 +499,9 @@ export class OAuthService extends Disposable implements IOAuthService {
   }
 
   private resolveRuntimeOAuthRef(provider: string, oauthRef?: OAuthRef): OAuthRef | undefined {
-    if (provider !== KIMI_CODE_PROVIDER_NAME) return oauthRef;
+    if (provider !== ZIMI_CODE_PROVIDER_NAME) return oauthRef;
     const config = this.providerService.get(provider);
-    return resolveKimiCodeRuntimeAuth({
+    return resolveZimiCodeRuntimeAuth({
       configuredBaseUrl: config?.baseUrl,
       configuredOAuthRef: oauthRef ?? config?.oauth,
     }).oauthRef;
@@ -544,7 +544,7 @@ export class OAuthService extends Disposable implements IOAuthService {
     try {
       await this.provisionProvider(state.provider, state.oauthRef, state.loginBaseUrl);
       if (this.flows.get(state.provider) !== state) return;
-      if (state.provider === KIMI_CODE_PROVIDER_NAME) {
+      if (state.provider === ZIMI_CODE_PROVIDER_NAME) {
         await this.refreshOAuthProviderModelsBestEffort(state.provider);
       }
     } catch (error) {
@@ -564,11 +564,11 @@ export class OAuthService extends Disposable implements IOAuthService {
     oauthRef: OAuthRef | undefined,
     loginBaseUrl: string | undefined,
   ): Promise<void> {
-    if (oauthRef === undefined && provider !== KIMI_CODE_PROVIDER_NAME) return;
+    if (oauthRef === undefined && provider !== ZIMI_CODE_PROVIDER_NAME) return;
     const baseUrl =
-      loginBaseUrl ?? this.providerService.get(provider)?.baseUrl ?? kimiCodeBaseUrl();
+      loginBaseUrl ?? this.providerService.get(provider)?.baseUrl ?? zimiCodeBaseUrl();
     await this.providerService.set(provider, {
-      type: 'kimi',
+      type: 'zimi',
       baseUrl,
       apiKey: '',
       oauth: oauthRef,
@@ -586,9 +586,9 @@ export class OAuthService extends Disposable implements IOAuthService {
   }
 
   private async deprovisionProvider(provider: string): Promise<void> {
-    if (provider !== KIMI_CODE_PROVIDER_NAME) return;
+    if (provider !== ZIMI_CODE_PROVIDER_NAME) return;
     const next = structuredClone(this.readUserConfigShape());
-    const cleanup = clearManagedKimiCodeConfig(next);
+    const cleanup = clearManagedZimiCodeConfig(next);
     if (
       !cleanup.removedProvider &&
       cleanup.removedModels.length === 0 &&
@@ -809,7 +809,7 @@ function isOAuthCatalogProvider(
 }
 
 function collectModelIdsForAliases(
-  config: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
   aliasKeys: ReadonlySet<string>,
 ): Set<string> {
   const ids = new Set<string>();
@@ -820,7 +820,7 @@ function collectModelIdsForAliases(
   return ids;
 }
 
-function providerAliasKeys(config: ManagedKimiConfigShape, providerId: string): Set<string> {
+function providerAliasKeys(config: ManagedZimiConfigShape, providerId: string): Set<string> {
   const keys = new Set<string>();
   for (const [alias, model] of Object.entries(config.models ?? {})) {
     if ((model as ManagedModel).provider === providerId) keys.add(alias);
@@ -829,7 +829,7 @@ function providerAliasKeys(config: ManagedKimiConfigShape, providerId: string): 
 }
 
 function generatedProviderAliasKeys(
-  config: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
   providerId: string,
   aliasPrefix: string,
 ): Set<string> {
@@ -858,8 +858,8 @@ function computeChanges(
 }
 
 function providerModelsEqual(
-  config: ManagedKimiConfigShape,
-  nextConfig: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
+  nextConfig: ManagedZimiConfigShape,
   providerId: string,
   aliasKeys: ReadonlySet<string>,
 ): boolean {
@@ -870,7 +870,7 @@ function providerModelsEqual(
 }
 
 function providerModelSnapshot(
-  config: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
   providerId: string,
   aliasKeys: ReadonlySet<string>,
 ): string {
@@ -892,8 +892,8 @@ function providerModelSnapshot(
 }
 
 function providerRefreshAliasKeys(
-  config: ManagedKimiConfigShape,
-  nextConfig: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
+  nextConfig: ManagedZimiConfigShape,
   providerId: string,
   aliasPrefix: string,
 ): Set<string> {
@@ -903,7 +903,7 @@ function providerRefreshAliasKeys(
 }
 
 function preserveUserProviderAliases(
-  config: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
   providerId: string,
   refreshedAliasKeys: ReadonlySet<string>,
 ): Record<string, ManagedModel> {
@@ -917,18 +917,18 @@ function preserveUserProviderAliases(
 }
 
 function restoreProviderAliases(
-  config: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
   aliases: Record<string, ManagedModel>,
 ): void {
   if (Object.keys(aliases).length === 0) return;
   config.models = {
     ...config.models,
     ...aliases,
-  } as ManagedKimiConfigShape['models'];
+  } as ManagedZimiConfigShape['models'];
 }
 
 function restoreDefaultSelection(
-  config: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
   defaultModel: string | undefined,
   defaultEnabled: boolean | undefined,
 ): void {
@@ -941,7 +941,7 @@ function restoreDefaultSelection(
   }
 }
 
-function clampDanglingDefault(config: ManagedKimiConfigShape): void {
+function clampDanglingDefault(config: ManagedZimiConfigShape): void {
   if (config.defaultModel !== undefined && config.models?.[config.defaultModel] === undefined) {
     config.defaultModel = undefined;
     config.thinking = undefined;
@@ -949,13 +949,13 @@ function clampDanglingDefault(config: ManagedKimiConfigShape): void {
 }
 
 function managedModel(
-  config: ManagedKimiConfigShape,
+  config: ManagedZimiConfigShape,
   alias: string,
 ): ManagedModel | undefined {
   return config.models?.[alias] as ManagedModel | undefined;
 }
 
-class OAuthToolkitService extends KimiOAuthToolkit implements IOAuthToolkit {
+class OAuthToolkitService extends ZimiOAuthToolkit implements IOAuthToolkit {
   declare readonly _serviceBrand: undefined;
   constructor(@IBootstrapService bootstrap: IBootstrapService) {
     super({ homeDir: bootstrap.homeDir, identity: bootstrap.clientIdentity });

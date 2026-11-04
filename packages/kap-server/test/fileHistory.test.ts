@@ -11,7 +11,7 @@ let home: string;
 let server: RunningServer | undefined;
 
 beforeAll(async () => {
-  home = mkdtempSync(join(tmpdir(), 'kimi-server-v2-file-history-'));
+  home = mkdtempSync(join(tmpdir(), 'zimi-server-v2-file-history-'));
   server = await startServer({
     hostIdentity: TEST_HOST_IDENTITY,
     host: '127.0.0.1',

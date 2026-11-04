@@ -12,7 +12,7 @@ describe('server-v2 /api/v1 bearer auth', () => {
   let home: string | undefined;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-auth-middleware-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-auth-middleware-'));
     server = await startServer({ hostIdentity: TEST_HOST_IDENTITY, host: '127.0.0.1', port: 0, homeDir: home, logLevel: 'silent' });
   });
 

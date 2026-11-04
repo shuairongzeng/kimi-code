@@ -22,7 +22,7 @@ vi.mock('#/os/backends/node-local/tools/rgLocator', async (importOriginal) => {
 const ensureRgPathMock = vi.mocked(ensureRgPath);
 
 const LOCAL_SHARE_BIN_RG = join(
-  '/kimi-home-test',
+  '/zimi-home-test',
   'bin',
   process.platform === 'win32' ? 'rg.exe' : 'rg',
 );
@@ -119,14 +119,14 @@ describe('rg-unavailable guidance', () => {
   let savedHome: string | undefined;
   beforeEach(() => {
     ensureRgPathMock.mockReset();
-    savedHome = process.env['KIMI_CODE_HOME'];
-    process.env['KIMI_CODE_HOME'] = '/kimi-home-test';
+    savedHome = process.env['ZIMI_CODE_HOME'];
+    process.env['ZIMI_CODE_HOME'] = '/zimi-home-test';
   });
   afterEach(() => {
     if (savedHome === undefined) {
-      delete process.env['KIMI_CODE_HOME'];
+      delete process.env['ZIMI_CODE_HOME'];
     } else {
-      process.env['KIMI_CODE_HOME'] = savedHome;
+      process.env['ZIMI_CODE_HOME'] = savedHome;
     }
   });
 

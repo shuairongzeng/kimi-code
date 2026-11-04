@@ -35,7 +35,7 @@ describe('closeDanglingToolCalls', () => {
     expect(synthesized?.toolCallId).toBe('tc1');
     expect(synthesized?.content[0]).toEqual({
       type: 'text',
-      text: '[tool result unavailable — session imported from kimi-cli]',
+      text: '[tool result unavailable — session imported from zimi-cli]',
     });
     // trailing user message survives.
     expect(out[3]).toEqual(user('still here?'));

@@ -1,5 +1,5 @@
 /**
- * Plan describing the contents detected under the source `~/.kimi/` directory.
+ * Plan describing the contents detected under the source `~/.zimi/` directory.
  * Produced by detect(); consumed by runMigration().
  */
 export interface MigrationPlan {
@@ -9,7 +9,7 @@ export interface MigrationPlan {
   readonly hasUserHistory: boolean;
   readonly hasSkills: boolean;
   readonly skillsSourceHome?: string;
-  /** Legacy `~/.kimi/plans/` (share-dir independent) holds plan files to copy. */
+  /** Legacy `~/.zimi/plans/` (share-dir independent) holds plan files to copy. */
   readonly hasPlans: boolean;
   /**
    * OAuth login names that will require a fresh `/login` after migration,
@@ -34,12 +34,12 @@ export interface SessionMigrationFailure {
 }
 
 /**
- * One workdir bucket (`~/.kimi/sessions/<md5>/`) with reverse-looked-up
- * path from `~/.kimi/kimi.json`. Buckets with kaos != 'local' or no
+ * One workdir bucket (`~/.zimi/sessions/<md5>/`) with reverse-looked-up
+ * path from `~/.zimi/zimi.json`. Buckets with kaos != 'local' or no
  * workdir found are excluded from this list (they appear in counters).
  */
 export interface WorkDirEntry {
-  readonly oldHashDir: string; // absolute path to ~/.kimi/sessions/<md5>/
+  readonly oldHashDir: string; // absolute path to ~/.zimi/sessions/<md5>/
   readonly workdirPath: string; // resolved absolute filesystem path
   readonly sessions: readonly SessionEntry[];
 }
@@ -64,7 +64,7 @@ export interface MigrationScope {
 
 /**
  * Output of a runMigration() call. Serialized verbatim to
- * `~/.kimi-code/migration-report.json` and surfaced in the terminal summary.
+ * `~/.zimi-code/migration-report.json` and surfaced in the terminal summary.
  */
 export interface MigrationReport {
   readonly startedAt: string;
@@ -82,27 +82,27 @@ export interface MigrationSummary {
     readonly tuiExtracted: boolean;
     readonly droppedProviders: readonly string[];
     readonly droppedModels: readonly string[];
-    /** Top-level keys dropped because kimi-code's config schema lacks them. */
+    /** Top-level keys dropped because zimi-code's config schema lacks them. */
     readonly droppedKeys: readonly string[];
     /**
-     * Keys/sections where the existing target config and the kimi-cli config
+     * Keys/sections where the existing target config and the zimi-cli config
      * both set a different value — the target's value was kept.
      */
     readonly configConflicts: readonly string[];
-    /** A `config.toml` conflict forced a `config.migrated-from-kimi-cli.toml` sibling. */
+    /** A `config.toml` conflict forced a `config.migrated-from-zimi-cli.toml` sibling. */
     readonly wroteSiblingDueToConflict: boolean;
-    /** A `tui.toml` conflict forced a `tui.migrated-from-kimi-cli.toml` sibling. */
+    /** A `tui.toml` conflict forced a `tui.migrated-from-zimi-cli.toml` sibling. */
     readonly wroteTuiSibling: boolean;
-    /** Count of kimi-cli hook entries written into the LIVE target config. */
+    /** Count of zimi-cli hook entries written into the LIVE target config. */
     readonly migratedHooks: number;
-    /** Count of kimi-cli hook entries dropped because kimi-code's schema rejects them. */
+    /** Count of zimi-cli hook entries dropped because zimi-code's schema rejects them. */
     readonly droppedHooks: number;
     readonly sourceUnreadable: boolean;
     /** Legacy `device_id` was copied because the target had none of its own. */
     readonly deviceIdCopied: boolean;
     /**
      * When `wroteSiblingDueToConflict` is true, what landed in
-     * `config.migrated-from-kimi-cli.toml` instead of the live `config.toml`.
+     * `config.migrated-from-zimi-cli.toml` instead of the live `config.toml`.
      * The result screen surfaces these so the user knows what needs manual
      * merging. Empty in `overwrite` / `merge` modes.
      */
@@ -115,7 +115,7 @@ export interface MigrationSummary {
   readonly mcp: {
     readonly mergedServers: readonly string[];
     readonly keptNewForConflicts: readonly string[];
-    /** Source servers dropped because kimi-code's MCP schema rejects them. */
+    /** Source servers dropped because zimi-code's MCP schema rejects them. */
     readonly droppedServers: readonly string[];
     /** Target `mcp.json` was unparseable; merged servers went to a sibling. */
     readonly wroteSiblingDueToConflict: boolean;
@@ -146,12 +146,12 @@ export interface SessionsSummary {
 export interface MigrationNotices {
   readonly mcpOauthServersRequiringReauth: readonly string[];
   /**
-   * Names of kimi-cli OAuth logins requiring re-login, derived from the legacy
-   * config's `oauth` provider refs plus any `~/.kimi/credentials/<name>.json`
+   * Names of zimi-cli OAuth logins requiring re-login, derived from the legacy
+   * config's `oauth` provider refs plus any `~/.zimi/credentials/<name>.json`
    * found at detection time. OAuth credentials are deliberately NOT migrated:
    * refresh tokens rotate server-side, so a copied credential breaks login for
    * whichever install refreshes second. The user must run `/login` in
-   * kimi-code instead. Empty when the legacy install had no OAuth login.
+   * zimi-code instead. Empty when the legacy install had no OAuth login.
    */
   readonly oauthLoginsRequiringRelogin: readonly string[];
   readonly detectedPlugins: readonly string[];

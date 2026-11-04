@@ -7,7 +7,7 @@ import {
   IFileService,
   ISessionManager,
   ISessionMediaStore,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { type RunningServer, startServer } from '../src/start';
@@ -17,7 +17,7 @@ let home: string;
 let server: RunningServer | undefined;
 
 beforeAll(async () => {
-  home = mkdtempSync(join(tmpdir(), 'kimi-server-v2-files-'));
+  home = mkdtempSync(join(tmpdir(), 'zimi-server-v2-files-'));
   server = await startServer({
     hostIdentity: TEST_HOST_IDENTITY,
     host: '127.0.0.1',
@@ -90,7 +90,7 @@ function buildMultipart(parts: {
   file: { fieldName: string; filename: string; contentType: string; data: Buffer };
   fields?: Array<{ name: string; value: string }>;
 }): { body: Buffer; contentType: string } {
-  const boundary = '------WebKitFormBoundaryKimiServerV2Test';
+  const boundary = '------WebKitFormBoundaryZimiServerV2Test';
   const lines: Array<Buffer | string> = [];
   if (parts.fields) {
     for (const f of parts.fields) {

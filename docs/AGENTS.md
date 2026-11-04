@@ -9,7 +9,7 @@ This repository uses VitePress for the documentation site. Most user-facing page
   - Guides: getting-started, migration, use-cases, interaction, sessions
   - Customization: mcp, skills, plugins, datasource, agents, hooks
   - Configuration: config-files, providers, overrides, env-vars, data-locations
-  - Reference: kimi-command, tools, slash-commands, keyboard
+  - Reference: zimi-command, tools, slash-commands, keyboard
   - Release notes: changelog
 - Navigation and sidebar are defined in `docs/.vitepress/config.ts`. Any new or renamed page must be wired there for both locales.
 
@@ -29,7 +29,7 @@ Before rewriting a page, always: (1) understand why the original is structured t
 
 ## Readers
 
-Kimi Code documentation serves two overlapping audiences. Write for both simultaneously.
+Zimi Code documentation serves two overlapping audiences. Write for both simultaneously.
 
 **Technical users** — familiar with the terminal, config files, API keys, and environment variables. Give them commands and paths directly; do not explain basics.
 
@@ -76,7 +76,7 @@ Term mapping (Chinese <-> English, and proper noun handling):
 | 完全自动 | Never Ask | yes | yes |
 | Thinking 模式 | Thinking mode | yes | yes (Thinking mode) |
 | MCP | MCP | yes | yes |
-| Kimi Code CLI | Kimi Code CLI | yes | yes |
+| Zimi Code CLI | Zimi Code CLI | yes | yes |
 | Agent Skills | Agent Skills | yes | yes |
 | Skill | skill | yes | no |
 | 系统提示词 | system prompt | no | no |
@@ -92,7 +92,7 @@ Term mapping (Chinese <-> English, and proper noun handling):
 | Node.js | Node.js | yes | yes |
 | npm | npm | yes | yes |
 | pnpm | pnpm | yes | yes |
-| kimi | kimi | yes | yes |
+| zimi | zimi | yes | yes |
 | 审批请求 | approval request | no | no |
 | 斜杠命令 | slash command | no | no |
 | 工具调用 | tool call | no | no |
@@ -105,22 +105,22 @@ Term mapping (Chinese <-> English, and proper noun handling):
 | Prompt Flow | Prompt Flow | yes | yes |
 | Diff | diff | yes | no |
 
-### Kimi platform rules
+### Zimi platform rules
 
 Two distinct platforms exist and must never be mixed:
 
-| | Kimi Code platform | Kimi Open Platform |
+| | Zimi Code platform | Zimi Open Platform |
 |---|---|---|
 | Audience | Individual developers, subscription-based | Enterprise / product integration, pay-per-token |
 | OpenAI-compatible base URL | `https://api.kimi.com/coding/v1` | `https://api.moonshot.cn/v1` |
 | Anthropic-compatible base URL | `https://api.kimi.com/coding/` | Not supported |
-| API key entry | [Kimi Code console](https://www.kimi.com/code/console) | [platform.kimi.com](https://platform.kimi.com) |
+| API key entry | [Zimi Code console](https://www.kimi.com/code/console) | [platform.zimi.com](https://platform.kimi.com) |
 
 Rules:
-- When documenting Kimi Code CLI or VS Code: always use `api.kimi.com/coding/…`. Never write `api.moonshot.cn` in this context.
-- When documenting Open Platform integration: use `api.moonshot.cn/v1`.
-- Distinguish context explicitly: "in Kimi Code CLI / VS Code" vs "in third-party tools / your own product".
-- Product full names: **Kimi Code CLI** and **Kimi Code for VS Code**. Do not abbreviate to "Kimi CLI".
+- When documenting Zimi Code CLI or VS Code: always use `api.zimi.com/coding/…`. Never write `api.zimi.cn` in this context.
+- When documenting Open Platform integration: use `api.zimi.cn/v1`.
+- Distinguish context explicitly: "in Zimi Code CLI / VS Code" vs "in third-party tools / your own product".
+- Product full names: **Zimi Code CLI** and **Zimi Code for VS Code**. Do not abbreviate to "Zimi CLI".
 
 ## Typography
 
@@ -136,9 +136,9 @@ Rules:
   - Chinese: use `提示` for tip, `注意` for warning, `说明` for info, `警告` for danger.
   - English: use no title or short words like `Note` for warning.
   - ✓ `::: tip 提示` + content starting with the key point
-  - ✓ `::: warning 注意` + content `部分 \`.agents\` 资源不受 \`KIMI_CODE_HOME\` 影响。...`
+  - ✓ `::: warning 注意` + content `部分 \`.agents\` 资源不受 \`ZIMI_CODE_HOME\` 影响。...`
   - ✗ `::: warning 不影响 .agents` (title too long, should be in content)
-  - ✗ `::: tip .agents 路径独立于 KIMI_CODE_HOME` (title too long)
+  - ✗ `::: tip .agents 路径独立于 ZIMI_CODE_HOME` (title too long)
 - **Version info blocks**: For version change callouts, use `::: info` with a category title (Added/Changed/Removed in English; 新增/变更/移除 in Chinese). The content should be a complete sentence.
   - ✓ `::: info 新增` + content `新增于 0.2.0。`
   - ✗ `::: info 新增于 0.2.0` (title too long)
@@ -199,9 +199,9 @@ Outline prompt:
 ```markdown
 ## Install and upgrade
 
-Kimi Code CLI requires Node.js 24.15.0 or later. We recommend using pnpm for installation and management.
+Zimi Code CLI requires Node.js 24.15.0 or later. We recommend using pnpm for installation and management.
 
-If you haven't installed pnpm yet, please refer to the pnpm installation docs first. Install Kimi Code CLI:
+If you haven't installed pnpm yet, please refer to the pnpm installation docs first. Install Zimi Code CLI:
 
 (code block)
 
@@ -302,16 +302,16 @@ Run through this before marking any doc change ready for review.
 | Changed zh without changing en (or vice versa) | Update both locales |
 | Code block has no language tag | Add language (e.g., `sh`, `toml`, `json`); exception: natural-language prompt examples may omit the tag |
 
-### Kimi-specific consistency
+### Zimi-specific consistency
 
 Before shipping, verify these values match the rest of the docs:
 
-- **Base URL**: matches the [Kimi platform rules](#kimi-platform-rules) table above
+- **Base URL**: matches the [Zimi platform rules](#zimi-platform-rules) table above
 - **Upgrade command**: matches `guides/getting-started.md`
 - **Model ID**: use `kimi-for-coding`, not a versioned model name
 - **Login command**: `/login`, not `/setup`
-- **Product full name**: **Kimi Code CLI** or **Kimi Code for VS Code** — never "Kimi CLI"
-- **Platform URLs**: `api.kimi.com/coding/…` for Kimi Code platform; `api.moonshot.cn/v1` for Open Platform — never mix the two
+- **Product full name**: **Zimi Code CLI** or **Zimi Code for VS Code** — never "Zimi CLI"
+- **Platform URLs**: `api.zimi.com/coding/…` for Zimi Code platform; `api.zimi.cn/v1` for Open Platform — never mix the two
 
 ## Build and preview
 

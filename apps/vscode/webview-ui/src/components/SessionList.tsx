@@ -15,7 +15,7 @@ interface SessionListProps {
   onClose: () => void;
 }
 
-const KIMI_SESSIONS_KEY = ["kimiSessions"] as const;
+const ZIMI_SESSIONS_KEY = ["zimiSessions"] as const;
 const NO_SESSIONS: SessionInfo[] = [];
 
 function formatRelativeDate(timestamp: number): string {
@@ -90,9 +90,9 @@ export function SessionList({ onClose }: SessionListProps) {
   const [pendingSession, setPendingSession] = useState<SessionInfo | null>(null);
 
   const queryClient = useQueryClient();
-  const { data: kimiSessions = NO_SESSIONS, isPending: loading } = useQuery({
-    queryKey: KIMI_SESSIONS_KEY,
-    queryFn: () => bridge.getAllKimiSessions(),
+  const { data: zimiSessions = NO_SESSIONS, isPending: loading } = useQuery({
+    queryKey: ZIMI_SESSIONS_KEY,
+    queryFn: () => bridge.getAllZimiSessions(),
   });
 
   const getWorkDirLabel = (sessionWorkDir: string): string | null => {
@@ -110,10 +110,10 @@ export function SessionList({ onClose }: SessionListProps) {
   };
 
   const filteredSessions = useMemo(() => {
-    if (!searchQuery.trim()) return kimiSessions;
+    if (!searchQuery.trim()) return zimiSessions;
     const q = searchQuery.toLowerCase();
-    return kimiSessions.filter((s) => s.brief.toLowerCase().includes(q));
-  }, [kimiSessions, searchQuery]);
+    return zimiSessions.filter((s) => s.brief.toLowerCase().includes(q));
+  }, [zimiSessions, searchQuery]);
 
   const handleSelect = async (session: SessionInfo) => {
     console.log("[SessionList] Loading session:", session.id);
@@ -164,7 +164,7 @@ export function SessionList({ onClose }: SessionListProps) {
         await startNewConversation();
       }
 
-      queryClient.setQueryData<SessionInfo[]>(KIMI_SESSIONS_KEY, (prev) => prev?.filter((s) => s.id !== deleteTarget.id) ?? []);
+      queryClient.setQueryData<SessionInfo[]>(ZIMI_SESSIONS_KEY, (prev) => prev?.filter((s) => s.id !== deleteTarget.id) ?? []);
     } catch (error) {
       console.error("[SessionList] Failed to delete session:", error);
       toast.error(`Unable to delete the conversation: ${error instanceof Error ? error.message : String(error)}`);

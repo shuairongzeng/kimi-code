@@ -43,7 +43,7 @@ export function towerEnterFailureMessage(failure: TowerEnterFailure): string {
     case 'not-main-agent':
       return 'tower mode is only supported by the main agent';
     case 'experiment-off':
-      return 'the tower experiment is disabled; enable it with KIMI_CODE_EXPERIMENTAL_TOWER=1 or `[experimental] tower = true` in config.toml';
+      return 'the tower experiment is disabled; enable it with ZIMI_CODE_EXPERIMENTAL_TOWER=1 or `[experimental] tower = true` in config.toml';
     case 'feature-not-assembled':
       return 'the tower feature is not assembled in this process; a restart is required';
     case 'owned-by-live-session': {

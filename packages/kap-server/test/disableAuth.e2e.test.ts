@@ -38,7 +38,7 @@ describe('server-v2 disableAuth (--dangerous-bypass-auth)', () => {
   const sockets: WebSocket[] = [];
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-disable-auth-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-disable-auth-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -93,7 +93,7 @@ describe('server-v2 disableAuth (--dangerous-bypass-auth)', () => {
   });
 
   it('default boot keeps the gate closed and reports dangerous_bypass_auth: false', async () => {
-    const altHome = await mkdtemp(join(tmpdir(), 'kimi-server-v2-disable-auth-'));
+    const altHome = await mkdtemp(join(tmpdir(), 'zimi-server-v2-disable-auth-'));
     const alt = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',

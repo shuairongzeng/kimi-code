@@ -1,11 +1,11 @@
 import {
-  KIMI_CODE_PROVIDER_NAME,
+  ZIMI_CODE_PROVIDER_NAME,
   OAuthError,
   fetchChatTitle,
-  kimiCodeToolsUrl,
-  parseKimiCodeCustomHeaders,
-  resolveKimiCodeRuntimeAuth,
-} from '@moonshot-ai/kimi-code-oauth';
+  zimiCodeToolsUrl,
+  parseZimiCodeCustomHeaders,
+  resolveZimiCodeRuntimeAuth,
+} from '@zimi-ai/zimi-code-oauth';
 
 import { ScopeActivation, registerScopedService } from '#/_base/di/scope';
 import { LifecycleScope } from '#/app/scopes';
@@ -93,7 +93,7 @@ export class SessionTitleService implements ISessionTitleService {
   ): Promise<string | undefined> {
     const current = await this.metadata.read();
     if (!force && current.titleKind === 'custom') return undefined;
-    const provider = this.providers.get(KIMI_CODE_PROVIDER_NAME);
+    const provider = this.providers.get(ZIMI_CODE_PROVIDER_NAME);
     if (
       provider === undefined ||
       !isOAuthCatalogVendor(provider.type) ||
@@ -101,12 +101,12 @@ export class SessionTitleService implements ISessionTitleService {
     ) {
       return undefined;
     }
-    const runtimeAuth = resolveKimiCodeRuntimeAuth({
+    const runtimeAuth = resolveZimiCodeRuntimeAuth({
       configuredBaseUrl: provider.baseUrl,
       configuredOAuthRef: provider.oauth,
     });
     const tokenProvider = this.oauth.resolveTokenProvider(
-      KIMI_CODE_PROVIDER_NAME,
+      ZIMI_CODE_PROVIDER_NAME,
       runtimeAuth.oauthRef,
     );
     if (tokenProvider === undefined) return undefined;
@@ -119,9 +119,9 @@ export class SessionTitleService implements ISessionTitleService {
       return undefined;
     }
     const requestTitle = (accessToken: string) =>
-      fetchChatTitle(kimiCodeToolsUrl(runtimeAuth.baseUrl), accessToken, chatContent, {
+      fetchChatTitle(zimiCodeToolsUrl(runtimeAuth.baseUrl), accessToken, chatContent, {
         headers: {
-          ...parseKimiCodeCustomHeaders(),
+          ...parseZimiCodeCustomHeaders(),
           ...this.hostHeaders.headers,
           ...provider.customHeaders,
         },

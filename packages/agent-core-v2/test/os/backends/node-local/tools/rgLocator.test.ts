@@ -51,7 +51,7 @@ describe('findExistingRg', () => {
   let fakeShare: string;
   let savedPath: string | undefined;
   beforeEach(() => {
-    fakeShare = join(tmpdir(), `kimi-rg-${String(Date.now())}-${String(Math.random()).slice(2)}`);
+    fakeShare = join(tmpdir(), `zimi-rg-${String(Date.now())}-${String(Math.random()).slice(2)}`);
     mkdirSync(join(fakeShare, 'bin'), { recursive: true });
     savedPath = process.env['PATH'];
     process.env['PATH'] = '';
@@ -164,11 +164,11 @@ describe('ensureRgPath remote environment branch', () => {
     const resolution = await ensureRgPath(probe, { environment, allowCachedFallback: true });
 
     expect(resolution).toEqual({
-      path: 'C:\\Users\\remote\\.kimi-code\\bin\\rg.exe',
+      path: 'C:\\Users\\remote\\.zimi-code\\bin\\rg.exe',
       source: 'share-bin-cached',
     });
     expect(probe.exec).toHaveBeenCalledTimes(2);
-    expect(probe.exec).toHaveBeenCalledWith(['C:\\Users\\remote\\.kimi-code\\bin\\rg.exe', '--version']);
+    expect(probe.exec).toHaveBeenCalledWith(['C:\\Users\\remote\\.zimi-code\\bin\\rg.exe', '--version']);
     expect(environment.fs!.mkdir).not.toHaveBeenCalled();
   });
 
@@ -182,7 +182,7 @@ describe('ensureRgPath remote environment branch', () => {
 
     const arch = osArch === 'x64' ? 'x86_64' : 'aarch64';
     expect(fetchMock.mock.calls[0]?.[0]).toMatch(new RegExp(`ripgrep-15\\.0\\.0-${arch}-pc-windows-msvc\\.zip$`));
-    expect(probe.exec).toHaveBeenCalledWith([String.raw`C:\Users\remote\.kimi-code\bin\rg.exe`, '--version']);
+    expect(probe.exec).toHaveBeenCalledWith([String.raw`C:\Users\remote\.zimi-code\bin\rg.exe`, '--version']);
     expect(environment.fs!.writeBytes).not.toHaveBeenCalled();
   });
 
@@ -192,7 +192,7 @@ describe('ensureRgPath remote environment branch', () => {
       { environmentId: 'local', generation: 'local-g1' },
       { capabilities: ['fs', 'process'] },
     );
-    const fakeShare = join(tmpdir(), `kimi-rg-local-${String(Date.now())}-${String(Math.random()).slice(2)}`);
+    const fakeShare = join(tmpdir(), `zimi-rg-local-${String(Date.now())}-${String(Math.random()).slice(2)}`);
     mkdirSync(join(fakeShare, 'bin'), { recursive: true });
     const savedPath = process.env['PATH'];
     process.env['PATH'] = '';
@@ -278,7 +278,7 @@ describe('rgUnavailableMessage', () => {
 describe('verifyArchiveChecksum', () => {
   let fakeDir: string;
   beforeEach(() => {
-    fakeDir = join(tmpdir(), `kimi-rg-sha-${String(Date.now())}-${String(Math.random()).slice(2)}`);
+    fakeDir = join(tmpdir(), `zimi-rg-sha-${String(Date.now())}-${String(Math.random()).slice(2)}`);
     mkdirSync(fakeDir, { recursive: true });
   });
   afterEach(() => {
@@ -313,7 +313,7 @@ describe('ensureRgPath download branch', () => {
   beforeEach(() => {
     fakeShare = join(
       tmpdir(),
-      `kimi-rg-dl-${String(Date.now())}-${String(Math.random()).slice(2)}`,
+      `zimi-rg-dl-${String(Date.now())}-${String(Math.random()).slice(2)}`,
     );
     mkdirSync(join(fakeShare, 'bin'), { recursive: true });
     savedFetch = globalThis.fetch;
@@ -438,8 +438,8 @@ describe('ensureRgPath download branch', () => {
   });
 
   it('downloads from the global CDN when the env pins the global region', async () => {
-    const savedHost = process.env['KIMI_CODE_OAUTH_HOST'];
-    process.env['KIMI_CODE_OAUTH_HOST'] = 'https://auth.kimi.ai';
+    const savedHost = process.env['ZIMI_CODE_OAUTH_HOST'];
+    process.env['ZIMI_CODE_OAUTH_HOST'] = 'https://auth.kimi.ai';
     try {
       const body = bodyFromBuffer(Buffer.from('not a real archive', 'utf8'));
       const fetchMock = vi.fn().mockResolvedValue({
@@ -455,20 +455,20 @@ describe('ensureRgPath download branch', () => {
       ).rejects.toThrow();
 
       const [url] = fetchMock.mock.calls[0] as [string];
-      expect(url).toMatch(/^https:\/\/code\.kimi\.ai\/kimi-code\/rg\/ripgrep-/);
+      expect(url).toMatch(/^https:\/\/code\.zimi\.ai\/zimi-code\/rg\/ripgrep-/);
     } finally {
-      if (savedHost === undefined) delete process.env['KIMI_CODE_OAUTH_HOST'];
-      else process.env['KIMI_CODE_OAUTH_HOST'] = savedHost;
+      if (savedHost === undefined) delete process.env['ZIMI_CODE_OAUTH_HOST'];
+      else process.env['ZIMI_CODE_OAUTH_HOST'] = savedHost;
     }
   });
 
   it('downloads from the cn CDN by default (no env override, no install marker)', async () => {
-    const savedHost = process.env['KIMI_CODE_OAUTH_HOST'];
-    const savedLegacyHost = process.env['KIMI_OAUTH_HOST'];
-    const savedHome = process.env['KIMI_CODE_HOME'];
-    delete process.env['KIMI_CODE_OAUTH_HOST'];
-    delete process.env['KIMI_OAUTH_HOST'];
-    process.env['KIMI_CODE_HOME'] = fakeShare;
+    const savedHost = process.env['ZIMI_CODE_OAUTH_HOST'];
+    const savedLegacyHost = process.env['ZIMI_OAUTH_HOST'];
+    const savedHome = process.env['ZIMI_CODE_HOME'];
+    delete process.env['ZIMI_CODE_OAUTH_HOST'];
+    delete process.env['ZIMI_OAUTH_HOST'];
+    process.env['ZIMI_CODE_HOME'] = fakeShare;
     try {
       const body = bodyFromBuffer(Buffer.from('not a real archive', 'utf8'));
       const fetchMock = vi.fn().mockResolvedValue({
@@ -484,14 +484,14 @@ describe('ensureRgPath download branch', () => {
       ).rejects.toThrow();
 
       const [url] = fetchMock.mock.calls[0] as [string];
-      expect(url).toMatch(/^https:\/\/code\.kimi\.com\/kimi-code\/rg\/ripgrep-/);
+      expect(url).toMatch(/^https:\/\/code\.zimi\.com\/zimi-code\/rg\/ripgrep-/);
     } finally {
-      if (savedHost === undefined) delete process.env['KIMI_CODE_OAUTH_HOST'];
-      else process.env['KIMI_CODE_OAUTH_HOST'] = savedHost;
-      if (savedLegacyHost === undefined) delete process.env['KIMI_OAUTH_HOST'];
-      else process.env['KIMI_OAUTH_HOST'] = savedLegacyHost;
-      if (savedHome === undefined) delete process.env['KIMI_CODE_HOME'];
-      else process.env['KIMI_CODE_HOME'] = savedHome;
+      if (savedHost === undefined) delete process.env['ZIMI_CODE_OAUTH_HOST'];
+      else process.env['ZIMI_CODE_OAUTH_HOST'] = savedHost;
+      if (savedLegacyHost === undefined) delete process.env['ZIMI_OAUTH_HOST'];
+      else process.env['ZIMI_OAUTH_HOST'] = savedLegacyHost;
+      if (savedHome === undefined) delete process.env['ZIMI_CODE_HOME'];
+      else process.env['ZIMI_CODE_HOME'] = savedHome;
     }
   });
 
@@ -553,7 +553,7 @@ describe('ensureRgPath Windows download branch', () => {
   beforeEach(() => {
     fakeShare = join(
       tmpdir(),
-      `kimi-rg-win-${String(Date.now())}-${String(Math.random()).slice(2)}`,
+      `zimi-rg-win-${String(Date.now())}-${String(Math.random()).slice(2)}`,
     );
     mkdirSync(join(fakeShare, 'bin'), { recursive: true });
     savedFetch = globalThis.fetch;

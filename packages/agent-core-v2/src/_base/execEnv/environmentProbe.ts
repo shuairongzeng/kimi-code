@@ -121,7 +121,7 @@ export async function probeHostEnvironment(
 async function locateWindowsGitBash(deps: HostEnvironmentProbeDeps): Promise<string> {
   const checked: string[] = [];
 
-  const override = deps.env['KIMI_SHELL_PATH']?.trim();
+  const override = deps.env['ZIMI_SHELL_PATH']?.trim();
   if (override !== undefined && override.length > 0) {
     checked.push(override);
     if (await deps.isFile(override)) {
@@ -178,7 +178,7 @@ async function locateWindowsGitBash(deps: HostEnvironmentProbeDeps): Promise<str
   }
 
   throw new ProbeShellNotFoundError(
-    'Git Bash was not found on this Windows host. Install Git for Windows from https://gitforwindows.org/ or set KIMI_SHELL_PATH to a bash.exe.',
+    'Git Bash was not found on this Windows host. Install Git for Windows from https://gitforwindows.org/ or set ZIMI_SHELL_PATH to a bash.exe.',
     checked,
   );
 }

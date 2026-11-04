@@ -6,7 +6,7 @@ export default defineConfig({
     projects: [
       'packages/*',
       '!packages/minidb',
-      'apps/kimi-code',
+      'apps/zimi-code',
       'apps/vis/server',
       'apps/vis/web',
       ...vscodeProjects,

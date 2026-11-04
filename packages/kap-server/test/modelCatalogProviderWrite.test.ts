@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { IConfigService } from '@moonshot-ai/agent-core-v2';
+import { IConfigService } from '@zimi-ai/agent-core-v2';
 import { parse as parseToml } from 'smol-toml';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -22,8 +22,8 @@ const DEFAULTED_TOML = [
   'default_provider = "openai"',
   'default_model = "gpt4o"',
   '',
-  '[providers.kimi]',
-  'type = "kimi"',
+  '[providers.zimi]',
+  'type = "zimi"',
   'api_key = "sk-test"',
   '',
   '[providers.openai]',
@@ -31,7 +31,7 @@ const DEFAULTED_TOML = [
   'api_key = "sk-openai"',
   '',
   '[models.k2]',
-  'provider = "kimi"',
+  'provider = "zimi"',
   'model = "kimi-k2"',
   'max_context_size = 131072',
   '',
@@ -50,8 +50,8 @@ const KEEP_DEFAULT_TOML = DEFAULTED_TOML.replace('default_provider = "openai"\n'
 const DANGLING_DEFAULT_TOML = [
   'default_model = "gone"',
   '',
-  '[providers.kimi]',
-  'type = "kimi"',
+  '[providers.zimi]',
+  'type = "zimi"',
   'api_key = "sk-test"',
   '',
 ].join('\n');
@@ -70,14 +70,14 @@ const POOL_TOML = [
 const POOL_DANGLING_DEFAULT_TOML = POOL_TOML.replace('default_model = "k2"', 'default_model = "gpt4o"');
 
 const MANAGED_TOML = [
-  '[providers."managed:kimi-code"]',
-  'type = "kimi"',
+  '[providers."managed:zimi-code"]',
+  'type = "zimi"',
   'api_key = ""',
   'base_url = "https://api.example.test/v1"',
-  'oauth = { storage = "file", key = "oauth/kimi-code" }',
+  'oauth = { storage = "file", key = "oauth/zimi-code" }',
   '',
-  '[models."managed:kimi-code/kimi-k2"]',
-  'provider = "managed:kimi-code"',
+  '[models."managed:zimi-code/kimi-k2"]',
+  'provider = "managed:zimi-code"',
   'model = "kimi-k2"',
   'max_context_size = 131072',
   '',
@@ -117,9 +117,9 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
   let base: string;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-provider-write-'));
-    process.env['KIMI_CODE_MODEL_CATALOG_REFRESH_ON_START'] = '0';
-    process.env['KIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS'] = '0';
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-provider-write-'));
+    process.env['ZIMI_CODE_MODEL_CATALOG_REFRESH_ON_START'] = '0';
+    process.env['ZIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS'] = '0';
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -139,8 +139,8 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
       await rm(home, { recursive: true, force: true });
       home = undefined;
     }
-    delete process.env['KIMI_CODE_MODEL_CATALOG_REFRESH_ON_START'];
-    delete process.env['KIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS'];
+    delete process.env['ZIMI_CODE_MODEL_CATALOG_REFRESH_ON_START'];
+    delete process.env['ZIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS'];
   });
 
   async function boot(toml?: string): Promise<void> {
@@ -341,23 +341,23 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
     expect(body.data).toBeNull();
 
     const providers = await getJson<{ items: Array<{ id: string }> }>('/api/v1/providers');
-    expect(providers.body.data.items.map((p) => p.id)).toEqual(['kimi', 'openai']);
+    expect(providers.body.data.items.map((p) => p.id)).toEqual(['zimi', 'openai']);
   });
 
   it('accepts a Unicode provider id (Chinese + space)', async () => {
     await boot();
     const { status, body } = await postJson<{ id: string }>('/api/v1/providers', {
       ...CREATE_BODY,
-      id: '测试 Kimi',
+      id: '测试 Zimi',
     });
     expect(status).toBe(201);
     expect(body.code).toBe(0);
-    expect(body.data.id).toBe('测试 Kimi');
+    expect(body.data.id).toBe('测试 Zimi');
 
     const onDisk = await readConfigToml();
-    expect(onDisk['providers']).toMatchObject({ '测试 Kimi': { type: 'openai' } });
+    expect(onDisk['providers']).toMatchObject({ '测试 Zimi': { type: 'openai' } });
     expect(onDisk['models']).toMatchObject({
-      '测试 Kimi/gpt-4.1': { provider: '测试 Kimi', model: 'gpt-4.1' },
+      '测试 Zimi/gpt-4.1': { provider: '测试 Zimi', model: 'gpt-4.1' },
     });
   });
 
@@ -421,14 +421,14 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
     expect(text).toBe('');
 
     const onDisk = await readConfigToml();
-    expect(onDisk['providers']).toEqual({ kimi: { type: 'kimi', api_key: 'sk-test' } });
+    expect(onDisk['providers']).toEqual({ zimi: { type: 'zimi', api_key: 'sk-test' } });
     expect(onDisk['models']).toEqual({
-      k2: { provider: 'kimi', model: 'kimi-k2', max_context_size: 131072 },
+      k2: { provider: 'zimi', model: 'kimi-k2', max_context_size: 131072 },
     });
     expect(onDisk['default_model']).toBe('k2');
 
     const providers = await getJson<{ items: Array<{ id: string }> }>('/api/v1/providers');
-    expect(providers.body.data.items.map((p) => p.id)).toEqual(['kimi']);
+    expect(providers.body.data.items.map((p) => p.id)).toEqual(['zimi']);
     const models = await getJson<{ items: Array<{ model: string }> }>('/api/v1/models');
     expect(models.body.data.items.map((m) => m.model)).toEqual(['k2']);
   });
@@ -442,9 +442,9 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
     const onDisk = await readConfigToml();
     expect(onDisk['default_provider']).toBe('openai');
     expect(onDisk['default_model']).toBe('gpt4o');
-    expect(onDisk['providers']).toEqual({ kimi: { type: 'kimi', api_key: 'sk-test' } });
+    expect(onDisk['providers']).toEqual({ zimi: { type: 'zimi', api_key: 'sk-test' } });
     expect(onDisk['models']).toEqual({
-      k2: { provider: 'kimi', model: 'kimi-k2', max_context_size: 131072 },
+      k2: { provider: 'zimi', model: 'kimi-k2', max_context_size: 131072 },
     });
   });
 
@@ -491,12 +491,12 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
 
   it('rejects deleting an OAuth-managed provider with 40003', async () => {
     await boot(MANAGED_TOML);
-    const { body } = await deleteJson<unknown>('/api/v1/providers/managed%3Akimi-code');
+    const { body } = await deleteJson<unknown>('/api/v1/providers/managed%3Azimi-code');
     expect(body?.code).toBe(40003);
     expect(body?.msg).toContain('/oauth/logout');
 
     const providers = await getJson<{ items: Array<{ id: string }> }>('/api/v1/providers');
-    expect(providers.body.data.items.map((p) => p.id)).toEqual(['managed:kimi-code']);
+    expect(providers.body.data.items.map((p) => p.id)).toEqual(['managed:zimi-code']);
   });
 
   it('maps an unknown provider id to 40412 on delete', async () => {
@@ -524,7 +524,7 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
 
     const onDisk = await readConfigToml();
     expect(onDisk['providers']).toEqual({
-      kimi: { type: 'kimi', api_key: 'sk-test' },
+      zimi: { type: 'zimi', api_key: 'sk-test' },
       openai: {
         type: 'openai',
         api_key: 'sk-openai',
@@ -533,7 +533,7 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
       },
     });
     expect(onDisk['models']).toEqual({
-      k2: { provider: 'kimi', model: 'kimi-k2', max_context_size: 131072 },
+      k2: { provider: 'zimi', model: 'kimi-k2', max_context_size: 131072 },
       'openai/gpt-4.1': {
         provider: 'openai',
         model: 'gpt-4.1',
@@ -567,7 +567,7 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
 
     const onDisk = await readConfigToml();
     expect(onDisk['providers']).toEqual({
-      kimi: { type: 'kimi', api_key: 'sk-test' },
+      zimi: { type: 'zimi', api_key: 'sk-test' },
       openai: {
         type: 'openai',
         api_key: 'sk-new-openai',
@@ -588,7 +588,7 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
 
     const onDisk = await readConfigToml();
     expect(onDisk['providers']).toEqual({
-      kimi: { type: 'kimi', api_key: 'sk-test' },
+      zimi: { type: 'zimi', api_key: 'sk-test' },
       openai: {
         type: 'openai',
         base_url: 'https://api.openai.example/v1',
@@ -601,16 +601,16 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
     await boot(KEEP_DEFAULT_TOML);
     const { status, body } = await putJson<{ provider: { has_api_key: boolean } }>(
       '/api/v1/providers/openai',
-      { ...REPLACE_BODY, api_key_env: 'KIMI_TEST_REPLACE_ROUTE_KEY' },
+      { ...REPLACE_BODY, api_key_env: 'ZIMI_TEST_REPLACE_ROUTE_KEY' },
     );
     expect(status).toBe(200);
 
     const onDisk = await readConfigToml();
     expect(onDisk['providers']).toEqual({
-      kimi: { type: 'kimi', api_key: 'sk-test' },
+      zimi: { type: 'zimi', api_key: 'sk-test' },
       openai: {
         type: 'openai',
-        api_key_env: 'KIMI_TEST_REPLACE_ROUTE_KEY',
+        api_key_env: 'ZIMI_TEST_REPLACE_ROUTE_KEY',
         base_url: 'https://api.openai.example/v1',
         default_model: 'openai/gpt-4.1',
       },
@@ -623,7 +623,7 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
     const { body } = await putJson<unknown>('/api/v1/providers/openai', {
       ...REPLACE_BODY,
       api_key: 'sk-inline',
-      api_key_env: 'KIMI_TEST_REPLACE_ROUTE_KEY',
+      api_key_env: 'ZIMI_TEST_REPLACE_ROUTE_KEY',
     });
     expect(body.code).toBe(40001);
     expect(body.msg).toContain('mutually exclusive');
@@ -638,13 +638,13 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
       ...CREATE_BODY,
       id: 'env-openai',
       api_key: undefined,
-      api_key_env: 'KIMI_TEST_REPLACE_ROUTE_KEY',
+      api_key_env: 'ZIMI_TEST_REPLACE_ROUTE_KEY',
     });
     expect(created.status).toBe(201);
 
     const onDisk = await readConfigToml();
     expect(onDisk['providers']).toMatchObject({
-      'env-openai': { api_key_env: 'KIMI_TEST_REPLACE_ROUTE_KEY' },
+      'env-openai': { api_key_env: 'ZIMI_TEST_REPLACE_ROUTE_KEY' },
     });
   });
 
@@ -706,7 +706,7 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
     expect(onDisk['default_model']).toBe('gpt4o');
     expect(onDisk['default_provider']).toBe('openai');
     expect(onDisk['providers']).toEqual({
-      kimi: { type: 'kimi', api_key: 'sk-test' },
+      zimi: { type: 'zimi', api_key: 'sk-test' },
       openai: {
         type: 'openai_responses',
         api_key: 'sk-openai',
@@ -734,7 +734,7 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
 
     const onDisk2 = await readConfigToml();
     expect(onDisk2['providers']).toEqual({
-      kimi: { type: 'kimi', api_key: 'sk-test' },
+      zimi: { type: 'zimi', api_key: 'sk-test' },
       'my-openai': {
         type: 'openai',
         api_key: 'sk-openai',
@@ -743,7 +743,7 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
       },
     });
     expect(onDisk2['models']).toEqual({
-      k2: { provider: 'kimi', model: 'kimi-k2', max_context_size: 131072 },
+      k2: { provider: 'zimi', model: 'kimi-k2', max_context_size: 131072 },
       'my-openai/gpt-4o': { provider: 'my-openai', model: 'gpt-4o', max_context_size: 128000 },
       'my-openai/gpt-4.1': { provider: 'my-openai', model: 'gpt-4.1', max_context_size: 1047576 },
     });
@@ -886,14 +886,14 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
     await boot(KEEP_DEFAULT_TOML);
     const { status, body } = await putJson<unknown>('/api/v1/providers/openai', {
       ...REPLACE_BODY,
-      new_id: 'kimi',
+      new_id: 'zimi',
     });
     expect(status).toBe(200);
     expect(body.code).toBe(40921);
 
     const onDisk = await readConfigToml();
     expect(onDisk['providers']).toEqual({
-      kimi: { type: 'kimi', api_key: 'sk-test' },
+      zimi: { type: 'zimi', api_key: 'sk-test' },
       openai: { type: 'openai', api_key: 'sk-openai' },
     });
   });
@@ -925,16 +925,16 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
   it('rejects replacing an OAuth-managed provider with 40003', async () => {
     await boot(MANAGED_TOML);
     const { body } = await putJson<unknown>(
-      '/api/v1/providers/managed%3Akimi-code',
+      '/api/v1/providers/managed%3Azimi-code',
       REPLACE_BODY,
     );
     expect(body.code).toBe(40003);
     expect(body.msg).toContain('/oauth/logout');
 
     const providers = await getJson<{ items: Array<{ id: string }> }>('/api/v1/providers');
-    expect(providers.body.data.items.map((p) => p.id)).toEqual(['managed:kimi-code']);
+    expect(providers.body.data.items.map((p) => p.id)).toEqual(['managed:zimi-code']);
     const models = await getJson<{ items: Array<{ model: string }> }>('/api/v1/models');
-    expect(models.body.data.items.map((m) => m.model)).toEqual(['managed:kimi-code/kimi-k2']);
+    expect(models.body.data.items.map((m) => m.model)).toEqual(['managed:zimi-code/kimi-k2']);
   });
 
   it('maps an unknown provider id to 40412 on replace', async () => {

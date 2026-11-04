@@ -7,7 +7,7 @@ import {
   closeSessionById,
   ISessionIndex,
   IWorkspaceInstanceManager,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { type RunningServer, startServer } from '../src/start';
@@ -51,7 +51,7 @@ function resolveTsxCli(): string {
 }
 
 function resolveExecServerFixture(): string {
-  const packageJson = require.resolve('@moonshot-ai/agent-core-v2/package.json');
+  const packageJson = require.resolve('@zimi-ai/agent-core-v2/package.json');
   return join(dirname(packageJson), 'test', 'remote', 'fixtures', 'exec-server-child.ts');
 }
 
@@ -76,9 +76,9 @@ describe('server-v2 /api/v1 environment routes', () => {
     let base: string;
 
     beforeAll(async () => {
-      home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-environment-on-'));
+      home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-environment-on-'));
       await writeFile(join(home, 'config.toml'), configToml(), 'utf-8');
-      process.env['KIMI_CODE_WATCH'] = '1';
+      process.env['ZIMI_CODE_WATCH'] = '1';
       server = await startServer({
         hostIdentity: TEST_HOST_IDENTITY,
         host: '127.0.0.1',
@@ -94,7 +94,7 @@ describe('server-v2 /api/v1 environment routes', () => {
         await server.close();
         server = undefined;
       }
-      delete process.env['KIMI_CODE_WATCH'];
+      delete process.env['ZIMI_CODE_WATCH'];
       if (home !== undefined) {
         await rm(home, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
         home = undefined;
@@ -139,10 +139,10 @@ describe('server-v2 /api/v1 environment routes', () => {
       );
       const incompatible = await call<null>('GET', `/api/v1/sessions/${id}/environment`);
       expect(incompatible.body.code).toBe(40930);
-      expect(incompatible.body.msg).toContain('Upgrade Kimi Code');
+      expect(incompatible.body.msg).toContain('Upgrade Zimi Code');
       const incompatibleList = await call<null>('GET', `/api/v1/sessions/${id}/environments`);
       expect(incompatibleList.body.code).toBe(40930);
-      expect(incompatibleList.body.msg).toContain('Upgrade Kimi Code');
+      expect(incompatibleList.body.msg).toContain('Upgrade Zimi Code');
     });
 
     it('creates a session bound to a declared environment via POST /sessions', async () => {

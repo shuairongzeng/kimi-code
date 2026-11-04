@@ -7,7 +7,7 @@ import { promisify } from 'node:util';
 
 import { expect, it } from 'vitest';
 
-import { windowsPowerShellPath } from '#/app/capability/entries/kimiCu';
+import { windowsPowerShellPath } from '#/app/capability/entries/zimiCu';
 import { windowsCuProcessScript } from '#/app/capability/entries/windowsCuProcesses';
 
 it.skipIf(process.platform !== 'win32')('releases a locked plugin directory without stopping unrelated processes', async () => {
@@ -18,8 +18,8 @@ it.skipIf(process.platform !== 'win32')('releases a locked plugin directory with
     const other = path.join(root, 'other');
     await mkdir(locked);
     await mkdir(other);
-    const executable = path.join(root, 'kimi-cu.exe');
-    const unrelatedExecutable = path.join(other, 'kimi-cu.exe');
+    const executable = path.join(root, 'zimi-cu.exe');
+    const unrelatedExecutable = path.join(other, 'zimi-cu.exe');
     await copyFile(process.execPath, executable);
     await copyFile(process.execPath, unrelatedExecutable);
     const body = "process.stdout.write('ready'); setInterval(() => {}, 1000);";
@@ -37,8 +37,8 @@ it.skipIf(process.platform !== 'win32')('releases a locked plugin directory with
     const unrelated = await start(unrelatedExecutable, 'agent', other);
     const env = {
       ...process.env,
-      KIMI_CU_WINDOWS_EXE: executable,
-      KIMI_CU_WINDOWS_HOME: root,
+      ZIMI_CU_WINDOWS_EXE: executable,
+      ZIMI_CU_WINDOWS_HOME: root,
       LOCALAPPDATA: root,
       ProgramFiles: root,
     };

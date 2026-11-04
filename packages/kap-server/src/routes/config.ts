@@ -1,4 +1,4 @@
-import { IConfigService, type Scope } from '@moonshot-ai/agent-core-v2';
+import { IConfigService, type Scope } from '@zimi-ai/agent-core-v2';
 
 import { errEnvelope, okEnvelope } from '../envelope';
 import { requestLog } from '../lib/requestLog';
@@ -34,7 +34,7 @@ export function registerConfigRoutes(app: ConfigRouteHost, core: Scope): void {
       method: 'GET',
       path: '/config',
       success: { data: configResponseSchema },
-      description: 'Get the global Kimi configuration (secrets redacted)',
+      description: 'Get the global Zimi configuration (secrets redacted)',
       tags: ['config'],
     },
     async (req, reply) => {
@@ -54,7 +54,7 @@ export function registerConfigRoutes(app: ConfigRouteHost, core: Scope): void {
       errors: {
         [ErrorCode.VALIDATION_FAILED]: {},
       },
-      description: 'Update the global Kimi configuration (merge semantics)',
+      description: 'Update the global Zimi configuration (merge semantics)',
       tags: ['config'],
     },
     async (req, reply) => {

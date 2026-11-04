@@ -1,8 +1,8 @@
 {
-  "name": "@moonshot-ai/klient",
+  "name": "@zimi-ai/klient",
   "version": "0.1.4",
   "private": true,
-  "description": "Kimi client SDK — contract-driven facade over agent-core-v2, routable over ipc or in-memory transports.",
+  "description": "Zimi client SDK — contract-driven facade over agent-core-v2, routable over ipc or in-memory transports.",
   "license": "MIT",
   "type": "module",
   "imports": {
@@ -37,17 +37,17 @@
     "test": "vitest run",
     "smoke": "tsx --tsconfig ./tsconfig.examples.json --import ../../build/register-raw-text-loader.mjs examples/smoke.ts",
     "smoke:boundary": "tsx --tsconfig ./tsconfig.examples.json --import ../../build/register-raw-text-loader.mjs examples/model-requester-boundary.ts",
-    "smoke:select-tools": "tsx --tsconfig ./tsconfig.examples.json --import ../../build/register-raw-text-loader.mjs examples/kimi-select-tools.ts",
+    "smoke:select-tools": "tsx --tsconfig ./tsconfig.examples.json --import ../../build/register-raw-text-loader.mjs examples/zimi-select-tools.ts",
     "stress:kosong-config": "tsx --tsconfig ./tsconfig.examples.json --import ../../build/register-raw-text-loader.mjs examples/kosong-config-stress.ts",
     "clean": "rm -rf dist",
     "docker:e2e": "bash scripts/run-docker-e2e.sh"
   },
   "dependencies": {
-    "@moonshot-ai/agent-core-v2": "workspace:^",
+    "@zimi-ai/agent-core-v2": "workspace:^",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@moonshot-ai/kap-server": "workspace:^",
+    "@zimi-ai/kap-server": "workspace:^",
     "@types/ws": "^8.18.0",
     "ulid": "^3.0.1",
     "ws": "^8.18.0"

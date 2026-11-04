@@ -1,10 +1,10 @@
 import {
   refreshProviderModels,
-  type ManagedKimiConfigShape,
-  type ManagedKimiOAuthRef,
+  type ManagedZimiConfigShape,
+  type ManagedZimiOAuthRef,
   type RefreshProviderHost,
   type RefreshResult,
-} from '@moonshot-ai/kimi-code-oauth';
+} from '@zimi-ai/zimi-code-oauth';
 import { LifecycleScope } from '#/app/scopes';
 import { Disposable } from '#/_base/di/lifecycle';
 import { ScopeActivation, registerScopedService } from '#/_base/di/scope';
@@ -44,7 +44,7 @@ interface StaticExclusion {
   readonly providers: Readonly<Record<string, ProviderConfig>>;
   readonly models: Readonly<Record<string, ModelRecord>>;
   readonly defaultModel?: string;
-  readonly thinking?: ManagedKimiConfigShape['thinking'];
+  readonly thinking?: ManagedZimiConfigShape['thinking'];
 }
 
 const EMPTY_EXCLUSION: StaticExclusion = { providers: {}, models: {} };
@@ -153,7 +153,7 @@ export class ProviderDiscoveryService extends Disposable implements IProviderDis
       }
     }
     const defaultModel = this.config.inspect<string>(DEFAULT_MODEL_SECTION).userValue;
-    const thinking = this.config.inspect<ManagedKimiConfigShape['thinking']>(
+    const thinking = this.config.inspect<ManagedZimiConfigShape['thinking']>(
       THINKING_SECTION,
     ).userValue;
     return {
@@ -176,29 +176,29 @@ export class ProviderDiscoveryService extends Disposable implements IProviderDis
     };
   }
 
-  private readUserConfigShape(exclusion: StaticExclusion = EMPTY_EXCLUSION): ManagedKimiConfigShape {
+  private readUserConfigShape(exclusion: StaticExclusion = EMPTY_EXCLUSION): ManagedZimiConfigShape {
     const providers =
       this.config.inspect<Record<string, ProviderConfig>>(PROVIDERS_SECTION).userValue ?? {};
     const models =
       this.config.inspect<Record<string, ModelRecord>>(MODELS_SECTION).userValue ?? {};
     const defaultModel = this.config.inspect<string>(DEFAULT_MODEL_SECTION).userValue;
     const thinking =
-      this.config.inspect<ManagedKimiConfigShape['thinking']>(THINKING_SECTION).userValue;
+      this.config.inspect<ManagedZimiConfigShape['thinking']>(THINKING_SECTION).userValue;
     const visibleModels = withoutKeys(models, exclusion.models);
     const excludedDefaultModel = exclusion.defaultModel;
     const excludedDefaultRecord =
       excludedDefaultModel !== undefined ? models[excludedDefaultModel] : undefined;
     return {
-      providers: withoutKeys(providers, exclusion.providers) as ManagedKimiConfigShape['providers'],
+      providers: withoutKeys(providers, exclusion.providers) as ManagedZimiConfigShape['providers'],
       models: (excludedDefaultModel !== undefined && excludedDefaultRecord !== undefined
         ? { ...visibleModels, [excludedDefaultModel]: excludedDefaultRecord }
-        : visibleModels) as ManagedKimiConfigShape['models'],
+        : visibleModels) as ManagedZimiConfigShape['models'],
       defaultModel,
       thinking: thinking === undefined ? undefined : { ...thinking },
     };
   }
 
-  private shapeWithoutProvider(providerId: string): Promise<ManagedKimiConfigShape> {
+  private shapeWithoutProvider(providerId: string): Promise<ManagedZimiConfigShape> {
     const current = this.readUserConfigShape();
     const providers = current.providers as Record<string, ProviderConfig>;
     const restProviders = Object.fromEntries(
@@ -212,13 +212,13 @@ export class ProviderDiscoveryService extends Disposable implements IProviderDis
       ...current,
       providers: restProviders,
       models: restModels,
-    } as ManagedKimiConfigShape);
+    } as ManagedZimiConfigShape);
   }
 
   private async applyRefreshPatch(
-    patch: ManagedKimiConfigShape,
+    patch: ManagedZimiConfigShape,
     exclusion: StaticExclusion,
-  ): Promise<ManagedKimiConfigShape> {
+  ): Promise<ManagedZimiConfigShape> {
     const userProviders =
       this.config.inspect<Record<string, ProviderConfig>>(PROVIDERS_SECTION).userValue ?? {};
     const userModels =
@@ -249,12 +249,12 @@ export class ProviderDiscoveryService extends Disposable implements IProviderDis
     return {
       providers:
         patch.providers !== undefined
-          ? ({ ...exclusion.providers, ...patch.providers } as ManagedKimiConfigShape['providers'])
-          : (userProviders as ManagedKimiConfigShape['providers']),
+          ? ({ ...exclusion.providers, ...patch.providers } as ManagedZimiConfigShape['providers'])
+          : (userProviders as ManagedZimiConfigShape['providers']),
       models:
         patch.models !== undefined
-          ? ({ ...exclusion.models, ...patch.models } as ManagedKimiConfigShape['models'])
-          : (userModels as ManagedKimiConfigShape['models']),
+          ? ({ ...exclusion.models, ...patch.models } as ManagedZimiConfigShape['models'])
+          : (userModels as ManagedZimiConfigShape['models']),
       defaultModel:
         'defaultModel' in patch
           ? restoreDefault
@@ -266,13 +266,13 @@ export class ProviderDiscoveryService extends Disposable implements IProviderDis
           ? restoreDefault
             ? exclusion.thinking
             : patch.thinking
-          : this.config.inspect<ManagedKimiConfigShape['thinking']>(THINKING_SECTION).userValue,
+          : this.config.inspect<ManagedZimiConfigShape['thinking']>(THINKING_SECTION).userValue,
     };
   }
 
   private async resolveOAuthToken(
     providerName: string,
-    oauthRef?: ManagedKimiOAuthRef,
+    oauthRef?: ManagedZimiOAuthRef,
   ): Promise<string> {
     const tokenProvider = this.oauth.resolveTokenProvider(
       providerName,

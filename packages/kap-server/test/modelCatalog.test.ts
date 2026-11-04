@@ -12,7 +12,7 @@ import {
   type IProviderDiscoveryService as IProviderDiscoveryServiceType,
   type ModelCatalogConfig,
   type ScopeSeed,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { type RunningServer, startServer } from '../src/start';
@@ -29,8 +29,8 @@ interface Envelope<T> {
 const CATALOG_TOML = [
   'default_model = "k2"',
   '',
-  '[providers.kimi]',
-  'type = "kimi"',
+  '[providers.zimi]',
+  'type = "zimi"',
   'api_key = "sk-test"',
   'base_url = "https://api.example.test/v1"',
   '',
@@ -38,17 +38,17 @@ const CATALOG_TOML = [
   'type = "openai"',
   '',
   '[models.k2]',
-  'provider = "kimi"',
+  'provider = "zimi"',
   'model = "kimi-k2"',
   'max_context_size = 131072',
-  'display_name = "Kimi K2"',
+  'display_name = "Zimi K2"',
   'capabilities = ["thinking"]',
   '',
   '[models.turbo]',
-  'provider = "kimi"',
-  'model = "kimi-turbo"',
+  'provider = "zimi"',
+  'model = "zimi-turbo"',
   'max_context_size = 32768',
-  'display_name = "Kimi Turbo"',
+  'display_name = "Zimi Turbo"',
   '',
   '[models.gpt4o]',
   'provider = "openai"',
@@ -65,9 +65,9 @@ describe('server-v2 /api/v1 model/provider catalog', () => {
   let base: string;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-model-catalog-'));
-    process.env['KIMI_CODE_MODEL_CATALOG_REFRESH_ON_START'] = '0';
-    process.env['KIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS'] = '0';
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-model-catalog-'));
+    process.env['ZIMI_CODE_MODEL_CATALOG_REFRESH_ON_START'] = '0';
+    process.env['ZIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS'] = '0';
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -97,8 +97,8 @@ describe('server-v2 /api/v1 model/provider catalog', () => {
       await rm(home, { recursive: true, force: true });
       home = undefined;
     }
-    delete process.env['KIMI_CODE_MODEL_CATALOG_REFRESH_ON_START'];
-    delete process.env['KIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS'];
+    delete process.env['ZIMI_CODE_MODEL_CATALOG_REFRESH_ON_START'];
+    delete process.env['ZIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS'];
   });
 
   async function boot(toml?: string, seeds?: ScopeSeed): Promise<void> {
@@ -152,16 +152,16 @@ describe('server-v2 /api/v1 model/provider catalog', () => {
     expect(body.code).toBe(0);
     expect(body.data.items).toEqual([
       {
-        provider: 'kimi',
+        provider: 'zimi',
         model: 'k2',
-        display_name: 'Kimi K2',
+        display_name: 'Zimi K2',
         max_context_size: 131072,
         capabilities: ['thinking'],
       },
       {
-        provider: 'kimi',
+        provider: 'zimi',
         model: 'turbo',
-        display_name: 'Kimi Turbo',
+        display_name: 'Zimi Turbo',
         max_context_size: 32768,
       },
       {
@@ -213,8 +213,8 @@ describe('server-v2 /api/v1 model/provider catalog', () => {
     expect(list.body.code).toBe(0);
     expect(list.body.data.items).toEqual([
       {
-        id: 'kimi',
-        type: 'kimi',
+        id: 'zimi',
+        type: 'zimi',
         base_url: 'https://api.example.test/v1',
         default_model: 'k2',
         has_api_key: true,
@@ -230,11 +230,11 @@ describe('server-v2 /api/v1 model/provider catalog', () => {
       },
     ]);
 
-    const single = await getJson<unknown>('/api/v1/providers/kimi');
+    const single = await getJson<unknown>('/api/v1/providers/zimi');
     expect(single.body.code).toBe(0);
     expect(single.body.data).toEqual({
-      id: 'kimi',
-      type: 'kimi',
+      id: 'zimi',
+      type: 'zimi',
       base_url: 'https://api.example.test/v1',
       default_model: 'k2',
       has_api_key: true,
@@ -255,9 +255,9 @@ describe('server-v2 /api/v1 model/provider catalog', () => {
     expect(body.data).toEqual({
       default_model: 'turbo',
       model: {
-        provider: 'kimi',
+        provider: 'zimi',
         model: 'turbo',
-        display_name: 'Kimi Turbo',
+        display_name: 'Zimi Turbo',
         max_context_size: 32768,
       },
     });
@@ -358,7 +358,7 @@ describe('server-v2 /api/v1 model/provider catalog', () => {
   it('refreshes OAuth provider models through POST /providers:refresh_oauth', async () => {
     const refreshOAuthProviderModels = vi.fn(async () => ({
       changed: [
-        { provider_id: 'managed:kimi-code', provider_name: 'Kimi Code', added: 1, removed: 0 },
+        { provider_id: 'managed:zimi-code', provider_name: 'Zimi Code', added: 1, removed: 0 },
       ],
       unchanged: [],
       failed: [],
@@ -376,7 +376,7 @@ describe('server-v2 /api/v1 model/provider catalog', () => {
     expect(body.code).toBe(0);
     expect(body.data).toEqual({
       changed: [
-        { provider_id: 'managed:kimi-code', provider_name: 'Kimi Code', added: 1, removed: 0 },
+        { provider_id: 'managed:zimi-code', provider_name: 'Zimi Code', added: 1, removed: 0 },
       ],
       unchanged: [],
       failed: [],
@@ -387,9 +387,9 @@ describe('server-v2 /api/v1 model/provider catalog', () => {
   it('refreshes all provider models through POST /providers:refresh', async () => {
     const refreshProviderModels = vi.fn(async () => ({
       changed: [
-        { provider_id: 'managed:kimi-code', provider_name: 'Kimi Code', added: 2, removed: 1 },
+        { provider_id: 'managed:zimi-code', provider_name: 'Zimi Code', added: 2, removed: 1 },
       ],
-      unchanged: ['moonshot-cn'],
+      unchanged: ['zimi-cn'],
       failed: [],
     }));
     const seeds = [[IProviderDiscoveryService, discoveryStub(refreshProviderModels)]] as unknown as ScopeSeed;
@@ -410,10 +410,10 @@ describe('server-v2 /api/v1 model/provider catalog', () => {
     const seeds = [[IProviderDiscoveryService, discoveryStub(refreshProviderModels)]] as unknown as ScopeSeed;
     await boot(CATALOG_TOML, seeds);
 
-    const { status, body } = await postJson('/api/v1/providers/managed%3Akimi-code:refresh', {});
+    const { status, body } = await postJson('/api/v1/providers/managed%3Azimi-code:refresh', {});
     expect(status).toBe(200);
     expect(body.code).toBe(0);
-    expect(refreshProviderModels).toHaveBeenCalledWith({ providerId: 'managed:kimi-code' });
+    expect(refreshProviderModels).toHaveBeenCalledWith({ providerId: 'managed:zimi-code' });
   });
 
   it('rejects unsupported provider actions with 40001', async () => {

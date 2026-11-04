@@ -21,7 +21,7 @@ describe('providers TOML transforms', () => {
   it('converts snake_case entries to camelCase and back', () => {
     const from = providersFromToml({
       'my-provider': {
-        type: 'kimi',
+        type: 'zimi',
         base_url: 'https://api.moonshot.ai/v1',
         custom_headers: { 'x-a': 'b' },
         default_model: 'kimi-k2',
@@ -29,7 +29,7 @@ describe('providers TOML transforms', () => {
       },
     }) as Record<string, Record<string, unknown>>;
     expect(from['my-provider']).toEqual({
-      type: 'kimi',
+      type: 'zimi',
       baseUrl: 'https://api.moonshot.ai/v1',
       customHeaders: { 'x-a': 'b' },
       defaultModel: 'kimi-k2',
@@ -38,7 +38,7 @@ describe('providers TOML transforms', () => {
 
     const back = providersToToml(from, undefined) as Record<string, Record<string, unknown>>;
     expect(back['my-provider']).toEqual({
-      type: 'kimi',
+      type: 'zimi',
       base_url: 'https://api.moonshot.ai/v1',
       custom_headers: { 'x-a': 'b' },
       default_model: 'kimi-k2',
@@ -91,11 +91,11 @@ describe('ProviderService', () => {
     await Promise.resolve();
     expect(ready).toBe(false);
 
-    service.loadAll({ moonshot: { type: 'kimi' } }, 'moonshot');
+    service.loadAll({ zimi: { type: 'zimi' } }, 'zimi');
     await service.ready;
     expect(ready).toBe(true);
-    expect(service.get('moonshot')).toEqual({ type: 'kimi' });
-    expect(service.getDefaultProvider()).toBe('moonshot');
+    expect(service.get('zimi')).toEqual({ type: 'zimi' });
+    expect(service.getDefaultProvider()).toBe('zimi');
   });
 
   it('supports CRUD and diffs state changes into onDidChangeProviders', async () => {
@@ -109,58 +109,58 @@ describe('ProviderService', () => {
       events.push({ added: e.added, removed: e.removed, changed: e.changed }),
     );
 
-    const moonshot: ProviderConfig = { type: 'kimi', baseUrl: 'https://api.moonshot.ai/v1' };
-    await service.set('moonshot', moonshot);
-    expect(service.get('moonshot')).toEqual(moonshot);
-    expect(service.list()).toEqual({ moonshot });
-    expect(events).toEqual([{ added: ['moonshot'], removed: [], changed: [] }]);
+    const zimi: ProviderConfig = { type: 'zimi', baseUrl: 'https://api.moonshot.ai/v1' };
+    await service.set('zimi', zimi);
+    expect(service.get('zimi')).toEqual(zimi);
+    expect(service.list()).toEqual({ zimi });
+    expect(events).toEqual([{ added: ['zimi'], removed: [], changed: [] }]);
 
-    const updated: ProviderConfig = { ...moonshot, apiKey: 'sk-1' };
-    await service.set('moonshot', updated);
-    expect(events.at(-1)).toEqual({ added: [], removed: [], changed: ['moonshot'] });
+    const updated: ProviderConfig = { ...zimi, apiKey: 'sk-1' };
+    await service.set('zimi', updated);
+    expect(events.at(-1)).toEqual({ added: [], removed: [], changed: ['zimi'] });
 
-    await service.set('moonshot', updated);
+    await service.set('zimi', updated);
     expect(events).toHaveLength(2);
 
-    await service.delete('moonshot');
-    expect(service.get('moonshot')).toBeUndefined();
-    expect(events.at(-1)).toEqual({ added: [], removed: ['moonshot'], changed: [] });
+    await service.delete('zimi');
+    expect(service.get('zimi')).toBeUndefined();
+    expect(events.at(-1)).toEqual({ added: [], removed: ['zimi'], changed: [] });
   });
 
   it('loadAll fires only for real diffs on re-sync', async () => {
-    const service = createService({ moonshot: { type: 'kimi' } });
+    const service = createService({ zimi: { type: 'zimi' } });
     const events: unknown[] = [];
     service.onDidChangeProviders((e) =>
       events.push({ added: e.added, removed: e.removed, changed: e.changed }),
     );
 
-    service.loadAll({ moonshot: { type: 'kimi' } }, undefined);
+    service.loadAll({ zimi: { type: 'zimi' } }, undefined);
     expect(events).toHaveLength(0);
 
-    service.loadAll({ moonshot: { type: 'kimi' }, other: { baseUrl: 'https://example.com' } }, undefined);
+    service.loadAll({ zimi: { type: 'zimi' }, other: { baseUrl: 'https://example.com' } }, undefined);
     expect(events).toEqual([{ added: ['other'], removed: [], changed: [] }]);
   });
 
   it('replaceAll replaces the records and keeps the default pointer', async () => {
-    const service = createService({ a: { type: 'kimi' }, b: { type: 'kimi' } });
+    const service = createService({ a: { type: 'zimi' }, b: { type: 'zimi' } });
     await service.setDefaultProvider('a');
 
-    await service.replaceAll({ c: { type: 'kimi' } });
-    expect(service.list()).toEqual({ c: { type: 'kimi' } });
+    await service.replaceAll({ c: { type: 'zimi' } });
+    expect(service.list()).toEqual({ c: { type: 'zimi' } });
     expect(service.getDefaultProvider()).toBe('a');
   });
 
   it('clears the defaultProvider pointer when the default provider is deleted', async () => {
-    const service = createService({ moonshot: { type: 'kimi' } });
+    const service = createService({ zimi: { type: 'zimi' } });
     const pointerEvents: Array<string | undefined> = [];
     service.onDidChangeDefaultProvider((e) => pointerEvents.push(e.id));
 
-    await service.setDefaultProvider('moonshot');
-    expect(service.getDefaultProvider()).toBe('moonshot');
+    await service.setDefaultProvider('zimi');
+    expect(service.getDefaultProvider()).toBe('zimi');
 
-    await service.delete('moonshot');
+    await service.delete('zimi');
     expect(service.getDefaultProvider()).toBeUndefined();
-    expect(pointerEvents).toEqual(['moonshot', undefined]);
+    expect(pointerEvents).toEqual(['zimi', undefined]);
   });
 
   it('a mutation resolves only after the listeners’ waitUntil work completes', async () => {
@@ -174,7 +174,7 @@ describe('ProviderService', () => {
       );
     });
 
-    await service.set('moonshot', { type: 'kimi' });
+    await service.set('zimi', { type: 'zimi' });
     expect(persistDone).toBe(true);
   });
 });

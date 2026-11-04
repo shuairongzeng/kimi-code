@@ -1,10 +1,10 @@
 # 远程环境
 
-远程环境让 Agent 的工具——读写文件、执行 Shell 命令——在另一台机器或容器里执行，而 Kimi Code CLI 本身、所有模型请求和你的凭据都留在本机。适合代码在另一台机器上，或希望把工具执行隔离在 Docker 兼容容器里的场景。
+远程环境让 Agent 的工具——读写文件、执行 Shell 命令——在另一台机器或容器里执行，而 Zimi Code CLI 本身、所有模型请求和你的凭据都留在本机。适合代码在另一台机器上，或希望把工具执行隔离在 Docker 兼容容器里的场景。
 
 ## 远程环境的工作原理
 
-Kimi Code 把 Agent 循环、模型请求、凭据、审批和会话状态全部留在本机，目标环境只执行两组 OS 原语：文件系统、进程。目标机器上运行一个小型执行器（`kimi exec-server`），通过一条连接提供这些原语；其余一切——包括每一次 LLM 请求——都留在本机。
+Zimi Code 把 Agent 循环、模型请求、凭据、审批和会话状态全部留在本机，目标环境只执行两组 OS 原语：文件系统、进程。目标机器上运行一个小型执行器（`zimi exec-server`），通过一条连接提供这些原语；其余一切——包括每一次 LLM 请求——都留在本机。
 
 即使在远程会话中，计划文件也保存在本机的会话目录里。`Read`、`Write` 和 `Edit` 在本机访问当前计划；退出计划模式后，已保存的计划仍可读取。任务输出也保留在本机，并在目标可用时同步一份；同步失败时，返回的本机输出路径仍可用 `Read` 读取。
 
@@ -42,14 +42,14 @@ defaultCwd = "/workspace"
 
 [environments.sandbox]
 command = "sandbox"              # 可执行名或绝对路径
-args = ["ssh", "i-1234567890", "--"]  # 进入目标的方式；Kimi Code 会追加执行器调用
+args = ["ssh", "i-1234567890", "--"]  # 进入目标的方式；Zimi Code 会追加执行器调用
 env = { SANDBOX_TOKEN = "..." }  # 可选：仅作用于本机启动器进程的环境变量
-defaultCwd = "/home/me/kimi-code"
+defaultCwd = "/home/me/zimi-code"
 ```
 
 关键规则：
 
-- `type` 与 `command` 在同一条目内互斥：`type = "ssh"` 和 `type = "docker"` 是内置启动器，`command` + `args` 是通用形式（与 `.mcp.json` 的 stdio 条目形态一致）。通用形式下，Kimi Code 会在 `args` 之后追加 `<remoteBin> exec-server`（默认 `~/.kimi-code/bin/kimi`），`args` 已经调用 `exec-server` 时不追加；`kubectl exec` 这类不经 shell、原样传递参数的启动器不会展开 `~`，需要把 `remoteBin` 设为绝对路径。`env` 设置的是本机启动器进程的环境，**不会**传播到 Agent 在目标环境执行的命令里。
+- `type` 与 `command` 在同一条目内互斥：`type = "ssh"` 和 `type = "docker"` 是内置启动器，`command` + `args` 是通用形式（与 `.mcp.json` 的 stdio 条目形态一致）。通用形式下，Zimi Code 会在 `args` 之后追加 `<remoteBin> exec-server`（默认 `~/.zimi-code/bin/zimi`），`args` 已经调用 `exec-server` 时不追加；`kubectl exec` 这类不经 shell、原样传递参数的启动器不会展开 `~`，需要把 `remoteBin` 设为绝对路径。`env` 设置的是本机启动器进程的环境，**不会**传播到 Agent 在目标环境执行的命令里。
 - `defaultCwd` 是在该环境上创建会话时使用的工作目录，可被 `--environment-cwd` 覆盖。它必须是目标环境上的 POSIX 绝对路径或 Windows 驱动器路径（如 `C:\work\project`）；不支持相对路径、`~` 和 UNC 路径。系统先规范化重复分隔符、`.` 和 `..`，再在目标环境上校验目录，并保存同一个规范化路径。符号链接名称会保留，不会用 realpath 改写；因此 `symlink/..` 使用路径拼写中的父目录，而不是符号链接目标的物理父目录。
 - 可选的顶层 `default` 指定创建会话时未显式给出绑定时使用的环境——冷启动、print 模式，或 API 创建。它指向的条目必须设置 `defaultCwd`。未设置 `default` 时，这些会话从 `local` 开始。TUI 里的 `/new` 不属于这种情况：它保留当前会话的环境和工作目录。还没有会话时，`/new` 使用进程启动时的 `--environment`；没有该参数时才用解析后的 default。
 - 配置文件无法读取或 `[environments]` 节无效时，创建会话会以 `config.invalid` 失败，不会将其视为未设置 default。显式选择 `local` 仍可创建本地会话。
@@ -65,15 +65,15 @@ defaultCwd = "/home/me/kimi-code"
 
 ### Windows 目标
 
-Windows 目标通过 Git Bash 执行 `Bash` 工具，与本机 Windows 会话一致。在目标机器上安装 [Git for Windows](https://gitforwindows.org/) 和 Windows 版 `kimi` 二进制文件。不支持原生 PowerShell 工具命令和 Windows Docker 容器。
+Windows 目标通过 Git Bash 执行 `Bash` 工具，与本机 Windows 会话一致。在目标机器上安装 [Git for Windows](https://gitforwindows.org/) 和 Windows 版 `zimi` 二进制文件。不支持原生 PowerShell 工具命令和 Windows Docker 容器。
 
-使用 SSH 时，默认执行器路径是 `~/.kimi-code/bin/kimi.exe`，其中 `~` 展开为目标账户的主目录。也可以把 `remoteBin` 设为 Windows 绝对路径，路径中可以包含空格。启动器会先识别目标系统，再运行执行器，支持 cmd、Windows PowerShell 5.1 和 Git Bash 作为 SSH 默认 Shell。也可以把二进制文件放到目标账户的 `PATH` 中，将 `remoteBin` 设为 `kimi` 或 `kimi.exe`；裸名称直接执行，无需探测系统。`defaultCwd` 使用原生驱动器路径，不要使用 `/c/work/project` 这类 Git Bash 路径，也不支持 UNC 路径。工具参数可以使用 `/c/work/file.txt` 这类驱动器路径形式，但 `/tmp`、`/usr`、`/dev`、`/proc` 等其他 MSYS 路径会由于无法在目标上确认挂载映射而被拒绝；控制端不会运行本机 `cygpath` 进行猜测。
+使用 SSH 时，默认执行器路径是 `~/.zimi-code/bin/zimi.exe`，其中 `~` 展开为目标账户的主目录。也可以把 `remoteBin` 设为 Windows 绝对路径，路径中可以包含空格。启动器会先识别目标系统，再运行执行器，支持 cmd、Windows PowerShell 5.1 和 Git Bash 作为 SSH 默认 Shell。也可以把二进制文件放到目标账户的 `PATH` 中，将 `remoteBin` 设为 `zimi` 或 `zimi.exe`；裸名称直接执行，无需探测系统。`defaultCwd` 使用原生驱动器路径，不要使用 `/c/work/project` 这类 Git Bash 路径，也不支持 UNC 路径。工具参数可以使用 `/c/work/file.txt` 这类驱动器路径形式，但 `/tmp`、`/usr`、`/dev`、`/proc` 等其他 MSYS 路径会由于无法在目标上确认挂载映射而被拒绝；控制端不会运行本机 `cygpath` 进行猜测。
 
 ```toml
 [environments.windows-dev]
 type = "ssh"
 host = "windows-dev"
-remoteBin = "kimi"
+remoteBin = "zimi"
 defaultCwd = 'C:\work\project'
 ```
 
@@ -83,12 +83,12 @@ defaultCwd = 'C:\work\project'
 
 环境绑定是会话级的：记录该会话的工具在哪个环境上执行，以及在该环境上的工作目录。同一工作区的不同会话可以绑定不同的环境，subagent 继承父 Agent 的绑定。创建远程会话时会记录一条持久提醒，包含环境 id、OS 与架构、Shell 和工作目录，让模型知道工具运行在何处。在 `local` 上创建会话则不记录。
 
-### `kimi --environment` 与 `--environment-cwd`
+### `zimi --environment` 与 `--environment-cwd`
 
 隐藏标志 `--environment <id>` 让新会话直接绑定到已配置的环境，相当于对 `[environments]` 默认配置的一次性覆盖。隐藏标志 `--environment-cwd <path>` 覆盖所选条目的 `defaultCwd`，必须与 `--environment` 一起使用：
 
 ```sh
-kimi --environment dev-box --environment-cwd /home/me/projects -p "Run the test suite"
+zimi --environment dev-box --environment-cwd /home/me/projects -p "Run the test suite"
 ```
 
 两个标志都只在创建会话时生效：不能与 `--session`/`--continue` 组合，因为恢复会话时会自动还原其记录的绑定。它们绑定的是本进程的第一个会话。之后的 `/new` 保留当前绑定，不再套用这些标志；只有还没有会话时，`/new` 才会使用它们。id 未声明、未提供覆盖值时条目未设置 `defaultCwd`，或目标目录无效，启动都会直接失败。创建会话会先连接目标环境再启动，连接失败会带着具体原因中止，而不是打开一个无法正常工作的会话。
@@ -109,14 +109,14 @@ kimi --environment dev-box --environment-cwd /home/me/projects -p "Run the test 
 
 默认情况下，SSH 连接是非交互式的。启动器以 `-T`（不分配终端）和 `-o BatchMode=yes` 调用系统 `ssh`。BatchMode 会禁用所有交互提示——密码、密钥口令（passphrase）、主机密钥确认——因为连接的输入输出流承载着协议流量，没有终端可以回答提示。需要这些提示的主机会立即失败，报出 `Permission denied (publickey,password)` 之类的错误，并在创建会话或下一次工具调用时表现为连接失败，而不是挂在一个无人可见的提示上。
 
-在交互式 TUI 中，如果认证失败且服务端提供 `password` 或 `keyboard-interactive`，Kimi Code CLI 还会提示你输入 SSH 密码，并通过 OpenSSH Askpass（在无终端时提供凭据的辅助程序）重试。密码只保存在当前进程内存中供重连使用，不会写入配置或凭据存储；修改环境或退出 Kimi Code CLI 后会丢弃。
+在交互式 TUI 中，如果认证失败且服务端提供 `password` 或 `keyboard-interactive`，Zimi Code CLI 还会提示你输入 SSH 密码，并通过 OpenSSH Askpass（在无终端时提供凭据的辅助程序）重试。密码只保存在当前进程内存中供重连使用，不会写入配置或凭据存储；修改环境或退出 Zimi Code CLI 后会丢弃。
 
-该兜底需要 OpenSSH 8.4 或更高版本，仅覆盖密码及使用同一密码的 keyboard-interactive，不支持独立 OTP/MFA 或私钥口令提示。`kimi -p` 等没有交互密码回调的客户端仍按上述方式直接失败。
+该兜底需要 OpenSSH 8.4 或更高版本，仅覆盖密码及使用同一密码的 keyboard-interactive，不支持独立 OTP/MFA 或私钥口令提示。`zimi -p` 等没有交互密码回调的客户端仍按上述方式直接失败。
 
 系统 `ssh` 支持的所有非交互认证方式都照常生效，通过 `~/.ssh/config` 和你的 shell 环境配置：
 
 - **密钥**：`IdentityFile` 条目和 `~/.ssh/` 下的默认密钥路径，适用于无口令的密钥。
-- **ssh-agent**：`SSH_AUTH_SOCK` 从你启动 Kimi Code 的终端继承，agent（保存已解锁密钥的后台程序）因此可以为 BatchMode 连接完成认证，无需提示。带口令的密钥先在自己的终端里执行一次 `ssh-add`。
+- **ssh-agent**：`SSH_AUTH_SOCK` 从你启动 Zimi Code 的终端继承，agent（保存已解锁密钥的后台程序）因此可以为 BatchMode 连接完成认证，无需提示。带口令的密钥先在自己的终端里执行一次 `ssh-add`。
 - **`ProxyJump` / `ProxyCommand`**：`~/.ssh/config` 中配置的跳板机照常生效。
 - **`ControlMaster`**：BatchMode 连接可以复用已有的主连接——这也是下文密码主机方案的基础。
 
@@ -136,13 +136,13 @@ Host dev-box
 
 ## 远程执行器
 
-执行器是 Kimi Code 自身的轻量构建，在目标环境以 `kimi exec-server` 启动。它只响应文件系统、进程请求——不接触模型 API、凭据和会话状态。stdio 是默认且唯一支持的传输方式，显式写法 `kimi exec-server --listen stdio` 与之等价且依然可用。
+执行器是 Zimi Code 自身的轻量构建，在目标环境以 `zimi exec-server` 启动。它只响应文件系统、进程请求——不接触模型 API、凭据和会话状态。stdio 是默认且唯一支持的传输方式，显式写法 `zimi exec-server --listen stdio` 与之等价且依然可用。
 
-POSIX 目标的默认安装路径是目标环境上的 `~/.kimi-code/bin/kimi`（执行器位于其他位置时——例如预装的容器镜像——可用条目里的 `remoteBin` 覆盖）。[Windows SSH 目标](#windows-目标)的默认路径为 `~/.kimi-code/bin/kimi.exe`，可用 Windows 绝对路径或目标 `PATH` 中的裸可执行文件名覆盖。
+POSIX 目标的默认安装路径是目标环境上的 `~/.zimi-code/bin/zimi`（执行器位于其他位置时——例如预装的容器镜像——可用条目里的 `remoteBin` 覆盖）。[Windows SSH 目标](#windows-目标)的默认路径为 `~/.zimi-code/bin/zimi.exe`，可用 Windows 绝对路径或目标 `PATH` 中的裸可执行文件名覆盖。
 
 ### 安装执行器
 
-Kimi Code 不会自动安装执行器。连接在预期路径上找不到执行器时，连接会失败，并指引你从 Kimi Code 发布 CDN 下载目标平台对应的二进制文件，再安装到预期路径。`docker` 条目也可以在镜像里预装或挂载执行器，把 `remoteBin` 指向该绝对路径即可。`command` 条目请把匹配构建安装到你的启动器命令所调用的绝对路径上。
+Zimi Code 不会自动安装执行器。连接在预期路径上找不到执行器时，连接会失败，并指引你从 Zimi Code 发布 CDN 下载目标平台对应的二进制文件，再安装到预期路径。`docker` 条目也可以在镜像里预装或挂载执行器，把 `remoteBin` 指向该绝对路径即可。`command` 条目请把匹配构建安装到你的启动器命令所调用的绝对路径上。
 
 ### 版本兼容
 
@@ -154,9 +154,9 @@ Kimi Code 不会自动安装执行器。连接在预期路径上找不到执行�
 
 - **Windows 主进程退出后的进程树清理**：运行中的进程会通过 `taskkill` 终止，但主进程已经退出后，其遗留的子进程不会再按进程组回收。如果需要清理这些子进程，请在主进程退出前停止对应的后台任务。
 
-- **Hooks 在 Kimi Code 所在主机执行**：`PreToolUse` 等生命周期钩子始终在运行 Kimi Code 的机器上执行，因此在远程会话中它们读到的是本机事实（本机文件、本机进程），而非目标环境的。它们以会话的本地工作目录运行；在目标环境上执行 hook 仍是未来才可能设计的能力。
-- **MCP server 默认留在本机**：未显式设置 `environment_id` 的 stdio MCP server 在远程会话中仍在本机运行，看不到目标环境的文件系统。MCP 配置取自启动 Kimi Code 的本机目录（包括该目录的项目级配置），不读取目标环境上的 MCP 配置。
-- **远程会话只加载用户级 Agent 文件**：项目级 Agent 文件可以替换系统提示词，而工作区信任目前只覆盖本机路径，因此远程会话不读取目标环境上的 `.kimi-code/agents/` 与 `.agents/agents/`，也不套用启动目录的项目级 Agent 文件。
+- **Hooks 在 Zimi Code 所在主机执行**：`PreToolUse` 等生命周期钩子始终在运行 Zimi Code 的机器上执行，因此在远程会话中它们读到的是本机事实（本机文件、本机进程），而非目标环境的。它们以会话的本地工作目录运行；在目标环境上执行 hook 仍是未来才可能设计的能力。
+- **MCP server 默认留在本机**：未显式设置 `environment_id` 的 stdio MCP server 在远程会话中仍在本机运行，看不到目标环境的文件系统。MCP 配置取自启动 Zimi Code 的本机目录（包括该目录的项目级配置），不读取目标环境上的 MCP 配置。
+- **远程会话只加载用户级 Agent 文件**：项目级 Agent 文件可以替换系统提示词，而工作区信任目前只覆盖本机路径，因此远程会话不读取目标环境上的 `.zimi-code/agents/` 与 `.agents/agents/`，也不套用启动目录的项目级 Agent 文件。
 - **远程工作区无热重载**：文件监听不在远程抽象之内，目标环境上 `AGENTS.md` 与项目级 skills 的变更不会被实时感知；新建或恢复会话、执行 `/reload` 时会重新读取。
 - **不支持 Tower 模式**：Tower 多 Agent 编排在远程工作区上不可用。
 - **git 状态槽隐藏**：CLI 底部状态栏的 git 指示（分支、状态、PR）仅支持本机，远程会话中隐藏。

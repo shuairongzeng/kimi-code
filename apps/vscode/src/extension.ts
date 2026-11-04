@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import { Events } from "../shared/bridge";
-import { KimiWebviewProvider } from "./KimiWebviewProvider";
+import { ZimiWebviewProvider } from "./ZimiWebviewProvider";
 import { onSettingsChange, VSCodeSettings } from "./config/vscode-settings";
 import {
   LegacyMigrationManager,
@@ -12,19 +12,19 @@ import { updateLoginContext } from "./utils/context";
 import { activateExtensionTelemetry, deactivateExtensionTelemetry } from "./telemetry";
 
 let outputChannel: vscode.OutputChannel | undefined;
-let provider: KimiWebviewProvider | undefined;
+let provider: ZimiWebviewProvider | undefined;
 
-const LEGACY_REAUTH_NOTICE_KEY = "kimi.legacyMigration.reauthNotice.v1";
-const LEGACY_WARNING_NOTICE_KEY = "kimi.legacyMigration.warningNotice.v1";
+const LEGACY_REAUTH_NOTICE_KEY = "zimi.legacyMigration.reauthNotice.v1";
+const LEGACY_WARNING_NOTICE_KEY = "zimi.legacyMigration.warningNotice.v1";
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-  outputChannel = vscode.window.createOutputChannel("Kimi Code");
+  outputChannel = vscode.window.createOutputChannel("Zimi Code");
   const remoteInfo = vscode.env.remoteName ? ` (remote: ${vscode.env.remoteName})` : "";
   const version = VSCodeSettings.getExtensionConfig().version;
-  log(`Kimi Code ${version} activating${remoteInfo}`);
+  log(`Zimi Code ${version} activating${remoteInfo}`);
   context.subscriptions.push(activateExtensionTelemetry({ version, log }));
 
-  provider = new KimiWebviewProvider(
+  provider = new ZimiWebviewProvider(
     context.extensionUri,
     context,
     () => outputChannel?.show(),
@@ -40,7 +40,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   }
 
   context.subscriptions.push(
-    vscode.workspace.registerTextDocumentContentProvider("kimi-baseline", {
+    vscode.workspace.registerTextDocumentContentProvider("zimi-baseline", {
       provideTextDocumentContent: async (uri) => {
         const sessionId = new URLSearchParams(uri.query).get("sessionId");
         if (!sessionId || !provider) return "";
@@ -67,7 +67,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
           .catch((error) => logError("Unable to update session permission", error));
       }
     }),
-    vscode.window.registerWebviewViewProvider("kimi.webview", provider, {
+    vscode.window.registerWebviewViewProvider("zimi.webview", provider, {
       webviewOptions: { retainContextWhenHidden: true },
     }),
   );
@@ -76,7 +76,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     targetHome: provider.harness.homeDir,
     workspaceRoot: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath,
     legacyEnvironmentVariables: vscode.workspace
-      .getConfiguration("kimi")
+      .getConfiguration("zimi")
       .get<unknown>("environmentVariables"),
   });
   let migrationInFlight: Promise<void> | undefined;
@@ -89,44 +89,44 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   };
 
   const commands: Record<string, () => void | Promise<void>> = {
-    "kimi.clearAllState": async () => {
-      await context.globalState.update("kimi.config", undefined);
-      await context.globalState.update("kimi.mcpServers", undefined);
-      await context.workspaceState.update("kimi.mcpEnabled", undefined);
-      await vscode.window.showInformationMessage("Kimi: Extension UI state cleared.");
+    "zimi.clearAllState": async () => {
+      await context.globalState.update("zimi.config", undefined);
+      await context.globalState.update("zimi.mcpServers", undefined);
+      await context.workspaceState.update("zimi.mcpEnabled", undefined);
+      await vscode.window.showInformationMessage("Zimi: Extension UI state cleared.");
     },
-    "kimi.openInTab": () => {
+    "zimi.openInTab": () => {
       provider?.createPanel();
     },
-    "kimi.openInSideBar": async () => {
-      await vscode.commands.executeCommand("kimi.webview.focus");
+    "zimi.openInSideBar": async () => {
+      await vscode.commands.executeCommand("zimi.webview.focus");
     },
-    "kimi.focusInput": async () => {
-      await vscode.commands.executeCommand("kimi.webview.focus");
+    "zimi.focusInput": async () => {
+      await vscode.commands.executeCommand("zimi.webview.focus");
       provider?.broadcast(Events.FocusInput, {});
     },
-    "kimi.insertMention": async () => {
+    "zimi.insertMention": async () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) {
         await vscode.window.showWarningMessage("No active editor");
         return;
       }
-      await vscode.commands.executeCommand("kimi.webview.focus");
+      await vscode.commands.executeCommand("zimi.webview.focus");
       if (!(await provider?.insertEditorMention(editor.document.uri, editor.selection))) {
         await vscode.window.showWarningMessage("The active file is outside the selected working directory.");
       }
     },
-    "kimi.newConversation": async () => {
-      await vscode.commands.executeCommand("kimi.webview.focus");
+    "zimi.newConversation": async () => {
+      await vscode.commands.executeCommand("zimi.webview.focus");
       provider?.broadcast(Events.NewConversation, {});
     },
-    "kimi.showLogs": () => outputChannel?.show(),
-    "kimi.resetKimi": () => provider?.resetAllWebviews(),
-    "kimi.logout": async () => {
-      await vscode.commands.executeCommand("kimi.webview.focus");
-      await vscode.window.showInformationMessage("Use the logout button in Kimi settings.");
+    "zimi.showLogs": () => outputChannel?.show(),
+    "zimi.resetZimi": () => provider?.resetAllWebviews(),
+    "zimi.logout": async () => {
+      await vscode.commands.executeCommand("zimi.webview.focus");
+      await vscode.window.showInformationMessage("Use the logout button in Zimi settings.");
     },
-    "kimi.migrateLegacyData": () => runMigration(true),
+    "zimi.migrateLegacyData": () => runMigration(true),
   };
 
   for (const [id, handler] of Object.entries(commands)) {
@@ -139,13 +139,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     context.globalState,
     isLoggedIn,
   ).catch((error) => {
-    logError("Unable to check for legacy Kimi data", error);
+    logError("Unable to check for legacy Zimi data", error);
   });
-  log("Kimi Code activated");
+  log("Zimi Code activated");
 }
 
 export async function deactivate(): Promise<void> {
-  log("Kimi Code deactivating");
+  log("Zimi Code deactivating");
   try {
     await provider?.shutdown();
   } finally {
@@ -175,7 +175,7 @@ async function offerLegacyMigration(
   const warningNotice =
     discovery.warnings.length === 0
       ? null
-      : "Some legacy Kimi data could not be inspected. Use “Kimi Code: Migrate Legacy Data” to retry.";
+      : "Some legacy Zimi data could not be inspected. Use “Zimi Code: Migrate Legacy Data” to retry.";
   if (discovery.prompt === null) {
     if (reauthNotice !== null && !globalState.get<boolean>(LEGACY_REAUTH_NOTICE_KEY, false)) {
       await vscode.window.showWarningMessage(reauthNotice);
@@ -186,7 +186,7 @@ async function offerLegacyMigration(
       !globalState.get<boolean>(LEGACY_WARNING_NOTICE_KEY, false)
     ) {
       const action = await vscode.window.showWarningMessage(
-        warningNotice ?? "Some legacy Kimi data could not be inspected.",
+        warningNotice ?? "Some legacy Zimi data could not be inspected.",
         "Show Logs",
       );
       await globalState.update(LEGACY_WARNING_NOTICE_KEY, true);
@@ -210,14 +210,14 @@ function legacyReauthNotice(
   discovery: LegacyMigrationDiscovery,
   isLoggedIn: boolean,
 ): string | null {
-  const kimiLogins = isLoggedIn ? 0 : discovery.notices.oauthLoginsRequiringRelogin.length;
+  const zimiLogins = isLoggedIn ? 0 : discovery.notices.oauthLoginsRequiringRelogin.length;
   const mcpLogins = discovery.notices.mcpOauthServersRequiringReauth.length;
-  if (kimiLogins === 0 && mcpLogins === 0) return null;
-  if (kimiLogins > 0 && mcpLogins > 0) {
-    return "Legacy OAuth credentials are not copied. Sign in to Kimi Code and authorize your MCP servers again.";
+  if (zimiLogins === 0 && mcpLogins === 0) return null;
+  if (zimiLogins > 0 && mcpLogins > 0) {
+    return "Legacy OAuth credentials are not copied. Sign in to Zimi Code and authorize your MCP servers again.";
   }
-  return kimiLogins > 0
-    ? "Legacy OAuth credentials are not copied. Sign in to Kimi Code again."
+  return zimiLogins > 0
+    ? "Legacy OAuth credentials are not copied. Sign in to Zimi Code again."
     : "Legacy MCP OAuth credentials are not copied. Authorize those MCP servers again.";
 }
 
@@ -225,7 +225,7 @@ async function performMigration(
   manager: LegacyMigrationManager,
   retry: boolean,
 ): Promise<void> {
-  log(`${retry ? "Retrying" : "Starting"} legacy Kimi data migration`);
+  log(`${retry ? "Retrying" : "Starting"} legacy Zimi data migration`);
   const result = retry ? await manager.retry() : await manager.migrateNow();
   logMigrationResult(result);
 

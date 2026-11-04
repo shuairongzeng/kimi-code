@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const moduleRequire = createRequire(import.meta.url);
-const TUI_PACKAGE_NAME = "@moonshot-ai/pi-tui";
+const TUI_PACKAGE_NAME = "@zimi-ai/pi-tui";
 
 export interface NativeModuleCandidateOptions {
 	moduleUrl?: string;

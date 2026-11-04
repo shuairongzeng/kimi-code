@@ -11,25 +11,25 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { Service } from '@moonshot-ai/agent-core-v2/_base/di/service';
-import { CommandContribution } from '@moonshot-ai/agent-core-v2/agent/command/commandContribution';
-import { ToolResultEvent } from '@moonshot-ai/agent-core-v2/agent/toolExecutor/toolExecutorEvents';
-import { IEventBus } from '@moonshot-ai/agent-core-v2/app/event/eventBus';
-import { IFeatureManager } from '@moonshot-ai/agent-core-v2/app/feature/featureManager';
-import { getLiveSessionById } from '@moonshot-ai/agent-core-v2/app/sessionManager/sessionLookup';
-import { IAgentContextMemoryService } from '@moonshot-ai/agent-core-v2/agent/contextMemory/contextMemory';
-import { IAgentLifecycleService } from '@moonshot-ai/agent-core-v2/session/agentLifecycle/agentLifecycle';
-import { IWireService } from '@moonshot-ai/agent-core-v2/wire/wire';
-import { IModelCatalog } from '@moonshot-ai/agent-core-v2/llm-adapter/model/catalog';
-import { IModelService } from '@moonshot-ai/agent-core-v2/llm-adapter/model/model';
-import { IProtocolAdapterRegistry } from '@moonshot-ai/agent-core-v2/llm-adapter/protocol/protocol';
-import { generateModel } from '@moonshot-ai/agent-core-v2/llm-adapter/model/generate';
-import type { LlmRequester } from '@moonshot-ai/agent-core-v2/human/llm-requester/requester';
+import { Service } from '@zimi-ai/agent-core-v2/_base/di/service';
+import { CommandContribution } from '@zimi-ai/agent-core-v2/agent/command/commandContribution';
+import { ToolResultEvent } from '@zimi-ai/agent-core-v2/agent/toolExecutor/toolExecutorEvents';
+import { IEventBus } from '@zimi-ai/agent-core-v2/app/event/eventBus';
+import { IFeatureManager } from '@zimi-ai/agent-core-v2/app/feature/featureManager';
+import { getLiveSessionById } from '@zimi-ai/agent-core-v2/app/sessionManager/sessionLookup';
+import { IAgentContextMemoryService } from '@zimi-ai/agent-core-v2/agent/contextMemory/contextMemory';
+import { IAgentLifecycleService } from '@zimi-ai/agent-core-v2/session/agentLifecycle/agentLifecycle';
+import { IWireService } from '@zimi-ai/agent-core-v2/wire/wire';
+import { IModelCatalog } from '@zimi-ai/agent-core-v2/llm-adapter/model/catalog';
+import { IModelService } from '@zimi-ai/agent-core-v2/llm-adapter/model/model';
+import { IProtocolAdapterRegistry } from '@zimi-ai/agent-core-v2/llm-adapter/protocol/protocol';
+import { generateModel } from '@zimi-ai/agent-core-v2/llm-adapter/model/generate';
+import type { LlmRequester } from '@zimi-ai/agent-core-v2/human/llm-requester/requester';
 import { coreRequesterFromA } from '../../../agent-core-v2/test/harness/scripted-generate.js';
 import {
   resetModelsDevUpstreamForTest,
   setModelsDevUpstreamForTest,
-} from '@moonshot-ai/agent-core-v2/app/kosongConfig/modelsDevUpstream';
+} from '@zimi-ai/agent-core-v2/app/kosongConfig/modelsDevUpstream';
 
 import type { Klient } from '../../src/index.js';
 import type { TestEngine } from './engine.js';
@@ -184,9 +184,9 @@ export function defineKlientConformance(
     it('session skills.list returns the workspace skills as summaries', async () => {
       const workDir = await mkdtemp(join(tmpdir(), 'klient-conf-skills-'));
       try {
-        await mkdir(join(workDir, '.kimi-code', 'skills', 'conf-skill'), { recursive: true });
+        await mkdir(join(workDir, '.zimi-code', 'skills', 'conf-skill'), { recursive: true });
         await writeFile(
-          join(workDir, '.kimi-code', 'skills', 'conf-skill', 'SKILL.md'),
+          join(workDir, '.zimi-code', 'skills', 'conf-skill', 'SKILL.md'),
           '---\nname: conf-skill\ndescription: conformance fixture skill\n---\n\n# Conf\n',
         );
         const created = await target.klient.global.sessions.create({ workDir });
@@ -208,9 +208,9 @@ export function defineKlientConformance(
     it('promptWithSkills submits skills, args, and steerIfActive on every transport', async () => {
       const workDir = await mkdtemp(join(tmpdir(), 'klient-conf-skill-submit-'));
       try {
-        await mkdir(join(workDir, '.kimi-code', 'skills', 'conf-skill'), { recursive: true });
+        await mkdir(join(workDir, '.zimi-code', 'skills', 'conf-skill'), { recursive: true });
         await writeFile(
-          join(workDir, '.kimi-code', 'skills', 'conf-skill', 'SKILL.md'),
+          join(workDir, '.zimi-code', 'skills', 'conf-skill', 'SKILL.md'),
           '---\nname: conf-skill\ndescription: conformance fixture skill\n---\n\n# Conf body\n',
         );
         const created = await target.klient.global.sessions.create({ workDir });
@@ -453,16 +453,16 @@ export function defineKlientConformance(
         sub.dispose();
       }
 
-      const kimiId = '__klient_kimi_thinking__';
-      const kimiProviderId = '__klient_kimi_provider__';
-      await kosong.addProvider(kimiProviderId, {
-        type: 'kimi',
+      const zimiId = '__klient_zimi_thinking__';
+      const zimiProviderId = '__klient_zimi_provider__';
+      await kosong.addProvider(zimiProviderId, {
+        type: 'zimi',
         baseUrl: 'https://example.test/v1',
         auth: { method: 'api-key', apiKey: 'conf-key' },
       });
-      await target.app.accessor.get(IModelService).set(kimiId, {
-        provider: kimiProviderId,
-        model: 'conf-kimi',
+      await target.app.accessor.get(IModelService).set(zimiId, {
+        provider: zimiProviderId,
+        model: 'conf-zimi',
         maxContextSize: 4096,
         capabilities: ['thinking'],
         supportEfforts: ['low', 'high'],
@@ -473,7 +473,7 @@ export function defineKlientConformance(
         id: 'chatcmpl-conf',
         object: 'chat.completion.chunk',
         created: 0,
-        model: 'conf-kimi',
+        model: 'conf-zimi',
         choices: [{ index: 0, delta: { role: 'assistant', content: 'ok' }, finish_reason: 'stop' }],
         usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 },
       });
@@ -528,17 +528,17 @@ export function defineKlientConformance(
         ],
       };
       try {
-        await consume(kosong.generate(kimiId, publicInput, { thinkingEffort: 'on' }));
-        await consume(kosong.generate(kimiId, publicInput, { thinkingEffort: 'max' }));
+        await consume(kosong.generate(zimiId, publicInput, { thinkingEffort: 'on' }));
+        await consume(kosong.generate(zimiId, publicInput, { thinkingEffort: 'max' }));
         const catalog = target.app.accessor.get(IModelCatalog);
         const registry = target.app.accessor.get(IProtocolAdapterRegistry);
         await consume(
-          generateModel(registry.request(catalog.get(kimiId), { thinkingEffort: 'on' }), coreInput, undefined, {
+          generateModel(registry.request(catalog.get(zimiId), { thinkingEffort: 'on' }), coreInput, undefined, {
             thinkingEffort: 'on',
           }),
         );
         await consume(
-          generateModel(registry.request(catalog.get(kimiId), { thinkingEffort: 'max' }), coreInput, undefined, {
+          generateModel(registry.request(catalog.get(zimiId), { thinkingEffort: 'max' }), coreInput, undefined, {
             thinkingEffort: 'max',
           }),
         );
@@ -586,7 +586,7 @@ export function defineKlientConformance(
         );
         try {
           const responseEvents: unknown[] = [];
-          for await (const event of kosong.generate(kimiId, publicInput)) {
+          for await (const event of kosong.generate(zimiId, publicInput)) {
             responseEvents.push(event);
           }
           const publicPart = {
@@ -614,8 +614,8 @@ export function defineKlientConformance(
         }
       } finally {
         vi.unstubAllGlobals();
-        await kosong.removeProvider(kimiId);
-        await kosong.removeProvider(kimiProviderId);
+        await kosong.removeProvider(zimiId);
+        await kosong.removeProvider(zimiProviderId);
       }
     });
 

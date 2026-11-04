@@ -2,9 +2,9 @@ import { randomUUID } from 'node:crypto';
 import { release } from 'node:os';
 
 import {
-  kimiRegionProfile,
-  type KimiRegionResolution,
-} from '@moonshot-ai/kimi-code-oauth';
+  zimiRegionProfile,
+  type ZimiRegionResolution,
+} from '@zimi-ai/zimi-code-oauth';
 
 import type { ServicesAccessor } from '#/_base/di/instantiation';
 import { onUnexpectedError } from '#/_base/errors/unexpectedError';
@@ -28,7 +28,7 @@ import { cleanTelemetryProperties } from './privacy';
 export interface CloudAppenderOptions {
   readonly storage: IFileSystemStorageService;
   readonly bootstrap: IBootstrapService;
-  readonly resolveRegion: () => KimiRegionResolution;
+  readonly resolveRegion: () => ZimiRegionResolution;
   readonly deviceId: string;
   readonly sessionId?: string;
   readonly appName: string;
@@ -77,7 +77,7 @@ const DEFAULT_FLUSH_INTERVAL_MS = 30_000;
 export class CloudAppender implements ITelemetryAppender {
   private readonly transport: CloudTransport;
   private readonly context: CloudContext;
-  private readonly resolveRegion: () => KimiRegionResolution;
+  private readonly resolveRegion: () => ZimiRegionResolution;
   private readonly flushThreshold: number;
   private readonly flushIntervalMs: number;
   private deviceId: string;
@@ -99,7 +99,7 @@ export class CloudAppender implements ITelemetryAppender {
       endpoint: options.endpoint,
       resolveEndpoint:
         options.endpoint === undefined
-          ? () => kimiRegionProfile(this.resolveRegion().region).telemetryEndpoint
+          ? () => zimiRegionProfile(this.resolveRegion().region).telemetryEndpoint
           : undefined,
       getAccessToken: options.getAccessToken,
       fetchImpl: options.fetchImpl,

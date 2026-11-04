@@ -1,7 +1,7 @@
 import { isRecord } from './utils';
-import type { ManagedKimiModelAlias, ManagedKimiModelAliasOverrides } from './managed-kimi-code';
+import type { ManagedZimiModelAlias, ManagedZimiModelAliasOverrides } from './managed-zimi-code';
 
-export const MANAGED_KIMI_MODEL_FIELDS: ReadonlySet<string> = new Set([
+export const MANAGED_ZIMI_MODEL_FIELDS: ReadonlySet<string> = new Set([
   'provider',
   'model',
   'maxContextSize',
@@ -27,8 +27,8 @@ export const CUSTOM_REGISTRY_MODEL_FIELDS: ReadonlySet<string> = new Set([
 ]);
 
 function cloneOverrides(
-  overrides: ManagedKimiModelAliasOverrides | undefined,
-): ManagedKimiModelAliasOverrides | undefined {
+  overrides: ManagedZimiModelAliasOverrides | undefined,
+): ManagedZimiModelAliasOverrides | undefined {
   if (overrides === undefined) return undefined;
   return structuredClone(overrides);
 }
@@ -47,13 +47,13 @@ function userExtras(
 
 export function mergeRefreshedModelAlias(
   existing: unknown,
-  remote: ManagedKimiModelAlias,
+  remote: ManagedZimiModelAlias,
   remoteOwnedFields: ReadonlySet<string>,
-): ManagedKimiModelAlias {
+): ManagedZimiModelAlias {
   const current = isRecord(existing) ? existing : {};
   const overrides = cloneOverrides(
     isRecord(current['overrides'])
-      ? (current['overrides'] as ManagedKimiModelAliasOverrides)
+      ? (current['overrides'] as ManagedZimiModelAliasOverrides)
       : undefined,
   );
   return {

@@ -22,15 +22,15 @@ function unescapeMediaAttribute(value: string): string {
     .replaceAll('&amp;', '&');
 }
 
-const KIMI_FILE_SCHEME = 'kimi-file://';
+const ZIMI_FILE_SCHEME = 'zimi-file://';
 
 export interface DaemonFileRef {
   readonly fileId: string;
 }
 
 export function parseDaemonFileRef(url: string): DaemonFileRef | undefined {
-  if (!url.startsWith(KIMI_FILE_SCHEME)) return undefined;
-  const rest = url.slice(KIMI_FILE_SCHEME.length);
+  if (!url.startsWith(ZIMI_FILE_SCHEME)) return undefined;
+  const rest = url.slice(ZIMI_FILE_SCHEME.length);
   const queryAt = rest.indexOf('?');
   const fileId = queryAt === -1 ? rest : rest.slice(0, queryAt);
   return fileId.length > 0 ? { fileId } : undefined;

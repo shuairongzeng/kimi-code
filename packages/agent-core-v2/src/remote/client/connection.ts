@@ -222,7 +222,7 @@ export class RemoteExecConnection implements ExecChannel {
   private gateEnvironment(minExecutorVersion: string): Error | undefined {
     if (compareVersions(this.executorVersionValue, minExecutorVersion) < 0) {
       return new HandshakeError(
-        `executor version ${this.executorVersionValue} is below the minimum ${minExecutorVersion}; upgrade the remote executor (kimi exec-server) and retry`,
+        `executor version ${this.executorVersionValue} is below the minimum ${minExecutorVersion}; upgrade the remote executor (zimi exec-server) and retry`,
         {
           kind: 'incompatible',
           executorVersion: this.executorVersionValue,
@@ -238,7 +238,7 @@ export class RemoteExecConnection implements ExecChannel {
     }
     if (this.environmentValue.pathClass === 'win32' && this.environmentValue.windowsProcessLifecycle !== true) {
       return new HandshakeError(
-        'Windows executor does not support the required process lifecycle; upgrade the remote executor (kimi exec-server) and retry',
+        'Windows executor does not support the required process lifecycle; upgrade the remote executor (zimi exec-server) and retry',
         { kind: 'incompatible' },
       );
     }

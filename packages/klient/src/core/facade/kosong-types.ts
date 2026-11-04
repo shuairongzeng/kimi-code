@@ -5,13 +5,13 @@
  * `providerService`/`modelService` wire formats.
  */
 
-import type { Message } from '@moonshot-ai/agent-core-v2/llm-adapter/contract/message';
+import type { Message } from '@zimi-ai/agent-core-v2/llm-adapter/contract/message';
 import type {
   StreamedMessagePart,
   ToolDescription as Tool,
-} from '@moonshot-ai/agent-core-v2/human/message';
-import type { TokenUsage } from '@moonshot-ai/agent-core-v2/human/llm-requester/usage';
-import type { ResponseFormat } from '@moonshot-ai/agent-core-v2/human/llm-requester/response-format';
+} from '@zimi-ai/agent-core-v2/human/message';
+import type { TokenUsage } from '@zimi-ai/agent-core-v2/human/llm-requester/usage';
+import type { ResponseFormat } from '@zimi-ai/agent-core-v2/human/llm-requester/response-format';
 
 // ---------------------------------------------------------------------------
 // Provider auth

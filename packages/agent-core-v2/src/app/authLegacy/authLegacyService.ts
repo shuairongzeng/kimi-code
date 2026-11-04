@@ -1,4 +1,4 @@
-import { KIMI_CODE_PROVIDER_NAME } from '@moonshot-ai/kimi-code-oauth';
+import { ZIMI_CODE_PROVIDER_NAME } from '@zimi-ai/zimi-code-oauth';
 import type { AuthSummary } from './authLegacy';
 import { LifecycleScope } from '#/app/scopes';
 import { ScopeActivation, registerScopedService } from '#/_base/di/scope';
@@ -16,7 +16,7 @@ import type { ProviderConfig } from '#/llm-adapter/provider/provider';
 
 import { IAuthLegacyService } from './authLegacy';
 
-const MANAGED_PROVIDER_NAME = KIMI_CODE_PROVIDER_NAME;
+const MANAGED_PROVIDER_NAME = ZIMI_CODE_PROVIDER_NAME;
 
 export class AuthLegacyService implements IAuthLegacyService {
   declare readonly _serviceBrand: undefined;

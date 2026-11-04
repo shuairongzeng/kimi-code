@@ -8,41 +8,41 @@
  * (`turn.*`, `assistant.delta`, `tool.call.*`, `prompt.completed`, …).
  */
 
-import type { IAgentCommandService } from '@moonshot-ai/agent-core-v2/agent/command/agentCommand';
-import type { IAgentMcpService } from '@moonshot-ai/agent-core-v2/agent/mcp/mcp';
-import type { IAgentEnvironmentBindingService } from '@moonshot-ai/agent-core-v2/agent/environmentBinding/environmentBinding';
+import type { IAgentCommandService } from '@zimi-ai/agent-core-v2/agent/command/agentCommand';
+import type { IAgentMcpService } from '@zimi-ai/agent-core-v2/agent/mcp/mcp';
+import type { IAgentEnvironmentBindingService } from '@zimi-ai/agent-core-v2/agent/environmentBinding/environmentBinding';
 
-import type { ISessionTokenCountingService } from '@moonshot-ai/agent-core-v2/session/tokenCounting/sessionTokenCounting';
-import type { IAgentPlanService } from '@moonshot-ai/agent-core-v2/features/plan/plan';
-import type { IAgentProfileService } from '@moonshot-ai/agent-core-v2/agent/profile/profile';
-import type { IAgentShellCommandService } from '@moonshot-ai/agent-core-v2/agent/shellCommand/shellCommand';
-import type { IAgentSkillService } from '@moonshot-ai/agent-core-v2/features/skill/skillService';
-import type { IAgentTaskService } from '@moonshot-ai/agent-core-v2/agent/task/task';
-import type { ISessionUsageService } from '@moonshot-ai/agent-core-v2/session/usage/sessionUsage';
+import type { ISessionTokenCountingService } from '@zimi-ai/agent-core-v2/session/tokenCounting/sessionTokenCounting';
+import type { IAgentPlanService } from '@zimi-ai/agent-core-v2/features/plan/plan';
+import type { IAgentProfileService } from '@zimi-ai/agent-core-v2/agent/profile/profile';
+import type { IAgentShellCommandService } from '@zimi-ai/agent-core-v2/agent/shellCommand/shellCommand';
+import type { IAgentSkillService } from '@zimi-ai/agent-core-v2/features/skill/skillService';
+import type { IAgentTaskService } from '@zimi-ai/agent-core-v2/agent/task/task';
+import type { ISessionUsageService } from '@zimi-ai/agent-core-v2/session/usage/sessionUsage';
 import {
   fromCoreMessage,
   type ContentPart,
-} from '@moonshot-ai/agent-core-v2/human/message';
+} from '@zimi-ai/agent-core-v2/human/message';
 import {
   fromLlmMessage,
   type Message as LegacyMessage,
-} from '@moonshot-ai/agent-core-v2/llm-adapter/contract/message';
+} from '@zimi-ai/agent-core-v2/llm-adapter/contract/message';
 import type {
   ContextMessage as CoreContextMessage,
   ContextMessageTiming,
   PromptOrigin,
-} from '@moonshot-ai/agent-core-v2/agent/contextMemory/types';
-import type { ToolInputDisplay } from '@moonshot-ai/agent-core-v2/tool/toolInputDisplay';
-import type { TokenUsage } from '@moonshot-ai/agent-core-v2/human/llm-requester/usage';
-import type { PermissionMode } from '@moonshot-ai/agent-core-v2/agent/permissionPolicy/types';
+} from '@zimi-ai/agent-core-v2/agent/contextMemory/types';
+import type { ToolInputDisplay } from '@zimi-ai/agent-core-v2/tool/toolInputDisplay';
+import type { TokenUsage } from '@zimi-ai/agent-core-v2/human/llm-requester/usage';
+import type { PermissionMode } from '@zimi-ai/agent-core-v2/agent/permissionPolicy/types';
 
 import type { ScopeRef } from '../channel.js';
 import type { ScopedCaller } from './session.js';
 
 // Wire-type aliases derived through the engine service interfaces (keeps
 // klient free of protocol-package imports).
-export type PromptLaunchResult = import('@moonshot-ai/agent-core-v2/agent/loop/loop').PromptLaunchResult | undefined;
-export type SteerResult = import('@moonshot-ai/agent-core-v2/agent/loop/loop').SteerResult;
+export type PromptLaunchResult = import('@zimi-ai/agent-core-v2/agent/loop/loop').PromptLaunchResult | undefined;
+export type SteerResult = import('@zimi-ai/agent-core-v2/agent/loop/loop').SteerResult;
 export type PromptWithSkillsInput = Omit<Parameters<IAgentSkillService['promptWithSkills']>[0], 'input'> & {
   input: readonly ContentPart[];
 };

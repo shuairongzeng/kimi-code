@@ -7,7 +7,7 @@ export interface RunExecServerOptions {
 
 export async function runExecServer(options: RunExecServerOptions): Promise<number> {
   const log = (line: string): void => {
-    process.stderr.write(`[kimi exec-server] ${line}\n`);
+    process.stderr.write(`[zimi exec-server] ${line}\n`);
   };
 
   const environment = await probeExecutorEnvironment();

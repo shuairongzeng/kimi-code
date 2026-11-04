@@ -42,7 +42,7 @@ import { StubConfigService, stubModelOAuthTokens, stubTokenProvider } from '../.
 import { stubAgentIdentity } from '../../app/agentIdentity/stubs';
 import { stubBootstrap } from '../../app/bootstrap/stubs';
 
-const HOST_HEADERS = { 'User-Agent': 'kimi-test/1.0', 'X-Msh-Device-Id': 'device-1' };
+const HOST_HEADERS = { 'User-Agent': 'zimi-test/1.0', 'X-Msh-Device-Id': 'device-1' };
 
 function hostHeadersPort(spec: {
   headers: Record<string, string>;
@@ -92,12 +92,12 @@ function createHost(
   };
 }
 
-const kimiSections: Record<string, unknown> = {
+const zimiSections: Record<string, unknown> = {
   providers: {
-    kimi: { type: 'kimi', apiKey: 'sk-test', baseUrl: 'https://api.moonshot.ai/v1' },
+    zimi: { type: 'zimi', apiKey: 'sk-test', baseUrl: 'https://api.moonshot.ai/v1' },
   },
   models: {
-    k1: { provider: 'kimi', model: 'kimi-k2', maxContextSize: 262144 },
+    k1: { provider: 'zimi', model: 'kimi-k2', maxContextSize: 262144 },
   },
 };
 
@@ -108,31 +108,31 @@ function silentModelWrite(models: IModelService, records: Record<string, ModelRe
 let savedCustomHeaders: string | undefined;
 
 beforeEach(() => {
-  savedCustomHeaders = process.env['KIMI_CODE_CUSTOM_HEADERS'];
-  delete process.env['KIMI_CODE_CUSTOM_HEADERS'];
+  savedCustomHeaders = process.env['ZIMI_CODE_CUSTOM_HEADERS'];
+  delete process.env['ZIMI_CODE_CUSTOM_HEADERS'];
 });
 
 afterEach(() => {
   vi.unstubAllEnvs();
-  if (savedCustomHeaders === undefined) delete process.env['KIMI_CODE_CUSTOM_HEADERS'];
-  else process.env['KIMI_CODE_CUSTOM_HEADERS'] = savedCustomHeaders;
+  if (savedCustomHeaders === undefined) delete process.env['ZIMI_CODE_CUSTOM_HEADERS'];
+  else process.env['ZIMI_CODE_CUSTOM_HEADERS'] = savedCustomHeaders;
 });
 
 describe('Model assembly (pure data)', () => {
-  it('assembles a kimi model: protocol resolves to the vendor base, never a vendor', () => {
-    const { host, catalog } = createHost(kimiSections);
+  it('assembles a zimi model: protocol resolves to the vendor base, never a vendor', () => {
+    const { host, catalog } = createHost(zimiSections);
     try {
       const model = catalog.get('k1');
       expect(model.id).toBe('k1');
       expect(model.name).toBe('kimi-k2');
       expect(model.protocol).toBe('openai');
-      expect(model.providerType).toBe('kimi');
-      expect(model.providerName).toBe('kimi');
+      expect(model.providerType).toBe('zimi');
+      expect(model.providerName).toBe('zimi');
       expect(model.baseUrl).toBe('https://api.moonshot.ai/v1');
       expect(model.maxContextSize).toBe(262144);
       expect(model.capabilities.max_context_tokens).toBe(262144);
       expect(model.headers).toMatchObject({
-        'User-Agent': 'kimi-test/1.0',
+        'User-Agent': 'zimi-test/1.0',
         'X-Msh-Device-Id': 'device-1',
       });
     } finally {
@@ -141,7 +141,7 @@ describe('Model assembly (pure data)', () => {
   });
 
   it('the Model carries no morphs and no request driver — pure data only', () => {
-    const { host, catalog } = createHost(kimiSections);
+    const { host, catalog } = createHost(zimiSections);
     try {
       const model: Record<string, unknown> = { ...catalog.get('k1') };
       for (const [key, value] of Object.entries(model)) {
@@ -166,7 +166,7 @@ describe('Model assembly (pure data)', () => {
       const model = catalog.get('gpt');
       expect(model.protocol).toBe('openai');
       expect(model.providerType).toBe('openai');
-      expect(model.headers).toEqual({ 'User-Agent': 'kimi-test/1.0' });
+      expect(model.headers).toEqual({ 'User-Agent': 'zimi-test/1.0' });
     } finally {
       host.dispose();
     }
@@ -180,8 +180,8 @@ describe('Model assembly (pure data)', () => {
       models: { gpt: { provider: 'openai', model: 'gpt-5', maxContextSize: 128000 } },
     };
     const OFFICIAL = {
-      providers: { kimi: { type: 'kimi', apiKey: 'sk', baseUrl: 'https://api.example.test/v1' } },
-      models: { k2: { provider: 'kimi', model: 'kimi-k2', maxContextSize: 200000 } },
+      providers: { zimi: { type: 'zimi', apiKey: 'sk', baseUrl: 'https://api.example.test/v1' } },
+      models: { k2: { provider: 'zimi', model: 'kimi-k2', maxContextSize: 200000 } },
     };
 
     it('rewrites the User-Agent product token for third-party vendors', () => {
@@ -198,7 +198,7 @@ describe('Model assembly (pure data)', () => {
 
     it('preserves a parenthesized User-Agent suffix while rewriting', () => {
       const { host, catalog } = createHost(THIRD_PARTY, stubModelOAuthTokens(), {
-        headers: { 'User-Agent': 'kimi-test/1.0 (web)' },
+        headers: { 'User-Agent': 'zimi-test/1.0 (web)' },
         identitySlug: 'acme-dev',
       });
       try {
@@ -223,7 +223,7 @@ describe('Model assembly (pure data)', () => {
     it('changes nothing when no identity is configured', () => {
       const { host, catalog } = createHost(THIRD_PARTY);
       try {
-        expect(catalog.get('gpt').headers).toEqual({ 'User-Agent': 'kimi-test/1.0' });
+        expect(catalog.get('gpt').headers).toEqual({ 'User-Agent': 'zimi-test/1.0' });
       } finally {
         host.dispose();
       }
@@ -243,7 +243,7 @@ describe('Model assembly (pure data)', () => {
 
     it('rewrites the User-Agent for a lowercase host spelling', () => {
       const { host, catalog } = createHost(THIRD_PARTY, stubModelOAuthTokens(), {
-        headers: { 'user-agent': 'kimi-test/1.0' },
+        headers: { 'user-agent': 'zimi-test/1.0' },
         identitySlug: 'acme-dev',
       });
       try {
@@ -254,17 +254,17 @@ describe('Model assembly (pure data)', () => {
     });
   });
 
-  it('keeps an explicit foreign protocol for a kimi model (the trait path)', () => {
+  it('keeps an explicit foreign protocol for a zimi model (the trait path)', () => {
     const { host, catalog } = createHost({
-      providers: { kimi: { type: 'kimi', apiKey: 'sk', baseUrl: 'https://api.example.test/v1' } },
+      providers: { zimi: { type: 'zimi', apiKey: 'sk', baseUrl: 'https://api.example.test/v1' } },
       models: {
-        k2: { provider: 'kimi', protocol: 'anthropic', model: 'kimi-k2', maxContextSize: 200000 },
+        k2: { provider: 'zimi', protocol: 'anthropic', model: 'kimi-k2', maxContextSize: 200000 },
       },
     });
     try {
       const model = catalog.get('k2');
       expect(model.protocol).toBe('anthropic');
-      expect(model.providerType).toBe('kimi');
+      expect(model.providerType).toBe('zimi');
       expect(model.baseUrl).toBe('https://api.example.test');
       expect(model.supportEfforts).toBeUndefined();
     } finally {
@@ -312,18 +312,18 @@ describe('Model assembly (pure data)', () => {
   it('resolves provider env-bag credentials and endpoints through the registry', async () => {
     const { host, catalog } = createHost({
       providers: {
-        kimi: { type: 'kimi', env: { KIMI_API_KEY: 'env-token', KIMI_BASE_URL: 'https://kimi-env.example.test/v1' } },
+        zimi: { type: 'zimi', env: { ZIMI_API_KEY: 'env-token', ZIMI_BASE_URL: 'https://zimi-env.example.test/v1' } },
         openai: { type: 'openai', env: { OPENAI_API_KEY: 'sk-openai' } },
       },
       models: {
-        k1: { provider: 'kimi', model: 'kimi-k2', maxContextSize: 1000 },
+        k1: { provider: 'zimi', model: 'kimi-k2', maxContextSize: 1000 },
         gpt: { provider: 'openai', protocol: 'openai', model: 'gpt-5', maxContextSize: 1000 },
       },
     });
     try {
-      const kimi = catalog.get('k1');
-      expect(kimi.baseUrl).toBe('https://kimi-env.example.test/v1');
-      return expect(await kimi.credentialProvider?.resolve()).toEqual({ apiKey: 'env-token' });
+      const zimi = catalog.get('k1');
+      expect(zimi.baseUrl).toBe('https://zimi-env.example.test/v1');
+      return expect(await zimi.credentialProvider?.resolve()).toEqual({ apiKey: 'env-token' });
     } finally {
       host.dispose();
     }
@@ -424,12 +424,12 @@ describe('Model assembly (pure data)', () => {
 
   it('falls back to defaultProvider when a model names no provider', () => {
     const { host, catalog } = createHost({
-      ...kimiSections,
-      defaultProvider: 'kimi',
+      ...zimiSections,
+      defaultProvider: 'zimi',
       models: { inherited: { model: 'kimi-k2', maxContextSize: 1000 } },
     });
     try {
-      expect(catalog.get('inherited').providerName).toBe('kimi');
+      expect(catalog.get('inherited').providerName).toBe('zimi');
     } finally {
       host.dispose();
     }
@@ -448,7 +448,7 @@ describe('Model assembly (pure data)', () => {
       const model = catalog.get('m');
       expect(model.providerType).toBe('my-vendor');
       expect(model.protocol).toBe('openai');
-      expect(model.headers).toEqual({ 'User-Agent': 'kimi-test/1.0' });
+      expect(model.headers).toEqual({ 'User-Agent': 'zimi-test/1.0' });
     } finally {
       host.dispose();
     }
@@ -465,25 +465,25 @@ describe('Model assembly (pure data)', () => {
         host.dispose();
       }
     };
-    expectInvalid(kimiSections, 'nope');
+    expectInvalid(zimiSections, 'nope');
     expectInvalid({ models: { ghost: { provider: 'missing', model: 'm', maxContextSize: 1 } } }, 'ghost');
     expectInvalid(
       { models: { noname: { protocol: 'openai', baseUrl: 'https://x.test', maxContextSize: 1 } } },
       'noname',
     );
     expectInvalid(
-      { ...kimiSections, models: { noctx: { provider: 'kimi', model: 'm' } } },
+      { ...zimiSections, models: { noctx: { provider: 'zimi', model: 'm' } } },
       'noctx',
     );
   });
 
   it('findByName matches name, model, and aliases', () => {
     const { host, catalog } = createHost({
-      ...kimiSections,
+      ...zimiSections,
       models: {
-        k1: { provider: 'kimi', model: 'kimi-k2', aliases: ['k2-latest'], maxContextSize: 1 },
-        k2: { provider: 'kimi', name: 'shared-name', maxContextSize: 1 },
-        k3: { provider: 'kimi', model: 'shared-name', maxContextSize: 1 },
+        k1: { provider: 'zimi', model: 'kimi-k2', aliases: ['k2-latest'], maxContextSize: 1 },
+        k2: { provider: 'zimi', name: 'shared-name', maxContextSize: 1 },
+        k3: { provider: 'zimi', model: 'shared-name', maxContextSize: 1 },
       },
     });
     try {
@@ -501,9 +501,9 @@ describe('Model assembly (pure data)', () => {
     const { host, catalog } = createHost(
       {
         providers: {
-          kimi: { type: 'kimi', oauth: { storage: 'file', key: 'kimi' }, baseUrl: 'https://api.moonshot.ai/v1' },
+          zimi: { type: 'zimi', oauth: { storage: 'file', key: 'zimi' }, baseUrl: 'https://api.moonshot.ai/v1' },
         },
-        models: { k1: { provider: 'kimi', model: 'kimi-k2', maxContextSize: 1 } },
+        models: { k1: { provider: 'zimi', model: 'kimi-k2', maxContextSize: 1 } },
       },
       stubModelOAuthTokens(tokenProvider),
     );
@@ -519,17 +519,17 @@ describe('Model assembly (pure data)', () => {
   });
 
   it('resolves api_key_env credentials from process.env on every request', async () => {
-    vi.stubEnv('KIMI_TEST_ACME_ENV_KEY', 'sk-first');
+    vi.stubEnv('ZIMI_TEST_ACME_ENV_KEY', 'sk-first');
     const { host, catalog } = createHost({
       providers: {
-        acme: { type: 'openai', apiKeyEnv: 'KIMI_TEST_ACME_ENV_KEY', baseUrl: 'https://acme.example.test/v1' },
+        acme: { type: 'openai', apiKeyEnv: 'ZIMI_TEST_ACME_ENV_KEY', baseUrl: 'https://acme.example.test/v1' },
       },
       models: { m: { provider: 'acme', protocol: 'openai', model: 'acme-1', maxContextSize: 1000 } },
     });
     try {
       const model = catalog.get('m');
       expect(await model.credentialProvider?.resolve()).toEqual({ apiKey: 'sk-first' });
-      vi.stubEnv('KIMI_TEST_ACME_ENV_KEY', 'sk-rotated');
+      vi.stubEnv('ZIMI_TEST_ACME_ENV_KEY', 'sk-rotated');
       expect(await model.credentialProvider?.resolve()).toEqual({ apiKey: 'sk-rotated' });
     } finally {
       host.dispose();
@@ -539,7 +539,7 @@ describe('Model assembly (pure data)', () => {
   it('fails credential resolution with config.invalid when the declared api_key_env variable is unset or empty', () => {
     const { host, catalog } = createHost({
       providers: {
-        acme: { type: 'openai', apiKeyEnv: 'KIMI_TEST_ACME_ENV_KEY', baseUrl: 'https://acme.example.test/v1' },
+        acme: { type: 'openai', apiKeyEnv: 'ZIMI_TEST_ACME_ENV_KEY', baseUrl: 'https://acme.example.test/v1' },
       },
       models: { m: { provider: 'acme', protocol: 'openai', model: 'acme-1', maxContextSize: 1000 } },
     });
@@ -548,8 +548,8 @@ describe('Model assembly (pure data)', () => {
       expect(() => model.credentialProvider?.resolve()).toThrowError(
         expect.objectContaining({ code: ConfigErrors.codes.CONFIG_INVALID }),
       );
-      expect(() => model.credentialProvider?.resolve()).toThrowError(/acme[\s\S]*KIMI_TEST_ACME_ENV_KEY/);
-      vi.stubEnv('KIMI_TEST_ACME_ENV_KEY', '   ');
+      expect(() => model.credentialProvider?.resolve()).toThrowError(/acme[\s\S]*ZIMI_TEST_ACME_ENV_KEY/);
+      vi.stubEnv('ZIMI_TEST_ACME_ENV_KEY', '   ');
       expect(() => model.credentialProvider?.resolve()).toThrowError(
         expect.objectContaining({ code: ConfigErrors.codes.CONFIG_INVALID }),
       );
@@ -561,7 +561,7 @@ describe('Model assembly (pure data)', () => {
 
 describe('ModelCatalog caching and config-event invalidation', () => {
   it('caches per id and returns the same model metadata', () => {
-    const { host, catalog } = createHost(kimiSections);
+    const { host, catalog } = createHost(zimiSections);
     try {
       const model = catalog.get('k1');
       expect(catalog.get('k1')).toBe(model);
@@ -573,23 +573,23 @@ describe('ModelCatalog caching and config-event invalidation', () => {
   it('drops only the changed entries when a watched config section changes', async () => {
     const { host, catalog, models, providers } = createHost({
       providers: {
-        kimi: { type: 'kimi', apiKey: 'sk-test', baseUrl: 'https://api.moonshot.ai/v1' },
+        zimi: { type: 'zimi', apiKey: 'sk-test', baseUrl: 'https://api.moonshot.ai/v1' },
         openai: { type: 'openai', apiKey: 'sk-o', baseUrl: 'https://api.openai.com/v1' },
       },
       models: {
-        k1: { provider: 'kimi', model: 'kimi-k2', maxContextSize: 262144 },
+        k1: { provider: 'zimi', model: 'kimi-k2', maxContextSize: 262144 },
         gpt: { provider: 'openai', model: 'gpt-5', maxContextSize: 128000 },
       },
     });
     try {
       const k1Before = catalog.get('k1');
       const gptBefore = catalog.get('gpt');
-      await models.set('k1', { provider: 'kimi', model: 'kimi-k2', maxContextSize: 262144, displayName: 'K2' });
+      await models.set('k1', { provider: 'zimi', model: 'kimi-k2', maxContextSize: 262144, displayName: 'K2' });
       expect(catalog.get('k1')).not.toBe(k1Before);
       expect(catalog.get('k1').displayName).toBe('K2');
       expect(catalog.get('gpt')).toBe(gptBefore);
 
-      await providers.set('kimi', { type: 'kimi', apiKey: 'sk-2', baseUrl: 'https://other.example.test/v1' });
+      await providers.set('zimi', { type: 'zimi', apiKey: 'sk-2', baseUrl: 'https://other.example.test/v1' });
       expect(catalog.get('k1').baseUrl).toBe('https://other.example.test/v1');
       expect(catalog.get('gpt')).toBe(gptBefore);
     } finally {
@@ -598,12 +598,12 @@ describe('ModelCatalog caching and config-event invalidation', () => {
   });
 
   it('keeps serving the stale Model on a silent registry write until notifyConfigChanged()', async () => {
-    const { host, catalog, models } = createHost(kimiSections);
+    const { host, catalog, models } = createHost(zimiSections);
     try {
       const before = catalog.get('k1');
 
       silentModelWrite(models, {
-        k1: { provider: 'kimi', model: 'kimi-k2', maxContextSize: 262144, displayName: 'silent' },
+        k1: { provider: 'zimi', model: 'kimi-k2', maxContextSize: 262144, displayName: 'silent' },
       });
       expect(catalog.get('k1')).toBe(before);
 
@@ -621,14 +621,14 @@ describe('headers merge order', () => {
   it('lets provider customHeaders win over the host layer', () => {
     const { host, catalog } = createHost({
       providers: {
-        kimi: {
-          type: 'kimi',
+        zimi: {
+          type: 'zimi',
           apiKey: 'sk',
           baseUrl: 'https://api.moonshot.ai/v1',
           customHeaders: { 'User-Agent': 'custom-ua', 'X-Custom': 'c' },
         },
       },
-      models: { k1: { provider: 'kimi', model: 'kimi-k2', maxContextSize: 1 } },
+      models: { k1: { provider: 'zimi', model: 'kimi-k2', maxContextSize: 1 } },
     });
     try {
       const model: Model = catalog.get('k1');
@@ -645,7 +645,7 @@ describe('headers merge order', () => {
 
 describe('direct generate', () => {
   it('returns the streamed text and usage on a live success', async () => {
-    const { host, catalog } = createHost(kimiSections, stubModelOAuthTokens());
+    const { host, catalog } = createHost(zimiSections, stubModelOAuthTokens());
     try {
       const fakeRequester: LlmRequester = {
         generate: (_config, _content, control) => {
@@ -727,7 +727,7 @@ describe('direct generate', () => {
   });
 
   it('rejects with config.invalid for unknown models', async () => {
-    const { host, catalog } = createHost(kimiSections);
+    const { host, catalog } = createHost(zimiSections);
     try {
       expect(() => catalog.get('nope')).toThrowError(
         expect.objectContaining({ code: ConfigErrors.codes.CONFIG_INVALID }),
@@ -740,18 +740,18 @@ describe('direct generate', () => {
 
 const catalogSections: Record<string, unknown> = {
   providers: {
-    kimi: { type: 'kimi', apiKey: 'sk-test', baseUrl: 'https://api.example.test/v1' },
+    zimi: { type: 'zimi', apiKey: 'sk-test', baseUrl: 'https://api.example.test/v1' },
     openai: { type: 'openai' },
   },
   models: {
     k2: {
-      provider: 'kimi',
+      provider: 'zimi',
       model: 'kimi-k2',
       maxContextSize: 131072,
-      displayName: 'Kimi K2',
+      displayName: 'Zimi K2',
       capabilities: ['thinking'],
     },
-    turbo: { provider: 'kimi', model: 'kimi-turbo', maxContextSize: 32768, displayName: 'Kimi Turbo' },
+    turbo: { provider: 'zimi', model: 'zimi-turbo', maxContextSize: 32768, displayName: 'Zimi Turbo' },
     gpt4o: { provider: 'openai', model: 'gpt-4o', maxContextSize: 128000 },
   },
   defaultModel: 'k2',
@@ -762,10 +762,10 @@ describe('wire projection (pure)', () => {
     const { host, catalog } = createHost(catalogSections);
     try {
       const record = (catalogSections['models'] as Record<string, ModelRecord>)['k2']!;
-      expect(toProtocolModel(catalog.get('k2'), record, 'kimi')).toEqual({
-        provider: 'kimi',
+      expect(toProtocolModel(catalog.get('k2'), record, 'zimi')).toEqual({
+        provider: 'zimi',
         model: 'k2',
-        display_name: 'Kimi K2',
+        display_name: 'Zimi K2',
         max_context_size: 131072,
         capabilities: ['thinking'],
         support_efforts: undefined,
@@ -779,16 +779,16 @@ describe('wire projection (pure)', () => {
 
   it('toProtocolModelFallback projects the raw record', () => {
     const record: ModelRecord = {
-      provider: 'kimi',
+      provider: 'zimi',
       model: 'kimi-k2',
       maxContextSize: 131072,
-      displayName: 'Kimi K2',
+      displayName: 'Zimi K2',
       capabilities: ['thinking'],
     };
-    expect(toProtocolModelFallback('k2', record, 'kimi')).toEqual({
-      provider: 'kimi',
+    expect(toProtocolModelFallback('k2', record, 'zimi')).toEqual({
+      provider: 'zimi',
       model: 'k2',
-      display_name: 'Kimi K2',
+      display_name: 'Zimi K2',
       max_context_size: 131072,
       capabilities: ['thinking'],
       support_efforts: undefined,
@@ -862,13 +862,13 @@ describe('ModelCatalog enumeration', () => {
     try {
       await expect(catalog.listModels()).resolves.toEqual([
         {
-          provider: 'kimi',
+          provider: 'zimi',
           model: 'k2',
-          display_name: 'Kimi K2',
+          display_name: 'Zimi K2',
           max_context_size: 131072,
           capabilities: ['thinking'],
         },
-        { provider: 'kimi', model: 'turbo', display_name: 'Kimi Turbo', max_context_size: 32768 },
+        { provider: 'zimi', model: 'turbo', display_name: 'Zimi Turbo', max_context_size: 32768 },
         { provider: 'openai', model: 'gpt4o', display_name: 'gpt-4o', max_context_size: 128000 },
       ]);
     } finally {
@@ -1029,10 +1029,10 @@ describe('ModelCatalog enumeration', () => {
     }
   });
 
-  it('does not project fallback efforts for unknown Kimi-managed Anthropic models', async () => {
+  it('does not project fallback efforts for unknown Zimi-managed Anthropic models', async () => {
     const sections = structuredClone(catalogSections);
     (sections['models'] as Record<string, ModelRecord>)['compatible'] = {
-      provider: 'kimi',
+      provider: 'zimi',
       protocol: 'anthropic',
       model: 'compatible-model',
       maxContextSize: 128000,
@@ -1040,7 +1040,7 @@ describe('ModelCatalog enumeration', () => {
     const { host, catalog } = createHost(sections);
     try {
       const compatible = (await catalog.listModels()).find((model) => model.model === 'compatible');
-      expect(compatible).toMatchObject({ provider: 'kimi', model: 'compatible' });
+      expect(compatible).toMatchObject({ provider: 'zimi', model: 'compatible' });
       expect(compatible?.capabilities).toBeUndefined();
       expect(compatible?.support_efforts).toBeUndefined();
       expect(compatible?.default_effort).toBeUndefined();
@@ -1097,8 +1097,8 @@ describe('ModelCatalog enumeration', () => {
     try {
       await expect(catalog.listProviders()).resolves.toEqual([
         {
-          id: 'kimi',
-          type: 'kimi',
+          id: 'zimi',
+          type: 'zimi',
           base_url: 'https://api.example.test/v1',
           default_model: 'k2',
           has_api_key: true,
@@ -1121,7 +1121,7 @@ describe('ModelCatalog enumeration', () => {
   it('detects env-bag credentials through the vendor endpoint declarations', async () => {
     const { host, catalog } = createHost({
       providers: {
-        kimi: { type: 'kimi', env: { KIMI_API_KEY: 'kimi-env-key' } },
+        zimi: { type: 'zimi', env: { ZIMI_API_KEY: 'zimi-env-key' } },
         claude: { type: 'anthropic', env: { ANTHROPIC_API_KEY: 'anthropic-env-key' } },
         empty: { type: 'openai' },
       },
@@ -1130,7 +1130,7 @@ describe('ModelCatalog enumeration', () => {
     try {
       const providers = await catalog.listProviders();
       const byId = Object.fromEntries(providers.map((p) => [p.id, p]));
-      expect(byId['kimi']).toMatchObject({ has_api_key: true, status: 'connected' });
+      expect(byId['zimi']).toMatchObject({ has_api_key: true, status: 'connected' });
       expect(byId['claude']).toMatchObject({ has_api_key: true, status: 'connected' });
       expect(byId['empty']).toMatchObject({ has_api_key: false, status: 'unconfigured' });
     } finally {
@@ -1141,7 +1141,7 @@ describe('ModelCatalog enumeration', () => {
   it('marks an OAuth provider connected when a cached token exists', async () => {
     const { host, catalog } = createHost(
       {
-        providers: { acme: { type: 'kimi', oauth: { storage: 'file', key: 'oauth/acme' } } },
+        providers: { acme: { type: 'zimi', oauth: { storage: 'file', key: 'oauth/acme' } } },
         models: {},
       },
       stubModelOAuthTokens(undefined, 'cached-token'),
@@ -1157,8 +1157,8 @@ describe('ModelCatalog enumeration', () => {
   it('gets a single provider by id and reports provider.not_found for an unknown one', async () => {
     const { host, catalog } = createHost(catalogSections);
     try {
-      await expect(catalog.getProvider('kimi')).resolves.toMatchObject({
-        id: 'kimi',
+      await expect(catalog.getProvider('zimi')).resolves.toMatchObject({
+        id: 'zimi',
         default_model: 'k2',
         models: ['k2', 'turbo'],
       });
@@ -1180,9 +1180,9 @@ describe('ModelCatalog setDefaultModel', () => {
       await expect(catalog.setDefaultModel('turbo')).resolves.toEqual({
         default_model: 'turbo',
         model: {
-          provider: 'kimi',
+          provider: 'zimi',
           model: 'turbo',
-          display_name: 'Kimi Turbo',
+          display_name: 'Zimi Turbo',
           max_context_size: 32768,
         },
       });

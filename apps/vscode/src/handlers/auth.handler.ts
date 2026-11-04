@@ -1,29 +1,29 @@
 import * as vscode from "vscode";
 
 import {
-  KIMI_CODE_OAUTH_KEY,
-  KIMI_REGION_PROFILES,
-  kimiRegionProfile,
+  ZIMI_CODE_OAUTH_KEY,
+  ZIMI_REGION_PROFILES,
+  zimiRegionProfile,
   OAuthAccessDeniedError,
-  type KimiRegion,
-} from "@moonshot-ai/kimi-code-oauth";
-import { resolveKimiHome } from "@moonshot-ai/kimi-code-sdk";
+  type ZimiRegion,
+} from "@zimi-ai/zimi-code-oauth";
+import { resolveZimiHome } from "@zimi-ai/zimi-code-sdk";
 
 import { Events, Methods } from "../../shared/bridge";
 import type { LoginResult } from "../../shared/legacy-sdk";
 import type { LoginStatus } from "../../shared/types";
 import { updateLoginContext } from "../utils/context";
-import { readPersistedKimiOAuthRef, resolveExtensionRegion } from "../utils/region";
+import { readPersistedZimiOAuthRef, resolveExtensionRegion } from "../utils/region";
 import type { Handler } from "./types";
 
-function regionForLogin(): KimiRegion | undefined {
-  const homeDir = resolveKimiHome();
-  const oauth = readPersistedKimiOAuthRef(homeDir);
+function regionForLogin(): ZimiRegion | undefined {
+  const homeDir = resolveZimiHome();
+  const oauth = readPersistedZimiOAuthRef(homeDir);
   if (oauth !== undefined) {
-    if (oauth.key === KIMI_CODE_OAUTH_KEY) return "mainland-cn";
+    if (oauth.key === ZIMI_CODE_OAUTH_KEY) return "mainland-cn";
     if (
       oauth.oauthHost !== undefined &&
-      oauth.oauthHost.replace(/\/+$/, "") === KIMI_REGION_PROFILES.global.oauthHost
+      oauth.oauthHost.replace(/\/+$/, "") === ZIMI_REGION_PROFILES.global.oauthHost
     ) {
       return "global";
     }
@@ -37,7 +37,7 @@ export const authHandlers: Record<string, Handler<any, any>> = {
     const region = regionForLogin() ?? "mainland-cn";
     return {
       loggedIn: await updateLoginContext(ctx.harness),
-      siteBase: kimiRegionProfile(region).siteBase,
+      siteBase: zimiRegionProfile(region).siteBase,
     };
   },
 
@@ -52,10 +52,10 @@ export const authHandlers: Record<string, Handler<any, any>> = {
         },
       });
       await updateLoginContext(ctx.harness);
-      resolveExtensionRegion({ homeDir: resolveKimiHome(), refresh: true });
+      resolveExtensionRegion({ homeDir: resolveZimiHome(), refresh: true });
       return { success: true };
     } catch (error) {
-      ctx.logError("Kimi login failed", error);
+      ctx.logError("Zimi login failed", error);
       await updateLoginContext(ctx.harness).catch((statusError: unknown) => {
         ctx.logError("Unable to refresh login status after a failed login", statusError);
       });
@@ -71,10 +71,10 @@ export const authHandlers: Record<string, Handler<any, any>> = {
     try {
       await ctx.harness.auth.logout();
       await updateLoginContext(ctx.harness);
-      resolveExtensionRegion({ homeDir: resolveKimiHome(), refresh: true });
+      resolveExtensionRegion({ homeDir: resolveZimiHome(), refresh: true });
       return { success: true };
     } catch (error) {
-      ctx.logError("Kimi logout failed", error);
+      ctx.logError("Zimi logout failed", error);
       await updateLoginContext(ctx.harness).catch((statusError: unknown) => {
         ctx.logError("Unable to refresh login status after a failed logout", statusError);
       });

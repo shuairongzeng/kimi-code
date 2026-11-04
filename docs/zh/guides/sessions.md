@@ -1,13 +1,13 @@
 # 会话与上下文
 
-Kimi Code CLI 把每次对话持久化为一个「会话」，保留消息历史和元数据，可以随时关闭终端后再回来继续。本页介绍如何恢复会话、管理上下文，以及导出和派生会话。
+Zimi Code CLI 把每次对话持久化为一个「会话」，保留消息历史和元数据，可以随时关闭终端后再回来继续。本页介绍如何恢复会话、管理上下文，以及导出和派生会话。
 
 ## 会话存储
 
-所有会话保存在 `$KIMI_CODE_HOME/sessions/` 下（默认 `~/.kimi-code/sessions/`），按工作目录分组存放：
+所有会话保存在 `$ZIMI_CODE_HOME/sessions/` 下（默认 `~/.zimi-code/sessions/`），按工作目录分组存放：
 
 ```text
-~/.kimi-code/
+~/.zimi-code/
 ├── config.toml
 ├── session_index.jsonl
 └── sessions/
@@ -30,24 +30,24 @@ Kimi Code CLI 把每次对话持久化为一个「会话」，保留消息历史
 
 ## 启动与恢复会话
 
-每次直接运行 `kimi` 都会创建新会话。以下方式可以恢复历史会话：
+每次直接运行 `zimi` 都会创建新会话。以下方式可以恢复历史会话：
 
 **继续当前目录最近的会话：**
 
 ```sh
-kimi --continue
+zimi --continue
 ```
 
 **恢复指定会话（通过 ID）：**
 
 ```sh
-kimi --session abc123
+zimi --session abc123
 ```
 
 **交互式浏览历史会话并选择：**
 
 ```sh
-kimi --session
+zimi --session
 ```
 
 恢复会话时，TUI 会在尝试连接会话记录的环境期间显示进度。
@@ -67,7 +67,7 @@ kimi --session
 
 ## 上下文压缩
 
-对话变长时，Kimi Code CLI 会在上下文接近窗口上限时自动压缩历史消息，释放 token 空间。也可以随时手动触发：
+对话变长时，Zimi Code CLI 会在上下文接近窗口上限时自动压缩历史消息，释放 token 空间。也可以随时手动触发：
 
 ```
 /compact
@@ -91,30 +91,30 @@ Agent 运行期间输入 `/compact` 会加入消息队列，轮到它时自动�
 
 fork 后你仍停留在原会话，对话不受影响、可以直接继续；派生出的副本与原会话彼此独立，可以随时通过 `/sessions` 切换过去。已保存的 `/goal` 不会复制到派生会话。如果你想在派生会话中进行自主 goal 工作，需要在那里开始一个新 goal。
 
-fork 完成后，CLI 会打印一条可直接运行的 `kimi --resume` 命令（并自动复制到剪贴板），方便你在新终端进程中直接进入派生会话。
+fork 完成后，CLI 会打印一条可直接运行的 `zimi --resume` 命令（并自动复制到剪贴板），方便你在新终端进程中直接进入派生会话。
 
 ## 导出会话
 
-用 `kimi export` 把会话打包为 ZIP，适合分享、归档或提交问题反馈：
+用 `zimi export` 把会话打包为 ZIP，适合分享、归档或提交问题反馈：
 
 ```sh
-kimi export <sessionId>
+zimi export <sessionId>
 ```
 
 不传 `sessionId` 时导出当前目录最近的会话（有交互式确认，加 `-y` 跳过）。用 `-o` 指定输出路径：
 
 ```sh
-kimi export <sessionId> -o ~/Desktop/my-session.zip
+zimi export <sessionId> -o ~/Desktop/my-session.zip
 ```
 
-导出包含会话目录下的所有文件，包括诊断日志。全局诊断日志（`~/.kimi-code/logs/kimi-code.log`）默认也会打包；如不需要，加 `--no-include-global-log` 排除。
+导出包含会话目录下的所有文件，包括诊断日志。全局诊断日志（`~/.zimi-code/logs/zimi-code.log`）默认也会打包；如不需要，加 `--no-include-global-log` 排除。
 
 也可以在 TUI 内导出，无需离开交互界面：
 
-- **`/export-debug-zip`**：产生与 `kimi export` 相同的调试 ZIP。
-- **`/export-md`**（别名 `/export`）：导出为人类可读的 Markdown 对话记录，适合分享或存档。可选接收路径参数；不带参数时写入工作目录下的 `kimi-export-<short-id>-<timestamp>.md`。
+- **`/export-debug-zip`**：产生与 `zimi export` 相同的调试 ZIP。
+- **`/export-md`**（别名 `/export`）：导出为人类可读的 Markdown 对话记录，适合分享或存档。可选接收路径参数；不带参数时写入工作目录下的 `zimi-export-<short-id>-<timestamp>.md`。
 
-在 web UI 中，`/export` 会把当前会话下载为诊断 ZIP。压缩包包含持久化的会话数据、诊断日志，以及记录浏览器关键事件且大小有上限、只含元数据的 `logs/kimi-web.jsonl`；提示词正文、WebSocket 内容和 console 参数不会写入这份浏览器日志。这里的 web 命令与上面的 TUI `/export` 别名行为不同。
+在 web UI 中，`/export` 会把当前会话下载为诊断 ZIP。压缩包包含持久化的会话数据、诊断日志，以及记录浏览器关键事件且大小有上限、只含元数据的 `logs/zimi-web.jsonl`；提示词正文、WebSocket 内容和 console 参数不会写入这份浏览器日志。这里的 web 命令与上面的 TUI `/export` 别名行为不同。
 
 ::: tip 提示
 导出文件可能包含代码、命令输出和路径等敏感信息，分享前请先确认内容。
@@ -122,19 +122,19 @@ kimi export <sessionId> -o ~/Desktop/my-session.zip
 
 ## 从 Claude Code 和 Codex 导入会话
 
-想继续在 Claude Code 或 Codex 中开始的工作，可以把这些会话导入为普通的 Kimi Code 会话：
+想继续在 Claude Code 或 Codex 中开始的工作，可以把这些会话导入为普通的 Zimi Code 会话：
 
 ```sh
-kimi import-sessions
+zimi import-sessions
 ```
 
 在 TUI 中用 `/import-sessions` 打开的是同一个页面。选择最近 15 天（默认）或最近 30 天；每次最多导入最新的 100 个会话；已导入过的会话，以及项目目录已不存在的会话，会被跳过。
 
-导入的会话会回到原项目目录对应的工作区，并保留标题和最后活动时间：在该目录运行 `kimi`，用 `/sessions` 即可找到，并带有 `[Claude Code]` 或 `[Codex]` 标记。导入后的会话以一条消息开头，里面是导入的对话（工具调用和结果显示为简短的文字记录），并注明对话的来源和完整历史的保存位置。消息中包含尽量多的最近几轮，同时给继续工作留出空间，避免一开始就压缩上下文；完整历史和原始会话文件的副本会随会话保存，agent 需要更早的细节时可以查阅。
+导入的会话会回到原项目目录对应的工作区，并保留标题和最后活动时间：在该目录运行 `zimi`，用 `/sessions` 即可找到，并带有 `[Claude Code]` 或 `[Codex]` 标记。导入后的会话以一条消息开头，里面是导入的对话（工具调用和结果显示为简短的文字记录），并注明对话的来源和完整历史的保存位置。消息中包含尽量多的最近几轮，同时给继续工作留出空间，避免一开始就压缩上下文；完整历史和原始会话文件的副本会随会话保存，agent 需要更早的细节时可以查阅。
 
 转换在本地完成：不会修改原始会话文件，也不会调用模型。
 
 ## 下一步
 
 - [数据路径](../configuration/data-locations.md) — 会话文件的完整目录结构说明
-- [kimi 命令](../reference/kimi-command.md) — `--continue`、`--session`、`export` 等命令的完整参数参考
+- [zimi 命令](../reference/zimi-command.md) — `--continue`、`--session`、`export` 等命令的完整参数参考

@@ -15,8 +15,8 @@ import { join } from 'node:path';
 import { EXAMPLE_CLIENT_IDENTITY } from './identity.js';
 
 
-import { bootstrap, logSeed, resolveLoggingConfig } from '@moonshot-ai/agent-core-v2';
-import { createKlient } from '@moonshot-ai/klient/memory';
+import { bootstrap, logSeed, resolveLoggingConfig } from '@zimi-ai/agent-core-v2';
+import { createKlient } from '@zimi-ai/klient/memory';
 
 function assert(cond: boolean, message: string): asserts cond {
   if (!cond) throw new Error(`assertion failed: ${message}`);

@@ -16,9 +16,9 @@ import { createScopedTestHost } from '#/_base/di/test';
 
 describe('resolveLoggingConfig', () => {
   it('uses defaults when env is empty', () => {
-    const cfg = resolveLoggingConfig({ homeDir: '/home/kimi', env: {} });
+    const cfg = resolveLoggingConfig({ homeDir: '/home/zimi', env: {} });
     expect(cfg.level).toBe(DEFAULT_LOG_LEVEL);
-    expect(cfg.globalLogPath).toBe('/home/kimi/logs/kimi-code.log');
+    expect(cfg.globalLogPath).toBe('/home/zimi/logs/zimi-code.log');
     expect(cfg.globalMaxBytes).toBe(DEFAULT_GLOBAL_MAX_BYTES);
     expect(cfg.globalFiles).toBe(DEFAULT_GLOBAL_FILES);
     expect(cfg.sessionMaxBytes).toBe(DEFAULT_SESSION_MAX_BYTES);
@@ -29,11 +29,11 @@ describe('resolveLoggingConfig', () => {
     const cfg = resolveLoggingConfig({
       homeDir: '/h',
       env: {
-        KIMI_LOG_LEVEL: 'debug',
-        KIMI_LOG_GLOBAL_MAX_BYTES: '1024',
-        KIMI_LOG_GLOBAL_FILES: '7',
-        KIMI_LOG_SESSION_MAX_BYTES: '2048',
-        KIMI_LOG_SESSION_FILES: '4',
+        ZIMI_LOG_LEVEL: 'debug',
+        ZIMI_LOG_GLOBAL_MAX_BYTES: '1024',
+        ZIMI_LOG_GLOBAL_FILES: '7',
+        ZIMI_LOG_SESSION_MAX_BYTES: '2048',
+        ZIMI_LOG_SESSION_FILES: '4',
       },
     });
     expect(cfg.level).toBe('debug');
@@ -47,9 +47,9 @@ describe('resolveLoggingConfig', () => {
     const cfg = resolveLoggingConfig({
       homeDir: '/h',
       env: {
-        KIMI_LOG_LEVEL: 'verbose',
-        KIMI_LOG_GLOBAL_MAX_BYTES: '-5',
-        KIMI_LOG_GLOBAL_FILES: 'abc',
+        ZIMI_LOG_LEVEL: 'verbose',
+        ZIMI_LOG_GLOBAL_MAX_BYTES: '-5',
+        ZIMI_LOG_GLOBAL_FILES: 'abc',
       },
     });
     expect(cfg.level).toBe(DEFAULT_LOG_LEVEL);
@@ -59,27 +59,27 @@ describe('resolveLoggingConfig', () => {
 
   it('resolves the log path regardless of env', () => {
     const cfg = resolveLoggingConfig({ homeDir: '/h', env: {} });
-    expect(cfg.globalLogPath).toBe('/h/logs/kimi-code.log');
+    expect(cfg.globalLogPath).toBe('/h/logs/zimi-code.log');
   });
 });
 
 describe('path resolution', () => {
   it('resolves the global log path under homeDir/logs', () => {
-    expect(resolveGlobalLogPath('/home/kimi')).toBe('/home/kimi/logs/kimi-code.log');
+    expect(resolveGlobalLogPath('/home/zimi')).toBe('/home/zimi/logs/zimi-code.log');
   });
 
   it('resolves the session log path under sessionDir/logs', () => {
-    expect(resolveSessionLogPath('/sessions/s1')).toBe('/sessions/s1/logs/kimi-code.log');
+    expect(resolveSessionLogPath('/sessions/s1')).toBe('/sessions/s1/logs/zimi-code.log');
   });
 });
 
 describe('logSeed', () => {
   it('seeds ILogOptions into a App scope', () => {
-    const cfg = resolveLoggingConfig({ homeDir: '/h', env: { KIMI_LOG_LEVEL: 'warn' } });
+    const cfg = resolveLoggingConfig({ homeDir: '/h', env: { ZIMI_LOG_LEVEL: 'warn' } });
     const host = createScopedTestHost(logSeed(cfg));
     const opts = host.app.accessor.get(ILogOptions);
     expect(opts.level).toBe('warn');
-    expect(opts.globalLogPath).toBe('/h/logs/kimi-code.log');
+    expect(opts.globalLogPath).toBe('/h/logs/zimi-code.log');
     host.dispose();
   });
 });

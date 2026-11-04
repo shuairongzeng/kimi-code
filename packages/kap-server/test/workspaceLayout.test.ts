@@ -7,7 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   IAgentLifecycleService,
   getLiveSessionById,
-} from '@moonshot-ai/agent-core-v2';
+} from '@zimi-ai/agent-core-v2';
 
 import { type RunningServer, startServer } from '../src/start';
 import { authHeaders } from './helpers/auth';
@@ -28,8 +28,8 @@ describe('local/local on-disk layout (byte compatibility)', () => {
   const homes: string[] = [];
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-layout-home-'));
-    workDir = await mkdtemp(join(tmpdir(), 'kimi-layout-work-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-layout-home-'));
+    workDir = await mkdtemp(join(tmpdir(), 'zimi-layout-work-'));
     homes.push(home, workDir);
     server = await startServer({
       host: '127.0.0.1',

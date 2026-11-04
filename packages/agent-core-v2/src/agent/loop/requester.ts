@@ -87,7 +87,7 @@ import { IBootstrapService } from '#/app/bootstrap/bootstrap';
 
 const noopOnPart: AgentLLMRequestPartHandler = () => {};
 
-export const KIMI_CODE_INFINITE_RETRY_ENV = 'KIMI_CODE_INFINITE_RETRY';
+export const ZIMI_CODE_INFINITE_RETRY_ENV = 'ZIMI_CODE_INFINITE_RETRY';
 
 const CACHE_BREAK_MIN_DROP_TOKENS = 2000;
 const CACHE_BREAK_DROP_RATIO = 0.95;
@@ -603,7 +603,7 @@ export class AgentLoopRequester implements LoopRequester {
         const delayMs =
           readRetryAfterMs(raw) ??
           retryBackoffDelay(infiniteRetryAttempt - 1);
-        this.log.warn('llm request failed; retrying indefinitely (KIMI_CODE_INFINITE_RETRY)', {
+        this.log.warn('llm request failed; retrying indefinitely (ZIMI_CODE_INFINITE_RETRY)', {
           model: request.model.name,
           ...request.logFields,
           attempt: infiniteRetryAttempt,
@@ -664,7 +664,7 @@ export class AgentLoopRequester implements LoopRequester {
   }
 
   private get infiniteRetryEnabled(): boolean {
-    return parseBooleanEnv(this.bootstrap.getEnv(KIMI_CODE_INFINITE_RETRY_ENV)) === true;
+    return parseBooleanEnv(this.bootstrap.getEnv(ZIMI_CODE_INFINITE_RETRY_ENV)) === true;
   }
 
   private warnAboutAnthropicThinkingEffort(request: ResolvedLLMRequest): void {

@@ -12,9 +12,9 @@
  * `IEventService` (`session.meta.updated`) is unwrapped from its
  * `{type, payload}` envelope.
  */
-import type { Event } from '@moonshot-ai/agent-core-v2/events';
-import type { Event2 } from '@moonshot-ai/agent-core-v2';
-import { fromCorePart } from '@moonshot-ai/agent-core-v2/human/message';
+import type { Event } from '@zimi-ai/agent-core-v2/events';
+import type { Event2 } from '@zimi-ai/agent-core-v2';
+import { fromCorePart } from '@zimi-ai/agent-core-v2/human/message';
 
 function isCoreMediaPart(part: unknown): part is Parameters<typeof fromCorePart>[0] {
   if (typeof part !== 'object' || part === null || !('type' in part) || !('source' in part)) {

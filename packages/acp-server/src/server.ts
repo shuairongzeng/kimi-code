@@ -62,9 +62,9 @@ import type {
   SessionHandle,
   SessionRestoreOptions,
   SessionSummary,
-} from '@moonshot-ai/klient';
-import { ErrorCodes, isError2 } from '@moonshot-ai/agent-core-v2';
-import { RPCError } from '@moonshot-ai/klient';
+} from '@zimi-ai/klient';
+import { ErrorCodes, isError2 } from '@zimi-ai/agent-core-v2';
+import { RPCError } from '@zimi-ai/klient';
 
 import type { AcpClient } from './acp-client';
 import type { IAcpConnection } from './acp-fs';
@@ -115,9 +115,9 @@ export interface AcpServerOptions {
    */
   readonly disableAuth?: boolean;
   /**
-   * Env vars to advertise in `authMethods[0].env` so the `kimi login`
+   * Env vars to advertise in `authMethods[0].env` so the `zimi login`
    * subprocess the client spawns (via terminal-auth) lands its token under the
-   * same data root the server uses (e.g. `{ KIMI_CODE_HOME: '/tmp/...' }` for
+   * same data root the server uses (e.g. `{ ZIMI_CODE_HOME: '/tmp/...' }` for
    * sandboxed test setups). Leave undefined in production so the advertised
    * env stays empty.
    */
@@ -384,7 +384,7 @@ export class AcpServer {
         `Unknown auth method: ${params.methodId}`,
       );
     }
-    // Re-check the gate; clients spawn `kimi login` themselves via the
+    // Re-check the gate; clients spawn `zimi login` themselves via the
     // terminal-auth method and re-invoke `authenticate('login')` to confirm the
     // token landed. `void` = empty success body.
     await this.ensureAuthed();
@@ -699,7 +699,7 @@ function parseSetSessionModelParams(params: unknown): SetSessionModelParams {
  * the legacy `extMethod` / `extNotification` fallbacks.
  */
 export function createAcpAgentApp(getServer: () => AcpServer | Promise<AcpServer>): AgentApp {
-  return agent({ name: 'kimi-code-acp' })
+  return agent({ name: 'zimi-code-acp' })
     .onRequest(methods.agent.initialize, async (ctx) => (await getServer()).initialize(ctx.params))
     .onRequest(methods.agent.authenticate, async (ctx) => (await getServer()).authenticate(ctx.params))
     .onRequest(methods.agent.logout, async (ctx) => (await getServer()).logout(ctx.params))

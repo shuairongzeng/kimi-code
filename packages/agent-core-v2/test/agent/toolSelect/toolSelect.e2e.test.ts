@@ -197,7 +197,7 @@ describe('progressive tool disclosure end-to-end', () => {
     await ctx.restorePersisted();
     expect(ctx.get(IAgentStateService).get(toolSelectKey).initial).toEqual(initialTools);
     ctx.configure({
-      provider: { type: 'kimi', model: 'no-dynamic-tools' },
+      provider: { type: 'zimi', model: 'no-dynamic-tools' },
       modelCapabilities: { ...DISCLOSURE_CAPABILITIES, dynamically_loaded_tools: false },
     });
     ctx.mockNextResponse({ type: 'text', text: 'after switch' });

@@ -20,7 +20,7 @@ import {
 
 const LOCK_FILE_VERSION = 1;
 
-export const SESSION_LOCK_ENV = 'KIMI_CODE_SESSION_LOCK';
+export const SESSION_LOCK_ENV = 'ZIMI_CODE_SESSION_LOCK';
 
 const UNREADABLE_HOLDER: SessionLockHolder = {
   version: 0,
@@ -54,9 +54,9 @@ function pidAlive(pid: number): boolean {
 }
 
 const CLIENT_DISPLAY_NAMES: Record<string, string> = {
-  kimi_code_cli: 'Kimi Code CLI',
-  kimi_code_desktop: 'Kimi Code Desktop',
-  kimi_code_vscode: 'Kimi Code for VS Code',
+  zimi_code_cli: 'Zimi Code CLI',
+  zimi_code_desktop: 'Zimi Code Desktop',
+  zimi_code_vscode: 'Zimi Code for VS Code',
 };
 
 export class SessionLockService extends SessionLockHolds {
@@ -77,8 +77,8 @@ export class SessionLockService extends SessionLockHolds {
     this.hostname = os.hostname();
     this.clientIdentity = bootstrap.clientIdentity.platform || bootstrap.clientIdentity.productName;
     this.clientDisplayName =
-      this.clientIdentity === 'kimi_code_cli' && bootstrap.clientIdentity.userAgentSuffix === 'web'
-        ? 'Kimi Code Web'
+      this.clientIdentity === 'zimi_code_cli' && bootstrap.clientIdentity.userAgentSuffix === 'web'
+        ? 'Zimi Code Web'
         : CLIENT_DISPLAY_NAMES[this.clientIdentity];
     this.disabled = parseBooleanEnv(bootstrap.getEnv(SESSION_LOCK_ENV)) === false;
   }

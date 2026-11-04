@@ -159,7 +159,7 @@ export type { VideoUploadInput } from '#human/media/upload';
 export type { ToolCallIdPolicy } from '#human/llm-requester/requester';
 export type { SamplingOptions } from '#/llm-adapter/model/generate';
 export * from '#/llm-adapter/contract/request-trace';
-export type { KimiThinkingConfig } from '#human/llm/builtin/provider/kimi/protocol';
+export type { ZimiThinkingConfig } from '#human/llm/builtin/provider/zimi/protocol';
 
 export * from '#/app/sessionIndex/sessionIndex';
 export * from '#/app/sessionIndex/sessionIndexService';
@@ -590,7 +590,7 @@ export * from '#/app/region/regionService';
 export * from '#/app/auth/configSection';
 export * from '#/app/auth/webSearch/webSearch';
 export * from '#/app/auth/webSearch/webSearchService';
-export * from '#/app/auth/webSearch/providers/moonshot-web-search';
+export * from '#/app/auth/webSearch/providers/zimi-web-search';
 export * from '#/app/authLegacy/authLegacy';
 export * from '#/app/authLegacy/authLegacyService';
 export * from '#/app/file/fileService';
@@ -633,7 +633,7 @@ import '#/agent/tools/fetch-url/fetchUrlTool';
 export * from '#/app/web/web';
 export * from '#/app/web/webService';
 export * from '#/app/web/providers/local-fetch-url';
-export * from '#/app/web/providers/moonshot-fetch-url';
+export * from '#/app/web/providers/zimi-fetch-url';
 
 export * from '#/agent/blob/agentBlobService';
 export * from '#/agent/blob/agentBlobServiceImpl';
@@ -703,7 +703,7 @@ export {
 export type { DaemonFileRef, MediaKind } from '#/agent/media/mediaRef';
 export * from '#/agent/media/sessionMediaStore';
 import '#/agent/media/sessionMediaStoreService';
-export * from '#/agent/media/kimiFileUrl';
+export * from '#/agent/media/zimiFileUrl';
 export * from '#/agent/media/videoUpload';
 export * from '#/agent/media/mediaResolver';
 export * from '#/agent/media/mediaResolverService';

@@ -1,11 +1,11 @@
 import type {
   ModelCapability,
   SessionSummary as V2SessionSummary,
-} from '@moonshot-ai/agent-core-v2';
-import type { GoalChange, GoalSnapshot } from '@moonshot-ai/agent-core-v2/features/goal/types';
-import type { PlanData } from '@moonshot-ai/agent-core-v2/features/plan/plan';
-import type { CompactionResult } from '@moonshot-ai/agent-core-v2/agent/fullCompaction/types';
-import type { UsageStatus } from '@moonshot-ai/agent-core-v2/agent/usage/usage';
+} from '@zimi-ai/agent-core-v2';
+import type { GoalChange, GoalSnapshot } from '@zimi-ai/agent-core-v2/features/goal/types';
+import type { PlanData } from '@zimi-ai/agent-core-v2/features/plan/plan';
+import type { CompactionResult } from '@zimi-ai/agent-core-v2/agent/fullCompaction/types';
+import type { UsageStatus } from '@zimi-ai/agent-core-v2/agent/usage/usage';
 
 import type { AgentContextData, ContextMessage } from '#/context';
 import type { ProviderConfig } from '#/model-provider';

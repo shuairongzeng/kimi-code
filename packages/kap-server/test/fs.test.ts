@@ -1,14 +1,14 @@
 import { execFileSync } from 'node:child_process';
-import { IEnvironmentService } from '@moonshot-ai/agent-core-v2';
+import { IEnvironmentService } from '@zimi-ai/agent-core-v2';
 import { chmod, mkdir, mkdtemp, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, sep } from 'node:path';
 
-import { IModelCatalog, ISessionManager, IWorkspaceInstanceManager } from '@moonshot-ai/agent-core-v2';
-import { HostFileSystem } from '@moonshot-ai/agent-core-v2/os/backends/node-local/hostFsService';
-import { HostProcessService } from '@moonshot-ai/agent-core-v2/os/backends/node-local/hostProcessService';
-import { FakeEnvironment } from '@moonshot-ai/agent-core-v2/environment/fakeEnvironment';
-import type { EnvironmentCapability } from '@moonshot-ai/agent-core-v2/environment/environment';
+import { IModelCatalog, ISessionManager, IWorkspaceInstanceManager } from '@zimi-ai/agent-core-v2';
+import { HostFileSystem } from '@zimi-ai/agent-core-v2/os/backends/node-local/hostFsService';
+import { HostProcessService } from '@zimi-ai/agent-core-v2/os/backends/node-local/hostProcessService';
+import { FakeEnvironment } from '@zimi-ai/agent-core-v2/environment/fakeEnvironment';
+import type { EnvironmentCapability } from '@zimi-ai/agent-core-v2/environment/environment';
 import { ErrorCode } from '../src/protocol/error-codes';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -43,7 +43,7 @@ describe('server-v2 /api/v1 fs routes', () => {
   let base: string;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-home-'));
+    home = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-home-'));
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -56,7 +56,7 @@ describe('server-v2 /api/v1 fs routes', () => {
   });
 
   beforeEach(async () => {
-    work = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-work-'));
+    work = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-work-'));
   });
 
   afterEach(async () => {
@@ -166,7 +166,7 @@ describe('server-v2 /api/v1 fs routes', () => {
 
   it('serves fs actions and downloads from the environment the session was created on', async () => {
     await writeFile(join(work!, 'selected.txt'), 'local');
-    const remote = await realpath(await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-remote-')));
+    const remote = await realpath(await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-remote-')));
     await writeFile(join(remote, 'selected.txt'), 'remote');
     const provider = await server!.core.accessor.get(IEnvironmentService).addProvider({
       id: 'remote-session-provider',
@@ -240,7 +240,7 @@ describe('server-v2 /api/v1 fs routes', () => {
     await mkdir(join(work!, 'real/nested'), { recursive: true });
     await writeFile(join(work!, 'real/nested/inside.txt'), '');
     await symlink(join(work!, 'real'), join(work!, 'link'));
-    const outside = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-outside-'));
+    const outside = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-outside-'));
     await writeFile(join(outside, 'secret.txt'), '');
     await symlink(outside, join(work!, 'outside-link'));
     try {
@@ -529,7 +529,7 @@ describe('server-v2 /api/v1 fs routes', () => {
   });
 
   it('fs:git_status selects and scopes an additional root', async () => {
-    const extra = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-extra-'));
+    const extra = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-extra-'));
     try {
       for (const [cwd, name] of [[work!, 'main.txt'], [extra, 'extra.txt']] as const) {
         git(cwd, 'init', '-b', 'main');
@@ -593,7 +593,7 @@ describe('server-v2 /api/v1 fs routes', () => {
   });
 
   it('rejects reads and downloads that escape the workspace through a symlink', async () => {
-    const outside = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-outside-'));
+    const outside = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-outside-'));
     try {
       await writeFile(join(outside, 'secret.txt'), 'top-secret');
       await symlink(outside, join(work!, 'docs'), 'dir');
@@ -613,7 +613,7 @@ describe('server-v2 /api/v1 fs routes', () => {
   });
 
   it('serves fs actions when the session cwd itself goes through a symlink', async () => {
-    const link = join(tmpdir(), `kimi-server-v2-fs-cwd-link-${process.pid}`);
+    const link = join(tmpdir(), `zimi-server-v2-fs-cwd-link-${process.pid}`);
     await symlink(work!, link, 'dir');
     try {
       const res = await fetch(`${base}/api/v1/sessions`, {
@@ -689,7 +689,7 @@ describe('server-v2 /api/v1 fs routes', () => {
   });
 
   it('workspace fs:list can open external symlink directories when enabled', async () => {
-    const outside = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-workspace-outside-'));
+    const outside = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-workspace-outside-'));
     await writeFile(join(outside, 'secret.txt'), '');
     await symlink(outside, join(work!, 'outside-link'));
     try {
@@ -832,7 +832,7 @@ describe('server-v2 /api/v1 fs routes', () => {
   }
 
   it('workspace fs:suggest searches registered source folders with root-specific paths', async () => {
-    const extra = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-extra-'));
+    const extra = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-extra-'));
     try {
       await writeFile(join(work!, 'primary-only.ts'), '');
       await writeFile(join(work!, 'shared.ts'), 'primary');
@@ -873,7 +873,7 @@ describe('server-v2 /api/v1 fs routes', () => {
   });
 
   it('workspace fs:search searches registered source folders including cold session refs', async () => {
-    const extra = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-extra-'));
+    const extra = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-extra-'));
     try {
       await writeFile(join(work!, 'shared.ts'), 'primary');
       await writeFile(join(extra, 'shared.ts'), 'secondary');
@@ -912,8 +912,8 @@ describe('server-v2 /api/v1 fs routes', () => {
   });
 
   it('workspace fs routes use the latest registered source folders after materialization', async () => {
-    const removed = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-removed-'));
-    const added = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-added-'));
+    const removed = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-removed-'));
+    const added = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-added-'));
     try {
       await writeFile(join(removed, 'removed-only.ts'), '');
       await writeFile(join(added, 'added-only.ts'), '');
@@ -952,8 +952,8 @@ describe('server-v2 /api/v1 fs routes', () => {
   });
 
   it('workspace fs:list respects registered source folder boundaries', async () => {
-    const extra = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-extra-'));
-    const outside = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-outside-'));
+    const extra = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-extra-'));
+    const outside = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-outside-'));
     try {
       await writeFile(join(work!, 'primary.ts'), '');
       await writeFile(join(extra, 'secondary.ts'), '');
@@ -1006,9 +1006,9 @@ describe('server-v2 /api/v1 fs routes', () => {
   });
 
   it('workspace fs routes keep additional dirs scoped to the requested registered workspace', async () => {
-    const shared = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-shared-'));
-    const firstOnly = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-first-'));
-    const secondOnly = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-second-'));
+    const shared = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-shared-'));
+    const firstOnly = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-first-'));
+    const secondOnly = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-second-'));
     try {
       await writeFile(join(shared, 'shared-file.ts'), '');
       await writeFile(join(firstOnly, 'first-only.ts'), '');
@@ -1224,7 +1224,7 @@ describe('server-v2 /api/v1 fs routes', () => {
   });
 
   it('fs:suggest merges candidates across roots with relative paths for the primary root only', async () => {
-    const extra = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-extra-'));
+    const extra = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-extra-'));
     try {
       await writeFile(join(work!, 'shared-name.ts'), '');
       await mkdir(join(extra, 'lib'));
@@ -1246,7 +1246,7 @@ describe('server-v2 /api/v1 fs routes', () => {
   });
 
   it('fs:suggest lists top-level entries of every root for an empty query', async () => {
-    const extra = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-extra-'));
+    const extra = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-extra-'));
     try {
       await writeFile(join(work!, 'top-work.ts'), '');
       await writeFile(join(extra, 'top-extra.ts'), '');
@@ -1288,7 +1288,7 @@ describe('server-v2 /api/v1 fs routes', () => {
   });
 
   it('fs:suggest applies the limit to the merged ranking across roots', async () => {
-    const extra = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-extra-'));
+    const extra = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-extra-'));
     try {
       await writeFile(join(work!, 'a1.ts'), '');
       await writeFile(join(extra, 'a2.ts'), '');
@@ -1307,7 +1307,7 @@ describe('server-v2 /api/v1 fs routes', () => {
   });
 
   it('fs:suggest honors follow_gitignore on each root', async () => {
-    const extra = await mkdtemp(join(tmpdir(), 'kimi-server-v2-fs-extra-'));
+    const extra = await mkdtemp(join(tmpdir(), 'zimi-server-v2-fs-extra-'));
     try {
       await writeFile(join(extra, '.gitignore'), 'ignored-extra.ts\n');
       await writeFile(join(extra, 'ignored-extra.ts'), '');

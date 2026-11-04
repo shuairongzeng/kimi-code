@@ -1,17 +1,17 @@
 {
-  "name": "@moonshot-ai/kimi-code-product",
+  "name": "@zimi-ai/zimi-code-product",
   "version": "0.0.3",
   "private": true,
-  "description": "Kimi Code product logic shared by clients and hosts.",
+  "description": "Zimi Code product logic shared by clients and hosts.",
   "license": "MIT",
-  "author": "Moonshot AI",
+  "author": "Zimi AI",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MoonshotAI/kimi-code.git",
+    "url": "git+https://github.com/ZimiAI/zimi-code.git",
     "directory": "packages/product"
   },
   "bugs": {
-    "url": "https://github.com/MoonshotAI/kimi-code/issues"
+    "url": "https://github.com/ZimiAI/zimi-code/issues"
   },
   "type": "module",
   "imports": {
@@ -38,8 +38,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@moonshot-ai/agent-core-v2": "workspace:^",
-    "@moonshot-ai/kimi-code-oauth": "workspace:^",
+    "@zimi-ai/agent-core-v2": "workspace:^",
+    "@zimi-ai/zimi-code-oauth": "workspace:^",
     "zod": "catalog:"
   }
 }
