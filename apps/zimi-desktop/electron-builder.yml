@@ -1,0 +1,20 @@
+appId: ai.zimi.desktop
+productName: Zimi Code
+directories:
+  output: release
+files:
+  - dist/**
+  - package.json
+extraResources:
+  # Self-contained production deploy of the CLI (dist + dist-web + native +
+  # node_modules) produced by: pnpm --filter @zimi-ai/zimi-code deploy --prod --legacy apps/zimi-desktop/stage/cli
+  - from: stage/cli
+    to: cli
+win:
+  target:
+    - nsis
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  perMachine: false
+  deleteAppDataOnUninstall: false

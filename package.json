@@ -63,6 +63,7 @@
       "@vscode/vsce-sign",
       "core-js-pure",
       "core-js",
+      "electron",
       "esbuild",
       "keytar",
       "msw",
