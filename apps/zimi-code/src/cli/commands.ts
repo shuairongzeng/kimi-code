@@ -10,6 +10,7 @@ import { registerAcpCommand } from './sub/acp';
 import { registerDoctorCommand } from './sub/doctor';
 import { registerExportCommand } from './sub/export';
 import { registerForkCommand } from './sub/fork';
+import { registerImportConfigCommand } from './sub/import-config';
 import { registerAppCommand } from './sub/app';
 import { registerInstallDesktopCommand } from './sub/install-desktop';
 import { registerLoginCommand } from './sub/login';
@@ -155,6 +156,7 @@ export function createProgram(
   registerAppCommand(program);
   registerMigrateCommand(program, onMigrate);
   registerImportSessionsCommand(program);
+  registerImportConfigCommand(program);
   program
     .command('upgrade')
     .alias('update')
