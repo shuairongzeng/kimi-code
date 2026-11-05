@@ -51,3 +51,46 @@ describe('web asset cache policy', () => {
     },
   );
 });
+
+describe('web enhancement script', () => {
+  let app: FastifyInstance;
+  let assetsDir: string;
+
+  beforeEach(async () => {
+    assetsDir = await mkdtemp(join(tmpdir(), 'zimi-web-enhance-'));
+    await mkdir(join(assetsDir, 'assets'));
+    await writeFile(
+      join(assetsDir, 'index.html'),
+      '<!doctype html><html><head><title>Zimi</title></head><body><div id="app"></div></body></html>',
+    );
+    app = Fastify();
+    await registerWebAssetRoutes(app, assetsDir);
+  });
+
+  afterEach(async () => {
+    await app.close();
+    await rm(assetsDir, { recursive: true, force: true });
+  });
+
+  it.each(['/', '/index.html', '/sessions/active'])(
+    'injects the enhancement script into %s',
+    async (url) => {
+      const response = await app.inject({ method: 'GET', url });
+
+      expect(response.statusCode).toBe(200);
+      expect(response.headers['content-type']).toContain('text/html');
+      expect(response.body).toContain('<script src="/zimi-enhance.js"></script>');
+      expect(Number(response.headers['content-length'])).toBe(Buffer.byteLength(response.body));
+    },
+  );
+
+  it('serves the enhancement script from source', async () => {
+    const response = await app.inject({ method: 'GET', url: '/zimi-enhance.js' });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['content-type']).toContain('text/javascript');
+    expect(response.headers['cache-control']).toBe('no-cache');
+    expect(response.body).toContain('fuzzyScore');
+    expect(() => new Function(response.body)).not.toThrow();
+  });
+});

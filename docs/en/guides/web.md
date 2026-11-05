@@ -71,7 +71,7 @@ How the two sides compare:
 | Approvals | ✓ | ✓ | Web handles them with clicks in the UI — no commands needed |
 | Background tasks | ✓ | ✓ | Web shows live progress in the task panel |
 | Files and changes | ✓ | ✓ | Web has a changed-files summary card and per-file diffs |
-| Settings | ✓ | ✓ | Web adds a settings UI (providers, account & usage, Lab experiments) |
+| Settings | ✓ | ✓ | Web adds a settings UI (providers, account & usage, Lab experiments). After the provider form fetches the model list, a filter box appears above the models: typing fuzzy-matches (subsequence, e.g. `dsv4p` hits `deepseek-v4-pro`), filtering rows live with a "Matched X / Y" counter; filtering is display-only — saving still stores your full configured model list |
 | Global search | — | ✓ | Set `[database] global_search = true` in `config.toml` first; Web then searches across sessions and workspaces |
 | Mobile layout | — | ✓ | With LAN sharing on (`--host`), it works in phone browsers on the same network |
 

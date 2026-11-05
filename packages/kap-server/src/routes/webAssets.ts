@@ -1,8 +1,10 @@
-import { createReadStream } from 'node:fs';
+import { createReadStream, readFileSync } from 'node:fs';
 import { stat } from 'node:fs/promises';
-import { extname, join, normalize, relative, resolve, sep } from 'node:path';
+import { basename, extname, join, normalize, relative, resolve, sep } from 'node:path';
 
 import type { FastifyReply, FastifyRequest } from 'fastify';
+
+import { injectEnhanceScript, ZIMI_ENHANCE_SCRIPT } from './webEnhance';
 
 interface WebAssetRouteHost {
   get(
@@ -16,6 +18,15 @@ export async function registerWebAssetRoutes(
   assetsDir: string,
 ): Promise<void> {
   await assertWebAssets(assetsDir);
+
+  // Registered before the `/*` catch-all so the enhancement script is served
+  // from source rather than looked up on disk (dist-web re-syncs never drop it).
+  app.get('/zimi-enhance.js', async (_req, reply) =>
+    reply
+      .type('text/javascript; charset=utf-8')
+      .header('Cache-Control', 'no-cache')
+      .send(ZIMI_ENHANCE_SCRIPT),
+  );
 
   app.get('/', async (req, reply) => serveWebAsset(req, reply, assetsDir));
   app.get('/*', async (req, reply) => serveWebAsset(req, reply, assetsDir));
@@ -52,6 +63,17 @@ async function serveWebAsset(
   const fileInfo = await stat(filePath).catch(() => undefined);
   if (fileInfo === undefined || !fileInfo.isFile()) {
     return reply.code(404).type('text/plain; charset=utf-8').send('Not found');
+  }
+
+  if (basename(filePath) === 'index.html') {
+    // The web bundle is a frozen prebuilt artifact: enhancement scripts ride
+    // on the server response so dist-web re-syncs never drop them.
+    const html = injectEnhanceScript(readFileSync(filePath, 'utf-8'));
+    return reply
+      .type('text/html; charset=utf-8')
+      .header('Cache-Control', cacheControl(assetsDir, filePath))
+      .header('Content-Length', String(Buffer.byteLength(html)))
+      .send(html);
   }
 
   return reply
