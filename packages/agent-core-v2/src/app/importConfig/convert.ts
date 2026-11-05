@@ -85,7 +85,11 @@ export function convertImports(
 }
 
 function importProviderId(source: string, originId: string): string {
-  return `${source}-${originId}`.toLowerCase();
+  // Keep the source CLI's own provider id so imported entries stay recognizable
+  // (e.g. omp "zhipu" imports as "zhipu", not "omp-zhipu"). Source identity is
+  // preserved in `source.origin`.
+  const conflictFreeId = originId.trim().toLowerCase() || source.toLowerCase();
+  return conflictFreeId;
 }
 
 export { ompAdapter, kimiAdapter, piAdapter, zcodeAdapter };

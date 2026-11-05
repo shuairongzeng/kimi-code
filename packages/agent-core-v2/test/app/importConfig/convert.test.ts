@@ -28,14 +28,14 @@ describe('convertImports', () => {
 
     const converted = convertImports([report]);
 
-    expect(converted.providers['omp-zhipu']).toEqual({
+    expect(converted.providers['zhipu']).toEqual({
       type: 'anthropic',
       apiKey: 'key-1',
       baseUrl: 'https://open.bigmodel.cn/api/anthropic',
       source: { imported: 'omp', origin: 'zhipu' },
     });
-    expect(converted.models['omp-zhipu/GLM-5.2']).toEqual({
-      provider: 'omp-zhipu',
+    expect(converted.models['zhipu/GLM-5.2']).toEqual({
+      provider: 'zhipu',
       model: 'GLM-5.2',
       maxContextSize: 1_000_000,
       maxOutputSize: 16_384,
@@ -61,7 +61,7 @@ describe('convertImports', () => {
 
     const converted = convertImports([report]);
 
-    expect(converted.defaultModel).toBe('omp-aliyun/qwen3.8-max-0902');
+    expect(converted.defaultModel).toBe('aliyun/qwen3.8-max-0902');
   });
 
   it('skips providers that already exist in config when skipExisting is given', () => {
