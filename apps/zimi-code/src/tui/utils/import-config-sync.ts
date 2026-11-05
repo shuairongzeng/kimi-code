@@ -3,10 +3,12 @@
  * pattern: on TUI startup, silently discover third-party CLI configs (omp,
  * kimi-code, pi, zcode) and import any *new* providers into config.toml.
  *
- * Only adds entries the user does not already have (`skipExisting` on every
- * provider id); never rewrites or removes existing config. Errors are
- * swallowed — startup must not fail because an unrelated CLI's config file is
- * malformed. Returns a short human-readable summary for the status line.
+ * Only adds entries the user does not already have (`skipExisting` per
+ * provider id, `skipExistingModel` per alias — a provider present without its
+ * models still gets the models back); never rewrites or removes existing
+ * config. Errors are swallowed — startup must not fail because an unrelated
+ * CLI's config file is malformed. Returns a short human-readable summary for
+ * the status line.
  */
 
 import {
@@ -43,8 +45,11 @@ export async function syncImportedConfigInBackground(
 
   const config = await harness.getConfig();
   const skipExisting = (providerId: string): boolean => config.providers[providerId] !== undefined;
-  const converted = convertImports(reports, { skipExisting });
-  if (Object.keys(converted.providers).length === 0) return undefined;
+  const skipExistingModel = (alias: string): boolean => config.models?.[alias] !== undefined;
+  const converted = convertImports(reports, { skipExisting, skipExistingModel });
+  const providerCount = Object.keys(converted.providers).length;
+  const modelCount = Object.keys(converted.models).length;
+  if (providerCount === 0 && modelCount === 0) return undefined;
 
   await harness.setConfig({
     providers: converted.providers as ZimiConfig['providers'],
@@ -55,8 +60,8 @@ export async function syncImportedConfigInBackground(
   });
 
   return {
-    providerCount: Object.keys(converted.providers).length,
-    modelCount: Object.keys(converted.models).length,
+    providerCount,
+    modelCount,
     sources: [...new Set(reports.map((r) => r.source))],
   };
 }

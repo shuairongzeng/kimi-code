@@ -73,10 +73,63 @@ describe('convertImports', () => {
       ],
     };
 
-    const converted = convertImports([report], { skipExisting: (id) => id === 'pi-anthropic' });
+    const converted = convertImports([report], { skipExisting: (id) => id === 'anthropic' });
 
-    expect(converted.providers['pi-anthropic']).toBeUndefined();
-    expect(converted.models['pi-anthropic/*']).toBeUndefined();
+    expect(converted.providers['anthropic']).toBeUndefined();
+    expect(converted.models['anthropic/*']).toBeUndefined();
+  });
+
+  it('backfills models for a provider that exists but lost its model aliases', () => {
+    const report: ImportReport = {
+      source: 'omp',
+      homeDir: '/home/u',
+      providers: [
+        {
+          id: 'deepseek',
+          protocol: 'anthropic',
+          baseUrl: 'https://api.deepseek.com/anthropic',
+          apiKey: 'k',
+          models: [{ id: 'deepseek-v4-flash', displayName: 'flash', maxContextSize: 900000 }],
+        },
+      ],
+    };
+
+    // Provider already in config (skip), models absent (backfill).
+    const converted = convertImports([report], {
+      skipExisting: (id) => id === 'deepseek',
+      skipExistingModel: (alias) => alias === 'deepseek/other-model',
+    });
+
+    expect(converted.providers['deepseek']).toBeUndefined();
+    expect(converted.models['deepseek/deepseek-v4-flash']).toMatchObject({
+      provider: 'deepseek',
+      model: 'deepseek-v4-flash',
+      maxContextSize: 900000,
+    });
+  });
+
+  it('skips model aliases that already exist when skipExistingModel is given', () => {
+    const report: ImportReport = {
+      source: 'omp',
+      homeDir: '/home/u',
+      providers: [
+        {
+          id: 'zhipu',
+          protocol: 'anthropic',
+          baseUrl: 'https://open.bigmodel.cn/api/anthropic',
+          apiKey: 'k',
+          models: [{ id: 'GLM-5.2' }, { id: 'GLM-4.7' }],
+        },
+      ],
+    };
+
+    const converted = convertImports([report], {
+      skipExisting: (id) => id === 'zhipu',
+      skipExistingModel: (alias) => alias === 'zhipu/GLM-5.2',
+    });
+
+    expect(converted.models['zhipu/GLM-5.2']).toBeUndefined();
+    expect(converted.models['zhipu/GLM-4.7']).toBeDefined();
   });
 
   it('leaves defaultModel undefined when the source default is not among imported models', () => {

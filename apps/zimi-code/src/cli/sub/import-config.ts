@@ -75,10 +75,12 @@ export async function handleImportConfig(
   await harness.ensureConfigFile();
   const config = await harness.getConfig();
   const skipExisting = (providerId: string): boolean => config.providers[providerId] !== undefined;
-  const converted = convertImports(reports, { skipExisting });
+  const skipExistingModel = (alias: string): boolean => config.models?.[alias] !== undefined;
+  const converted = convertImports(reports, { skipExisting, skipExistingModel });
   const skippedCount = Object.keys(converted.providers).length;
+  const modelCount = Object.keys(converted.models).length;
 
-  if (skippedCount === 0) {
+  if (skippedCount === 0 && modelCount === 0) {
     deps.stdout.write('Nothing new to import (all providers already configured).\n');
     return;
   }
@@ -92,7 +94,11 @@ export async function handleImportConfig(
     await harness.setConfig({
       providers: converted.providers as ZimiConfig['providers'],
       models: converted.models as ZimiConfig['models'],
-      ...(converted.defaultModel !== undefined ? { defaultModel: converted.defaultModel } : {}),
+      // Never clobber a default_model the user already chose — only adopt the
+      // source CLI's default when none is configured yet.
+      ...(converted.defaultModel !== undefined && config.defaultModel === undefined
+        ? { defaultModel: converted.defaultModel }
+        : {}),
     });
     const modelCount = Object.keys(converted.models).length;
     deps.stdout.write(

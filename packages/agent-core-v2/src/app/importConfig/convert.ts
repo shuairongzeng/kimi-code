@@ -36,7 +36,10 @@ const IMPORTED_TAG = 'imported';
 /** Convert one or more import reports into a zimi config patch. */
 export function convertImports(
   reports: readonly ImportReport[],
-  options: { readonly skipExisting?: (providerId: string) => boolean } = {},
+  options: {
+    readonly skipExisting?: (providerId: string) => boolean;
+    readonly skipExistingModel?: (alias: string) => boolean;
+  } = {},
 ): ConvertedConfig {
   const providers: Record<string, ProviderPatch> = {};
   const models: Record<string, ModelAliasPatch> = {};
@@ -46,17 +49,22 @@ export function convertImports(
   for (const report of reports) {
     for (const provider of report.providers) {
       const providerId = importProviderId(report.source, provider.id);
-      if (options.skipExisting?.(providerId) === true) continue;
-
-      providers[providerId] = {
-        type: provider.protocol,
-        ...(provider.apiKey !== undefined ? { apiKey: provider.apiKey } : {}),
-        ...(provider.baseUrl !== undefined ? { baseUrl: provider.baseUrl } : {}),
-        source: { [IMPORTED_TAG]: report.source, origin: provider.id },
-      };
+      // Provider-level skip only suppresses the provider entry itself; model
+      // aliases are checked individually so a provider whose models were lost
+      // (or never imported) still gets them back on the next sync.
+      const providerExists = options.skipExisting?.(providerId) === true;
+      if (!providerExists) {
+        providers[providerId] = {
+          type: provider.protocol,
+          ...(provider.apiKey !== undefined ? { apiKey: provider.apiKey } : {}),
+          ...(provider.baseUrl !== undefined ? { baseUrl: provider.baseUrl } : {}),
+          source: { [IMPORTED_TAG]: report.source, origin: provider.id },
+        };
+      }
 
       for (const model of provider.models) {
         const alias = `${providerId}/${model.id}`;
+        if (providerExists && options.skipExistingModel?.(alias) === true) continue;
         models[alias] = {
           provider: providerId,
           model: model.id,
