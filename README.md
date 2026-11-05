@@ -1,3 +1,11 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand/lockup-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="brand/lockup-light.svg">
+    <img alt="Zimi Code" src="brand/lockup-light.svg" width="442">
+  </picture>
+</p>
+
 # Zimi Code CLI
 
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE) [![Docs](https://img.shields.io/badge/docs-online-blue)](https://zimia.github.io/zimi-code/en/) <br>

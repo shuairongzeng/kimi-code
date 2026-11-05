@@ -493,7 +493,7 @@ export function formatReadyBanner(
   const port = Number(origin.slice(origin.lastIndexOf(':') + 1));
   // Borderless header: the Zimi sprite (the little mascot with eyes) sits next
   // to the title, keeping the brand without the enclosing box.
-  const logo = ['▐█▛█▛█▌', '▐█████▌'] as const;
+  const logo = ['▀▀▜█▀', '▄█▙▄▄'] as const;
   const lines: string[] = [
     '',
     `  ${primary(logo[0])}  ${title('Zimi server ready')}  ${dim(getVersion())}`,

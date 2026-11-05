@@ -46,7 +46,7 @@ export class WelcomeComponent implements Component {
     const pad = '  ';
 
     // Logo + side-by-side text.
-    const logo = ['▐█▛█▛█▌', '▐█████▌'] as const;
+    const logo = ['▀▀▜█▀', '▄█▙▄▄'] as const;
     const logoWidth = Math.max(...logo.map((row) => visibleWidth(row)));
     const gap = '  ';
     const textWidth = Math.max(4, innerWidth - logoWidth - gap.length);
