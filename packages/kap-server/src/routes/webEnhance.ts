@@ -95,6 +95,7 @@ const fuzzyScore = ${fuzzyScore.toString()};
   const LOADED_FLAG = '__zimiEnhanceLoaded';
   const FILTER_BAR_ID = '__zimiEnhanceFilterBar';
   const HIDDEN_CLASS = 'zimi-enhance-hidden';
+  const TOKEN_STORAGE_KEY = '__zimiEnhanceToken';
   const REMOVE_MODEL_TEXTS = ['移除模型', 'Remove model'];
   const ENGLISH_UI =
     String((typeof navigator !== 'undefined' && navigator.language) || '')
@@ -297,7 +298,17 @@ const fuzzyScore = ${fuzzyScore.toString()};
       'cursor:pointer', 'box-shadow:0 4px 14px rgba(0,0,0,.18)',
     ].join(';');
     button.addEventListener('click', () => {
-      window.location.href = '/agents-admin' + window.location.hash;
+      let stored = null;
+      try {
+        stored = sessionStorage.getItem(TOKEN_STORAGE_KEY);
+      } catch {
+        stored = null;
+      }
+      const hash = (window.location.hash.match(/token=([^&]+)/) || [])[1];
+      const token = hash ?? stored ?? undefined;
+      window.location.href = token === undefined
+        ? '/agents-admin'
+        : '/agents-admin#token=' + token;
     });
     document.body.appendChild(button);
   }
@@ -322,6 +333,18 @@ const fuzzyScore = ${fuzzyScore.toString()};
     }
   }
 
+  try {
+    const hashToken = (window.location.hash.match(/token=([^&]+)/) || [])[1];
+    if (hashToken !== undefined) {
+      try {
+        sessionStorage.setItem(TOKEN_STORAGE_KEY, hashToken);
+      } catch {
+        // storage unavailable: entry link falls back to hash
+      }
+    }
+  } catch {
+    // location unavailable: skip capture
+  }
   try {
     if (typeof window === 'undefined' || window[LOADED_FLAG] === true) {
       return;

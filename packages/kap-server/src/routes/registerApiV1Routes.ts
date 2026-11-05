@@ -26,6 +26,7 @@ import { registerDebugRoutes } from '../transport/registerDebugRoutes';
 import { registerMetaRoute } from './meta';
 import { registerModelCatalogRoutes } from './modelCatalog';
 import { registerAgentRoutes } from './agents';
+import { registerAgentToolOptionsRoutes } from './agentsToolOptions';
 import { registerOAuthRoutes } from './oauth';
 import { registerPluginsRoutes } from './plugins';
 import { registerPromptsRoutes } from './prompts';
@@ -126,6 +127,10 @@ export async function registerApiV1Routes(
       );
       registerAgentRoutes(
         apiV1 as unknown as Parameters<typeof registerAgentRoutes>[0],
+        core,
+      );
+      registerAgentToolOptionsRoutes(
+        apiV1 as unknown as Parameters<typeof registerAgentToolOptionsRoutes>[0],
         core,
       );
       registerSessionsRoutes(

@@ -198,7 +198,7 @@ ${plugin_sections}
 
 ### Three ways to manage custom agents
 
-- **Web admin page**: after `zimi web`, open `/agents-admin` (the main UI also shows a floating "🤖 Agents" entry at the bottom right). Create, edit, and delete subagents directly; fields map one-to-one to the agent file frontmatter. The "allow this agent to launch further subtasks" checkbox lifts the leaf-worker restriction.
+- **Web admin page**: after `zimi web`, open `/agents-admin` (the main UI also shows a floating "🤖 Agents" entry at the bottom right; the token is carried automatically and the page header links back to the main UI). Create, edit, and delete subagents directly; fields map one-to-one to the agent file frontmatter: tool permissions are checkboxes over the system's real tool list ("allow all tools" is the master switch), the model is a provider→model cascading dropdown, and the reasoning effort is a dropdown (including `off` to disable thinking plus every tier the selected model supports, auto-filled with the model default). The "allow this agent to launch further subtasks" checkbox lifts the leaf-worker restriction.
 - **CLI**: `zimi agents list` / `zimi agents add <name> --description ... --prompt ...` / `zimi agents remove <name>`. `add` accepts `--when-to-use`, `--prompt-file`, `--force`, and `--delegate`.
 - **REST**: `GET/POST /api/v1/agents` and `PUT/DELETE /api/v1/agents/:name` (Bearer auth) for scripts and third-party integrations.
 
