@@ -59,7 +59,7 @@ export class ApiKeyInputDialogComponent extends Container implements Focusable {
     platformName: string,
     subtitleLines: readonly string[],
     onDone: (result: ApiKeyInputResult) => void,
-    private readonly options?: { title?: string; mask?: boolean; emptyHint?: string; trimValue?: boolean },
+    private readonly options?: { title?: string; mask?: boolean; emptyHint?: string; trimValue?: boolean; allowEmpty?: boolean },
   ) {
     super();
     this.onDone = onDone;
@@ -151,7 +151,7 @@ export class ApiKeyInputDialogComponent extends Container implements Focusable {
   private submit(value: string): void {
     if (this.done) return;
     const trimmed = value.trim();
-    if (trimmed.length === 0) {
+    if (trimmed.length === 0 && !this.options?.allowEmpty) {
       this.emptyHinted = true;
       return;
     }

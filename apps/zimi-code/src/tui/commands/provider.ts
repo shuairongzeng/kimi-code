@@ -14,6 +14,11 @@ import {
 import { createZimiCodeUserAgent } from '#/cli/host-identity';
 import { fetchCatalogOrBuiltIn } from '#/utils/catalog-fetch';
 import { refreshZimiRegion } from '#/utils/region';
+import {
+  DISCOVERY_DEFAULT_CONTEXT_SIZE,
+  discoverProviderModels,
+  type DiscoveredModel,
+} from '@zimi-ai/agent-core-v2/app/importConfig/discovery';
 import { ChoicePickerComponent } from '../components/dialogs/choice-picker';
 import {
   CustomRegistryImportDialogComponent,
@@ -33,8 +38,10 @@ import {
   promptApiKey,
   promptBaseUrl,
   promptCatalogProviderSelection,
+  promptText,
 } from './prompts';
 import type { SlashCommandHost } from './dispatch';
+import type { ZimiConfig } from '@zimi-ai/zimi-code-sdk';
 
 // ---------------------------------------------------------------------------
 // /provider command
@@ -189,10 +196,195 @@ async function handleProviderAdd(host: SlashCommandHost): Promise<void> {
     await handleCatalogProviderAdd(host);
     return;
   }
+  if (source === 'manual') {
+    const handled = await handleManualCustomProviderAdd(host);
+    if (!handled) {
+      reopenProviderManager(host);
+    }
+    return;
+  }
   const handled = await handleCustomRegistryAddViaDialog(host);
   if (!handled) {
     reopenProviderManager(host);
   }
+}
+
+// ---------------------------------------------------------------------------
+// Manual custom endpoint: ask for id / URL / key / type, auto-discover models,
+// and fall back to manual model-name entry for token-bundle gateways. Same
+// semantics as `zimi provider add-custom` (CLI), interactive edition.
+// ---------------------------------------------------------------------------
+
+const MANUAL_PROVIDER_TYPES = [
+  { value: 'openai', label: 'openai', description: 'OpenAI-compatible /v1/chat/completions' },
+  { value: 'anthropic', label: 'anthropic', description: 'Anthropic Messages API' },
+  { value: 'openai_responses', label: 'openai_responses', description: 'OpenAI Responses API' },
+  { value: 'google-genai', label: 'google-genai', description: 'Google Generative AI' },
+  { value: 'vertexai', label: 'vertexai', description: 'Vertex AI' },
+] as const;
+
+async function handleManualCustomProviderAdd(host: SlashCommandHost): Promise<boolean> {
+  const providerId = await promptText(host, {
+    title: 'Provider id',
+    subtitleLines: [
+      'A short local name, e.g. "mygw". Models will be "<id>/<model>".',
+      'Lowercase letters, digits and dashes.',
+    ],
+    emptyHint: 'Provider id cannot be empty.',
+  });
+  if (providerId === undefined) return false;
+  const trimmedId = providerId.trim().toLowerCase();
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(trimmedId)) {
+    host.showError(`Invalid provider id "${trimmedId}" — use lowercase letters, digits and dashes.`);
+    return false;
+  }
+  const existing = await host.harness.getConfig();
+  if (existing.providers[trimmedId] !== undefined) {
+    host.showError(
+      `Provider "${trimmedId}" already exists. Delete it first or pick another id.`,
+    );
+    return false;
+  }
+
+  const baseUrl = await promptText(host, {
+    title: `Base URL for ${trimmedId}`,
+    subtitleLines: ['e.g. https://api.example.com/v1 — the /models listing is probed under it.'],
+    emptyHint: 'Base URL cannot be empty.',
+  });
+  if (baseUrl === undefined) return false;
+  const trimmedUrl = baseUrl.trim();
+
+  const apiKey = await promptApiKey(host, trimmedId, [
+    'Your key will be saved to ~/.zimi-code/config.toml',
+    'Esc cancels without saving anything.',
+  ]);
+  if (apiKey === undefined) return false;
+
+  const providerType = await promptChoice(host, 'Wire protocol', MANUAL_PROVIDER_TYPES, 'openai');
+  if (providerType === undefined) return false;
+
+  // Path A (the norm): probe the provider's own listing endpoint.
+  const spinner = host.showLoginProgressSpinner(`Discovering models from ${trimmedUrl}…`);
+  let discovered: DiscoveredModel[] = [];
+  try {
+    discovered = await discoverProviderModels(
+      [{ id: trimmedId, type: providerType, baseUrl: trimmedUrl, apiKey }],
+      { timeoutMs: 10000 },
+    );
+  } finally {
+    spinner.stop({
+      ok: discovered.length > 0,
+      label:
+        discovered.length > 0
+          ? `Discovered ${String(discovered.length)} model(s).`
+          : 'No models discovered.',
+    });
+  }
+
+  let modelIds: readonly DiscoveredModel[] = discovered;
+
+  // Path B (token-bundle gateways with no listing): declare names by hand.
+  if (modelIds.length === 0) {
+    host.showStatus(
+      `Could not list models from ${trimmedUrl}. If this is a token-bundle gateway, enter model names manually.`,
+      'warning',
+    );
+    const manual: string[] = [];
+    for (;;) {
+      const entered = await promptText(host, {
+        title: manual.length === 0 ? 'Model name (required)' : `Model name #${String(manual.length + 1)} (empty to finish)`,
+        subtitleLines: ['Exact model id the gateway expects, e.g. gpt-4o'],
+        emptyHint: 'At least one model name is required.',
+        allowEmpty: manual.length > 0,
+      });
+      if (entered === undefined) {
+        if (manual.length === 0) return false; // Esc with nothing entered: cancel
+        break;
+      }
+      const name = entered.trim();
+      if (name.length === 0) {
+        if (manual.length === 0) continue; // emptyHint already shown
+        break;
+      }
+      if (!manual.includes(name)) manual.push(name);
+    }
+    modelIds = manual.map((modelId) => ({ providerId: trimmedId, modelId, contextWindow: undefined }));
+  }
+
+  const providerPatch = {
+    type: providerType,
+    baseUrl: trimmedUrl,
+    apiKey,
+    source: { added: 'tui-manual' },
+  } as unknown as ZimiConfig['providers'][string];
+
+  const modelsPatch: Record<string, { provider: string; model: string; maxContextSize: number }> = {};
+  for (const { modelId, contextWindow } of modelIds) {
+    modelsPatch[`${trimmedId}/${modelId}`] = {
+      provider: trimmedId,
+      model: modelId,
+      maxContextSize: contextWindow ?? DISCOVERY_DEFAULT_CONTEXT_SIZE,
+    };
+  }
+
+  await host.harness.setConfig({
+    providers: { [trimmedId]: providerPatch } as ZimiConfig['providers'],
+    models: modelsPatch as ZimiConfig['models'],
+  });
+  await host.authFlow.refreshConfigAfterLogin();
+  host.track('connect', { provider: trimmedId, method: 'manual-custom' });
+  host.showStatus(
+    `Provider added: ${trimmedId} (${providerType}, ${String(modelIds.length)} model(s)).`,
+    'success',
+  );
+
+  // Same convenience tail as the catalog flow: pick a default model.
+  const stateModels = await host.harness.getConfig().then((c) => c.models ?? {});
+  const selector = new TabbedModelSelectorComponent({
+    models: stateModels,
+    currentValue: host.state.appState.model,
+    selectedValue: Object.keys(stateModels).find((a) => a.startsWith(`${trimmedId}/`)),
+    currentThinkingEffort: host.state.appState.thinkingEffort,
+    initialTabId: trimmedId,
+    onSelect: ({ alias, thinking }) => {
+      host.restoreEditor();
+      void setDefaultModel(host, alias, thinking).catch((error: unknown) => {
+        host.showError(`Set default model failed: ${formatErrorMessage(error)}`);
+      });
+    },
+    onCancel: () => {
+      host.restoreEditor();
+    },
+  });
+  host.mountEditorReplacement(selector);
+  return true;
+}
+
+function promptChoice<T extends string>(
+  host: SlashCommandHost,
+  title: string,
+  options: readonly { value: T; label: string; description?: string }[],
+  _default: T,
+): Promise<T | undefined> {
+  return new Promise((resolve) => {
+    const picker = new ChoicePickerComponent({
+      title,
+      options: options.map((option) => ({
+        value: option.value,
+        label: option.label,
+        description: option.description,
+      })),
+      onSelect: (value) => {
+        host.restoreEditor();
+        resolve(value as T);
+      },
+      onCancel: () => {
+        host.restoreEditor();
+        resolve(undefined);
+      },
+    });
+    host.mountEditorReplacement(picker);
+  });
 }
 
 function reopenProviderManager(host: SlashCommandHost): void {
@@ -203,17 +395,22 @@ function reopenProviderManager(host: SlashCommandHost): void {
 
 function promptProviderAddSource(
   host: SlashCommandHost,
-): Promise<'known' | 'custom' | undefined> {
+): Promise<'known' | 'custom' | 'manual' | undefined> {
   return new Promise((resolve) => {
     const picker = new ChoicePickerComponent({
       title: 'Add provider',
       options: [
         { value: 'known', label: 'Known third-party provider' },
+        {
+          value: 'manual',
+          label: 'Custom endpoint (URL + API key)',
+          description: 'Models are auto-discovered; token-bundle gateways can declare them by hand.',
+        },
         { value: 'custom', label: 'Custom registry (api.json)' },
       ],
       onSelect: (value) => {
         host.restoreEditor();
-        resolve(value === 'known' || value === 'custom' ? value : undefined);
+        resolve(value === 'known' || value === 'custom' || value === 'manual' ? value : undefined);
       },
       onCancel: () => {
         host.restoreEditor();

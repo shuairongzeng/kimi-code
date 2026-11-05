@@ -137,6 +137,42 @@ export function promptApiKey(
   }).finally(releaseAuthBlock);
 }
 
+/**
+ * Generic single-line text input built on the api-key dialog in unmasked
+ * mode. Esc cancels (resolves undefined); empty input is rejected with
+ * `emptyHint` unless `allowEmpty` submits it as ''. Used by the
+ * custom-provider flow for id/URL/model names.
+ */
+export function promptText(
+  host: SlashCommandHost,
+  options: {
+    title: string;
+    subtitleLines: readonly string[];
+    emptyHint: string;
+    allowEmpty?: boolean;
+  },
+): Promise<string | undefined> {
+  return new Promise((resolve) => {
+    const dialog = new ApiKeyInputDialogComponent(
+      options.title,
+      options.subtitleLines,
+      (result: ApiKeyInputResult) => {
+        host.restoreEditor();
+        resolve(result.kind === 'ok' ? result.value : undefined);
+      },
+      {
+        title: options.title,
+        mask: false,
+        emptyHint: options.emptyHint,
+        allowEmpty: options.allowEmpty,
+      },
+    );
+    host.mountEditorReplacement(dialog, undefined, () => {
+      resolve(undefined);
+    });
+  });
+}
+
 export function promptSshPassword(host: SlashCommandHost, environmentId: string): Promise<string | undefined> {
   const releaseAuthBlock = host.beginAuthBlock();
   return new Promise<string | undefined>((resolve) => {

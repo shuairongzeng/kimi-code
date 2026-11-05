@@ -31,9 +31,10 @@ Zimi Code CLI 支持同时接入多家模型供应商服务，模型在供应商
 - `d` 键删除当前供应商（有 `[y/N]` 确认）
 - 在 `[ Add New Platform ]` 行按 Enter 添加新供应商
 
-添加时有两条路径：
+添加时有三条路径：
 
 - **Known third-party provider**：从 [models.dev](https://models.dev/) 拉取模型目录，选供应商 → 输入 API 密钥 → 选默认模型。目录未声明协议类型的供应商（如 xai、openrouter 这类厂商专用 SDK）会按 OpenAI 兼容协议导入并显示 "guessed" 提示；目录没有可用端点时会先弹出 base URL 输入框；Amazon Bedrock / Cohere 等专有协议和无法识别的显式协议会被拒绝导入。已下线（deprecated）和 alpha 状态的模型不会出现在导入列表中。如果公共目录不可达，CLI 会回退到内置目录快照，离线或网络受限环境下也能完成导入
+- **Custom endpoint (URL + API key)**：完全在界面中输入——供应商 id → base URL → API 密钥 → 协议类型（openai / anthropic / openai_responses / google-genai / vertexai）。随后 CLI 自动探测 `{baseUrl}/models`（失败再试 `{baseUrl}/v1/models`）拉取模型列表并逐个创建别名；如果网关是 token 套餐、不暴露模型列表（探测为空），会转入手动模式逐个输入模型名（空行结束）。与 shell 里的 `zimi provider add-custom` 是同一套逻辑的交互版
 - **Custom registry (api.json)**：粘贴自定义 registry 地址，私有 registry 再附上 Bearer token，CLI 自动创建 `providers` / `models` 条目。当 registry 条目声明了 `env` 字段（存放 API 密钥的环境变量名）时，CLI 会把它作为提示打印出来——想用就在 `config.toml` 里自己设置 `api_key_env`。绑定永远不会自动发生：registry 既决定变量名、又决定凭证发往的端点，不能由它来选择读取你的哪份密钥。对私有 registry，Bearer token 本身仍会存为 `source.apiKey`，供刷新时重新拉取。后续启动时，同一个 registry 地址下的供应商会一起刷新，因此上游新增、删除供应商以及模型元数据变化都会同步。
 
   registry 中的模型还可以声明 `upgrade` 对象。`model` 选择同一供应商下的替代模型，`migration_markdown` 提供迁移说明（其中的 `{model_from}` 和 `{model_to}` 会在导入时替换为模型 ID），`retirement_at` 是可选的 RFC3339 时间戳或 `null`。该字段会保存在对应的模型别名上，并通过 `GET /api/v1/models` 返回，客户端每次重新读取模型目录后都能恢复迁移提示。刷新会同步或移除这些元数据；只要默认模型仍在 registry 中，刷新就不会修改它。registry 删除默认模型时，如果该模型此前声明的 `upgrade` 目标仍然存在，默认模型会切换到该目标并保留 Thinking 设置；否则默认模型与 Thinking 设置一并清空。仍在使用被删除模型的已打开会话也会切换到该目标，目标支持时保留各自的 Thinking 档位。因此下线模型时，应先给它声明 `upgrade` 并保留一段过渡期，让客户端至少刷新一次，再从 registry 中删除。
