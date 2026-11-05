@@ -166,6 +166,24 @@ describe('parseAgentFileText', () => {
     ).toThrow(/non-empty strings/);
   });
 
+  it('parses model and thinking fields into the definition', () => {
+    const def = parse(
+      '---\nname: solo\ndescription: d\nmodel: zhipu/GLM-5.2\nthinking: high\n---\n\nbody\n',
+    );
+
+    expect(def.model).toBe('zhipu/GLM-5.2');
+    expect(def.thinking).toBe('high');
+  });
+
+  it('leaves model and thinking undefined for empty-string values', () => {
+    const def = parse(
+      '---\nname: solo\ndescription: d\nmodel: ""\nthinking: ""\n---\n\nbody\n',
+    );
+
+    expect(def.model).toBeUndefined();
+    expect(def.thinking).toBeUndefined();
+  });
+
   it('rejects an empty prompt body', () => {
     expect(() => parse('---\nname: solo\ndescription: d\n---\n')).toThrow(/prompt body/);
   });
@@ -198,6 +216,16 @@ describe('agentProfileFromFile', () => {
     expect(profile.tools).toBeUndefined();
     expect(profile.whenToUse).toBe('reviews');
     expect(profile.override).toBe(false);
+  });
+
+  it('passes model and thinking into the profile', () => {
+    const profile = agentProfileFromFile(
+      { ...base, model: 'zhipu/GLM-5.2', thinking: 'medium' },
+      basePrompt,
+    );
+
+    expect(profile.model).toBe('zhipu/GLM-5.2');
+    expect(profile.thinking).toBe('medium');
   });
 
   it('substitutes context variables in the body', () => {

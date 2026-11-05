@@ -243,7 +243,7 @@ function assertValidSubagentDefaultEffort(
   }
 }
 
-export type SubagentModelSource = 'primary_override' | 'inherited' | 'secondary_pool';
+export type SubagentModelSource = 'primary_override' | 'inherited' | 'secondary_pool' | 'profile_default';
 
 type SubagentBinding = { model: string; thinking?: string; modelSource: SubagentModelSource };
 
@@ -253,6 +253,20 @@ export function resolveSubagentBinding(
   requested?: string,
 ): SubagentBinding {
   return bindSubagentModel(config, own, requested, []);
+}
+
+export function subagentProfileBinding(
+  profile: { readonly model?: string; readonly thinking?: string } | undefined,
+  fork: boolean,
+  input: { readonly model?: string; readonly thinking?: string },
+): { readonly model?: string; readonly thinking?: string; readonly modelSource?: 'profile_default' } {
+  if (fork) return {};
+  const model = input.model ?? profile?.model;
+  return {
+    model,
+    thinking: input.thinking ?? profile?.thinking,
+    modelSource: model !== undefined && input.model === undefined ? 'profile_default' : undefined,
+  };
 }
 
 export function resolveSubagentBindingWithPrimary(

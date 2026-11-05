@@ -20,6 +20,8 @@ export function agentProfileFromFile(
     name: definition.name,
     description: definition.description,
     whenToUse: definition.whenToUse,
+    model: definition.model,
+    thinking: definition.thinking,
     override: definition.override || definition.source === 'explicit',
     tools: definition.tools,
     disallowedTools: definition.disallowedTools,

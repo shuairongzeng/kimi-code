@@ -89,6 +89,7 @@ import {
   SECONDARY_MODEL_FORCE_REMOVED_MESSAGE,
   SECONDARY_MODEL_SECTION,
   secondaryModelRemovedKeysMessage,
+  subagentProfileBinding,
   SUBAGENT_SECTION,
   SUBAGENT_TIMEOUT_ENV,
   type SecondaryModelConfig,
@@ -2392,6 +2393,44 @@ describe('subagent config section', () => {
       { details: { model: 'provider/other' } },
     );
     expect(wrapSubagentModelError(unrelated, 'provider/pool', 'provider/main')).toBe(unrelated);
+  });
+
+  it('returns all-undefined when forking', () => {
+    expect(
+      subagentProfileBinding({ model: 'provider/a', thinking: 'high' }, true, {}),
+    ).toEqual({});
+  });
+
+  it('lets input model and thinking override the profile', () => {
+    expect(
+      subagentProfileBinding(
+        { model: 'provider/a', thinking: 'high' },
+        false,
+        { model: 'provider/b', thinking: 'low' },
+      ),
+    ).toEqual({ model: 'provider/b', thinking: 'low', modelSource: undefined });
+  });
+
+  it('falls back to the profile model and thinking when input omits them', () => {
+    expect(
+      subagentProfileBinding({ model: 'provider/a', thinking: 'high' }, false, {}),
+    ).toEqual({ model: 'provider/a', thinking: 'high', modelSource: 'profile_default' });
+  });
+
+  it('marks modelSource profile_default only when the model comes from the profile', () => {
+    expect(
+      subagentProfileBinding({ model: 'provider/a', thinking: 'high' }, false, {
+        model: 'provider/b',
+      }),
+    ).toEqual({ model: 'provider/b', thinking: 'high', modelSource: undefined });
+  });
+
+  it('handles an undefined profile', () => {
+    expect(subagentProfileBinding(undefined, false, {})).toEqual({
+      model: undefined,
+      thinking: undefined,
+      modelSource: undefined,
+    });
   });
 });
 

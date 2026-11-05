@@ -50,6 +50,38 @@ describe('writeAgentFileText', () => {
     expect(parsed.description).toBe('colon: separated "quoted" text: with both');
   });
 
+  it('round-trips model and thinking', () => {
+    const parsed = roundtrip({
+      name: 'model-bound',
+      description: 'agent with model defaults',
+      model: 'zhipu/GLM-5.2',
+      thinking: 'high',
+      prompt: 'body',
+    });
+
+    expect(parsed.model).toBe('zhipu/GLM-5.2');
+    expect(parsed.thinking).toBe('high');
+  });
+
+  it('omits model and thinking keys when absent', () => {
+    const text = writeAgentFileText({
+      name: 'solo-model',
+      description: 'd',
+      prompt: 'body',
+    });
+
+    expect(text).not.toContain('model:');
+    expect(text).not.toContain('thinking:');
+
+    const parsed = roundtrip({
+      name: 'solo-model',
+      description: 'd',
+      prompt: 'body',
+    });
+    expect(parsed.model).toBeUndefined();
+    expect(parsed.thinking).toBeUndefined();
+  });
+
   it('omits optional keys when undefined and keeps them undefined after parse', () => {
     const text = writeAgentFileText({
       name: 'solo',

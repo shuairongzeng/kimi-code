@@ -43,6 +43,7 @@ import { runAgentTurn } from './runAgentTurn';
 import {
   resolveSubagentBinding,
   resolveSubagentThinking,
+  subagentProfileBinding,
   wrapSubagentModelError,
 } from './configSection';
 import {
@@ -119,24 +120,36 @@ export class SessionSubagentService extends Service implements ISessionSubagentS
         details: { agentId: input.callerAgentId },
       });
     }
+    const profileBinding = subagentProfileBinding(profile, fork, {
+      model: input.model,
+      thinking: input.thinking,
+    });
+    const profileModel = !fork && input.model === undefined ? profileBinding.model : undefined;
     const binding = fork
       ? { model: own.modelAlias, thinking: own.thinkingLevel, modelSource: 'inherited' as const }
-      : resolveSubagentBinding(
-          this.configService,
-          { modelAlias: own.modelAlias, thinkingLevel: own.thinkingLevel },
-          input.model,
-        );
+      : profileModel !== undefined
+        ? {
+            model: profileModel,
+            thinking: undefined,
+            modelSource: 'profile_default' as const,
+          }
+        : resolveSubagentBinding(
+            this.configService,
+            { modelAlias: own.modelAlias, thinkingLevel: own.thinkingLevel },
+            input.model,
+          );
+    const resolvedBinding = binding;
     let model: Model;
     try {
-      model = this.modelCatalog.get(binding.model);
+      model = this.modelCatalog.get(resolvedBinding.model);
     } catch (error) {
-      throw wrapSubagentModelError(error, binding.model, own.modelAlias);
+      throw wrapSubagentModelError(error, resolvedBinding.model, own.modelAlias);
     }
     return {
       profileName: profile?.name ?? requestedProfileName,
-      model: binding.model,
-      modelSource: binding.modelSource,
-      thinking: resolveSubagentThinking(this.configService, model, binding.thinking),
+      model: resolvedBinding.model,
+      modelSource: resolvedBinding.modelSource,
+      thinking: resolveSubagentThinking(this.configService, model, profileBinding.thinking ?? binding.thinking),
       fork,
     };
   }

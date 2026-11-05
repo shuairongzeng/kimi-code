@@ -33,6 +33,8 @@ interface AgentRow {
   readonly name: string;
   readonly description: string;
   readonly whenToUse?: string;
+  readonly model?: string;
+  readonly thinking?: string;
   readonly path: string;
 }
 
@@ -63,6 +65,8 @@ async function readAgentRows(deps: AgentsCommandDeps): Promise<readonly AgentRow
         name: definition.name,
         description: definition.description,
         whenToUse: definition.whenToUse,
+        model: definition.model,
+        thinking: definition.thinking,
         path,
       });
     } catch (error) {
@@ -83,6 +87,9 @@ export async function handleAgentsList(deps: AgentsCommandDeps): Promise<void> {
   for (const row of rows) {
     deps.stdout.write(`${row.name}\n  ${row.description}\n`);
     if (row.whenToUse !== undefined) deps.stdout.write(`  when: ${row.whenToUse}\n`);
+    if (row.model !== undefined || row.thinking !== undefined) {
+      deps.stdout.write(`  model: ${row.model ?? 'inherit'}${row.thinking !== undefined ? ` thinking: ${row.thinking}` : ''}\n`);
+    }
   }
 }
 
@@ -93,6 +100,8 @@ interface AddOptions {
   readonly promptFile?: string;
   readonly force?: boolean;
   readonly delegate?: boolean;
+  readonly model?: string;
+  readonly thinking?: string;
 }
 
 export async function handleAgentsAdd(
@@ -129,6 +138,8 @@ export async function handleAgentsAdd(
     description: opts.description.trim(),
     whenToUse: opts.whenToUse,
     disallowedTools: leafWorkerDisallowedTools(undefined, undefined, opts.delegate),
+    model: opts.model,
+    thinking: opts.thinking,
     prompt: prompt.trim(),
   });
   try {
@@ -181,6 +192,8 @@ export function registerAgentsCommand(parent: Command, getHomeDir: () => string)
     .option('--prompt-file <path>', 'Read the system prompt body from a file.')
     .option('--force', 'Overwrite an existing agent of the same name.', false)
     .option('--delegate', 'Allow this agent to launch further subagents (default: leaf worker).', false)
+    .option('--model <alias>', 'Default model alias for this agent (e.g. zhipu/GLM-5.2).')
+    .option('--thinking <level>', 'Reasoning effort for this agent (e.g. low, high, max).')
     .action(async (name: string, options: Record<string, unknown>) => {
       await handleAgentsAdd(deps(), name, {
         description: typeof options['description'] === 'string' ? options['description'] : undefined,
@@ -189,6 +202,8 @@ export function registerAgentsCommand(parent: Command, getHomeDir: () => string)
         promptFile: typeof options['promptFile'] === 'string' ? options['promptFile'] : undefined,
         force: options['force'] === true,
         delegate: options['delegate'] === true,
+        model: typeof options['model'] === 'string' ? options['model'] : undefined,
+        thinking: typeof options['thinking'] === 'string' ? options['thinking'] : undefined,
       });
     });
 

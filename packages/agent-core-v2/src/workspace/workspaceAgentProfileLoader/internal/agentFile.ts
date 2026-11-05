@@ -90,6 +90,8 @@ export function parseAgentFileText(options: ParseAgentFileOptions): AgentFileDef
     name,
     description,
     whenToUse: nonEmptyString(frontmatter['whenToUse']),
+    model: nonEmptyString(frontmatter['model']),
+    thinking: nonEmptyString(frontmatter['thinking']),
     override,
     tools,
     disallowedTools,

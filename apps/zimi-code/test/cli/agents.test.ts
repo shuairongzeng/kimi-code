@@ -74,6 +74,23 @@ describe('zimi agents', () => {
     expect(captured.out).toContain('When docs need updating');
   });
 
+  it('add writes model and thinking into the agent file', async () => {
+    const { deps } = makeDeps(home);
+    await handleAgentsAdd(deps, 'thinker', {
+      description: 'Reasons hard',
+      model: 'provider/deep-thinker',
+      thinking: 'max',
+      prompt: 'Think deeply.',
+    });
+    const text = await readFile(join(home, 'agents', 'thinker.md'), 'utf-8');
+    expect(text).toContain('model: provider/deep-thinker');
+    expect(text).toContain('thinking: max');
+
+    const { deps: listDeps, captured } = makeDeps(home);
+    await handleAgentsList(listDeps);
+    expect(captured.out).toContain('thinker');
+  });
+
   it('add refuses to overwrite without --force', async () => {
     const { deps } = makeDeps(home);
     await handleAgentsAdd(deps, 'dup', { description: 'first', prompt: 'body one' });

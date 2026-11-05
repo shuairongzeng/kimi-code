@@ -72,6 +72,8 @@ const agentBodySchema = z.object({
   disallowedTools: stringListSchema.optional(),
   subagents: stringListSchema.optional(),
   delegate: z.boolean().optional(),
+  model: z.string().min(1).optional(),
+  thinking: z.string().min(1).optional(),
   prompt: z.string().min(1),
 });
 
@@ -84,6 +86,8 @@ const agentViewSchema = z.object({
   tools: z.array(z.string()).optional(),
   disallowedTools: z.array(z.string()).optional(),
   subagents: z.array(z.string()).optional(),
+  model: z.string().optional(),
+  thinking: z.string().optional(),
   prompt: z.string(),
   path: z.string().optional(),
   source: z.string(),
@@ -96,6 +100,8 @@ interface AgentView {
   readonly tools?: readonly string[];
   readonly disallowedTools?: readonly string[];
   readonly subagents?: readonly string[];
+  readonly model?: string;
+  readonly thinking?: string;
   readonly prompt: string;
   readonly path?: string;
   readonly source: string;
@@ -144,6 +150,8 @@ function toAgentView(path: string, text: string): AgentView | undefined {
       tools: definition.tools,
       disallowedTools: definition.disallowedTools,
       subagents: definition.subagents,
+      model: definition.model,
+      thinking: definition.thinking,
       prompt: definition.prompt,
       path,
       source: 'user',
@@ -235,6 +243,8 @@ async function writeAgentFile(
     tools: body.tools,
     disallowedTools,
     subagents: body.subagents,
+    model: body.model,
+    thinking: body.thinking,
     prompt: body.prompt,
   });
   try {

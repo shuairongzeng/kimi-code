@@ -116,6 +116,8 @@ Frontmatter fields:
 | `tools` | no | Tool allowlist (`Read`, `Bash`); MCP tools match as globs (`mcp__github__*`). YAML list or comma-separated string; omit or use a lone `*` to allow all tools, `tools: []` disables all tools |
 | `disallowedTools` | no | Denylist with the same syntax and matching rules, applied after `tools` |
 | `subagents` | no | Sub-agent allowlist, same syntax as `tools`. Omit to inherit the built-in default (`coder`, `explore`, `plan`); a lone `*` allows every type. The main agent's effective list also includes every discovered custom agent |
+| `model` | no | Default model alias for this agent (e.g. `zhipu/GLM-5.2`). Omit to inherit the caller's model; an explicit `model` argument at dispatch time wins |
+| `thinking` | no | Reasoning effort (e.g. `low`/`medium`/`high`/`max`, within the model's supported range). Defaults to the chosen model's default effort; an explicit dispatch argument wins |
 
 Built-in and user tools match by exact, case-sensitive name; entries starting with `mcp__` match MCP tools as globs. Three entry shapes never match anything and are reported with a warning when the profile takes effect:
 

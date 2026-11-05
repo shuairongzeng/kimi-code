@@ -4,6 +4,8 @@ export interface AgentFileWriterInput {
   readonly name: string;
   readonly description: string;
   readonly whenToUse?: string;
+  readonly model?: string;
+  readonly thinking?: string;
   readonly override?: boolean;
   readonly tools?: readonly string[];
   readonly disallowedTools?: readonly string[];
@@ -20,6 +22,12 @@ export function writeAgentFileText(definition: AgentFileWriterInput): string {
   };
   if (definition.whenToUse !== undefined && definition.whenToUse.trim() !== '') {
     frontmatter['whenToUse'] = definition.whenToUse;
+  }
+  if (definition.model !== undefined && definition.model.trim() !== '') {
+    frontmatter['model'] = definition.model;
+  }
+  if (definition.thinking !== undefined && definition.thinking.trim() !== '') {
+    frontmatter['thinking'] = definition.thinking;
   }
   if (definition.override === true) {
     frontmatter['override'] = true;

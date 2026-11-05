@@ -120,6 +120,8 @@ disallowedTools:
 | `tools` | 否 | 工具允许列表。MCP 工具用 glob 匹配（如 `mcp__github__*`）；支持 YAML 列表或逗号分隔字符串。缺省或单独的 `*` 表示允许全部工具，空列表表示禁用全部工具 |
 | `disallowedTools` | 否 | 工具禁止列表，写法与匹配规则和 `tools` 相同，在 `tools` 之后应用 |
 | `subagents` | 否 | 允许委派的 subagent 名称列表，写法与 `tools` 相同。缺省继承内置默认委派列表，单独的 `*` 表示可委派所有类型。main agent 的有效委派列表会自动并入所有发现的自定义 Agent |
+| `model` | 否 | 该 Agent 的默认模型别名（如 `zhipu/GLM-5.2`）。缺省继承调用方模型；派发时的显式 `model` 参数优先于此字段 |
+| `thinking` | 否 | 推理等级（如 `low`/`medium`/`high`/`max`，按模型支持范围）。缺省取所选模型的默认等级；派发时的显式参数优先 |
 
 内置工具与用户工具按名称精确匹配（区分大小写）；以 `mcp__` 开头的条目按 glob 匹配 MCP 工具。以下三种写法永远匹配不到任何工具，在 profile 生效时会给出警告：
 

@@ -500,6 +500,130 @@ describe('SessionSubagentService planSpawn and spawn', () => {
     });
   });
 
+  it('uses the profile model as default when spawn input omits model', async () => {
+    profiles = [
+      normalizeAgentProfile({
+        name: 'coder',
+        description: 'Coder',
+        model: 'provider/profile-model',
+        systemPrompt: () => 'coder',
+      }),
+    ];
+    modelIds.add('provider/profile-model');
+    const svc = service({
+      [SECONDARY_MODEL_SECTION]: {
+        defaultModel: 'provider/fast',
+        models: { 'provider/fast': 'fast model', 'provider/profile-model': 'profile model' },
+      },
+    });
+
+    const plan = await svc.planSpawn({ callerAgentId: CALLER_ID, profileName: 'coder' });
+
+    expect(plan.model).toBe('provider/profile-model');
+    expect(plan.modelSource).toBe('profile_default');
+  });
+
+  it('prefers the spawn input model over the profile model', async () => {
+    profiles = [
+      normalizeAgentProfile({
+        name: 'coder',
+        description: 'Coder',
+        model: 'provider/profile-model',
+        systemPrompt: () => 'coder',
+      }),
+    ];
+    modelIds.add('provider/fast');
+    const svc = service({
+      [SECONDARY_MODEL_SECTION]: {
+        defaultModel: 'provider/fast',
+        models: { 'provider/fast': 'fast model', 'provider/profile-model': 'profile model' },
+      },
+    });
+
+    const plan = await svc.planSpawn({
+      callerAgentId: CALLER_ID,
+      profileName: 'coder',
+      model: 'provider/fast',
+    });
+
+    expect(plan.model).toBe('provider/fast');
+    expect(plan.modelSource).toBe('secondary_pool');
+  });
+
+  it('uses the profile thinking as default when spawn input omits thinking', async () => {
+    profiles = [
+      normalizeAgentProfile({
+        name: 'coder',
+        description: 'Coder',
+        thinking: 'medium',
+        systemPrompt: () => 'coder',
+      }),
+    ];
+    const svc = service({});
+
+    const plan = await svc.planSpawn({ callerAgentId: CALLER_ID, profileName: 'coder' });
+
+    expect(plan.thinking).toBe('medium');
+  });
+
+  it('prefers the spawn input thinking over the profile thinking', async () => {
+    profiles = [
+      normalizeAgentProfile({
+        name: 'coder',
+        description: 'Coder',
+        thinking: 'medium',
+        systemPrompt: () => 'coder',
+      }),
+    ];
+    const svc = service({});
+
+    const plan = await svc.planSpawn({
+      callerAgentId: CALLER_ID,
+      profileName: 'coder',
+      thinking: 'low',
+    });
+
+    expect(plan.thinking).toBe('low');
+  });
+
+  it('resolves the profile model without a secondary model pool', async () => {
+    profiles = [
+      normalizeAgentProfile({
+        name: 'coder',
+        description: 'Coder',
+        model: 'provider/profile-model',
+        systemPrompt: () => 'coder',
+      }),
+    ];
+    modelIds.add('provider/profile-model');
+    const svc = service({});
+
+    const plan = await svc.planSpawn({ callerAgentId: CALLER_ID, profileName: 'coder' });
+
+    expect(plan.model).toBe('provider/profile-model');
+    expect(plan.modelSource).toBe('profile_default');
+  });
+
+  it('keeps the fork binding untouched by profile model and thinking', async () => {
+    profiles = [
+      ...profiles,
+      normalizeAgentProfile({
+        name: 'orchestrator',
+        description: 'Orchestrator',
+        model: 'provider/profile-model',
+        thinking: 'medium',
+        systemPrompt: () => 'orchestrator',
+      }),
+    ];
+    const svc = service();
+
+    const plan = await svc.planSpawn({ callerAgentId: CALLER_ID, fork: true });
+
+    expect(plan.model).toBe('main-model');
+    expect(plan.modelSource).toBe('inherited');
+    expect(plan.thinking).toBe('high');
+  });
+
   it('skips the allowlist check when forking', async () => {
     callerData = { ...callerData, profileName: 'coder', subagents: ['explore'] };
     const svc = service();

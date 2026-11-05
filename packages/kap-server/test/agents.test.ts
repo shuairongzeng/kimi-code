@@ -22,6 +22,8 @@ interface AgentView {
   tools?: string[];
   disallowedTools?: string[];
   subagents?: string[];
+  model?: string;
+  thinking?: string;
   prompt: string;
   path?: string;
   source: string;
@@ -151,6 +153,29 @@ describe('server-v2 /api/v1 agents', () => {
     });
     agents = await listAgents();
     expect(agents.find((agent) => agent.name === 'doc-writer')).toBeUndefined();
+  });
+
+  it('round-trips model and thinking fields', async () => {
+    const create = await fetch(`${base}/api/v1/agents`, {
+      method: 'POST',
+      headers: authHeaders(live(), { 'content-type': 'application/json' }),
+      body: JSON.stringify({
+        name: 'thinker',
+        description: 'Reasons hard',
+        model: 'provider/deep-thinker',
+        thinking: 'max',
+        prompt: 'Think deeply.',
+      }),
+    });
+    expect(create.status).toBe(201);
+    const created = (await create.json()) as Envelope<AgentView>;
+    expect(created.data.model).toBe('provider/deep-thinker');
+    expect(created.data.thinking).toBe('max');
+
+    const listed = await listAgents();
+    const thinker = listed.find((agent) => agent.name === 'thinker');
+    expect(thinker?.model).toBe('provider/deep-thinker');
+    expect(thinker?.thinking).toBe('max');
   });
 
   it('rejects an invalid agent name', async () => {
