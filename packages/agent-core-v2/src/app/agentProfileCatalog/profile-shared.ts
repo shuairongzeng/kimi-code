@@ -242,3 +242,19 @@ function mergeEnvironmentDisclosure(
   if (base === undefined) return direct;
   return { cwd: direct.cwd || base.cwd };
 }
+
+const DELEGATING_TOOL_NAMES = ['Agent', 'AgentSwarm'] as const;
+
+export function leafWorkerDisallowedTools(
+  tools: readonly string[] | undefined,
+  disallowedTools: readonly string[] | undefined,
+  delegate: boolean | undefined,
+): readonly string[] | undefined {
+  if (delegate === true) return disallowedTools;
+  const blocked = DELEGATING_TOOL_NAMES.filter(
+    (name) => tools === undefined || tools.includes(name),
+  );
+  if (blocked.length === 0) return disallowedTools;
+  const base = disallowedTools ?? [];
+  return [...base, ...blocked.filter((name) => !base.includes(name))];
+}

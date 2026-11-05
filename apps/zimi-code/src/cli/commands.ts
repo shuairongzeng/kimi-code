@@ -1,4 +1,5 @@
 import { CLI_COMMAND_NAME } from '#/constant/app';
+import { resolveZimiHome } from '@zimi-ai/zimi-code-sdk';
 import { registerMigrateCommand, type MigrateCommandOptions } from '#/migration/index';
 import { registerImportSessionsCommand } from '#/session-import/index';
 import { Command, InvalidArgumentError, Option } from 'commander';
@@ -10,6 +11,7 @@ import { registerAcpCommand } from './sub/acp';
 import { registerDoctorCommand } from './sub/doctor';
 import { registerExportCommand } from './sub/export';
 import { registerForkCommand } from './sub/fork';
+import { registerAgentsCommand } from './sub/agents';
 import { registerImportConfigCommand } from './sub/import-config';
 import { registerAppCommand } from './sub/app';
 import { registerInstallDesktopCommand } from './sub/install-desktop';
@@ -157,6 +159,7 @@ export function createProgram(
   registerMigrateCommand(program, onMigrate);
   registerImportSessionsCommand(program);
   registerImportConfigCommand(program);
+  registerAgentsCommand(program, () => resolveZimiHome());
   program
     .command('upgrade')
     .alias('update')

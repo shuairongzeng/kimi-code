@@ -283,10 +283,30 @@ const fuzzyScore = ${fuzzyScore.toString()};
     applyFilter();
   }
 
+  function injectAgentsEntry() {
+    if (document.body === null || document.getElementById('zimi-agents-entry')) return;
+    const button = document.createElement('button');
+    button.id = 'zimi-agents-entry';
+    button.type = 'button';
+    button.title = 'Manage custom subagents';
+    button.textContent = '🤖 Agents';
+    button.style.cssText = [
+      'position:fixed', 'right:18px', 'bottom:18px', 'z-index:2147483000',
+      'padding:8px 14px', 'border-radius:999px', 'border:1px solid rgba(120,130,150,.45)',
+      'background:rgba(255,255,255,.96)', 'color:#1c1e21', 'font:600 13px/1 system-ui,sans-serif',
+      'cursor:pointer', 'box-shadow:0 4px 14px rgba(0,0,0,.18)',
+    ].join(';');
+    button.addEventListener('click', () => {
+      window.location.href = '/agents-admin' + window.location.hash;
+    });
+    document.body.appendChild(button);
+  }
+
   function init() {
     if (document.body === null) {
       return;
     }
+    injectAgentsEntry();
     const observer = new MutationObserver(() => {
       try {
         ensureFilterBar();

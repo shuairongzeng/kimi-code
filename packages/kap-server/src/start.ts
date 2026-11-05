@@ -48,6 +48,7 @@ import { registerRequestLogging } from './requestLogging';
 import { resolveRequestId } from './request-id';
 import { registerApiV1Routes } from './routes/registerApiV1Routes';
 import { registerApiV2Routes } from './routes/registerApiV2Routes';
+import { AGENTS_ADMIN_HTML } from './routes/agentsAdminPage';
 import { registerWebAssetRoutes } from './routes/webAssets';
 import {
   createServerLogger,
@@ -618,6 +619,10 @@ export async function startServer(opts: ServerStartOptions): Promise<RunningServ
   app.get('/openapi.json', async (_req, reply) => {
     const openApiDocument = (app as unknown as { swagger(): unknown }).swagger();
     return reply.type('application/json').send(openApiDocument);
+  });
+
+  app.get('/agents-admin', async (_req, reply) => {
+    return reply.type('text/html; charset=utf-8').send(AGENTS_ADMIN_HTML);
   });
 
   if (opts.webAssetsDir !== undefined) {

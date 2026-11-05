@@ -194,6 +194,16 @@ ${skills}
 ${plugin_sections}
 ```
 
+### Three ways to manage custom agents
+
+- **Web admin page**: after `zimi web`, open `/agents-admin` (the main UI also shows a floating "🤖 Agents" entry at the bottom right). Create, edit, and delete subagents directly; fields map one-to-one to the agent file frontmatter. The "allow this agent to launch further subtasks" checkbox lifts the leaf-worker restriction.
+- **CLI**: `zimi agents list` / `zimi agents add <name> --description ... --prompt ...` / `zimi agents remove <name>`. `add` accepts `--when-to-use`, `--prompt-file`, `--force`, and `--delegate`.
+- **REST**: `GET/POST /api/v1/agents` and `PUT/DELETE /api/v1/agents/:name` (Bearer auth) for scripts and third-party integrations.
+
+All three write the same `~/.zimi-code/agents/*.md` files. No restart is needed: running sessions pick up new subagent types on their next tool call.
+
+By default a newly created custom subagent is a **leaf worker**: the engine automatically disables its `Agent`/`AgentSwarm` tools so it appears in the main agent's dispatchable list and delegation chains always terminate. Enable `--delegate` (or the admin checkbox) for multi-level delegation, and bound it with a `subagents` list in the frontmatter.
+
 ## Instruction Files
 
 Global Zimi-specific instructions can live at `$ZIMI_CODE_HOME/AGENTS.md` (default: `~/.zimi-code/AGENTS.md`). When you relocate the data root with `ZIMI_CODE_HOME`, this global instruction file moves with it. Generic cross-tool instructions can still live under `~/.agents/AGENTS.md` in the real OS home, and project-level instructions remain under the project tree, for example `.zimi-code/AGENTS.md` or `AGENTS.md`.

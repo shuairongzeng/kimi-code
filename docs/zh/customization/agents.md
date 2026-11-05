@@ -200,6 +200,16 @@ ${skills}
 ${plugin_sections}
 ```
 
+### 管理自定义 Agent 的三个入口
+
+- **Web 管理页**：`zimi web` 启动后访问 `/agents-admin`（主界面右下角也有「🤖 Agents」浮动入口）。页面上可直接新建、编辑、删除子智能体，字段与 Agent 文件 frontmatter 一一对应；勾选「允许该子智能体再派发子任务」可解除叶子工作者限制。
+- **CLI**：`zimi agents list` / `zimi agents add <name> --description ... --prompt ...` / `zimi agents remove <name>`。`add` 支持 `--when-to-use`、`--prompt-file`、`--force`、`--delegate`。
+- **REST**：`GET/POST /api/v1/agents`、`PUT/DELETE /api/v1/agents/:name`（Bearer 鉴权），供脚本与第三方集成。
+
+三个入口写的是同一批 `~/.zimi-code/agents/*.md` 文件；保存后无需重启，正在运行的会话会在下一次工具调用时看到新的子智能体类型。
+
+默认情况下，新建的自定义子智能体是**叶子工作者**：引擎会自动为其禁用 `Agent`/`AgentSwarm` 工具，保证它出现在主 Agent 的可派活列表中且委派链必然终止。确需多级委派时显式开启 `--delegate`（或管理页复选框），并在 frontmatter 中用 `subagents` 限定可派对象。
+
 ## 指令文件
 
 全局 Zimi 专属指令可放在 `$ZIMI_CODE_HOME/AGENTS.md`（默认：`~/.zimi-code/AGENTS.md`）。当你用 `ZIMI_CODE_HOME` 移动数据根时，这份全局指令文件也会一起移动。跨工具通用指令仍可放在真实 OS home 下的 `~/.agents/AGENTS.md`，项目级指令仍放在项目目录中，例如 `.zimi-code/AGENTS.md` 或 `AGENTS.md`。

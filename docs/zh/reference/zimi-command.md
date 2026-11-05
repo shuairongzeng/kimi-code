@@ -137,7 +137,7 @@ zimi -p "List changed files" --output-format stream-json
 
 ## 子命令
 
-`zimi` 提供以下子命令：`login`（非交互式登录）、`acp`（ACP IDE 模式）、`web`（前台运行本地 REST/WebSocket/web 服务并打开 web UI）、`doctor`（校验配置文件）、`export`（导出会话）、`migrate`（迁移旧版数据）、`import-sessions`（导入 Claude Code 和 Codex 会话）、`upgrade`（检查更新）、`provider`（管理供应商）。
+`zimi` 提供以下子命令：`login`（非交互式登录）、`acp`（ACP IDE 模式）、`web`（前台运行本地 REST/WebSocket/web 服务并打开 web UI）、`doctor`（校验配置文件）、`export`（导出会话）、`migrate`（迁移旧版数据）、`import-sessions`（导入 Claude Code 和 Codex 会话）、`upgrade`（检查更新）、`provider`（管理供应商）、`agents`（管理自定义子智能体）。
 
 ### `zimi login`
 

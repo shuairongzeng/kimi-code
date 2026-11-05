@@ -25,6 +25,7 @@ import type { IGuiStoreService } from '../services/guiStore/guiStore';
 import { registerDebugRoutes } from '../transport/registerDebugRoutes';
 import { registerMetaRoute } from './meta';
 import { registerModelCatalogRoutes } from './modelCatalog';
+import { registerAgentRoutes } from './agents';
 import { registerOAuthRoutes } from './oauth';
 import { registerPluginsRoutes } from './plugins';
 import { registerPromptsRoutes } from './prompts';
@@ -121,6 +122,10 @@ export async function registerApiV1Routes(
       );
       registerModelCatalogRoutes(
         apiV1 as unknown as Parameters<typeof registerModelCatalogRoutes>[0],
+        core,
+      );
+      registerAgentRoutes(
+        apiV1 as unknown as Parameters<typeof registerAgentRoutes>[0],
         core,
       );
       registerSessionsRoutes(

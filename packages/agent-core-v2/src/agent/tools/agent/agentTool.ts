@@ -46,6 +46,7 @@ import { IAgentToolRegistryService, type ToolReference } from '#/agent/toolRegis
 import { type AgentProfile } from '#/app/agentProfileCatalog/agentProfileCatalog';
 import { ISessionAgentProfileCatalog } from '#/session/sessionAgentProfileCatalog/sessionAgentProfileCatalog';
 import {
+  rootDelegationExtras,
   subagentAllowlistFor,
   withoutDelegatingTargets,
 } from '#/app/agentProfileCatalog/profile-shared';
@@ -147,6 +148,9 @@ export class SubagentTool implements ISubagentTool {
     @AgentToolContribution private readonly contributions: CollectionView<AgentToolContribution>,
   ) {
     this.callerAgentId = scopeContext.agentId;
+    this.catalog.onDidChange(() => {
+      this.frozenCatalogProfiles = undefined;
+    });
     this.canRunInBackground = () =>
       this.toolPolicy.isToolActive('TaskList') &&
       this.toolPolicy.isToolActive('TaskOutput') &&
@@ -205,7 +209,9 @@ export class SubagentTool implements ISubagentTool {
     readonly profileName?: string;
     readonly subagents?: readonly string[];
   }): readonly string[] | undefined {
-    const allowlist = subagentAllowlistFor(this.catalog, own);
+    const caller = { profileName: own.profileName, subagents: own.subagents };
+    const extras = rootDelegationExtras(this.catalog, caller, this.catalog.list());
+    const allowlist = subagentAllowlistFor(this.catalog, caller, extras);
     if (allowlist === undefined || own.subagents !== undefined) return allowlist;
     return withoutDelegatingTargets(this.catalog, allowlist);
   }
