@@ -17,6 +17,14 @@ import { isSshAskpassEnvironment, runSshAskpass } from '@zimi-ai/zimi-code-sdk/s
 
 import { isExecServerArgv, runExecServerCommand } from './cli/exec-server';
 
+// Piping into `head`/`less` closes stdout early; without this guard Node
+// throws an unhandled 'error' event (EPIPE) mid-write and dumps a stack
+// trace instead of exiting quietly like every other Unix CLI.
+process.stdout.on('error', (error: NodeJS.ErrnoException) => {
+  if (error.code === 'EPIPE') process.exit(0);
+  throw error;
+});
+
 if (isSshAskpassEnvironment()) {
   void runSshAskpass().then((code) => {
     process.exitCode = code;
