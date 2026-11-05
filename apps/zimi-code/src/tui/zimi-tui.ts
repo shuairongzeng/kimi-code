@@ -224,6 +224,7 @@ import { installTerminalFocusTracking } from './utils/terminal-focus';
 import { notifyTerminalOnce } from './utils/terminal-notification';
 import { installTerminalThemeTracking } from './utils/terminal-theme';
 import { detectTmuxKeyboardWarning } from './utils/tmux-keyboard';
+import { syncImportedConfigInBackground } from './utils/import-config-sync';
 import {
   getTranscriptComponentEntry,
   markTranscriptComponent,
@@ -410,6 +411,7 @@ export class ZimiTUI {
   private signalCleanupHandlers: Array<() => void> = [];
   private isShuttingDown = false;
   private backgroundRefreshPromise: Promise<void> | undefined;
+  private backgroundImportSyncPromise: Promise<void> | undefined;
   private readonly migrationPlan: MigrationPlan | null;
   private readonly migrateOnly: boolean;
   private readonly telemetryDisabled: boolean;
@@ -1022,6 +1024,19 @@ export class ZimiTUI {
     }
   }
 
+  private async importConfigInBackground(): Promise<void> {
+    try {
+      const result = await syncImportedConfigInBackground(this.harness);
+      if (result === undefined) return;
+      await this.authFlow.refreshAvailableModels();
+      this.showStatus(
+        `Imported ${result.providerCount} provider(s), ${result.modelCount} model(s) from ${result.sources.join(', ')} (config.toml).`,
+      );
+    } catch {
+      // Best-effort: startup must not crash on background import failures.
+    }
+  }
+
   private async migrateLegacySurveySetting(): Promise<void> {
     const legacyValue = this.state.appState.disableFeedbackSurvey;
     try {
@@ -1113,6 +1128,7 @@ export class ZimiTUI {
     setExperimentalFeatures(await this.harness.getExperimentalFeatures());
     this.sessionEventHandler.notifications.setEnabled(isExperimentalFlagEnabled('notify_user'));
     await this.authFlow.refreshAvailableModels();
+    this.backgroundImportSyncPromise = this.importConfigInBackground();
     this.backgroundRefreshPromise = this.refreshProviderModelsInBackground();
 
     const { startup } = this.options;
@@ -1249,7 +1265,7 @@ export class ZimiTUI {
     // so a slow network never delays the exit.
     if (this.backgroundRefreshPromise !== undefined) {
       await Promise.race([
-        this.backgroundRefreshPromise,
+        Promise.all([this.backgroundRefreshPromise, this.backgroundImportSyncPromise]),
         new Promise((resolve) => setTimeout(resolve, 1500)),
       ]);
     }
