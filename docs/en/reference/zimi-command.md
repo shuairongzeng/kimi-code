@@ -346,7 +346,7 @@ Manage providers in the shell — the non-interactive equivalent of `/provider` 
 zimi provider <action> [options]
 ```
 
-Five actions are available:
+Six actions are available:
 
 #### `zimi provider add <url>`
 
@@ -368,6 +368,35 @@ zimi provider add https://registry.example.com/v1/models/api.json
 ```
 
 If a provider ID already exists, it is removed and re-created. The default model is not set automatically; you can select one later with `-m` or `/model` in the TUI.
+
+#### `zimi provider add-custom <providerId> <baseUrl>`
+
+Add a single custom provider from a base URL + API key. The command then **auto-discovers the provider's models** by probing `{baseUrl}/models` (and `{baseUrl}/v1/models` as a fallback) with the configured key, and writes a `[models."<id>/<model>"]` alias for every model the endpoint lists — including the context window when the listing reports one (otherwise a conservative 128000 default, since zimi requires a positive `max_context_size`).
+
+For **token-bundle gateways** that do not expose a model listing endpoint, declare the model names manually with `--model` (repeatable); auto-discovery is skipped in that case.
+
+| Parameter / Option | Description |
+| --- | --- |
+| `<providerId>` | New provider id (must not exist yet; lowercased) |
+| `<baseUrl>` | Provider base URL, e.g. `https://api.example.com/v1` |
+| `--api-key <key>` | Provider API key. Falls back to `ZIMI_API_KEY` |
+| `--api-key-env <VAR>` | Store an env-var reference instead of the literal key |
+| `--type <type>` | Protocol: `openai` (default), `anthropic`, `openai_responses`, `google-genai`, `vertexai` |
+| `--model <id>` | Declare a model id manually (repeatable). Skips auto-discovery — use for token-bundle gateways |
+| `--default-model <id>` | Model to advertise as the suggested default (default: first model) |
+
+```sh
+# Auto-discovery: URL + key is enough
+zimi provider add-custom mygw https://api.example.com/v1 --api-key sk-... --type openai
+
+# Anthropic-compatible endpoint
+zimi provider add-custom myanth https://api.example.com/anthropic --api-key sk-... --type anthropic
+
+# Token bundle without a /models listing: declare model names
+zimi provider add-custom bundle https://gateway.example/v1 --api-key sk-... --model gpt-4o --model claude-sonnet-4
+```
+
+If discovery fails (endpoint unreachable, auth rejected, or no listing), the command exits with an error explaining how to fall back to `--model`; nothing is written.
 
 #### `zimi provider remove <providerId>`
 

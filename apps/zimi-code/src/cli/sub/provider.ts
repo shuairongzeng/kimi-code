@@ -30,6 +30,11 @@ import type { Command } from 'commander';
 
 import { createZimiCodeHostIdentity, createZimiCodeUserAgent } from '#/cli/host-identity';
 import { fetchCatalogOrBuiltIn } from '#/utils/catalog-fetch';
+import {
+  DISCOVERY_DEFAULT_CONTEXT_SIZE,
+  discoverProviderModels,
+  type DiscoveredModel,
+} from '@zimi-ai/agent-core-v2/app/importConfig/discovery';
 
 interface WritableLike {
   write(chunk: string): boolean;
@@ -131,6 +136,150 @@ export async function handleProviderRemove(
   }
   await harness.removeProvider(providerId);
   deps.stdout.write(`Removed provider "${providerId}".\n`);
+}
+
+interface AddCustomOptions {
+  readonly apiKey?: string;
+  readonly apiKeyEnv?: string;
+  readonly type?: string;
+  readonly model?: string[];
+  readonly defaultModel?: string;
+}
+
+const CUSTOM_PROVIDER_TYPES = ['anthropic', 'openai', 'openai_responses', 'google-genai', 'vertexai'] as const;
+
+/**
+ * Add a custom provider from just a base URL + API key, then auto-discover
+ * its models by probing the provider's own listing endpoint. This is the
+ * "fill in URL + key and models appear" flow. Token-bundle gateways that do
+ * not expose a model listing are the documented exception: pass --model one
+ * or more times to declare the model names manually.
+ */
+export async function handleProviderAddCustom(
+  deps: ProviderDeps,
+  providerId: string,
+  baseUrl: string,
+  opts: AddCustomOptions,
+): Promise<void> {
+  const trimmedId = providerId.trim().toLowerCase();
+  const trimmedUrl = baseUrl.trim();
+  if (trimmedId.length === 0) {
+    deps.stderr.write('Provider id is required.\n');
+    deps.exit(1);
+  }
+  if (trimmedUrl.length === 0) {
+    deps.stderr.write('Base URL is required.\n');
+    deps.exit(1);
+  }
+  const apiKey =
+    resolveApiKey(opts.apiKey, deps.env) ??
+    (typeof deps.env['ZIMI_API_KEY'] === 'string' && deps.env['ZIMI_API_KEY']!.length > 0
+      ? deps.env['ZIMI_API_KEY']
+      : undefined);
+  const apiKeyEnv = opts.apiKeyEnv?.trim();
+  if (apiKey === undefined && (apiKeyEnv === undefined || apiKeyEnv.length === 0)) {
+    deps.stderr.write(
+      'An API key is required: pass --api-key <key>, --api-key-env <VAR>, or set ZIMI_API_KEY.\n',
+    );
+    deps.exit(1);
+  }
+  const providerType = (opts.type ?? 'openai').trim();
+  if (!(CUSTOM_PROVIDER_TYPES as readonly string[]).includes(providerType)) {
+    deps.stderr.write(
+      `Unknown --type "${providerType}". Expected one of: ${CUSTOM_PROVIDER_TYPES.join(', ')}.\n`,
+    );
+    deps.exit(1);
+  }
+
+  const harness = deps.getHarness();
+  await harness.ensureConfigFile();
+  const config = await harness.getConfig();
+  if (config.providers[trimmedId] !== undefined) {
+    deps.stderr.write(
+      `Provider "${trimmedId}" already exists. Remove it first (zimi provider remove ${trimmedId}) or pick another id.\n`,
+    );
+    deps.exit(1);
+  }
+
+  const manualModels = opts.model ?? [];
+  const providerPatch = {
+    type: providerType,
+    baseUrl: trimmedUrl,
+    ...(apiKey !== undefined ? { apiKey } : {}),
+    ...(apiKeyEnv !== undefined && apiKeyEnv.length > 0 ? { apiKeyEnv } : {}),
+    source: { added: 'add-custom' },
+  } as unknown as ZimiConfig['providers'][string];
+
+  // Path A (the norm): probe {baseUrl}/models with the key and take whatever
+  // the provider lists. Path B (token-bundle gateways with no listing
+  // endpoint): the user declared model names via --model.
+  let discovered: DiscoveredModel[] = [];
+  if (manualModels.length === 0) {
+    discovered = await discoverProviderModels(
+      [
+        {
+          id: trimmedId,
+          type: providerType,
+          baseUrl: trimmedUrl,
+          apiKey,
+          apiKeyEnv,
+        },
+      ],
+      { timeoutMs: 10000 },
+    );
+  }
+
+  const modelIds =
+    manualModels.length > 0
+      ? manualModels.map((model) => ({ modelId: model, contextWindow: undefined }))
+      : discovered.map(({ modelId, contextWindow }) => ({ modelId, contextWindow }));
+  if (modelIds.length === 0) {
+    deps.stderr.write(
+      `Could not list models from ${trimmedUrl} (endpoint unreachable, auth rejected, or no /models listing).\n` +
+        'If this provider is a token bundle that does not expose a model listing, declare the model names:\n' +
+        `  zimi provider add-custom ${trimmedId} ${trimmedUrl} --api-key <key> --model <model-id> [--model <another>]\n`,
+    );
+    deps.exit(1);
+  }
+
+  const modelsPatch: Record<
+    string,
+    { provider: string; model: string; maxContextSize: number }
+  > = {};
+  for (const { modelId, contextWindow } of modelIds) {
+    modelsPatch[`${trimmedId}/${modelId}`] = {
+      provider: trimmedId,
+      model: modelId,
+      // zimi rejects model aliases without a positive max_context_size, so
+      // fall back to a conservative default when the listing omits limits.
+      maxContextSize: contextWindow ?? DISCOVERY_DEFAULT_CONTEXT_SIZE,
+    };
+  }
+
+  const defaultAlias =
+    opts.defaultModel !== undefined
+      ? `${trimmedId}/${opts.defaultModel}`
+      : `${trimmedId}/${modelIds[0]!.modelId}`;
+
+  await harness.setConfig({
+    providers: { [trimmedId]: providerPatch } as ZimiConfig['providers'],
+    models: modelsPatch as ZimiConfig['models'],
+  });
+
+  deps.stdout.write(
+    `Added provider "${trimmedId}" (${providerType}, ${trimmedUrl}) with ${String(modelIds.length)} model(s)` +
+      `${manualModels.length > 0 ? ' (declared manually)' : ' (auto-discovered)'}:\n`,
+  );
+  for (const { modelId } of modelIds.slice(0, 20)) {
+    deps.stdout.write(`  - ${trimmedId}/${modelId}\n`);
+  }
+  if (modelIds.length > 20) {
+    deps.stdout.write(`  … and ${String(modelIds.length - 20)} more (zimi provider list --json)\n`);
+  }
+  deps.stdout.write(`Use it with: zimi -m "${defaultAlias}" -p "hello"\n`);
+  if (config.defaultModel === undefined) {
+    deps.stdout.write(`Tip: no default_model is set — "zimi config set default_model ${defaultAlias}" makes it the default.\n`);
+  }
 }
 
 export async function handleProviderList(
@@ -452,6 +601,30 @@ export function registerProviderCommand(parent: Command, deps?: Partial<Provider
     .action(async (url: string, options: { apiKey?: string }) => {
       const resolved = resolveDeps(deps);
       await runAction(resolved, () => handleProviderAdd(resolved, url, { apiKey: options.apiKey }));
+    });
+
+  provider
+    .command('add-custom <providerId> <baseUrl>')
+    .description(
+      'Add a custom provider by base URL + API key and auto-discover its models via GET /models. ' +
+        'For token-bundle gateways without a model listing, declare names with --model.',
+    )
+    .option('--api-key <key>', 'Provider API key. Falls back to ZIMI_API_KEY.')
+    .option('--api-key-env <VAR>', 'Read the key from this environment variable at runtime instead of storing it.')
+    .option('--type <type>', 'Provider protocol: anthropic | openai | openai_responses | google-genai | vertexai.', 'openai')
+    .option('--model <id>', 'Declare a model id manually (repeatable). Skips auto-discovery — use for token-bundle gateways.', (value: string, previous: string[]) => [...previous, value], [] as string[])
+    .option('--default-model <id>', 'Model id to advertise as the suggested default (default: first model).')
+    .action(async (providerId: string, baseUrl: string, options: { apiKey?: string; apiKeyEnv?: string; type?: string; model?: string[]; defaultModel?: string }) => {
+      const resolved = resolveDeps(deps);
+      await runAction(resolved, () =>
+        handleProviderAddCustom(resolved, providerId, baseUrl, {
+          apiKey: options.apiKey,
+          apiKeyEnv: options.apiKeyEnv,
+          type: options.type,
+          model: options.model,
+          defaultModel: options.defaultModel,
+        }),
+      );
     });
 
   provider

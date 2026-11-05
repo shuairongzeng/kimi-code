@@ -346,7 +346,7 @@ zimi vis --host 0.0.0.0 --port 8123 --no-open
 zimi provider <action> [options]
 ```
 
-包含五个动作：
+包含六个动作：
 
 #### `zimi provider add <url>`
 
@@ -368,6 +368,35 @@ zimi provider add https://registry.example.com/v1/models/api.json
 ```
 
 如果某个 provider id 已存在，会先删除再重新写入。不会自动设置默认模型，后续可用 `-m` 或 TUI 内的 `/model` 选择。
+
+#### `zimi provider add-custom <providerId> <baseUrl>`
+
+用 base URL + API key 添加单个自定义供应商，随后**自动发现模型**：命令用配置的 key 探测 `{baseUrl}/models`（失败再试 `{baseUrl}/v1/models`），为端点列出的每个模型写入 `[models."<id>/<model>"]` alias——若列表返回了上下文长度则一并写入，否则使用保守默认值 128000（zimi 要求 `max_context_size` 必须为正数）。
+
+对于**不暴露模型列表端点的 token 套餐网关**，用 `--model`（可重复）手动声明模型名，此时跳过自动发现。
+
+| 参数 / 选项 | 说明 |
+| --- | --- |
+| `<providerId>` | 新供应商 id（不能已存在；会转小写） |
+| `<baseUrl>` | 供应商 base URL，如 `https://api.example.com/v1` |
+| `--api-key <key>` | 供应商 API key。回退到环境变量 `ZIMI_API_KEY` |
+| `--api-key-env <VAR>` | 存环境变量引用而非明文 key |
+| `--type <type>` | 协议：`openai`（默认）、`anthropic`、`openai_responses`、`google-genai`、`vertexai` |
+| `--model <id>` | 手动声明模型 id（可重复）。跳过自动发现——用于 token 套餐网关 |
+| `--default-model <id>` | 推荐为默认的模型（默认取第一个） |
+
+```sh
+# 自动发现：URL + key 即可
+zimi provider add-custom mygw https://api.example.com/v1 --api-key sk-... --type openai
+
+# Anthropic 兼容端点
+zimi provider add-custom myanth https://api.example.com/anthropic --api-key sk-... --type anthropic
+
+# token 套餐（无 /models 列表）：手动声明模型名
+zimi provider add-custom bundle https://gateway.example/v1 --api-key sk-... --model gpt-4o --model claude-sonnet-4
+```
+
+发现失败（端点不可达、鉴权被拒、无列表端点）时命令报错退出并提示改用 `--model`，不写入任何配置。
 
 #### `zimi provider remove <providerId>`
 

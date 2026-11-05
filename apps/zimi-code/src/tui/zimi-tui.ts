@@ -1029,9 +1029,16 @@ export class ZimiTUI {
       const result = await syncImportedConfigInBackground(this.harness);
       if (result === undefined) return;
       await this.authFlow.refreshAvailableModels();
-      this.showStatus(
-        `Imported ${result.providerCount} provider(s), ${result.modelCount} model(s) from ${result.sources.join(', ')} (config.toml).`,
-      );
+      const parts: string[] = [];
+      if (result.providerCount > 0 || result.modelCount > 0) {
+        parts.push(
+          `imported ${result.providerCount} provider(s), ${result.modelCount} model(s) from ${result.sources.join(', ')}`,
+        );
+      }
+      if (result.discoveredCount > 0) {
+        parts.push(`auto-discovered ${result.discoveredCount} model(s) from provider endpoints`);
+      }
+      this.showStatus(`${parts.join('; ')} (config.toml).`);
     } catch {
       // Best-effort: startup must not crash on background import failures.
     }
