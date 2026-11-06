@@ -54,12 +54,14 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
   .boxes {
     border: 1px solid #e3e5e8; border-radius: 8px; padding: 8px 10px;
     max-height: 180px; overflow-y: auto; margin-top: 4px;
+    display: flex; flex-wrap: wrap; gap: 4px 16px; align-content: flex-start;
   }
   @media (prefers-color-scheme: dark) { .boxes { border-color: #2c3138; } }
-  .boxes label { display: flex; align-items: baseline; gap: 8px; font-weight: 400; margin: 2px 0; }
+  .boxes label { display: flex; align-items: baseline; gap: 8px; font-weight: 400; margin: 2px 0; flex: 0 0 auto; white-space: nowrap; }
+  .boxes label.allow-all-row { flex-basis: 100%; }
   .boxes label input { width: auto; }
   .boxes .tname { font-family: ui-monospace, monospace; font-size: 12px; white-space: nowrap; }
-  .boxes .tdesc { color: #6b7280; font-size: 12px; }
+  .boxes .tdesc { color: #6b7280; font-size: 12px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 100;
     display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px;
