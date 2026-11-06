@@ -65,6 +65,7 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
     display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px;
     overflow-y: auto;
   }
+  .overlay[hidden] { display: none !important; }
   .overlay .panel {
     background: #fff; border: 1px solid #e3e5e8; border-radius: 12px;
     padding: 20px; width: 100%; max-width: 760px; position: relative;
@@ -74,6 +75,7 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
   .panel-close {
     position: absolute; top: 10px; right: 10px; border: none; background: transparent;
     font-size: 18px; line-height: 1; padding: 4px 8px; cursor: pointer; color: #6b7280;
+    z-index: 300; /* stay above dropdowns (z-index 120) and other panel content */
   }
   .combo { position: relative; }
   .combo input { width: 100%; }
