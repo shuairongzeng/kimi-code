@@ -74,6 +74,9 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
     box-shadow: 0 20px 60px rgba(0,0,0,.25);
   }
   @media (prefers-color-scheme: dark) { .overlay .panel { background: #1c1f24; border-color: #2c3138; } }
+  .link-btn { background: none; border: none; color: #0969da; cursor: pointer; padding: 0; font-size: 13px; text-decoration: underline; }
+  #endpoint-panel { border: 1px dashed #d0d4d9; border-radius: 8px; padding: 12px; margin-top: 8px; }
+  @media (prefers-color-scheme: dark) { #endpoint-panel { border-color: #3a4048; } }
   .panel-close {
     position: absolute; top: 10px; right: 10px; border: none; background: transparent;
     font-size: 18px; line-height: 1; padding: 4px 8px; cursor: pointer; color: #6b7280;
@@ -165,6 +168,40 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
       <div class="hint" id="effort-hint">选择模型后按该模型支持等级自动填写</div>
     </div>
   </div>
+  <div id="endpoint-fetch-wrap">
+    <button type="button" id="endpoint-toggle" class="link-btn">从端点拉取模型…</button>
+    <div id="endpoint-panel" hidden>
+      <div class="row">
+        <div>
+          <label for="ep-url">Base URL</label>
+          <input id="ep-url" placeholder="https://api.example.com/v1" />
+        </div>
+        <div>
+          <label for="ep-key">API Key</label>
+          <input id="ep-key" type="password" placeholder="sk-…" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="ep-type">协议</label>
+          <select id="ep-type">
+            <option value="">自动</option>
+            <option value="openai">openai</option>
+            <option value="anthropic">anthropic</option>
+            <option value="openai_responses">openai_responses</option>
+            <option value="google-genai">google-genai</option>
+            <option value="vertexai">vertexai</option>
+            <option value="zimi">zimi</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button type="button" id="ep-fetch">获取模型</button>
+        </div>
+      </div>
+      <div class="error" id="ep-error"></div>
+      <div class="hint">获取成功后，模型会出现在上方「模型」输入框的分组列表里（标记为来自该端点），可正常筛选与选择；key 只用于本次请求，不会保存。</div>
+    </div>
+  </div>
   <div class="row" id="thinking-custom-row" hidden>
     <div>
       <label for="f-thinking-custom" id="thinking-custom-label" hidden>自定义推理等级值</label>
@@ -187,6 +224,8 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
   var token = '';
   var editing = null;
   var modelCatalog = {};
+  var endpointModels = [];
+  var endpointInfo = null;
   var toolOptions = [];
   var lastAutoEffort = null;
 
@@ -353,7 +392,8 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
   }
 
   function modelItems() {
-    return Object.keys(modelCatalog).map(function (alias) { return modelCatalog[alias]; });
+    return Object.keys(modelCatalog).map(function (alias) { return modelCatalog[alias]; })
+      .concat(endpointModels.map(function (m) { return { provider: '来自端点', model: m.modelId, support_efforts: undefined, default_effort: undefined }; }));
   }
 
   function subseqMatch(needle, haystack) {
@@ -416,8 +456,9 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
   }
 
   function pickModel(alias) {
-    $('f-model').value = alias;
-    $('f-model-alias').value = alias;
+    var realAlias = alias.indexOf('来自端点/') === 0 ? alias.slice('来自端点/'.length) : alias;
+    $('f-model').value = realAlias;
+    $('f-model-alias').value = realAlias;
     $('model-dropdown').hidden = true;
     refreshEffortOptions();
   }
@@ -559,6 +600,10 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
 
   function openEditor(agent) {
     editing = agent ? agent.name : null;
+    endpointModels = [];
+    $('endpoint-toggle').textContent = '从端点拉取模型…';
+    $('endpoint-panel').hidden = true;
+    $('ep-error').textContent = '';
     $('editor-title').textContent = agent ? '编辑 ' + agent.name : '新建子智能体';
     $('f-name').value = agent ? agent.name : '';
     $('f-name').disabled = !!agent;
@@ -612,6 +657,40 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
 
   $('new-btn').onclick = function () { openEditor(null); };
   $('cancel-btn').onclick = function () { closeEditor(); };
+  $('endpoint-toggle').onclick = function () {
+    var p = $('endpoint-panel');
+    p.hidden = !p.hidden;
+    if (!p.hidden) $('ep-url').focus();
+  };
+  $('ep-fetch').onclick = function () {
+    var url = $('ep-url').value.trim();
+    var key = $('ep-key').value.trim();
+    var type = $('ep-type').value;
+    if (!url || !key) { $('ep-error').textContent = '请填写 Base URL 与 API Key'; return; }
+    $('ep-error').textContent = '';
+    $('ep-fetch').disabled = true;
+    $('ep-fetch').textContent = '获取中…';
+    fetch('/api/v1/agents/discover-models', {
+      method: 'POST', headers: jsonHeaders(),
+      body: JSON.stringify({ baseUrl: url, apiKey: key, type: type || undefined }),
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok || (res.j && res.j.code !== 0)) {
+          $('ep-error').textContent = (res.j && res.j.msg) || '获取失败';
+          return;
+        }
+        var models = (res.j.data && res.j.data.models) || [];
+        endpointModels = models;
+        endpointInfo = { url: url, key: key, type: type || 'openai' };
+        $('ep-error').textContent = '';
+        $('endpoint-panel').hidden = true;
+        $('endpoint-toggle').textContent = '已从端点拉取 ' + models.length + ' 个模型（点击更换端点）';
+        renderModelDropdown($('f-model').value);
+      })
+      .catch(function () { $('ep-error').textContent = '无法连接到服务器'; })
+      .finally(function () { $('ep-fetch').disabled = false; $('ep-fetch').textContent = '获取模型'; });
+  };
   $('panel-close').onclick = function () { closeEditor(); };
   $('editor-overlay').addEventListener('mousedown', function (e) {
     if (e.target === this) closeEditor();
@@ -638,11 +717,32 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
     var subagents = splitList($('f-subagents').value);
     if (subagents) payload.subagents = subagents;
     if ($('f-delegate').checked) payload.delegate = true;
-    var model = $('f-model-alias').value;
-    if (model) payload.model = model;
     var thinkingSel = $('f-thinking').value;
     var thinking = thinkingSel === '__custom__' ? $('f-thinking-custom').value.trim() : thinkingSel;
     if (thinking) payload.thinking = thinking;
+    var model = $('f-model-alias').value;
+    var endpointModel = endpointInfo && endpointModels.some(function (m) { return m.modelId === model; });
+    var modelAlias = model;
+    if (endpointModel) {
+      var host = '';
+      try { host = new URL(endpointInfo.url).hostname.replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || 'endpoint'; } catch (e) { host = 'endpoint'; }
+      var providerId = 'ep-' + host;
+      var regBody = { id: providerId, type: endpointInfo.type, baseUrl: endpointInfo.url, apiKey: endpointInfo.key, models: [{ model: model, max_context_size: 128000 }] };
+      fetch('/api/v1/providers', { method: 'POST', headers: jsonHeaders(), body: JSON.stringify(regBody) })
+        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+        .then(function (res) {
+          if (!res.ok || (res.j && res.j.code !== 0)) { showError($('form-error'), res.j); return; }
+          payload.model = providerId + '/' + model;
+          doSave(payload);
+        })
+        .catch(function (e) { showError($('form-error'), { error: { message: String(e) } }); });
+      return;
+    }
+    if (model) payload.model = modelAlias;
+    doSave(payload);
+  });
+
+  function doSave(payload) {
     var method = editing ? 'PUT' : 'POST';
     var url = editing ? '/api/v1/agents/' + encodeURIComponent(editing) : '/api/v1/agents';
     fetch(url, { method: method, headers: jsonHeaders(), body: JSON.stringify(payload) })
@@ -653,7 +753,7 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
         load();
       })
       .catch(function (e) { showError($('form-error'), { error: { message: String(e) } }); });
-  });
+  }
 
   tryCandidates(tokenCandidates(), 0);
 })();

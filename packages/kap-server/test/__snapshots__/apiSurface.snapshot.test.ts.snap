@@ -346,6 +346,10 @@ exports[`API surface snapshot > matches the documented v2 route table and meta e
     ],
     [
       "POST",
+      "/api/v1/agents/discover-models",
+    ],
+    [
+      "POST",
       "/api/v1/capabilities/{tail}",
     ],
     [
