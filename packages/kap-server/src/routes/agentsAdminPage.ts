@@ -60,6 +60,41 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
   .boxes label input { width: auto; }
   .boxes .tname { font-family: ui-monospace, monospace; font-size: 12px; white-space: nowrap; }
   .boxes .tdesc { color: #6b7280; font-size: 12px; }
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 100;
+    display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px;
+    overflow-y: auto;
+  }
+  .overlay .panel {
+    background: #fff; border: 1px solid #e3e5e8; border-radius: 12px;
+    padding: 20px; width: 100%; max-width: 760px; position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  }
+  @media (prefers-color-scheme: dark) { .overlay .panel { background: #1c1f24; border-color: #2c3138; } }
+  .panel-close {
+    position: absolute; top: 10px; right: 10px; border: none; background: transparent;
+    font-size: 18px; line-height: 1; padding: 4px 8px; cursor: pointer; color: #6b7280;
+  }
+  .combo { position: relative; }
+  .combo input { width: 100%; }
+  .combo .dropdown {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 120;
+    background: #fff; border: 1px solid #e3e5e8; border-radius: 8px; margin-top: 2px;
+    max-height: 260px; overflow-y: auto; box-shadow: 0 8px 30px rgba(0,0,0,.18);
+  }
+  @media (prefers-color-scheme: dark) { .combo .dropdown { background: #1c1f24; border-color: #2c3138; } }
+  .dropdown .group {
+    padding: 6px 10px 2px; font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .05em; color: #6b7280; position: sticky; top: 0; background: inherit;
+  }
+  .dropdown .opt {
+    display: flex; gap: 8px; padding: 6px 10px; cursor: pointer; font-size: 13px;
+    align-items: baseline;
+  }
+  .dropdown .opt:hover, .dropdown .opt.active { background: rgba(47,111,237,.12); }
+  .dropdown .opt .mid { font-family: ui-monospace, monospace; }
+  .dropdown .opt .mdesc { color: #6b7280; font-size: 12px; flex: 1; }
+  .dropdown .empty { padding: 10px; color: #6b7280; font-size: 13px; }
 </style>
 </head>
 <body>
@@ -87,7 +122,9 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
   <div class="error" id="list-error"></div>
 </div>
 
-<form class="card" id="editor" hidden>
+<div class="overlay" id="editor-overlay" hidden>
+<form class="panel" id="editor">
+  <button type="button" class="panel-close" id="panel-close" aria-label="关闭">×</button>
   <h2 id="editor-title" style="margin:0 0 4px; font-size:16px">新建子智能体</h2>
   <div class="row">
     <div>
@@ -112,21 +149,19 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
   <label for="f-subagents">允许调用的子智能体（可选，逗号分隔）</label>
   <input id="f-subagents" placeholder="留空 = 默认" />
   <div class="row">
-    <div>
-      <label for="f-provider">供应商（可选）</label>
-      <select id="f-provider"><option value="">继承主 Agent</option></select>
+    <div class="combo">
+      <label for="f-model">模型（可选）</label>
+      <input id="f-model" autocomplete="off" placeholder="留空 = 继承主 Agent 模型（输入即筛选，按供应商分组）" />
+      <input type="hidden" id="f-model-alias" />
+      <div class="dropdown" id="model-dropdown" hidden></div>
     </div>
-    <div>
-      <label for="f-model-select">模型（可选）</label>
-      <select id="f-model-select"><option value="">继承主 Agent 模型</option></select>
-    </div>
-  </div>
-  <div class="row">
     <div>
       <label for="f-thinking">模型推理等级（可选）</label>
       <select id="f-thinking"></select>
       <div class="hint" id="effort-hint">选择模型后按该模型支持等级自动填写</div>
     </div>
+  </div>
+  <div class="row" id="thinking-custom-row" hidden>
     <div>
       <label for="f-thinking-custom" id="thinking-custom-label" hidden>自定义推理等级值</label>
       <input id="f-thinking-custom" hidden placeholder="例如 xhigh" />
@@ -141,13 +176,13 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
   </p>
   <div class="error" id="form-error"></div>
 </form>
+</div>
 
 <script>
 (function () {
   var token = '';
   var editing = null;
   var modelCatalog = {};
-  var providerOrder = [];
   var toolOptions = [];
   var lastAutoEffort = null;
 
@@ -238,12 +273,26 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
       .catch(function () {});
   }
 
+  $('f-delegate').addEventListener('change', function () {
+    setDelegateChecks($('f-delegate').checked === false);
+  });
+
+  function setDelegateChecks(checked) {
+    var boxes = document.querySelectorAll('#tools-deny-box input[type=checkbox]');
+    for (var i = 0; i < boxes.length; i++) {
+      if (boxes[i].value === 'Agent' || boxes[i].value === 'AgentSwarm') {
+        boxes[i].checked = checked;
+        boxes[i].disabled = true;
+      }
+    }
+  }
+
   function renderToolBoxes() {
     ['tools-allow-box', 'tools-deny-box'].forEach(function (boxId) {
       var box = $(boxId);
       box.textContent = '';
       toolOptions.forEach(function (tool) {
-        if (tool.name === 'Agent' || tool.name === 'AgentSwarm') return;
+        if (boxId === 'tools-allow-box' && (tool.name === 'Agent' || tool.name === 'AgentSwarm')) return;
         var label = document.createElement('label');
         var input = document.createElement('input');
         input.type = 'checkbox';
@@ -290,54 +339,94 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
         if (!res.ok || (res.j && res.j.code !== 0)) return;
         var items = (res.j.data && res.j.data.items) || [];
         modelCatalog = {};
-        providerOrder = [];
         items.forEach(function (item) {
           var alias = item.provider + '/' + item.model;
           modelCatalog[alias] = item;
-          if (providerOrder.indexOf(item.provider) === -1) providerOrder.push(item.provider);
         });
-        var providerSel = $('f-provider');
-        providerSel.textContent = '';
-        var anyOpt = document.createElement('option');
-        anyOpt.value = '';
-        anyOpt.textContent = '继承主 Agent';
-        providerSel.appendChild(anyOpt);
-        providerOrder.forEach(function (p) {
-          var opt = document.createElement('option');
-          opt.value = p;
-          opt.textContent = p;
-          providerSel.appendChild(opt);
-        });
-        fillModelSelect();
         refreshEffortOptions();
       })
       .catch(function () {});
   }
 
-  function fillModelSelect() {
-    var provider = $('f-provider').value;
-    var modelSel = $('f-model-select');
-    var previous = modelSel.value;
-    modelSel.textContent = '';
-    var inherit = document.createElement('option');
-    inherit.value = '';
-    inherit.textContent = provider ? '该供应商默认' : '继承主 Agent 模型';
-    modelSel.appendChild(inherit);
-    Object.keys(modelCatalog).forEach(function (alias) {
-      var item = modelCatalog[alias];
-      if (provider && item.provider !== provider) return;
-      var opt = document.createElement('option');
-      opt.value = alias;
-      opt.textContent = item.model + (item.display_name && item.display_name !== item.model ? '（' + item.display_name + '）' : '');
-      modelSel.appendChild(opt);
-    });
-    if (previous) modelSel.value = previous;
+  function modelItems() {
+    return Object.keys(modelCatalog).map(function (alias) { return modelCatalog[alias]; });
   }
 
-  function selectedModelItem() {
-    var alias = $('f-model-select').value;
-    return alias ? modelCatalog[alias] : undefined;
+  function subseqMatch(needle, haystack) {
+    if (!needle) return true;
+    var n = needle.toLowerCase();
+    var h = haystack.toLowerCase();
+    var i = 0;
+    for (var j = 0; j < h.length && i < n.length; j++) {
+      if (h[j] === n[i]) i++;
+    }
+    return i === n.length;
   }
+
+  function renderModelDropdown(query) {
+    var dd = $('model-dropdown');
+    dd.textContent = '';
+    var q = (query || '').trim();
+    var items = modelItems().filter(function (item) {
+      return subseqMatch(q, item.provider + '/' + item.model) || subseqMatch(q, item.model);
+    });
+    if (!items.length) {
+      var empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.textContent = '没有匹配的模型';
+      dd.appendChild(empty);
+      dd.hidden = false;
+      return;
+    }
+    var byProvider = {};
+    var order = [];
+    items.forEach(function (item) {
+      if (!byProvider[item.provider]) { byProvider[item.provider] = []; order.push(item.provider); }
+      byProvider[item.provider].push(item);
+    });
+    order.forEach(function (provider) {
+      var group = document.createElement('div');
+      group.className = 'group';
+      group.textContent = provider;
+      dd.appendChild(group);
+      byProvider[provider].forEach(function (item) {
+        var opt = document.createElement('div');
+        opt.className = 'opt';
+        opt.setAttribute('data-alias', item.provider + '/' + item.model);
+        var mid = document.createElement('span');
+        mid.className = 'mid';
+        mid.textContent = item.model;
+        var mdesc = document.createElement('span');
+        mdesc.className = 'mdesc';
+        mdesc.textContent = item.display_name && item.display_name !== item.model ? item.display_name : '';
+        opt.appendChild(mid);
+        opt.appendChild(mdesc);
+        opt.onmousedown = function (e) {
+          e.preventDefault();
+          pickModel(item.provider + '/' + item.model);
+        };
+        dd.appendChild(opt);
+      });
+    });
+    dd.hidden = false;
+  }
+
+  function pickModel(alias) {
+    $('f-model').value = alias;
+    $('f-model-alias').value = alias;
+    $('model-dropdown').hidden = true;
+    refreshEffortOptions();
+  }
+
+  $('f-model').addEventListener('input', function () {
+    $('f-model-alias').value = '';
+    renderModelDropdown(this.value);
+    refreshEffortOptions();
+  });
+  $('f-model').addEventListener('focus', function () { renderModelDropdown(this.value); });
+  $('f-model').addEventListener('blur', function () {
+    setTimeout(function () { $('model-dropdown').hidden = true; }, 150);
+  });
 
   function effortChoices(item) {
     var full = ['off', 'low', 'medium', 'high', 'xhigh', 'max'];
@@ -347,6 +436,11 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
       return set;
     }
     return full;
+  }
+
+  function selectedModelItem() {
+    var alias = $('f-model-alias').value;
+    return alias ? modelCatalog[alias] : undefined;
   }
 
   function effortLabel(value) {
@@ -407,11 +501,6 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
   }
 
   $('f-thinking').addEventListener('change', syncThinkingCustom);
-  $('f-provider').addEventListener('change', function () {
-    fillModelSelect();
-    refreshEffortOptions();
-  });
-  $('f-model-select').addEventListener('change', refreshEffortOptions);
 
   function load() {
     $('list-error').textContent = '';
@@ -479,10 +568,8 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
     setBoxChecks('tools-deny-box', deny);
     $('f-subagents').value = (agent && agent.subagents) ? agent.subagents.join(', ') : '';
     var alias = (agent && agent.model) || '';
-    var slash = alias.indexOf('/');
-    $('f-provider').value = alias && slash > 0 ? alias.slice(0, slash) : '';
-    fillModelSelect();
-    $('f-model-select').value = alias;
+    $('f-model').value = alias;
+    $('f-model-alias').value = alias;
     lastAutoEffort = null;
     var savedThinking = (agent && agent.thinking) || '';
     refreshEffortOptions();
@@ -497,10 +584,15 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
       syncThinkingCustom();
     }
     $('f-delegate').checked = agent ? !((agent.disallowedTools || []).indexOf('Agent') !== -1) : false;
+    setDelegateChecks($('f-delegate').checked === false);
     $('f-prompt').value = agent ? agent.prompt : '';
     $('form-error').textContent = '';
-    $('editor').hidden = false;
-    $('editor').scrollIntoView({ behavior: 'smooth' });
+    $('editor-overlay').hidden = false;
+    $('f-name').focus();
+  }
+
+  function closeEditor() {
+    $('editor-overlay').hidden = true;
   }
 
   function remove(name) {
@@ -515,7 +607,16 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
   }
 
   $('new-btn').onclick = function () { openEditor(null); };
-  $('cancel-btn').onclick = function () { $('editor').hidden = true; };
+  $('cancel-btn').onclick = function () { closeEditor(); };
+  $('panel-close').onclick = function () { closeEditor(); };
+  $('editor-overlay').addEventListener('mousedown', function (e) {
+    if (e.target === this) closeEditor();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (!$('model-dropdown').hidden) { $('model-dropdown').hidden = true; return; }
+    if (!$('editor-overlay').hidden) closeEditor();
+  });
 
   $('editor').addEventListener('submit', function (event) {
     event.preventDefault();
@@ -533,7 +634,7 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
     var subagents = splitList($('f-subagents').value);
     if (subagents) payload.subagents = subagents;
     if ($('f-delegate').checked) payload.delegate = true;
-    var model = $('f-model-select').value;
+    var model = $('f-model-alias').value;
     if (model) payload.model = model;
     var thinkingSel = $('f-thinking').value;
     var thinking = thinkingSel === '__custom__' ? $('f-thinking-custom').value.trim() : thinkingSel;
@@ -544,7 +645,7 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
       .then(function (res) {
         if (!res.ok || (res.j && res.j.code !== 0)) { showError($('form-error'), res.j); return; }
-        $('editor').hidden = true;
+        closeEditor();
         load();
       })
       .catch(function (e) { showError($('form-error'), { error: { message: String(e) } }); });

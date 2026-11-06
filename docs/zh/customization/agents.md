@@ -204,7 +204,7 @@ ${plugin_sections}
 
 ### 管理自定义 Agent 的三个入口
 
-- **Web 管理页**：`zimi web` 启动后访问 `/agents-admin`（主界面右下角也有「🤖 Agents」浮动入口，令牌自动携带，页面顶部可返回主界面）。页面上可直接新建、编辑、删除子智能体，字段与 Agent 文件 frontmatter 一一对应：工具权限用勾选框从系统真实工具清单中选择（「允许使用全部工具」为总开关），模型用供应商→模型两级下拉，推理等级为下拉框（含关闭思考 `off` 与各模型支持档位，选模型后自动带出默认档），勾选「允许该子智能体再派发子任务」可解除叶子工作者限制。
+- **Web 管理页**：`zimi web` 启动后访问 `/agents-admin`（主界面右下角也有「🤖 Agents」浮动入口，令牌自动携带，页面顶部可返回主界面）。新建/编辑以模态弹层呈现；模型用单框模糊匹配选择器（输入即按供应商分组过滤，子序列匹配如 `dsv4` 命中 `deepseek-v4-flash`）；工具权限用勾选框从系统真实工具清单中选择，新建态默认预勾选 `Agent`/`AgentSwarm` 为禁用（叶子工作者语义，勾选「再派发子任务」解锁）；推理等级为下拉框（含关闭思考 `off` 与各模型支持档位，选模型后自动带出默认档）。
 - **CLI**：`zimi agents list` / `zimi agents add <name> --description ... --prompt ...` / `zimi agents remove <name>`。`add` 支持 `--when-to-use`、`--prompt-file`、`--force`、`--delegate`。
 - **REST**：`GET/POST /api/v1/agents`、`PUT/DELETE /api/v1/agents/:name`（Bearer 鉴权），供脚本与第三方集成。
 
