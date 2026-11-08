@@ -45,11 +45,16 @@ export class WelcomeComponent implements Component {
     const innerWidth = Math.max(1, safeWidth - 4);
     const pad = '  ';
 
-    // Logo + side-by-side text.
-    const logo = ['▀▀▜█▀', '▄█▙▄▄'] as const;
+    // Logo + side-by-side text. Two-tone: the Z glyph rows render in the
+    // theme primary; the amber cursor (last cell of row 1) renders in the
+    // theme accent — matching the SVG mark's cursor motif.
+    const logo = ['▀▀▀█▛', '▄██▖▄'] as const;
     const logoWidth = Math.max(...logo.map((row) => visibleWidth(row)));
     const gap = '  ';
     const textWidth = Math.max(4, innerWidth - logoWidth - gap.length);
+    const logoRow0 = primary(logo[0]);
+    const logoRow1 =
+      primary(logo[1].slice(0, 4)) + chalk.hex(currentTheme.palette.accent)(logo[1].slice(4));
 
     const rightRow0 = truncateToWidth(
       chalk.bold.hex(currentTheme.palette.primary)('Welcome to Zimi Code!'),
@@ -65,8 +70,8 @@ export class WelcomeComponent implements Component {
     );
 
     let renderedHeaderLines = [
-      primary(logo[0].padEnd(logoWidth)) + gap + rightRow0,
-      primary(logo[1].padEnd(logoWidth)) + gap + rightRow1,
+      logoRow0.padEnd(logoWidth) + gap + rightRow0,
+      logoRow1.padEnd(logoWidth) + gap + rightRow1,
     ];
     if (isRainbowDancing()) {
       renderedHeaderLines = renderDanceWelcomeHeader(logo, textWidth, rightRow1);

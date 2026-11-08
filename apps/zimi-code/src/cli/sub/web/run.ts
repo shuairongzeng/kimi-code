@@ -492,12 +492,16 @@ export function formatReadyBanner(
 
   const port = Number(origin.slice(origin.lastIndexOf(':') + 1));
   // Borderless header: the Zimi sprite (the little mascot with eyes) sits next
-  // to the title, keeping the brand without the enclosing box.
-  const logo = ['▀▀▜█▀', '▄█▙▄▄'] as const;
+  // to the title, keeping the brand without the enclosing box. Two-tone: the
+  // Z glyph rows render in primary; the amber cursor (last cell of row 1)
+  // renders in accent — matching the SVG mark's cursor motif.
+  const logo = ['▀▀▀█▛', '▄██▖▄'] as const;
+  const logoRow0 = primary(logo[0]);
+  const logoRow1 = primary(logo[1].slice(0, 4)) + url(logo[1].slice(4));
   const lines: string[] = [
     '',
-    `  ${primary(logo[0])}  ${title('Zimi server ready')}  ${dim(getVersion())}`,
-    `  ${primary(logo[1])}  ${dim('Local web UI is available from this machine.')}`,
+    `  ${logoRow0}  ${title('Zimi server ready')}  ${dim(getVersion())}`,
+    `  ${logoRow1}  ${dim('Local web UI is available from this machine.')}`,
     '',
   ];
 

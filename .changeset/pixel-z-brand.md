@@ -2,4 +2,4 @@
 "@zimi-ai/zimi-code": patch
 ---
 
-Replace the terminal welcome logo with the new pixel-Z brand mark.
+Redesign the brand mark (new Prism logo) across the terminal welcome and web banners, and refresh icons and favicons.

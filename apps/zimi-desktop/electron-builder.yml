@@ -10,9 +10,20 @@ extraResources:
   # node_modules) produced by: pnpm --filter @zimi-ai/zimi-code deploy --prod --legacy apps/zimi-desktop/stage/cli
   - from: stage/cli
     to: cli
+  # Runtime window/taskbar icons. build/ is electron-builder's resource dir and
+  # never lands in the asar, so main.ts resolves these from resourcesPath.
+  - from: build/icon.ico
+    to: icon.ico
+  - from: build/icon.png
+    to: icon.png
 win:
+  icon: build/icon.ico
   target:
     - nsis
+mac:
+  icon: build/icon.icns
+linux:
+  icon: build/icons
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true

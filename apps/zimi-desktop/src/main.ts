@@ -46,6 +46,16 @@ function resolveCliEntry(): string {
   return join(__dirname, '..', '..', 'zimi-code', 'dist', 'main.mjs');
 }
 
+function resolveWindowIcon(): string {
+  // Windows prefers .ico (sharp taskbar/titlebar sizes); other platforms use
+  // the 512px PNG. Packaged: extraResources copies both next to resourcesPath
+  // (build/ never enters the asar). Dev: apps/zimi-desktop/dist -> ../build.
+  const name = process.platform === 'win32' ? 'icon.ico' : 'icon.png';
+  return app.isPackaged
+    ? join(process.resourcesPath, name)
+    : join(__dirname, '..', 'build', name);
+}
+
 function quitAfterServerKilled(): void {
   killServer(() => app.quit());
 }
@@ -127,6 +137,7 @@ function createWindow(url: string): void {
     width: 1280,
     height: 800,
     backgroundColor: '#0d1117',
+    icon: resolveWindowIcon(),
     show: false,
     webPreferences: {
       preload: join(__dirname, 'preload.js'),

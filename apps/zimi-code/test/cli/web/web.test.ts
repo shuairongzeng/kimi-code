@@ -190,8 +190,8 @@ describe('`zimi web` ready banner', () => {
     // the Zimi sprite stays next to the title.
     expect(plain).not.toContain('╭');
     expect(plain).not.toContain('╰');
-    expect(plain).toContain('▀▀▜█▀');
-    expect(plain).toContain('▄█▙▄▄');
+    expect(plain).toContain('▀▀▀█▛');
+    expect(plain).toContain('▄██▖▄');
     expect(plain).not.toContain('Zimi server:');
 
     // Title is above the URLs; Logs/Stop are at the bottom.
@@ -217,7 +217,7 @@ describe('`zimi web` ready banner', () => {
 
     const out = readStdout();
     const color = new Chalk({ level: 3 });
-    expect(out).toContain(color.hex(darkColors.primary)('▀▀▜█▀'));
+    expect(out).toContain(color.hex(darkColors.primary)('▀▀▀█▛'));
     expect(out).toContain(color.bold.hex(darkColors.primary)('Zimi server ready'));
     expect(out).toContain(color.hex(darkColors.accent)('http://127.0.0.1:58627/'));
     expect(out).toContain(color.bold.hex(darkColors.textDim)('Local:    '));

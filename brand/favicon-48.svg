@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
   <rect width="48" height="48" rx="9" fill="#0C1210"/>
   <g shape-rendering="crispEdges">
-    <path fill="#7EE787" d="M9 18h3v3h-3z M12 18h3v3h-3z M15 18h3v3h-3z M18 18h3v3h-3z M21 18h3v3h-3z M24 18h3v3h-3z M27 18h3v3h-3z M30 18h3v3h-3z M33 18h3v3h-3z M36 18h3v3h-3z M24 21h3v3h-3z M27 21h3v3h-3z M30 21h3v3h-3z M15 24h3v3h-3z M18 24h3v3h-3z M21 24h3v3h-3z M9 27h3v3h-3z M12 27h3v3h-3z M15 27h3v3h-3z M18 27h3v3h-3z M21 27h3v3h-3z M24 27h3v3h-3z M27 27h3v3h-3z M30 27h3v3h-3z M33 27h3v3h-3z"/>
-    <path fill="#FFBF47" d="M36 27h3v3h-3z"/>
+    <path fill="#7EE787" d="M9 12h30v6H9z M27 18h9v3h-9z M21 21h9v3h-9z M15 24h9v3h-9z M9 27h9v3h-9z M9 30h21v6H9z"/>
+    <path fill="#FFBF47" d="M33 30h6v6h-6z"/>
   </g>
 </svg>
