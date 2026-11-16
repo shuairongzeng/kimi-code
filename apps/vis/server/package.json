@@ -30,6 +30,7 @@
   "dependencies": {
     "@hono/node-server": "^1.13.7",
     "@zimi-ai/agent-core-v2": "workspace:^",
+    "@zimi-ai/core": "workspace:^",
     "hono": "^4.7.7",
     "yauzl": "^3.3.0"
   },

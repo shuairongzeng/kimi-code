@@ -31,15 +31,13 @@ import { ISessionMetadata } from '@zimi-ai/agent-core-v2/session/sessionMetadata
 import { ISessionSkillCatalog } from '@zimi-ai/agent-core-v2/features/skill/session/skillCatalog';
 import { ISessionTitleService } from '@zimi-ai/agent-core-v2/session/sessionTitle/sessionTitle';
 import { IAgentLoopService } from '@zimi-ai/agent-core-v2/agent/loop/loop';
-import { IAgentPromptChannel } from '@zimi-ai/agent-core-v2/agent/loop/promptChannel';
 import { IAgentPermissionModeService } from '@zimi-ai/agent-core-v2/agent/permissionMode/permissionMode';
 import { IAgentCommandService } from '@zimi-ai/agent-core-v2/agent/command/agentCommand';
 import { IAgentEnvironmentBindingService } from '@zimi-ai/agent-core-v2/agent/environmentBinding/environmentBinding';
-import { IAgentContextMemoryService } from '@zimi-ai/agent-core-v2/agent/contextMemory/contextMemory';
 import { ISessionTokenCountingService } from '@zimi-ai/agent-core-v2/session/tokenCounting/sessionTokenCounting';
 import { ISessionActivityView } from '@zimi-ai/agent-core-v2/session/sessionActivity/sessionActivity';
+import { ISessionPromptPredictionService } from '@zimi-ai/agent-core-v2/features/promptPrediction/promptPrediction';
 import { IAgentPlanService } from '@zimi-ai/agent-core-v2/features/plan/plan';
-import { IAgentProfileService } from '@zimi-ai/agent-core-v2/agent/profile/profile';
 import { IAgentShellCommandService } from '@zimi-ai/agent-core-v2/agent/shellCommand/shellCommand';
 import { IAgentTaskService } from '@zimi-ai/agent-core-v2/agent/task/task';
 import { ISessionUsageService } from '@zimi-ai/agent-core-v2/session/usage/sessionUsage';
@@ -70,16 +68,15 @@ export const serviceTokens: Readonly<Record<string, ServiceIdentifier<unknown>>>
   sessionMetadata: ISessionMetadata,
   sessionSkillCatalog: ISessionSkillCatalog,
   sessionTitleService: ISessionTitleService,
-  agentPromptService: IAgentPromptChannel,
   agentLoopService: IAgentLoopService,
   agentPermissionModeService: IAgentPermissionModeService,
   agentCommandService: IAgentCommandService,
   agentEnvironmentBindingService: IAgentEnvironmentBindingService,
-  agentContextMemoryService: IAgentContextMemoryService,
   agentTokenCountingService: ISessionTokenCountingService,
   sessionActivityView: ISessionActivityView,
+  sessionPromptPredictionService: ISessionPromptPredictionService,
   agentShellCommandService: IAgentShellCommandService,
-  agentProfileService: IAgentProfileService,
+  agentProfileService: IAgentLoopService,
   agentUsageService: ISessionUsageService,
   agentPlanService: IAgentPlanService,
   agentTaskService: IAgentTaskService,

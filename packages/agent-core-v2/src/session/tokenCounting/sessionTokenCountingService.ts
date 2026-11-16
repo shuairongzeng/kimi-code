@@ -13,14 +13,14 @@ import type {
   TokenCountingRequest,
   TokenCountingStrategy,
 } from '#/agent/tokenCounting/tokenCounting';
-import type { Message, ToolDescription as Tool } from '#human/llm/message';
+import type { Message, ToolDescription as Tool } from '@zimi-ai/core/llm/message';
 import {
   estimateTokens,
   estimateTokensForMessage,
   estimateTokensForMessages,
   estimateTokensForTools,
 } from '#/llm-adapter/contract/tokens';
-import type { TokenUsage } from '#human/llm-requester/usage';
+import type { TokenUsage } from '@zimi-ai/core/llm/usage';
 import { IAgentLifecycleService } from '#/session/agentLifecycle/agentLifecycle';
 
 import {

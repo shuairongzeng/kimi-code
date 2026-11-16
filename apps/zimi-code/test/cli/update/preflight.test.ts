@@ -10,6 +10,7 @@ import {
   writeUpdateInstallState,
 } from '#/cli/update/install-state';
 import { installCommandFor, installUpdate, runUpdatePreflight } from '#/cli/update/preflight';
+import { runForcedUpgradePreflight } from '#/cli/update/forced';
 import { promptForInstallChoice } from '#/cli/update/prompt';
 import type * as PromptModule from '#/cli/update/prompt';
 import { refreshUpdateCache } from '#/cli/update/refresh';
@@ -35,6 +36,8 @@ const mocks = vi.hoisted(() => ({
   loadTuiConfig: vi.fn(),
   detectInstallSource: vi.fn(),
   promptForInstallChoice: vi.fn(),
+  promptForForcedUpgradeChoice: vi.fn(),
+  fetchClientConfig: vi.fn(),
   refreshUpdateCache: vi.fn(),
   resolveUpdateDeviceId: vi.fn(),
   appendRolloutDecisionLog: vi.fn(),
@@ -89,6 +92,14 @@ vi.mock('../../../src/cli/update/prompt', async () => {
     promptForInstallChoice: mocks.promptForInstallChoice,
   };
 });
+
+vi.mock('../../../src/cli/update/forced-prompt', () => ({
+  promptForForcedUpgradeChoice: mocks.promptForForcedUpgradeChoice,
+}));
+
+vi.mock('../../../src/utils/client-configs', () => ({
+  clientConfigs: { fetch: mocks.fetchClientConfig },
+}));
 
 vi.mock('../../../src/cli/update/refresh', async () => {
   const actual = await vi.importActual<typeof RefreshModule>('../../../src/cli/update/refresh.js');
@@ -192,6 +203,7 @@ function tuiConfig(overrides: Partial<TuiConfig> = {}): TuiConfig {
     editorCommand: null,
     notifications: { enabled: true, condition: 'unfocused' },
     upgrade: { autoInstall: true },
+    transcript: { toolCallDensity: 'compact', thinking: 'grouped' },
     ...overrides,
   };
 }
@@ -261,7 +273,7 @@ describe('runUpdatePreflight', () => {
     vi.stubEnv('ZIMI_CODE_UPDATE_CHANNEL', '');
     // Pin the region to cn so address assertions don't follow the dev
     // machine's own login/marker state; global tests override below.
-    vi.stubEnv('ZIMI_CODE_OAUTH_HOST', 'https://auth.kimi.com');
+    vi.stubEnv('ZIMI_CODE_OAUTH_HOST', 'https://auth.zimi.com');
     resetZimiRegionCache();
     mocks.readUpdateInstallState.mockResolvedValue(emptyUpdateInstallState());
     mocks.writeUpdateInstallState.mockResolvedValue(undefined);
@@ -523,7 +535,7 @@ describe('runUpdatePreflight', () => {
     await expect(runUpdatePreflight('0.4.0', options)).resolves.toBe('continue');
     expect(stdout.join('')).toContain('brew upgrade zimi-code');
     expect(stdout.join('')).toContain('Third-party sources may lag behind the official release.');
-    expect(stdout.join('')).toContain('https://www.kimi.com/code');
+    expect(stdout.join('')).toContain('https://www.zimi.com/code');
     expect(promptForInstallChoice).not.toHaveBeenCalled();
     expect(mocks.spawn).not.toHaveBeenCalled();
   });
@@ -576,7 +588,7 @@ describe('runUpdatePreflight', () => {
   });
 
   it('global region: derives install commands and site links from the .ai profile', async () => {
-    vi.stubEnv('ZIMI_CODE_OAUTH_HOST', 'https://auth.kimi.ai');
+    vi.stubEnv('ZIMI_CODE_OAUTH_HOST', 'https://auth.zimi.ai');
     resetZimiRegionCache();
     mocks.readUpdateCache.mockResolvedValue(cacheWith('0.5.0'));
     mocks.refreshUpdateCache.mockResolvedValue(cacheWith('0.5.0'));
@@ -586,13 +598,13 @@ describe('runUpdatePreflight', () => {
       // Native updates self-spawn the staged downloader silently, so the
       // region surface there is the manual install command text.
       expect(installCommandFor('native', '0.5.0', 'win32')).toBe(
-        'irm https://code.kimi.ai/kimi-code/install.ps1 | iex',
+        'irm https://code.zimi.ai/zimi-code/install.ps1 | iex',
       );
 
       mocks.detectInstallSource.mockResolvedValue('homebrew');
       const brew = captureOutput();
       await expect(runUpdatePreflight('0.4.0', brew.options)).resolves.toBe('continue');
-      expect(brew.stdout.join('')).toContain('https://www.kimi.ai/code');
+      expect(brew.stdout.join('')).toContain('https://www.zimi.ai/code');
       expect(mocks.spawn).not.toHaveBeenCalled();
     } finally {
       Object.defineProperty(process, 'platform', { value: originalPlatform });
@@ -1463,5 +1475,74 @@ describe('runUpdatePreflight', () => {
         expect.objectContaining({ stdio: 'inherit' }),
       );
     });
+  });
+});
+
+
+describe('runForcedUpgradePreflight', () => {
+  beforeEach(() => {
+    mocks.fetchClientConfig.mockResolvedValue({ cliMinVersion: '0.6.0', desktopMinVersion: null });
+    mocks.promptForForcedUpgradeChoice.mockResolvedValue('skip');
+    mocks.detectInstallSource.mockResolvedValue('npm-global');
+    mocks.refreshUpdateCache.mockResolvedValue(cacheWithManifest(heldForEveryone('0.6.0')));
+  });
+
+  afterEach(() => { vi.clearAllMocks(); });
+
+  it('does not fetch or prompt in non-interactive mode', async () => {
+    await expect(runForcedUpgradePreflight('0.5.0', { isTTY: false })).resolves.toBe('continue');
+    expect(mocks.fetchClientConfig).not.toHaveBeenCalled();
+    expect(mocks.refreshUpdateCache).not.toHaveBeenCalled();
+    expect(mocks.promptForForcedUpgradeChoice).not.toHaveBeenCalled();
+  });
+
+  it('falls back to passive updates for an unsupported install source', async () => {
+    mocks.detectInstallSource.mockResolvedValue('unsupported');
+    const track = vi.fn();
+
+    await expect(runForcedUpgradePreflight('0.5.0', { isTTY: true, track })).resolves.toBe('continue');
+
+    expect(mocks.refreshUpdateCache).not.toHaveBeenCalled();
+    expect(mocks.promptForForcedUpgradeChoice).not.toHaveBeenCalled();
+    expect(track).not.toHaveBeenCalled();
+  });
+
+  it('allows a version equal to the minimum without checking the update feed', async () => {
+    await expect(runForcedUpgradePreflight('0.6.0', { isTTY: true })).resolves.toBe('continue');
+    expect(mocks.refreshUpdateCache).not.toHaveBeenCalled();
+    expect(mocks.promptForForcedUpgradeChoice).not.toHaveBeenCalled();
+  });
+
+  it('bypasses rollout and skips only the current launch', async () => {
+    const track = vi.fn();
+    await expect(runForcedUpgradePreflight('0.5.0', { isTTY: true, track })).resolves.toBe('skip-passive');
+
+    expect(mocks.fetchClientConfig).toHaveBeenCalledWith(
+      'client_upgrade_policy',
+      expect.anything(),
+      { timeoutMs: 2_000 },
+    );
+    expect(mocks.refreshUpdateCache).toHaveBeenCalledWith({ channel: 'stable', timeoutMs: 10_000 });
+    expect(mocks.promptForForcedUpgradeChoice).toHaveBeenCalledWith(expect.objectContaining({
+      currentVersion: '0.5.0',
+      minimumVersion: '0.6.0',
+      targetVersion: '0.6.0',
+    }));
+    expect(track).toHaveBeenCalledWith('forced_upgrade_prompt_shown', expect.objectContaining({ client: 'cli' }));
+    expect(track).toHaveBeenCalledWith('forced_upgrade_action', expect.objectContaining({
+      action: 'skip',
+      trigger: 'initial',
+    }));
+  });
+
+  it('does not install a target below the required minimum', async () => {
+    mocks.fetchClientConfig.mockResolvedValue({ cliMinVersion: '0.7.0', desktopMinVersion: null });
+    const track = vi.fn();
+    await expect(runForcedUpgradePreflight('0.5.0', { isTTY: true, track })).resolves.toBe('skip-passive');
+
+    expect(mocks.spawn).not.toHaveBeenCalled();
+    expect(track).toHaveBeenCalledWith('forced_upgrade_state_changed', expect.objectContaining({
+      error_class: 'target_below_minimum',
+    }));
   });
 });

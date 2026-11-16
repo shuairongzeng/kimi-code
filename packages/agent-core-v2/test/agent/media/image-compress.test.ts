@@ -28,8 +28,8 @@ import {
   unsupportedImageMimeFromUrl,
 } from '#/agent/media/image-format-policy';
 import { buildDaemonFileUrl } from '#/agent/media/mediaRef';
-import type { ContentPart } from '#human/llm/message';
-import { mediaUrlOf } from '#human/llm/protocol/kit/media';
+import type { ContentPart } from '@zimi-ai/core/llm/message';
+import { mediaUrlOf } from '@zimi-ai/core/llm/protocol/kit/media';
 
 function image(url: string, id?: string): ContentPart {
   return {

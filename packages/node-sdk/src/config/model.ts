@@ -2,7 +2,7 @@ import {
   BUDGET_THINKING_EFFORTS,
   matchKnownAnthropicModelProfile,
   matchUnknownClaudeProfile,
-} from '@zimi-ai/agent-core-v2/human/llm/builtin/protocol/anthropic/legalize';
+} from '@zimi-ai/core/llm/builtin/protocol/anthropic/legalize';
 
 import type { ModelAlias, ProviderType } from './schema';
 

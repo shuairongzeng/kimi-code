@@ -38,7 +38,7 @@ zimi <subcommand> [options]
 
 以下组合会在启动时被拒绝：
 
-- `--continue` 与 `--session` 互斥——两者都表示"恢复历史会话"
+- `--continue` 与 `--session` 互斥——两者都表示 "恢复历史会话"
 - `--yolo` 和 `--auto` 互斥——两种权限模式互斥
 - `--prompt` 不能与 `--yolo`、`--auto` 或 `--plan` 同时使用——非交互模式固定使用 `auto` 权限
 - `--output-format` 只能与 `--prompt` 一起使用
@@ -119,7 +119,7 @@ zimi -p --agent reviewer "审查这个分支上的改动"
 zimi -p "Summarize the current repository status"
 ```
 
-输出采用 transcript 样式：thinking 内容和 Assistant 正文都以 `• ` 开头，换行后两个空格缩进。Assistant 正文输出到 stdout；thinking、工具进度和"恢复会话"提示输出到 stderr。`-p` 模式不会请求人工审批，普通工具调用按 `auto` 权限策略处理，静态 deny 规则仍然生效。
+输出采用 transcript 样式：thinking 内容和 Assistant 正文都以 `• ` 开头，换行后两个空格缩进。Assistant 正文输出到 stdout；thinking、工具进度和 "恢复会话" 提示输出到 stderr。`-p` 模式不会请求人工审批，普通工具调用按 `auto` 权限策略处理，静态 deny 规则仍然生效。
 
 临时切换模型：
 
@@ -215,7 +215,7 @@ zimi app ~/project
 
 ### `zimi install-desktop`
 
-打印 Zimi Code 桌面端页面地址并在默认浏览器中打开，无需离开终端即可下载并安装桌面端应用。页面地址随当前区域而定：国内区域为 `https://www.kimi.com/code`，全球区域为 `https://www.kimi.ai/code`。
+打印 Zimi Code 桌面端页面地址并在默认浏览器中打开，无需离开终端即可下载并安装桌面端应用。页面地址随当前区域而定：国内区域为 `https://www.zimi.com/code`，全球区域为 `https://www.zimi.ai/code`。
 
 ```sh
 zimi install-desktop

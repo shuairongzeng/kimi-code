@@ -62,9 +62,9 @@ const mocks = vi.hoisted(() => {
     resolveZimiHome: vi.fn((homeDir?: string) => homeDir ?? '/tmp/zimi-code-test-home'),
     flushDiagnosticLogsSync: vi.fn(),
     harnessCreatesDeviceIdOnConstruction: false,
-    execFileSync: vi.fn(() => ''),
+    execFileSync: vi.fn<(_cmd: string) => string>(() => ''),
     spawnSync: vi.fn(),
-    resolveCommandPath: vi.fn(() => '/bin/stty' as string | undefined),
+    resolveCommandPath: vi.fn<(_cmd: string) => string | undefined>(() => '/bin/stty'),
     TuiConfigParseError,
   };
 });
@@ -122,7 +122,8 @@ vi.mock('@zimi-ai/zimi-telemetry', () => ({
   withTelemetryContext: mocks.withTelemetryContext,
 }));
 
-vi.mock('../../src/tui/config', () => ({
+vi.mock('../../src/tui/config', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../src/tui/config.js')>()),
   loadTuiConfig: mocks.loadTuiConfig,
   TuiConfigParseError: mocks.TuiConfigParseError,
 }));
@@ -167,7 +168,13 @@ describe('runShell', () => {
   beforeEach(() => {
     // Pin region to cn: the telemetry endpoint assertion below must not
     // follow the dev machine's own login/marker state.
-    vi.stubEnv('ZIMI_CODE_OAUTH_HOST', 'https://auth.kimi.com');
+    vi.stubEnv('ZIMI_CODE_OAUTH_HOST', 'https://auth.zimi.com');
+    vi.stubEnv('ZIMI_CODE_EXPERIMENTAL_FLAG', '');
+    vi.stubEnv('ZIMI_CODE_TUI_FULL_SCREEN', '');
+    vi.stubEnv('ZIMI_CODE_TUI_ANIMATION_FPS', '');
+    vi.stubEnv('TERM', 'xterm-256color');
+    vi.stubEnv('TERMUX_VERSION', '');
+    vi.stubEnv('TMUX', '');
     resetZimiRegionCache();
   });
 
@@ -188,6 +195,7 @@ describe('runShell', () => {
       (homeDir?: string) => homeDir ?? '/tmp/zimi-code-test-home',
     );
     mocks.resolveCommandPath.mockImplementation(() => '/bin/stty');
+    mocks.execFileSync.mockImplementation(() => '');
     mocks.harnessCreatesDeviceIdOnConstruction = false;
   });
 
@@ -338,7 +346,7 @@ describe('runShell', () => {
     const telemetryOptions = mocks.initializeTelemetry.mock.calls[0]![0] as {
       endpoint: () => string;
     };
-    expect(telemetryOptions.endpoint()).toBe('https://telemetry-logs.kimi.com/v1/event');
+    expect(telemetryOptions.endpoint()).toBe('https://telemetry-logs.zimi.com/v1/event');
     expect(mocks.setCrashPhase).toHaveBeenCalledWith('runtime');
 
     const [, harness, startupInput] = mocks.zimiTuiConstructor.mock.calls[0]!;
@@ -353,6 +361,7 @@ describe('runShell', () => {
       },
       version: '1.2.3-test',
       workDir: process.cwd(),
+      resolvedTuiMode: 'regular',
       telemetryDisabled: false,
     });
     expect(mocks.tuiStart).toHaveBeenCalledOnce();
@@ -363,6 +372,8 @@ describe('runShell', () => {
       init_ms: expect.any(Number),
       mcp_ms: 47,
       tui_mode: 'regular',
+      tui_mode_config: 'unset',
+      tui_mode_fallback: undefined,
     });
   });
 
@@ -590,6 +601,8 @@ describe('runShell', () => {
       init_ms: expect.any(Number),
       mcp_ms: 47,
       tui_mode: 'regular',
+      tui_mode_config: 'unset',
+      tui_mode_fallback: undefined,
     });
   });
 
@@ -682,6 +695,74 @@ describe('runShell', () => {
         editorCommand: 'vim',
         notifications: { enabled: true, condition: 'always' },
       },
+    });
+  });
+
+  it('passes the ZIMI_CODE_TUI_ANIMATION_FPS frame rate to the TUI', async () => {
+    vi.stubEnv('ZIMI_CODE_TUI_ANIMATION_FPS', '25');
+    mocks.loadTuiConfig.mockResolvedValue({
+      theme: 'dark',
+      editorCommand: null,
+      notifications: { enabled: true, condition: 'unfocused' },
+    });
+    mocks.tuiStart.mockResolvedValue(undefined);
+
+    await runShell(
+      {
+        session: '',
+        continue: false,
+        yolo: false,
+        auto: false,
+        plan: false,
+        model: undefined,
+        outputFormat: undefined,
+        prompt: undefined,
+        skillsDirs: [],
+        agent: undefined,
+        agentFiles: [],
+        environment: undefined,
+      },
+      '1.2.3-test',
+    );
+
+    const [, , startupInput] = mocks.zimiTuiConstructor.mock.calls[0]!;
+    expect(startupInput).toMatchObject({ animationFrameRate: 25, startupNotice: undefined });
+  });
+
+  it('adds an ignored ZIMI_CODE_TUI_ANIMATION_FPS to the startup notice after a tui.toml warning', async () => {
+    vi.stubEnv('ZIMI_CODE_TUI_ANIMATION_FPS', 'fast');
+    mocks.loadTuiConfig.mockRejectedValue(
+      new mocks.TuiConfigParseError({
+        theme: 'dark',
+        editorCommand: null,
+        notifications: { enabled: true, condition: 'unfocused' },
+      }),
+    );
+    mocks.tuiStart.mockResolvedValue(undefined);
+
+    await runShell(
+      {
+        session: '',
+        continue: false,
+        yolo: false,
+        auto: false,
+        plan: false,
+        model: undefined,
+        outputFormat: undefined,
+        prompt: undefined,
+        skillsDirs: [],
+        agent: undefined,
+        agentFiles: [],
+        environment: undefined,
+      },
+      '1.2.3-test',
+    );
+
+    const [, , startupInput] = mocks.zimiTuiConstructor.mock.calls[0]!;
+    expect(startupInput).toMatchObject({
+      animationFrameRate: undefined,
+      startupNotice: 'Invalid TUI config in ~/.zimi-code/tui.toml; using defaults.\n' +
+        'Ignored ZIMI_CODE_TUI_ANIMATION_FPS="fast": expected a whole number from 1 to 60.',
     });
   });
 
@@ -856,6 +937,8 @@ describe('runShell', () => {
     expect(mocks.harnessTrack).toHaveBeenCalledWith('exit', {
       duration_ms: expect.any(Number),
       tui_mode: 'regular',
+      tui_mode_config: 'unset',
+      tui_mode_fallback: undefined,
     });
     expect(mocks.shutdownTelemetry).toHaveBeenCalledOnce();
     expect(mocks.harnessClose).toHaveBeenCalledOnce();
@@ -907,6 +990,8 @@ describe('runShell', () => {
       expect(mocks.lifecycleTrack).toHaveBeenCalledWith('exit', {
         duration_ms: expect.any(Number),
         tui_mode: 'regular',
+        tui_mode_config: 'unset',
+        tui_mode_fallback: undefined,
       });
       expect(mocks.harnessTrack).not.toHaveBeenCalledWith('exit', expect.anything());
       expect(mocks.shutdownTelemetry).toHaveBeenCalledOnce();
@@ -1018,5 +1103,82 @@ describe('runShell', () => {
     } finally {
       stderrSpy.mockRestore();
     }
+  });
+
+  it('resolves fullscreen by default when ZIMI_CODE_EXPERIMENTAL_FLAG is enabled and tui_mode is unset', async () => {
+    stubTuiStartup();
+    await withEnv({ ZIMI_CODE_EXPERIMENTAL_FLAG: '1' }, async () => {
+      await runShell(minimalCliOptions, '1.2.3-test');
+    });
+
+    const [, , startupInput] = mocks.zimiTuiConstructor.mock.calls[0]!;
+    expect(startupInput).toMatchObject({ resolvedTuiMode: 'fullscreen' });
+    expect(mocks.harnessTrack).toHaveBeenCalledWith(
+      'startup_perf',
+      expect.objectContaining({
+        tui_mode_config: 'unset',
+        tui_mode_fallback: undefined,
+      }),
+    );
+  });
+
+  it('keeps explicit regular in tui.toml even when ZIMI_CODE_EXPERIMENTAL_FLAG is enabled', async () => {
+    mocks.loadTuiConfig.mockResolvedValue({
+      theme: 'dark',
+      tuiMode: 'regular',
+      editorCommand: null,
+      notifications: { enabled: true, condition: 'unfocused' },
+    });
+    mocks.tuiStart.mockResolvedValue(undefined);
+
+    await withEnv({ ZIMI_CODE_EXPERIMENTAL_FLAG: '1' }, async () => {
+      await runShell(minimalCliOptions, '1.2.3-test');
+    });
+
+    const [, , startupInput] = mocks.zimiTuiConstructor.mock.calls[0]!;
+    expect(startupInput).toMatchObject({ resolvedTuiMode: 'regular' });
+    expect(mocks.harnessTrack).toHaveBeenCalledWith(
+      'startup_perf',
+      expect.objectContaining({
+        tui_mode_config: 'regular',
+        tui_mode_fallback: undefined,
+      }),
+    );
+  });
+
+  it('records tui_mode_fallback when fullscreen is downgraded by tmux -CC control mode', async () => {
+    mocks.loadTuiConfig.mockResolvedValue({
+      theme: 'dark',
+      tuiMode: 'fullscreen',
+      editorCommand: null,
+      notifications: { enabled: true, condition: 'unfocused' },
+    });
+    mocks.tuiStart.mockResolvedValue(undefined);
+    mocks.resolveCommandPath.mockImplementation((cmd: string) =>
+      cmd === 'tmux' ? '/usr/bin/tmux' : '/bin/stty',
+    );
+    mocks.execFileSync.mockImplementation((cmd: string) => (cmd === '/usr/bin/tmux' ? '1\n' : ''));
+
+    await withEnv(
+      {
+        TMUX: '/tmp/tmux-501/default,123,0',
+        TERM_PROGRAM: 'tmux',
+        TERM: 'tmux-256color',
+      },
+      async () => {
+        await runShell(minimalCliOptions, '1.2.3-test');
+      },
+    );
+
+    const [, , startupInput] = mocks.zimiTuiConstructor.mock.calls[0]!;
+    expect(startupInput).toMatchObject({ resolvedTuiMode: 'regular' });
+    expect(mocks.harnessTrack).toHaveBeenCalledWith(
+      'startup_perf',
+      expect.objectContaining({
+        tui_mode: 'regular',
+        tui_mode_config: 'fullscreen',
+        tui_mode_fallback: 'tmux_cc',
+      }),
+    );
   });
 });

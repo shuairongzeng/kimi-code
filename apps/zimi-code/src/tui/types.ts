@@ -12,7 +12,7 @@ import type {
   ToolInputDisplay,
 } from '@zimi-ai/zimi-code-sdk';
 
-import type { MarkdownConfig, NotificationsConfig, StatusLineConfig, TuiMode, UpgradePreferences } from './config';
+import type { FollowUpBehavior, MarkdownConfig, NotificationsConfig, StatusLineConfig, TranscriptConfig, TuiMode, UpgradePreferences } from './config';
 import type { PendingApproval, PendingQuestion } from './reverse-rpc/types';
 import type { ColorToken, ThemeName } from './theme';
 import type { MediaAttachment, VideoAttachment } from './utils/image-attachment-store';
@@ -86,6 +86,7 @@ export interface AppState {
   editorCommand: string | null;
   /** Mirrors the TUI config toggle; defaults to false when absent from older fixtures. */
   disablePasteBurst?: boolean;
+  copyOnSelect?: boolean;
   /** LaTeX math rendering in Markdown; defaults to true when absent from older fixtures. */
   renderLatex?: boolean;
   /** Mirrors the TUI config toggle; defaults to true when absent from older fixtures. */
@@ -93,11 +94,13 @@ export interface AppState {
   disableFeedbackSurvey?: boolean;
   /** Mirrors the TUI config toggle; defaults to true when absent from older fixtures. */
   autoSessionTitle?: boolean;
+  followUpBehavior?: FollowUpBehavior;
   notifications: NotificationsConfig;
   upgrade: UpgradePreferences;
   /** Footer status line customization from tui.toml; absent means the default layout. */
   statusLine?: StatusLineConfig;
   markdown?: MarkdownConfig;
+  transcript: TranscriptConfig;
   availableModels: Record<string, ModelAlias>;
   availableProviders: Record<string, ProviderConfig>;
   sessionTitle: string | null;
@@ -135,6 +138,10 @@ export interface StepRetryState {
    */
   phase: 'backoff' | 'attempt';
 }
+
+export type Elapsed =
+  | { readonly known: false }
+  | { readonly known: true; readonly ms: number };
 
 export interface ToolCallBlockData {
   id: string;
@@ -269,6 +276,7 @@ export interface TranscriptEntry {
   goalData?: GoalTranscriptData;
   imageAttachmentIds?: readonly number[];
   skillNames?: readonly string[];
+  inlineSkillActivations?: readonly InlineSkillActivation[];
   skillActivationId?: string;
   skillName?: string;
   skillArgs?: string;
@@ -296,7 +304,7 @@ export interface LivePaneState {
 }
 
 export interface PreparedSkillActivations {
-  skills: Array<{ name: string; args?: string }>;
+  skills: Array<{ name: string; path?: string; args?: string }>;
   mediaAttachmentIds: number[];
   stagingPaths: string[];
   cachedVideos: VideoAttachment[];
@@ -304,7 +312,10 @@ export interface PreparedSkillActivations {
 
 export interface InlineSkillActivation {
   readonly skillName: string;
+  readonly path?: string;
   readonly args?: string;
+  readonly start?: number;
+  readonly occurrences?: readonly { commandName: string; start: number }[];
 }
 
 export type ModelSwitchPersistence = 'session' | 'model' | 'model-and-effort';
@@ -324,6 +335,7 @@ export interface QueuedPromptMessage extends QueuedEntryBase {
   readonly inlineSkillActivations?: readonly InlineSkillActivation[];
   /** Resent after the user chose Retry on a session-in-use prompt. */
   readonly occupiedRetry?: boolean;
+  readonly holdUntilTurnEnds?: boolean;
 }
 
 export interface QueuedBashCommand extends QueuedEntryBase {
@@ -361,6 +373,8 @@ export function isPromptQueuedMessage(message: QueuedMessage): message is Queued
 export function isQueuedCompactionBarrier(message: QueuedMessage): boolean {
   return message.mode === 'compact' || message.mode === 'model-switch';
 }
+
+export type SteerOutcome = 'steered' | 'failed' | 'restored';
 
 /**
  * One unit of Ctrl-S steer input: a queued message or the editor draft,
@@ -411,6 +425,8 @@ export type TUIStartupState = 'pending' | 'ready' | 'picker';
 export interface ZimiTUIOptions {
   initialAppState: AppState;
   startup: TUIStartupOptions;
+  resolvedTuiMode?: TuiMode;
+  animationFrameRate?: number;
 }
 
 export interface PendingExit {

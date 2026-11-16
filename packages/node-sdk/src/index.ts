@@ -90,7 +90,6 @@ export { resolveConfigPath } from '@zimi-ai/agent-core-v2';
 export { limitAgentReplayByTurns } from '#/replay';
 export { parseAgentFileText, resolveAgentPath } from '@zimi-ai/agent-core-v2';
 export { SECONDARY_DERIVED_MODEL_ALIAS } from '#/config/index';
-export { PRIMARY_SUBAGENT_MODEL_CHOICE } from '@zimi-ai/agent-core-v2/session/subagent/configSection';
 
 export { installGlobalProxyDispatcher } from '#/proxy';
 

@@ -13,7 +13,7 @@ Zimi Code CLI 有三个地方可以影响运行参数：配置文件、命令行
 环境变量按作用分三类，不能合并成一条线性优先级：
 
 1. **定位配置文件**：`ZIMI_CODE_HOME` 决定数据根目录，配置文件路径因此变为 `$ZIMI_CODE_HOME/config.toml`。这一步先于其他所有解析，不是普通参数的后备来源。
-2. **运行时开关**：`ZIMI_DISABLE_TELEMETRY` 等少量变量直接关闭对应子系统。即使 `config.toml` 里 `telemetry = true`，只要这个变量是真值，遥测就会被禁用。语义是"额外禁用"，不是"普通覆盖"。
+2. **运行时开关**：`ZIMI_DISABLE_TELEMETRY` 等少量变量直接关闭对应子系统。即使 `config.toml` 里 `telemetry = true`，只要这个变量是真值，遥测就会被禁用。语义是 "额外禁用"，不是 "普通覆盖"。
 3. **运行端点与诊断**：`ZIMI_CODE_OAUTH_HOST`、`ZIMI_CODE_BASE_URL`、`ZIMI_LOG_LEVEL` 等在 OAuth 或日志子系统初始化时读取。完整列表见[环境变量](./env-vars.md)。
 
 ## 普通运行参数的优先级

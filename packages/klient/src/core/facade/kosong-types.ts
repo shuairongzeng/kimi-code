@@ -5,13 +5,10 @@
  * `providerService`/`modelService` wire formats.
  */
 
-import type { Message } from '@zimi-ai/agent-core-v2/llm-adapter/contract/message';
-import type {
-  StreamedMessagePart,
-  ToolDescription as Tool,
-} from '@zimi-ai/agent-core-v2/human/message';
-import type { TokenUsage } from '@zimi-ai/agent-core-v2/human/llm-requester/usage';
-import type { ResponseFormat } from '@zimi-ai/agent-core-v2/human/llm-requester/response-format';
+import type { Message, ToolDescription as Tool } from '@zimi-ai/core/llm/message';
+import type { ResponseFormat } from '@zimi-ai/core/llm/request';
+import type { InitializedLlmRequestPart } from '@zimi-ai/core/llm/requester';
+import type { LlmRunEvent } from '@zimi-ai/core/llm/response';
 
 // ---------------------------------------------------------------------------
 // Provider auth
@@ -63,16 +60,6 @@ export interface GenerateInput {
   readonly responseFormat?: ResponseFormat;
 }
 
-export interface GenerateParams {
-  readonly cacheKey?: string;
-  readonly temperature?: number;
-  readonly topP?: number;
-  readonly thinkingEffort?: string;
-  readonly maxCompletionTokens?: number;
-}
+export type GenerateParams = InitializedLlmRequestPart;
 
-export type GenerateEvent =
-  | { readonly type: 'part'; readonly part: StreamedMessagePart }
-  | { readonly type: 'usage'; readonly usage: TokenUsage; readonly model?: string }
-  | { readonly type: 'finish'; readonly message: Message; readonly finishReason?: string; readonly id?: string }
-  | { readonly type: 'timing'; readonly firstTokenLatencyMs: number; readonly streamDurationMs: number; readonly [key: string]: unknown };
+export type GenerateEvent = LlmRunEvent;

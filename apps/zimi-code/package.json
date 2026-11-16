@@ -1,6 +1,6 @@
 {
   "name": "@zimi-ai/zimi-code",
-  "version": "2.5.0",
+  "version": "2.6.1",
   "description": "The Starting Point for Next-Gen Agents",
   "license": "MIT",
   "author": "Zimi AI",
@@ -91,6 +91,7 @@
     "@zimi-ai/pi-tui": "workspace:^",
     "@zimi-ai/remote-control": "workspace:^",
     "@zimi-ai/session-import": "workspace:^",
+    "@zimi-ai/tree-sitter-bash": "workspace:^",
     "@zimi-ai/vis-server": "workspace:^",
     "@zimi-ai/vis-web": "workspace:*",
     "@types/qrcode": "^1.5.6",

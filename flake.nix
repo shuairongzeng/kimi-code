@@ -2,10 +2,9 @@
   description = "Zimi Code CLI";
 
   inputs = {
-    # Pinned to the 25.11 release channel because nixpkgs-unstable currently
-    # ships nodejs_24 = 24.14.1, which trips the >= 24.15.0 floor that the
-    # native SEA build enforces (see apps/zimi-code/scripts/native/build.mjs).
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    # nixos-unstable provides fetchPnpmDeps fetcherVersion 5. The nodejsFor
+    # check below enforces the native SEA build's >= 24.15.0 Node.js floor.
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
   outputs =
@@ -50,7 +49,7 @@
       pnpmFor =
         pkgs:
         pkgs.pnpm_10.override {
-          nodejs = nodejsFor pkgs;
+          nodejs-slim = nodejsFor pkgs;
         };
 
       # -------------------------------------------------------------------
@@ -64,6 +63,7 @@
       workspacePaths = [
         ./packages/acp-server
         ./packages/agent-core-v2
+        ./packages/core
         ./packages/kap-server
         ./packages/klient
         ./packages/migration-legacy
@@ -88,6 +88,7 @@
       workspaceNames = [
         "@zimi-ai/acp-server"
         "@zimi-ai/agent-core-v2"
+        "@zimi-ai/core"
         "@zimi-ai/kap-server"
         "@zimi-ai/migration-legacy"
         "@zimi-ai/minidb"
@@ -155,8 +156,8 @@
             pnpmDeps = pkgs.fetchPnpmDeps {
               inherit (finalAttrs) pname version src pnpmWorkspaces;
               inherit pnpm;
-              fetcherVersion = 3;
-              hash = "sha256-S7kwWgHbN5ZH4xIH7W/9sbOXi7/JhaitX/ONsLmRr9E=";
+              fetcherVersion = 5;
+              hash = "sha256-QOHwKZaAAU4OG9MEvNEWh0DViOvkAaqlVSlYMHUltbE=";
             };
 
             nativeBuildInputs = [
@@ -182,7 +183,7 @@
 
             buildPhase = ''
               runHook preBuild
-              export KIMI_CODE_BUILD_TARGET=${nativeTarget}
+              export ZIMI_CODE_BUILD_TARGET=${nativeTarget}
               ${lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ''
                 # pkgs.darwin.sigtool's codesign supports `--sign -` (ad-hoc)
                 # but not the inspection mode (`-dv`) that 05-verify.mjs runs

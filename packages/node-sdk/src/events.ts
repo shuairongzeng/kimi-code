@@ -40,10 +40,8 @@ export type { HookResultEvent } from '@zimi-ai/agent-core-v2/features/externalHo
 export type {
   ToolCallStartedEvent,
   ToolCallDeltaEvent,
-  ToolProgressEvent,
+  ToolUpdatedEvent,
 } from '@zimi-ai/agent-core-v2/agent/toolExecutor/toolExecutorEvents';
-
-export type { ToolUpdate } from '@zimi-ai/agent-core-v2/tool/toolContract';
 export type { McpOAuthAuthorizationUrlUpdateData } from '@zimi-ai/agent-core-v2/agent/mcp/tools/auth';
 
 export type { ToolCallRequest, ToolCallResponse } from '#/interaction';

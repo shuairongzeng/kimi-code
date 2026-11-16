@@ -5,8 +5,8 @@ import type {
   TokenCountingRequest,
   TokenCountingStrategy,
 } from '#/agent/tokenCounting/tokenCounting';
-import type { Message, ToolDescription as Tool } from '#human/llm/message';
-import type { TokenUsage } from '#human/llm-requester/usage';
+import type { Message, ToolDescription as Tool } from '@zimi-ai/core/llm/message';
+import type { TokenUsage } from '@zimi-ai/core/llm/usage';
 
 export interface TokenCountingRebaseInput {
   readonly length: number;

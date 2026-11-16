@@ -1,7 +1,9 @@
-import type { AgentTaskStatus } from '@zimi-ai/agent-core-v2/agent/task/types';
-import type { QuestionTaskInfo } from '@zimi-ai/agent-core-v2/agent/tools/ask-user-question/question-background-task';
-import type { SubagentTaskInfo } from '@zimi-ai/agent-core-v2/agent/tools/agent/subagent-task';
-import type { ProcessTaskInfo } from '@zimi-ai/agent-core-v2/agent/tools/os/bash/process-task';
+import type {
+  AgentTaskStatus,
+  ProcessTaskInfo,
+  QuestionTaskInfo,
+  SubagentTaskInfo,
+} from '@zimi-ai/agent-core-v2/agent/task/types';
 
 export type BackgroundTaskStatus = AgentTaskStatus;
 

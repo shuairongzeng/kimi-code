@@ -55,20 +55,20 @@ describe('Remote Control URLs', () => {
     const url = buildRemoteControlUrl(
       'device/one',
       undefined,
-      'https://code-rc.kimi.com',
+      'https://code-rc.zimi.com',
       'zimi_code_cli',
     );
     expect(url).toBe(
-      'https://code-rc.kimi.com/devices/device%2Fone/?rc=1&from=zimi_code_cli',
+      'https://code-rc.zimi.com/devices/device%2Fone/?rc=1&from=zimi_code_cli',
     );
     expect(url).not.toContain('token');
   });
 
   it('builds an encoded session deep link before the query', () => {
     expect(
-      buildRemoteControlUrl('device-1', 'session/a b', 'https://code-rc.kimi.com', 'zimi_code_cli'),
+      buildRemoteControlUrl('device-1', 'session/a b', 'https://code-rc.zimi.com', 'zimi_code_cli'),
     ).toBe(
-      'https://code-rc.kimi.com/devices/device-1/sessions/session%2Fa%20b?rc=1&from=zimi_code_cli',
+      'https://code-rc.zimi.com/devices/device-1/sessions/session%2Fa%20b?rc=1&from=zimi_code_cli',
     );
   });
 
@@ -77,19 +77,19 @@ describe('Remote Control URLs', () => {
       buildRemoteControlUrl(
         'device-1',
         undefined,
-        'https://code-rc.kimi.com',
+        'https://code-rc.zimi.com',
         'zimi_code_desktop',
       ),
-    ).toBe('https://code-rc.kimi.com/devices/device-1/?rc=1&from=kimi_code_desktop');
+    ).toBe('https://code-rc.zimi.com/devices/device-1/?rc=1&from=zimi_code_desktop');
   });
 
   it('falls back to the default relay origin when the env is unset or blank', () => {
-    expect(resolveRemoteControlRelayOrigin({})).toBe('https://code-rc.kimi.com');
+    expect(resolveRemoteControlRelayOrigin({})).toBe('https://code-rc.zimi.com');
     expect(
       resolveRemoteControlRelayOrigin({ ZIMI_CODE_REMOTE_CONTROL_RELAY_URL: '  ' }),
-    ).toBe('https://code-rc.kimi.com');
-    expect(resolveRemoteControlRelayOrigin({}, 'https://code-rc.kimi.ai')).toBe(
-      'https://code-rc.kimi.ai',
+    ).toBe('https://code-rc.zimi.com');
+    expect(resolveRemoteControlRelayOrigin({}, 'https://code-rc.zimi.ai')).toBe(
+      'https://code-rc.zimi.ai',
     );
   });
 
@@ -214,8 +214,8 @@ describe('Remote Control tunnel', () => {
     const homeDir = mkdtempSync(join(tmpdir(), 'zimi-rc-auth-'));
     cleanups.push(() => rmSync(homeDir, { recursive: true, force: true }));
     const oauthRef = resolveZimiCodeOAuthRef({
-      oauthHost: 'https://auth.kimi.ai',
-      baseUrl: 'https://api.kimi.ai/coding/v1',
+      oauthHost: 'https://auth.zimi.ai',
+      baseUrl: 'https://api.zimi.ai/coding/v1',
     });
     await new FileTokenStorage(join(homeDir, 'credentials')).save(
       resolveZimiTokenStorageName({ oauthKey: oauthRef.key }),
@@ -834,7 +834,7 @@ describe('Remote Control tunnel', () => {
   });
 
   it('reconnects the tunnel pair after the relay drops it', async () => {
-    const scenario = await startTunnelScenario();
+    const scenario = await startTunnelScenario({ earlyHttpProbe: 'request-20' });
 
     try {
       scenario.httpConnections[0]!.terminate();
@@ -843,10 +843,14 @@ describe('Remote Control tunnel', () => {
         'request_chunk,response_chunk,abort',
         'request_chunk,response_chunk,abort',
       ]);
-      const reconnectResponsePromise = nextJsonMessage(scenario.httpConnections[1]!);
-      scenario.httpConnections[1]!.send(tunnelRequestFrame('request-20', probeRawRequest(), true));
-      const reconnectResponse = frameBody(await reconnectResponsePromise).toString();
-      expect(reconnectResponse).toContain('HTTP/1.1 200 OK');
+      await waitFor(
+        () => scenario.httpMessages.some((message) => message['request_id'] === 'request-20'),
+        10_000,
+      );
+      const reconnectResponse = scenario.httpMessages.find(
+        (message) => message['request_id'] === 'request-20',
+      )!;
+      expect(frameBody(reconnectResponse).toString()).toContain('HTTP/1.1 200 OK');
 
       await scenario.handle.close();
       await waitFor(() =>
@@ -974,7 +978,7 @@ describe('Remote Control single-instance lock', () => {
         nonce: 'stale',
         local_origin: 'http://127.0.0.1:1',
         device_id: 'dead-device',
-        url: 'https://code-rc.kimi.com/devices/dead-device/',
+        url: 'https://code-rc.zimi.com/devices/dead-device/',
         started_at: 0,
       }),
     );
@@ -1088,7 +1092,7 @@ describe('Remote Control single-instance lock', () => {
         nonce: 'successor',
         local_origin: 'http://127.0.0.1:58628',
         device_id: 'device-2',
-        url: 'https://code-rc.kimi.com/devices/device-2/',
+        url: 'https://code-rc.zimi.com/devices/device-2/',
         started_at: Date.now(),
       }),
     );
@@ -1317,8 +1321,8 @@ describe('Remote Control device client', () => {
       rmSync(homeDir, { recursive: true, force: true });
     });
     const oauthRef = resolveZimiCodeOAuthRef({
-      oauthHost: 'https://auth.kimi.ai',
-      baseUrl: 'https://api.kimi.ai/coding/v1',
+      oauthHost: 'https://auth.zimi.ai',
+      baseUrl: 'https://api.zimi.ai/coding/v1',
     });
     await new FileTokenStorage(join(homeDir, 'credentials')).save(
       resolveZimiTokenStorageName({ oauthKey: oauthRef.key }),
@@ -1865,6 +1869,7 @@ interface TunnelScenario {
   managementConnections: WebSocket[];
   managementMessages: unknown[];
   httpConnections: WebSocket[];
+  httpMessages: Array<Record<string, unknown>>;
   streamConnections: WebSocket[];
   streamMessages: string[];
   uploadBodyBytes: Map<string, number>;
@@ -1888,6 +1893,7 @@ async function startTunnelScenario(
     localServerToken?: string | (() => string);
     bigBytes?: number;
     alignedResponseBytes?: number;
+    earlyHttpProbe?: string;
   } = {},
 ): Promise<TunnelScenario> {
   const homeDir = await createRemoteControlHome(TOKEN.refreshToken);
@@ -2006,6 +2012,7 @@ async function startTunnelScenario(
   const relayServer = createServer();
   const managementConnections: WebSocket[] = [];
   const httpConnections: WebSocket[] = [];
+  const httpMessages: Array<Record<string, unknown>> = [];
   const streamConnections: WebSocket[] = [];
   const registrations: unknown[] = [];
   const managementMessages: unknown[] = [];
@@ -2023,7 +2030,15 @@ async function startTunnelScenario(
       }
     });
   });
-  httpTunnelServer.on('connection', (ws) => httpConnections.push(ws));
+  httpTunnelServer.on('connection', (ws) => {
+    httpConnections.push(ws);
+    ws.on('message', (data) => {
+      httpMessages.push(JSON.parse(rawDataText(data)) as Record<string, unknown>);
+    });
+    if (options.earlyHttpProbe !== undefined && httpConnections.length === 2) {
+      ws.send(tunnelRequestFrame(options.earlyHttpProbe, probeRawRequest(), true));
+    }
+  });
   streamServer.on('connection', (ws) => {
     streamConnections.push(ws);
     ws.on('message', (data) => streamMessages.push(rawDataText(data)));
@@ -2072,6 +2087,7 @@ async function startTunnelScenario(
     managementConnections,
     managementMessages,
     httpConnections,
+    httpMessages,
     streamConnections,
     streamMessages,
     uploadBodyBytes,

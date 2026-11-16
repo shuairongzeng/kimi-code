@@ -5,8 +5,8 @@ import {
   annotateBundledSkillParts,
   isSkillActivationPart,
   type BundledSkillActivation,
-} from '#human/agent/origin';
-import type { ContentPart } from '#human/llm/message';
+} from '@zimi-ai/core/llm/origin';
+import type { ContentPart } from '@zimi-ai/core/llm/message';
 import {
   promptMetadataTextFromContentParts,
   promptMetadataTextFromText,

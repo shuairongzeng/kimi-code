@@ -12,9 +12,10 @@ const providerClientShimPath = path.join(dtsRoot, 'provider-clients.d.ts');
 const tscBinPath = packageBinPath('typescript', 'bin/tsc');
 const apiExtractorBinPath = packageBinPath('@microsoft/api-extractor', 'bin/api-extractor');
 
-const packageDirs = new Set(['agent-core-v2', 'klient', 'node-sdk', 'oauth']);
+const packageDirs = new Set(['agent-core-v2', 'core', 'klient', 'node-sdk', 'oauth']);
 const workspacePackages = new Map([
   ['@zimi-ai/agent-core-v2', 'agent-core-v2'],
+  ['@zimi-ai/core', 'core'],
   ['@zimi-ai/zimi-code-oauth', 'oauth'],
   ['@zimi-ai/klient', 'klient'],
 ]);
@@ -112,7 +113,7 @@ async function rewriteWorkspaceSpecifiers() {
           `import type { GoogleGenAI as GenAIClient } from '${providerClientSpecifier}';`,
         );
       const updated = providerClientText.replaceAll(
-        /(["'])(#(?:human)?\/[^"']+|@zimi-ai\/(?:agent-core-v2|zimi-code-oauth|klient)(?:\/[^"']+)?)\1/g,
+        /(["'])(#(?:human)?\/[^"']+|@zimi-ai\/(?:agent-core-v2|core|zimi-code-oauth|klient)(?:\/[^"']+)?)\1/g,
         (_match, quote, specifier) => {
           const resolved = resolveSpecifier({
             currentFile: file,

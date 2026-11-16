@@ -1,8 +1,8 @@
-import { anthropicProtocol } from '#human/llm/builtin/protocol/anthropic/index';
-import { googleGenAIProtocol } from '#human/llm/builtin/protocol/google-genai/index';
-import { openAIProtocol } from '#human/llm/builtin/protocol/openai/index';
-import { openAIResponsesProtocol } from '#human/llm/builtin/protocol/openai-responses/index';
-import type { Protocol as CoreProtocol } from '#human/llm/protocol/protocol';
+import { anthropicProtocol } from '@zimi-ai/core/llm/builtin/protocol/anthropic/index';
+import { googleGenAIProtocol } from '@zimi-ai/core/llm/builtin/protocol/google-genai/index';
+import { openAIProtocol } from '@zimi-ai/core/llm/builtin/protocol/openai/index';
+import { openAIResponsesProtocol } from '@zimi-ai/core/llm/builtin/protocol/openai-responses/index';
+import type { Protocol as CoreProtocol } from '@zimi-ai/core/llm/protocol/protocol';
 
 import type { Protocol } from './protocol';
 

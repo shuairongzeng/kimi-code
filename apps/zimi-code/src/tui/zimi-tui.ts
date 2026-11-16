@@ -31,19 +31,19 @@ import {
   type Component,
   type Focusable,
   getCapabilities,
+  isKittyProtocolActive,
   Key,
   matchesKey,
   Spacer,
   TuiAltScreen,
   TuiMainScreen,
-  type TuiMouseEventResult,
 } from '@zimi-ai/pi-tui';
 import { resolve } from 'pathe';
 
 import type { CLIOptions } from '#/cli/options';
 import { MigrationScreenComponent, type MigrationScreenResult } from '#/migration/index';
 import { copyTextToClipboard } from '#/utils/clipboard/clipboard-text';
-import { appendInputHistory, loadInputHistory } from '#/utils/history/input-history';
+import { appendInputHistory, inputHistoryEntryEquals, loadInputHistory, type InputHistoryEntry } from '#/utils/history/input-history';
 import { openUrl } from '#/utils/open-url';
 import { getInputHistoryFile } from '#/utils/paths';
 import { refreshModelSwitchConfirmConfig } from '#/utils/model-switch-confirm-config';
@@ -69,14 +69,15 @@ import {
   type SkillListSession,
 } from './commands';
 import * as slashCommands from './commands/dispatch';
-import { runQueuedModelSwitch } from './commands/config';
+import { resolveUserInput, skillVariantPathsForInput } from './commands/resolve';
+import { applyTranscriptPresentation, runQueuedModelSwitch } from './commands/config';
 import { promptSshPassword } from './commands/prompts';
 import { CacheHintController } from './controllers/cache-hint-controller';
 import { BannerComponent } from './components/chrome/banner';
 import { DeviceCodeBoxComponent } from './components/chrome/device-code-box';
 import type { FooterGitBinding } from './components/chrome/footer';
 import { GutterContainer } from './components/chrome/gutter-container';
-import { MoonLoader, type SpinnerStyle } from './components/chrome/moon-loader';
+import { MoonLoader, type SpinnerLabel, type SpinnerStyle } from './components/chrome/moon-loader';
 import { WelcomeComponent } from './components/chrome/welcome';
 import { pickRandomWorkingTip } from './components/chrome/working-tips';
 import {
@@ -88,7 +89,7 @@ import {
   type ApprovalPreviewBlock,
 } from './components/dialogs/approval-preview';
 import { CompactionComponent } from './components/dialogs/compaction';
-import { HelpPanelComponent } from './components/dialogs/help-panel';
+import { HelpPanelComponent, keyboardShortcuts } from './components/dialogs/help-panel';
 import { QuestionDialogComponent } from './components/dialogs/question-dialog';
 import { SessionPickerComponent, type SessionRow } from './components/dialogs/session-picker';
 import { TrustPromptComponent, type TrustPromptChoice } from './components/dialogs/trust-prompt';
@@ -115,12 +116,20 @@ import {
 import { StepSummaryComponent } from './components/messages/step-summary';
 import { ThinkingComponent } from './components/messages/thinking';
 import { ToolCallComponent } from './components/messages/tool-call';
+import { UserMessageComponent } from './components/messages/user-message';
 import {
-  ReplayTurnBoundaryComponent,
-  UserMessageComponent,
-} from './components/messages/user-message';
-import { ActivityPaneComponent, type ActivityPaneMode } from './components/panes/activity-pane';
-import { removeLegacySurveySetting, type TuiConfig } from './config';
+  ActivityPaneComponent,
+  type ActivityPaneMode,
+  LastTurnSummary,
+} from './components/panes/activity-pane';
+import {
+  removeLegacySurveySetting,
+  resolveFollowUpBehavior,
+  transcriptGroupingActive,
+  type FollowUpDelivery,
+  type TuiConfig,
+  type TuiMode,
+} from './config';
 import {
   LLM_NOT_SET_MESSAGE,
   MAIN_AGENT_ID,
@@ -132,7 +141,7 @@ import {
   SHUTTING_DOWN_HINT,
 } from './constant/zimi-tui';
 import { MEDIA_INGESTION_SUBMIT_WAIT_MS } from './constant/media';
-import { CHROME_GUTTER, DOCK_APPROVAL_ROWS } from './constant/rendering';
+import { CHROME_GUTTER, DETACH_HINT_TEXT, DOCK_APPROVAL_ROWS } from './constant/rendering';
 import { MAX_TERMINAL_TITLE_LENGTH } from './constant/terminal';
 import { AuthFlowController } from './controllers/auth-flow';
 import { BtwPanelController } from './controllers/btw-panel';
@@ -140,6 +149,7 @@ import { ClipboardImageHintController } from './controllers/clipboard-image-hint
 import { EditorKeyboardController } from './controllers/editor-keyboard';
 import { ModelMigrationController } from './controllers/model-migration';
 import { ProgramStatusController } from './controllers/program-status';
+import { PromptPredictionController } from './controllers/prompt-prediction';
 import { SessionEventHandler } from './controllers/session-event-handler';
 import { showSessionOccupancyPrompt } from './controllers/session-occupancy';
 import { SessionReplayRenderer } from './controllers/session-replay';
@@ -175,21 +185,18 @@ import {
   type QueuedPromptMessage,
   type EnvironmentSlotState,
   type SteerInputItem,
+  type SteerOutcome,
   type StepRetryState,
   type TranscriptEntry,
   type TUIStartupOptions,
   type TUIStartupState,
 } from './types';
-import {
-  countedByExpandHint,
-  hasDispose,
-  hasHiddenContent,
-  isExpandable,
-  isExpandedComponent,
-} from './utils/component-capabilities';
+import { workingLabel } from './utils/activity-label';
+import { hasDispose } from './utils/component-capabilities';
 import { isDeadTerminalError } from './utils/dead-terminal';
 import { formatErrorMessage } from './utils/event-payload';
 import { pickForegroundTasks } from './utils/foreground-task';
+import { findInlineSkillTokens, rebaseInlineSkillActivations } from './utils/inline-skill-tokens';
 import { ImageAttachmentStore, type ImageAttachment, type MediaAttachment } from './utils/image-attachment-store';
 import {
   extractMediaAttachments,
@@ -227,12 +234,15 @@ import { detectTmuxKeyboardWarning } from './utils/tmux-keyboard';
 import { syncImportedConfigInBackground } from './utils/import-config-sync';
 import {
   getTranscriptComponentEntry,
+  getTranscriptComponentTurnId,
   markTranscriptComponent,
+  markTranscriptComponentTurnId,
 } from './utils/transcript-component-metadata';
+import { isTurnBoundaryComponent } from './utils/transcript-turns';
+import { isPinnedToolCallComponent } from './utils/transcript-items';
 import { nextTranscriptId } from './utils/transcript-id';
+import { instant } from './utils/turn-timeline';
 import {
-  expandCutoffIndex,
-  TRANSCRIPT_EXPAND_TURNS,
   TRANSCRIPT_HYSTERESIS,
   TRANSCRIPT_KEEP_RECENT_ASSISTANT,
   TRANSCRIPT_KEEP_RECENT_ASSISTANT_COMPLETED,
@@ -258,6 +268,8 @@ export interface ZimiTUIStartupInput {
   readonly agentProfile?: string;
   readonly additionalDirs?: readonly string[];
   readonly tuiConfig: TuiConfig;
+  readonly resolvedTuiMode?: TuiMode;
+  readonly animationFrameRate?: number;
   readonly version: string;
   readonly workDir: string;
   readonly startupNotice?: string;
@@ -324,14 +336,17 @@ function createInitialAppState(input: ZimiTUIStartupInput): AppState {
     version: input.version,
     editorCommand: input.tuiConfig.editorCommand,
     disablePasteBurst: input.tuiConfig.disablePasteBurst,
+    copyOnSelect: input.tuiConfig.copyOnSelect,
     renderLatex: input.tuiConfig.renderLatex,
     cacheExpiryHint: input.tuiConfig.cacheExpiryHint,
     disableFeedbackSurvey: input.tuiConfig.disableFeedbackSurvey,
     autoSessionTitle: input.tuiConfig.autoSessionTitle,
+    followUpBehavior: input.tuiConfig.followUpBehavior,
     notifications: input.tuiConfig.notifications,
     upgrade: input.tuiConfig.upgrade,
     statusLine: input.tuiConfig.statusLine,
     markdown: input.tuiConfig.markdown,
+    transcript: input.tuiConfig.transcript,
     availableModels: {},
     availableProviders: {},
     sessionTitle: null,
@@ -358,10 +373,18 @@ interface SendMessageOptions {
 
 type EnqueueMessageOptions = SendMessageOptions & {
   readonly inlineSkillActivations?: readonly InlineSkillActivation[];
+  readonly holdUntilTurnEnds?: boolean;
 };
 
 /** How long the one-shot "moved to background" footer hint stays visible. */
 const DETACH_HINT_DISPLAY_MS = 4_000;
+
+function transcriptGroupingActiveIn(state: TUIState): boolean {
+  return transcriptGroupingActive({
+    ...state.appState.transcript,
+    fullscreen: state.ui instanceof TuiAltScreen,
+  });
+}
 
 export class ZimiTUI {
   readonly harness: ZimiHarness;
@@ -387,6 +410,8 @@ export class ZimiTUI {
   private surveySettingSubscription: Unsubscribe | undefined;
   private skillCommands: readonly ZimiSlashCommand[] = [];
   readonly skillCommandMap = new Map<string, string>();
+  private readonly skillCommandDefaultPaths = new Map<string, string>();
+  private readonly skillVariantPaths = new Map<number, { commandName: string; path: string }>();
   private pluginCommands: readonly ZimiSlashCommand[] = [];
   readonly pluginCommandMap = new Map<string, string>();
   private readonly imageStore = new ImageAttachmentStore();
@@ -419,7 +444,11 @@ export class ZimiTUI {
   private lastActivityMode: string | undefined;
   private currentLoadingTip: { kind: LoadingTipKind; tip: string | undefined } | undefined =
     undefined;
-  private lastHistoryContent: string | undefined;
+  private activityHintTimer: ReturnType<typeof setTimeout> | undefined;
+  private lastHistoryEntry: InputHistoryEntry | undefined;
+  private inputHistoryEntries: InputHistoryEntry[] = [];
+  private inputHistoryRecallIndex = -1;
+  private inputHistoryDraftVariants: Map<number, { commandName: string; path: string }> | undefined;
   // Live `!` shell output entries, keyed by commandId so concurrent commands
   // each update their own card and stale events are dropped. Mutated in place
   // as `shell.output` events arrive; removed when the command completes.
@@ -438,6 +467,7 @@ export class ZimiTUI {
   readonly surveyController: SurveyController;
   readonly editorKeyboard: EditorKeyboardController;
   readonly modelMigration: ModelMigrationController;
+  readonly promptPredictionController: PromptPredictionController;
   private editorReplacementOnDisplaced: (() => void) | undefined;
   private editorReplacementOnReplaced: (() => void) | undefined;
   private editorReplacementOwner: ReverseRpcModalOwner | undefined;
@@ -503,6 +533,8 @@ export class ZimiTUI {
     });
     const tuiOptions: ZimiTUIOptions = {
       initialAppState: createInitialAppState(startupInput),
+      resolvedTuiMode: startupInput.resolvedTuiMode,
+      animationFrameRate: startupInput.animationFrameRate,
       startup: {
         sessionFlag: startupInput.cliOptions.session,
         continueLast: startupInput.cliOptions.continue,
@@ -527,9 +559,29 @@ export class ZimiTUI {
     this.programStatus = new ProgramStatusController(this.state, this.state.terminal);
     this.state.footer.setExpandHintProvider(() => this.toolOutputExpandHint());
     this.state.footer.setGitBinding((state) => this.footerGitBinding(state));
-    this.state.transcriptContainer.setUnhandledClick((index) =>
-      this.toggleClickedFoldBlock(index),
-    );
+    this.state.transcriptContainer.setHost({
+      withScrollAnchor: (toggle) => {
+        if (this.state.transcriptView === undefined) {
+          toggle();
+          return;
+        }
+        this.state.transcriptView.withAnchoredScroll(toggle);
+      },
+      withBottomAnchor: (toggle, removedLines) => {
+        if (this.state.transcriptView === undefined) {
+          toggle();
+          return;
+        }
+        this.state.transcriptView.withBottomAnchor(toggle, removedLines);
+      },
+      viewportRows: () => this.state.transcriptView?.viewportRows,
+      track: (event, properties) => {
+        this.track(event, properties);
+      },
+      foldingChanged: () => {
+        this.updateActivityPane();
+      },
+    });
     this.uninstallRainbowDance = installRainbowDance(() => {
       this.state.ui.requestRender();
     });
@@ -555,6 +607,7 @@ export class ZimiTUI {
       this.setAppState({ disableFeedbackSurvey: change.value === true ? true : undefined });
     });
     this.streamingUI = new StreamingUIController(this);
+    this.state.transcriptContainer.setTimeline(this.streamingUI.timeline);
     this.authFlow = new AuthFlowController(this);
     this.btwPanelController = new BtwPanelController(this, this.imageStore, this.staging);
     this.sessionEventHandler = new SessionEventHandler(this);
@@ -565,6 +618,7 @@ export class ZimiTUI {
       telemetryDisabled: () => isTelemetryDisabledByEnv() || this.telemetryDisabled,
     });
     this.modelMigration = new ModelMigrationController(this);
+    this.promptPredictionController = new PromptPredictionController(this);
     this.editorKeyboard = new EditorKeyboardController(this, this.imageStore);
     this.editorKeyboard.install();
     this.buildLayout();
@@ -588,6 +642,10 @@ export class ZimiTUI {
         name: cmd.name,
         aliases: cmd.aliases,
         description: cmd.description,
+        skillPath: cmd.skillPath,
+        skillSource: cmd.skillSource,
+        isSkill: cmd.isSkill,
+        workspaceDir: cmd.workspaceDir,
         ...(cmd.argumentHint !== undefined ? { argumentHint: cmd.argumentHint } : {}),
         ...(completer !== undefined
           ? { getArgumentCompletions: (prefix: string) => completer(prefix) }
@@ -604,6 +662,7 @@ export class ZimiTUI {
             const result = await this.harness.suggestFiles(this.state.appState.workDir, {
               query,
               sessionId: session.id,
+              followGitignore: false,
             });
             return result?.items;
           };
@@ -615,6 +674,12 @@ export class ZimiTUI {
       () => this.state.appState.inputMode,
       skillCommandNames,
       remoteSuggest,
+      ({ commandName, path, start }) => {
+        this.skillVariantPaths.set(start, {
+          commandName: commandName.startsWith('skill:') ? commandName : `skill:${commandName}`,
+          path,
+        });
+      },
     );
     this.state.editor.setAutocompleteProvider(provider);
 
@@ -688,12 +753,55 @@ export class ZimiTUI {
 
   private applySkillCommands(skills: readonly SkillSummary[]): void {
     const skillCommands = buildSkillSlashCommands(skills);
+    const pathsBySkillName = new Map<string, Set<string>>();
+    for (const command of skillCommands.commands) {
+      const skillName = skillCommands.commandMap.get(command.name);
+      if (skillName === undefined || command.skillPath === undefined) continue;
+      const paths = pathsBySkillName.get(skillName) ?? new Set<string>();
+      paths.add(command.skillPath);
+      pathsBySkillName.set(skillName, paths);
+    }
     this.skillCommands = skillCommands.commands;
     this.skillCommandMap.clear();
     for (const [commandName, skillName] of skillCommands.commandMap) {
       this.skillCommandMap.set(commandName, skillName);
     }
+    this.skillCommandDefaultPaths.clear();
+    for (const [commandName, path] of skillCommands.defaultPaths) {
+      this.skillCommandDefaultPaths.set(commandName, path);
+    }
+    for (const [start, selection] of this.skillVariantPaths) {
+      const skillName = this.skillCommandMap.get(selection.commandName) ??
+        this.skillCommandMap.get(selection.commandName.replace(/^skill:/, ''));
+      if (skillName === undefined || !pathsBySkillName.get(skillName)?.has(selection.path)) {
+        this.skillVariantPaths.delete(start);
+      }
+    }
     this.setupAutocomplete();
+  }
+
+  retainSkillVariantSelection(text: string): void {
+    if (this.skillVariantPaths.size === 0) return;
+    const tokens = findInlineSkillTokens(text, { isKnownSkill: () => true, includeLeading: true });
+    for (const [start, selection] of this.skillVariantPaths) {
+      const token = tokens.find((candidate) => candidate.start === start);
+      const commandName = token?.commandName;
+      if (commandName !== selection.commandName && `skill:${commandName}` !== selection.commandName) {
+        this.skillVariantPaths.delete(start);
+      }
+    }
+  }
+
+  skillVariantPathForCommand(commandName: string, tokenStart: number): string | undefined {
+    const selection = this.skillVariantPaths.get(tokenStart);
+    if (selection?.commandName !== commandName && selection?.commandName !== `skill:${commandName}`) return undefined;
+    return selection.path;
+  }
+
+  defaultSkillPathForCommand(commandName: string): string | undefined {
+    const normalized = commandName.toLowerCase();
+    return this.skillCommandDefaultPaths.get(commandName) ?? this.skillCommandDefaultPaths.get(normalized) ??
+      this.skillCommandDefaultPaths.get(`skill:${normalized}`);
   }
 
   async refreshPluginCommands(session?: Session): Promise<void> {
@@ -868,9 +976,9 @@ export class ZimiTUI {
     );
     const banner = new BannerComponent(this.state.appState.banner);
     if (welcomeIndex >= 0) {
-      this.state.transcriptContainer.children.splice(welcomeIndex + 1, 0, banner);
+      this.state.transcriptContainer.insertChild(welcomeIndex + 1, banner);
     } else {
-      this.state.transcriptContainer.children.unshift(banner);
+      this.state.transcriptContainer.insertChild(0, banner);
     }
     this.state.transcriptContainer.invalidate();
   }
@@ -1133,7 +1241,15 @@ export class ZimiTUI {
 
   private async init(): Promise<boolean> {
     setExperimentalFeatures(await this.harness.getExperimentalFeatures());
+    applyTranscriptPresentation(this);
     this.sessionEventHandler.notifications.setEnabled(isExperimentalFlagEnabled('notify_user'));
+    if (this.state.ui instanceof TuiAltScreen) {
+      this.track('transcript_display_settings', {
+        tool_call_density: this.state.appState.transcript.toolCallDensity,
+        thinking: this.state.appState.transcript.thinking,
+        source: 'startup',
+      });
+    }
     await this.authFlow.refreshAvailableModels();
     this.backgroundImportSyncPromise = this.importConfigInBackground();
     this.backgroundRefreshPromise = this.refreshProviderModelsInBackground();
@@ -1286,6 +1402,7 @@ export class ZimiTUI {
     this.streamingUI.clearActiveCompaction();
     this.streamingUI.resetToolUi();
     this.disposeTranscriptChildren();
+    this.promptPredictionController.dispose();
     this.editorKeyboard.dispose();
     this.surveyController.dispose();
     this.surveySettingSubscription?.();
@@ -1472,6 +1589,7 @@ export class ZimiTUI {
   // =========================================================================
 
   handlePlanToggle(next: boolean): void {
+    this.promptPredictionController.handlePlanModeChanged(next);
     void slashCommands.handlePlanCommand(this, next ? 'on' : 'off');
   }
 
@@ -1481,7 +1599,7 @@ export class ZimiTUI {
     this.updateEditorBorderHighlight();
   }
 
-  handleUserInput(text: string): void {
+  handleUserInput(text: string, delivery: FollowUpDelivery = 'default'): void {
     const wasBashMode = this.state.appState.inputMode === 'bash';
     if (wasBashMode) {
       // A submit always exits bash mode (the `!` is consumed by this command).
@@ -1510,7 +1628,7 @@ export class ZimiTUI {
       void this.runShellCommandFromInput(text);
       return;
     }
-    slashCommands.dispatchInput(this, text);
+    slashCommands.dispatchInput(this, text, delivery);
   }
 
   private async runShellCommandFromInput(command: string): Promise<void> {
@@ -1550,10 +1668,12 @@ export class ZimiTUI {
       renderMode: 'plain',
       content: '',
     };
-    const outputComponent = new ShellRunComponent(() => this.state.ui.requestRender());
+    const outputComponent = new ShellRunComponent(() => {
+      this.state.ui.requestRender();
+    });
     // Inherit the current ctrl+o state, same as freshly mounted tool calls —
     // the global toggle only reaches components that exist when it fires.
-    if (this.state.toolOutputExpanded) outputComponent.setExpanded(true);
+    if (this.state.transcriptContainer.toolOutputExpanded) outputComponent.setExpanded(true);
     this.shellOutputStreams.set(commandId, { entry: outputEntry, component: outputComponent });
     this.state.transcriptEntries.push(outputEntry);
     markTranscriptComponent(outputComponent, outputEntry);
@@ -1644,7 +1764,11 @@ export class ZimiTUI {
     this.updateQueueDisplay();
   }
 
-  async sendNormalUserInput(text: string, preExtracted?: ExtractionResult): Promise<void> {
+  async sendNormalUserInput(
+    text: string,
+    preExtracted?: ExtractionResult,
+    delivery: FollowUpDelivery = 'default',
+  ): Promise<void> {
     if (this.btwPanelController.sendUserInput(text)) return;
     if (this.state.appState.model.trim().length === 0) {
       this.showError(LLM_NOT_SET_MESSAGE);
@@ -1730,9 +1854,9 @@ export class ZimiTUI {
         imageAttachmentIds: extraction.imageAttachmentIds,
         videoAttachmentIds: extraction.videoAttachmentIds,
         lease: stagingLease,
-      });
+      }, delivery);
     } else {
-      this.sendMessage(session, text);
+      this.sendMessage(session, text, undefined, delivery);
     }
     this.updateQueueDisplay();
     this.state.ui.requestRender();
@@ -1742,6 +1866,7 @@ export class ZimiTUI {
     text: string,
     activations: readonly InlineSkillActivation[],
     preExtracted?: ExtractionResult,
+    delivery: FollowUpDelivery = 'default',
   ): Promise<void> {
     if (this.btwPanelController.sendUserInput(text, activations)) return;
     if (this.state.appState.model.trim().length === 0) {
@@ -1795,19 +1920,24 @@ export class ZimiTUI {
         return;
       }
     }
+    const enqueueOptions: EnqueueMessageOptions = {
+      parts: extraction.hasMedia ? extraction.parts : undefined,
+      imageAttachmentIds: extraction.imageAttachmentIds,
+      videoAttachmentIds: extraction.videoAttachmentIds,
+      mediaSnapshots: extraction.mediaSnapshots,
+      inlineSkillActivations: activations,
+    };
+    if (delivery === 'steer-draft' && this.trySteerDraft(session, text, enqueueOptions)) {
+      this.state.ui.requestRender();
+      return;
+    }
     if (
       this.deferUserMessages ||
       this.steeringQueuedMessages.size > 0 ||
       this.state.appState.streamingPhase !== 'idle' ||
       this.state.appState.isCompacting
     ) {
-      this.enqueueMessage(text, {
-        parts: extraction.hasMedia ? extraction.parts : undefined,
-        imageAttachmentIds: extraction.imageAttachmentIds,
-        videoAttachmentIds: extraction.videoAttachmentIds,
-        mediaSnapshots: extraction.mediaSnapshots,
-        inlineSkillActivations: activations,
-      });
+      this.enqueueMessage(text, enqueueOptions);
       this.updateQueueDisplay();
       this.state.ui.requestRender();
       return;
@@ -1829,14 +1959,14 @@ export class ZimiTUI {
     try {
       for (const activation of activations) {
         if (activation.args === undefined) {
-          prepared.skills.push({ name: activation.skillName });
+          prepared.skills.push({ name: activation.skillName, path: activation.path });
           continue;
         }
         const rewrite = rewriteMediaPlaceholders(
           activation.args, this.imageStore, 'plain', mediaSnapshots,
         );
         this.imageStore.retainFileIds(rewrite.videoAttachmentIds);
-        prepared.skills.push({ name: activation.skillName, args: rewrite.text });
+        prepared.skills.push({ name: activation.skillName, path: activation.path, args: rewrite.text });
         prepared.mediaAttachmentIds.push(
           ...new Set([...rewrite.imageAttachmentIds, ...rewrite.videoAttachmentIds]),
         );
@@ -1897,6 +2027,7 @@ export class ZimiTUI {
       renderMode: 'plain',
       content: text,
       skillNames: activations.map((activation) => activation.skillName),
+      inlineSkillActivations: activations.length === 0 ? undefined : activations,
       imageAttachmentIds:
         extraction.imageAttachmentIds.length > 0 ? extraction.imageAttachmentIds : undefined,
     };
@@ -1912,13 +2043,15 @@ export class ZimiTUI {
         error,
         entries: [entry],
         retried: occupiedRetry,
-        retry: () => this.runInlineSkillActivations(session, text, activations, extraction, true),
+        retry: () => {
+          this.runInlineSkillActivations(session, text, activations, extraction, true);
+        },
         restore: () => {
           this.staging.releaseRecalled([
             ...extraction.imageAttachmentIds,
             ...extraction.videoAttachmentIds,
           ]);
-          this.restoreInputText(text);
+          this.restoreInputText(text, activations);
         },
       });
       if (recovered) {
@@ -1981,7 +2114,10 @@ export class ZimiTUI {
       for (const entry of entries) {
         this.state.editor.addToHistory(entry.content);
       }
-      this.lastHistoryContent = entries.at(-1)?.content;
+      this.inputHistoryEntries = entries.toReversed().filter((entry, index, all) =>
+        index === 0 || !inputHistoryEntryEquals(entry, all[index - 1])
+      ).slice(0, 100);
+      this.lastHistoryEntry = entries.at(-1);
     } catch {
       // best-effort
     }
@@ -1990,15 +2126,64 @@ export class ZimiTUI {
   private async persistInputHistory(text: string): Promise<void> {
     const trimmed = text.trim();
     if (trimmed.length === 0) return;
-    if (trimmed === this.lastHistoryContent) return;
+    const activations = text.startsWith('!') ? [] : resolveUserInput({
+      input: trimmed,
+      skillCommandMap: this.skillCommandMap,
+      pluginCommandMap: this.pluginCommandMap,
+      isStreaming: this.state.appState.streamingPhase !== 'idle',
+      isCompacting: this.state.appState.isCompacting,
+      skillVariantPathForCommand: (commandName, start) =>
+        this.skillVariantPathForCommand(commandName, start),
+      defaultSkillPathForCommand: (commandName) => this.defaultSkillPathForCommand(commandName),
+    }).activations;
+    const entry: InputHistoryEntry = {
+      content: trimmed,
+      inlineSkillActivations: activations.length === 0 ? undefined : activations,
+    };
+    if (inputHistoryEntryEquals(entry, this.lastHistoryEntry)) return;
+    if (inputHistoryEntryEquals(entry, this.inputHistoryEntries[0])) this.inputHistoryEntries[0] = entry;
+    else this.inputHistoryEntries.unshift(entry);
+    this.inputHistoryEntries.length = Math.min(this.inputHistoryEntries.length, 100);
     this.state.editor.addToHistory(trimmed);
     try {
       const file = getInputHistoryFile(this.state.appState.workDir);
-      const written = await appendInputHistory(file, trimmed, this.lastHistoryContent);
-      if (written) this.lastHistoryContent = trimmed;
+      const written = await appendInputHistory(file, entry, this.lastHistoryEntry);
+      if (written) this.lastHistoryEntry = entry;
     } catch {
-      this.lastHistoryContent = trimmed;
+      this.lastHistoryEntry = entry;
     }
+  }
+
+  beginInputHistoryRecall(): void {
+    this.inputHistoryRecallIndex = -1;
+    this.inputHistoryDraftVariants = new Map(this.skillVariantPaths);
+  }
+
+  restoreInputHistoryEntry(direction: 1 | -1): void {
+    this.skillVariantPaths.clear();
+    if (this.inputHistoryEntries.length === 0) return;
+    this.inputHistoryRecallIndex = direction === -1
+      ? Math.min(this.inputHistoryRecallIndex + 1, this.inputHistoryEntries.length - 1)
+      : Math.max(this.inputHistoryRecallIndex - 1, 0);
+    const entry = this.inputHistoryEntries[this.inputHistoryRecallIndex];
+    if (entry === undefined) return;
+    for (const { commandName, path, start } of skillVariantPathsForInput(
+      entry.content,
+      entry.inlineSkillActivations ?? [],
+      this.skillCommandMap,
+    )) {
+      this.skillVariantPaths.set(start, { commandName, path });
+    }
+  }
+
+  restoreInputHistoryDraft(): void {
+    this.skillVariantPaths.clear();
+    if (this.inputHistoryDraftVariants !== undefined) {
+      for (const [start, selection] of this.inputHistoryDraftVariants) {
+        this.skillVariantPaths.set(start, selection);
+      }
+    }
+    this.inputHistoryDraftVariants = undefined;
   }
 
   recallLastQueued(): QueuedMessage | undefined {
@@ -2014,6 +2199,11 @@ export class ZimiTUI {
         ? [...(last.imageAttachmentIds ?? []), ...(last.videoAttachmentIds ?? [])]
         : [],
     );
+    if (isPromptQueuedMessage(last)) {
+      for (const { commandName, path, start } of skillVariantPathsForInput(last.text, last.inlineSkillActivations ?? [], this.skillCommandMap)) {
+        this.skillVariantPaths.set(start, { commandName, path });
+      }
+    }
     return last;
   }
 
@@ -2067,6 +2257,7 @@ export class ZimiTUI {
       mode: undefined,
       mediaSnapshots: options?.mediaSnapshots,
       inlineSkillActivations: options?.inlineSkillActivations,
+      holdUntilTurnEnds: options?.holdUntilTurnEnds,
     };
   }
 
@@ -2103,6 +2294,7 @@ export class ZimiTUI {
   }
 
   beginSessionRequest(): void {
+    this.streamingUI.timeline.turnStarted();
     this.cacheHint.onTurnBegin();
     this.streamingUI.setTurnId(undefined);
     this.streamingUI.resetLiveText();
@@ -2121,6 +2313,7 @@ export class ZimiTUI {
   }
 
   failSessionRequest(message: string): void {
+    this.streamingUI.timeline.turnEnded();
     this.programStatus.failRequest(message);
     this.setAppState({ streamingPhase: 'idle' });
     this.resetLivePane();
@@ -2239,6 +2432,7 @@ export class ZimiTUI {
   }
 
   handleTurnStarted(event: TurnStartedEvent): void {
+    this.promptPredictionController.handleTurnStarted();
     this.staging.handleTurnStarted(event);
     this.surveyController.notifyTurnStarted(event.origin);
     this.programStatus.beginTurn(event.origin);
@@ -2250,6 +2444,10 @@ export class ZimiTUI {
     this.programStatus.finishTurn(event);
     this.state.footer.refreshGitStatus();
     if (event.reason === 'completed') void this.maybeAutoGenerateSessionTitle();
+  }
+
+  handlePromptPredictionTurnEnded(event: TurnEndedEvent): void {
+    this.promptPredictionController.handleTurnEnded(event);
   }
 
   private async maybeAutoGenerateSessionTitle(): Promise<void> {
@@ -2477,6 +2675,7 @@ export class ZimiTUI {
   }): boolean {
     const { session, error, entries, retried, retry, restore } = args;
     if (this.session?.id !== session.id || !isSessionOccupiedError(error)) return false;
+    this.streamingUI.timeline.turnEnded();
     if (entries !== undefined) this.removeTranscriptEntries(entries);
     this.setAppState({ streamingPhase: 'idle' });
     this.resetLivePane();
@@ -2531,7 +2730,9 @@ export class ZimiTUI {
           session,
           error,
           retried: occupiedRetry,
-          retry: () => this.activatePluginCommand(session, pluginId, commandName, args, true),
+          retry: () => {
+            this.activatePluginCommand(session, pluginId, commandName, args, true);
+          },
           restore: () => {
             this.staging.releaseRecalled(rewrite.imageAttachmentIds);
             this.restoreInputText(`/${pluginId}:${commandName}${args.length > 0 ? ` ${args}` : ''}`);
@@ -2548,7 +2749,13 @@ export class ZimiTUI {
     );
   }
 
-  private sendMessage(session: Session, input: string, options?: SendMessageOptions): void {
+  private sendMessage(
+    session: Session,
+    input: string,
+    options?: SendMessageOptions,
+    delivery: FollowUpDelivery = 'default',
+  ): void {
+    if (delivery === 'steer-draft' && this.trySteerDraft(session, input, options)) return;
     // Submission order must survive a mid-turn compaction: objectives queued
     // while compacting stay queued when the turn outlives the compaction, so
     // steering this input ahead of them would reorder the conversation.
@@ -2556,6 +2763,7 @@ export class ZimiTUI {
     // new input; a non-steerable backlog (bash, slash-skill, inline-skill
     // bundle) cannot, and then this input queues behind it instead.
     if (
+      delivery !== 'queue' &&
       this.canSteerQueueIntoRunningTurn() &&
       this.state.queuedMessages.every(isSteerableQueuedMessage)
     ) {
@@ -2577,7 +2785,7 @@ export class ZimiTUI {
       // A queued message re-leases its staged media at dequeue dispatch; the
       // pre-dispatch lease defers to the queue item's raw ids.
       this.staging.defer(options?.lease);
-      this.enqueueMessage(input, options);
+      this.enqueueMessage(input, delivery === 'queue' ? { ...options, holdUntilTurnEnds: true } : options);
       return;
     }
     this.sendMessageInternal(session, input, options);
@@ -2600,6 +2808,41 @@ export class ZimiTUI {
       !this.deferUserMessages &&
       !this.state.appState.isCompacting
     );
+  }
+
+  private trySteerDraft(
+    session: Session,
+    input: string,
+    options: EnqueueMessageOptions | undefined,
+  ): boolean {
+    if (this.state.queuedMessageDispatchPending || !this.canManuallySteer()) return false;
+    this.staging.defer(options?.lease);
+    const draft = this.toQueuedMessage(input, options);
+    const queuedBefore = new Set(this.state.queuedMessages);
+    this.steeringQueuedMessages.add(draft);
+    this.updateQueueDisplay();
+    this.steerMessage(session, [toSteerInputItem(draft)], (outcome) => {
+      this.steeringQueuedMessages.delete(draft);
+      if (this.session !== session) return;
+      if (outcome === 'steered') this.programStatus.markUserSteer();
+      if (outcome === 'failed') {
+        const queuedLater = this.state.queuedMessages.findIndex((message) => !queuedBefore.has(message));
+        this.state.queuedMessages.splice(
+          queuedLater === -1 ? this.state.queuedMessages.length : queuedLater,
+          0,
+          draft,
+        );
+        this.track('input_queue');
+      }
+      this.updateQueueDisplay();
+      const queuedDuringSteer = this.state.queuedMessages.some((message) => !queuedBefore.has(message));
+      if (outcome === 'steered' && queuedDuringSteer && this.canSteerQueueIntoRunningTurn()) {
+        this.steerQueuedMessagesIntoRunningTurn();
+      } else {
+        this.drainQueueIfIdle();
+      }
+    });
+    return true;
   }
 
   steerQueuedMessagesIntoRunningTurn(manual = false): void {
@@ -2656,7 +2899,8 @@ export class ZimiTUI {
           ),
         };
       });
-      this.steerMessage(session, items, (steered) => {
+      this.steerMessage(session, items, (outcome) => {
+        const steered = outcome === 'steered';
         for (const message of group) this.steeringQueuedMessages.delete(message);
         if (this.session !== session) return;
         if (steered) this.programStatus.markUserSteer();
@@ -2839,13 +3083,13 @@ export class ZimiTUI {
   steerMessage(
     session: Session,
     input: readonly SteerInputItem[],
-    onSettled?: (steered: boolean) => void,
+    onSettled?: (outcome: SteerOutcome) => void,
     manual = false,
     occupiedRetry = false,
   ): void {
     if (this.deferUserMessages || this.state.appState.isCompacting) {
       if (onSettled !== undefined) {
-        onSettled(false);
+        onSettled('failed');
       } else {
         for (const item of input) this.enqueueMessage(item.text, item);
       }
@@ -2874,7 +3118,7 @@ export class ZimiTUI {
     } catch (error) {
       if (prepared !== undefined) this.releaseSkillArgumentMedia(prepared);
       this.showError(`Failed to prepare media attachment: ${formatErrorMessage(error)}`);
-      onSettled?.(false);
+      onSettled?.('failed');
       return;
     }
     const startsNewTurn = this.state.appState.streamingPhase === 'idle';
@@ -2886,6 +3130,7 @@ export class ZimiTUI {
       renderMode: 'plain',
       content: item.text,
       skillNames: item.inlineSkillActivations?.map((activation) => activation.skillName),
+      inlineSkillActivations: item.inlineSkillActivations,
       imageAttachmentIds:
         item.imageAttachmentIds !== undefined && item.imageAttachmentIds.length > 0
           ? item.imageAttachmentIds
@@ -2902,12 +3147,10 @@ export class ZimiTUI {
       'user',
     );
     const currentTurnId = this.streamingUI.getTurnContext().turnId;
-    // Skill steers may not merge into the current turn: an untracked active
-    // turn (e.g. a goal continuation) has no steerable prompt, so the engine
-    // queues the submission — and binding the lease here would release its
-    // media when that unrelated turn ends. Leave skill leases unclaimed so
-    // the submission's own turn.started claims them; a merged steer simply
-    // retires its media at session close instead.
+    // Skill steers always hand off to the turn that consumes the bundled
+    // entry. Leave skill leases unclaimed by the previous turn so that turn's
+    // completion cannot release the media; the consuming turn.started claims
+    // them instead. Ordinary steers keep the existing binding behavior.
     if (currentTurnId !== undefined && prepared === undefined) this.staging.bindToTurn(stagingLease, currentTurnId);
     const dispatch = (items: readonly SteerInputItem[]) => {
       const payload = combineSteerInput(items);
@@ -2932,26 +3175,39 @@ export class ZimiTUI {
     );
     if (onSettled !== undefined) {
       void request.then(
-        () => onSettled(true),
+        () => {
+          onSettled('steered');
+        },
         () => {},
       );
     }
     this.staging.trackDispatch(stagingLease, request, (error) => {
       this.releaseSteerEntries(steeredEntries);
       if (this.session !== session) {
-        onSettled?.(false);
+        onSettled?.('failed');
         return;
       }
       const recovered = this.handlePromptConflict({
         session,
         error,
-        entries: prepared === undefined && !manual ? steeredEntries : undefined,
+        entries: manual ? undefined : steeredEntries,
         retried: occupiedRetry,
-        retry: () => this.steerMessage(session, input, onSettled, manual, true),
+        retry: () => {
+          this.steerMessage(session, input, onSettled, manual, true);
+        },
         restore: () => {
           this.staging.releaseRecalled(mediaAttachmentIds);
-          this.restoreInputText(input.map((item) => item.text).join('\n'));
-          onSettled?.(false);
+          const activations: InlineSkillActivation[] = [];
+          let offset = 0;
+          for (const item of input) {
+            activations.push(...rebaseInlineSkillActivations(item.inlineSkillActivations ?? [], offset));
+            offset += item.text.length + 1;
+          }
+          this.restoreInputText(
+            input.map((item) => item.text).join('\n'),
+            activations.length === 0 ? undefined : activations,
+          );
+          onSettled?.('restored');
         },
       });
       if (recovered) {
@@ -2967,8 +3223,8 @@ export class ZimiTUI {
       if (onSettled !== undefined) {
         this.staging.defer(stagingLease);
         if (prepared !== undefined) this.releaseSkillArgumentMedia(prepared);
-        if (prepared === undefined && !manual) this.removeTranscriptEntries(steeredEntries);
-        onSettled(false);
+        if (!manual) this.removeTranscriptEntries(steeredEntries);
+        onSettled('failed');
       }
     });
   }
@@ -3010,6 +3266,7 @@ export class ZimiTUI {
 
   pushTranscriptEntry(entry: TranscriptEntry): void {
     this.state.transcriptEntries.push(entry);
+    this.trimTranscriptWindow();
   }
 
   setExternalEditorRunning(running: boolean): void {
@@ -3501,6 +3758,7 @@ export class ZimiTUI {
         },
         () => this.resolveApprovalEnvironment(),
         this.programStatus,
+        this.streamingUI.timeline,
       ),
     );
     session.setQuestionHandler(
@@ -3618,6 +3876,7 @@ export class ZimiTUI {
   resetSessionRuntime(options?: { readonly keepQueuedMessages?: boolean }): void {
     this.aborted = false;
     this.cacheHint.resetRuntime();
+    this.promptPredictionController.reset();
     this.surveyController.reset();
     this.streamingUI.discardPending();
     this.resetSteerDeliveries();
@@ -3866,7 +4125,7 @@ export class ZimiTUI {
         block.markCanceled();
       } else {
         block.markDone(data.tokensBefore, data.tokensAfter, data.summary);
-        if (this.state.toolOutputExpanded) {
+        if (this.state.transcriptContainer.toolOutputExpanded) {
           block.setExpanded(true);
         }
       }
@@ -3908,7 +4167,7 @@ export class ZimiTUI {
           return new GoalSetMessageComponent();
         }
         if (entry.goalData?.kind === 'lifecycle') {
-          return buildGoalMarker(entry.goalData.change, this.state.toolOutputExpanded);
+          return buildGoalMarker(entry.goalData.change, this.state.transcriptContainer.toolOutputExpanded);
         }
         return null;
       case 'assistant': {
@@ -3921,7 +4180,7 @@ export class ZimiTUI {
       }
       case 'thinking': {
         const thinking = new ThinkingComponent(entry.content, true);
-        if (this.state.toolOutputExpanded) thinking.setExpanded(true);
+        if (this.state.transcriptContainer.toolOutputExpanded) thinking.setExpanded(true);
         return thinking;
       }
       case 'tool_call':
@@ -3932,7 +4191,7 @@ export class ZimiTUI {
             this.state.ui,
             this.state.appState.workDir,
           );
-          if (this.state.toolOutputExpanded) tc.setExpanded(true);
+          if (this.state.transcriptContainer.toolOutputExpanded) tc.setExpanded(true);
           return tc;
         }
         if (entry.backgroundAgentStatus !== undefined) {
@@ -3981,16 +4240,14 @@ export class ZimiTUI {
     const entries = this.state.transcriptEntries;
     const entryIndex = entries.indexOf(entry);
     if (entryIndex < 0) return false;
+    entry.turnId = this.streamingUI.getTurnContext().turnId;
     entries.splice(entryIndex, 1);
     entries.push(entry);
-    const children = this.state.transcriptContainer.children;
-    const childIndex = children.findIndex(
+    const component = this.state.transcriptContainer.children.find(
       (child) => getTranscriptComponentEntry(child) === entry,
     );
-    if (childIndex >= 0) {
-      const [component] = children.splice(childIndex, 1);
-      children.push(component!);
-    }
+    if (component !== undefined) this.state.transcriptContainer.moveChildToEnd(component);
+    this.trimTranscriptWindow();
     this.state.ui.requestRender();
     return true;
   }
@@ -4039,7 +4296,7 @@ export class ZimiTUI {
     const welcome = new WelcomeComponent(this.state.appState);
     // Startup progress rows (e.g. the startup spinner) are added before
     // initMainTui() reaches this point; the welcome stays on top of them.
-    this.state.transcriptContainer.children.unshift(welcome);
+    this.state.transcriptContainer.insertChild(0, welcome);
     this.state.transcriptContainer.invalidate();
   }
 
@@ -4056,6 +4313,7 @@ export class ZimiTUI {
     for (const child of this.state.transcriptContainer.children) {
       if (hasDispose(child)) child.dispose();
     }
+    this.state.transcriptContainer.dispose();
   }
 
   private clearTranscriptAndRedraw(): void {
@@ -4072,6 +4330,7 @@ export class ZimiTUI {
     this.sessionEventHandler.stopAllMcpServerStatusSpinners();
     this.disposeTranscriptChildren();
     this.state.transcriptContainer.clear();
+    this.streamingUI.timeline.reset();
     this.btwPanelController.clear();
     this.clearTerminalInlineImages();
     this.sessionEventHandler.notifications.clear();
@@ -4080,23 +4339,6 @@ export class ZimiTUI {
     // converge on its own (a mass change above the viewport still makes the
     // engine repaint everything, but nothing is forced destructively here).
     this.state.ui.requestRender();
-  }
-
-  private isTurnBoundaryComponent(child: Component): boolean {
-    if (
-      !(child instanceof UserMessageComponent) &&
-      !(child instanceof SkillActivationComponent) &&
-      !(child instanceof PluginCommandComponent) &&
-      !(child instanceof ReplayTurnBoundaryComponent)
-    ) {
-      return false;
-    }
-    const entry = getTranscriptComponentEntry(child);
-    if (entry === undefined) return false;
-    // Live user messages / slash activations have an undefined turnId; replayed
-    // ones get a `replay:N` turnId. Both start a new turn. Steer messages carry
-    // a defined non-replay turnId and are not boundaries.
-    return entry.turnId === undefined || entry.turnId.startsWith('replay:');
   }
 
   /**
@@ -4113,7 +4355,7 @@ export class ZimiTUI {
    */
   private isFoldSegmentBoundaryComponent(child: Component): boolean {
     return (
-      this.isTurnBoundaryComponent(child) ||
+      isTurnBoundaryComponent(child) ||
       child instanceof CronMessageComponent ||
       (child instanceof BackgroundAgentStatusComponent && child.phase !== 'started')
     );
@@ -4126,15 +4368,6 @@ export class ZimiTUI {
     if (this.state.appState.isReplaying) return false;
 
     const children = this.state.transcriptContainer.children;
-
-    // Trim whole turns by *position* in the child list rather than by entry
-    // lookup — otherwise only the (registered) user message would be removed and
-    // the rest of the turn would be left behind.
-    const boundaries: number[] = [];
-    for (let i = 0; i < children.length; i++) {
-      if (this.isTurnBoundaryComponent(children[i]!)) boundaries.push(i);
-    }
-
     const turns = groupTurns(this.state.transcriptEntries);
 
     const toRemove = turnsToTrim(turns, TRANSCRIPT_MAX_TURNS, TRANSCRIPT_HYSTERESIS);
@@ -4150,46 +4383,45 @@ export class ZimiTUI {
       }
     }
 
-    let boundariesToRemove = 0;
-    for (const entry of toRemove) {
-      if (
-        (entry.kind === 'user' ||
-          entry.kind === 'skill_activation' ||
-          entry.kind === 'plugin_command') &&
-        entry.turnId === undefined
-      ) {
-        boundariesToRemove++;
+    const retainedTurnIds = new Set<string>();
+    const trimmedTurnIds = new Set<string>();
+    for (const turn of turns) {
+      if (turn.turnId === undefined) continue;
+      if (turn.entries.some((entry) => toRemove.has(entry))) {
+        trimmedTurnIds.add(turn.turnId);
+      } else {
+        retainedTurnIds.add(turn.turnId);
       }
     }
-    if (boundariesToRemove === 0) {
-      this.state.transcriptEntries = this.state.transcriptEntries.filter((e) => !toRemove.has(e));
-      return true;
-    }
+    for (const turnId of retainedTurnIds) trimmedTurnIds.delete(turnId);
 
-    let boundariesSeen = 0;
-    let cutoff = 0;
-    for (let i = 0; i < children.length; i++) {
-      if (this.isTurnBoundaryComponent(children[i]!)) {
-        if (boundariesSeen === boundariesToRemove) {
-          cutoff = i;
-          break;
-        }
-        boundariesSeen++;
+    const firstRetainedIndex = children.findIndex((child) => {
+      const entry = getTranscriptComponentEntry(child);
+      if (entry !== undefined) return !toRemove.has(entry);
+      const turnId = getTranscriptComponentTurnId(child);
+      return turnId !== undefined && retainedTurnIds.has(turnId);
+    });
+    const unmarkedCutoff = firstRetainedIndex < 0 ? children.length : firstRetainedIndex;
+    const componentsToRemove = children.filter((child, index) => {
+      if (child instanceof WelcomeComponent) return false;
+      const entry = getTranscriptComponentEntry(child);
+      if (entry !== undefined) return toRemove.has(entry);
+      const turnId = getTranscriptComponentTurnId(child);
+      if (turnId !== undefined) {
+        if (retainedTurnIds.has(turnId)) return false;
+        if (trimmedTurnIds.has(turnId)) return true;
       }
-    }
-
-    const componentsToRemove: Component[] = [];
-    for (let i = 0; i < cutoff; i++) {
-      const child = children[i]!;
-      if (child instanceof WelcomeComponent) continue;
-      componentsToRemove.push(child);
-    }
+      return index < unmarkedCutoff;
+    });
     for (const child of componentsToRemove) {
       // pi-tui Container.removeChild (not a DOM node); `child.remove()` does not exist.
       // oxlint-disable-next-line unicorn/prefer-dom-node-remove
       this.state.transcriptContainer.removeChild(child);
       if (hasDispose(child)) child.dispose();
     }
+    this.streamingUI.timeline.forget(
+      componentsToRemove.flatMap((child) => (child instanceof ToolCallComponent ? [child.toolCallView.id] : [])),
+    );
 
     this.state.transcriptEntries = this.state.transcriptEntries.filter((e) => !toRemove.has(e));
     return true;
@@ -4217,6 +4449,7 @@ export class ZimiTUI {
   }
 
   private foldCurrentTurnContent(keepSteps: number, keepAssistants: number): boolean {
+    if (transcriptGroupingActiveIn(this.state)) return false;
     if (keepSteps <= 0 && keepAssistants <= 0) return false;
     const children = this.state.transcriptContainer.children;
 
@@ -4229,7 +4462,6 @@ export class ZimiTUI {
       }
     }
     if (turnStart < 0) return false;
-
     // Locate an existing summary, the assistant messages, and the mergeable steps.
     let summaryIndex = -1;
     const stepIndices: number[] = [];
@@ -4244,13 +4476,15 @@ export class ZimiTUI {
         assistantIndices.push(i);
         continue;
       }
-      stepIndices.push(i);
+      if (!isPinnedToolCallComponent(child)) stepIndices.push(i);
     }
 
     // Fold the oldest steps / assistant messages beyond their respective caps;
     // the most recent ones stay mounted. Children are chronological, so the
     // oldest of each kind sit at the front of their index lists.
-    const stepMergeCount = keepSteps > 0 ? Math.max(0, stepIndices.length - keepSteps) : 0;
+    const stepMergeCount = keepSteps > 0
+      ? Math.max(0, stepIndices.length - keepSteps)
+      : 0;
     const assistantMergeCount =
       keepAssistants > 0 ? Math.max(0, assistantIndices.length - keepAssistants) : 0;
     if (stepMergeCount === 0 && assistantMergeCount === 0) return false;
@@ -4276,6 +4510,10 @@ export class ZimiTUI {
       summary = new StepSummaryComponent();
       summary.addCounts(thinkingCount, toolCount, assistantMergeCount);
     }
+    markTranscriptComponentTurnId(
+      summary,
+      this.streamingUI.getTurnContext().turnId ?? getTranscriptComponentTurnId(children[turnStart]!),
+    );
 
     // Rebuild children: keep everything except the merged steps, with the summary
     // sitting right after the user message.
@@ -4294,13 +4532,13 @@ export class ZimiTUI {
       if (hasDispose(child)) child.dispose();
     }
 
-    children.splice(0, children.length, ...newChildren);
+    this.state.transcriptContainer.replaceChildren(newChildren);
     return true;
   }
 
   mergeAllTurnSteps(): void {
-    if (TRANSCRIPT_KEEP_RECENT_STEPS <= 0 && TRANSCRIPT_KEEP_RECENT_ASSISTANT_COMPLETED <= 0)
-      return;
+    if (transcriptGroupingActiveIn(this.state)) return;
+    if (TRANSCRIPT_KEEP_RECENT_STEPS <= 0 && TRANSCRIPT_KEEP_RECENT_ASSISTANT_COMPLETED <= 0) return;
     const children = this.state.transcriptContainer.children;
 
     const boundaries: number[] = [];
@@ -4325,7 +4563,7 @@ export class ZimiTUI {
         const child = children[i]!;
         if (child instanceof StepSummaryComponent) summaryIndex = i;
         else if (child instanceof AssistantMessageComponent) assistantIndices.push(i);
-        else stepIndices.push(i);
+        else if (!isPinnedToolCallComponent(child)) stepIndices.push(i);
       }
 
       const stepMergeCount =
@@ -4358,6 +4596,7 @@ export class ZimiTUI {
           summary = new StepSummaryComponent();
           summary.addCounts(thinkingCount, toolCount, assistantMergeCount);
         }
+        markTranscriptComponentTurnId(summary, getTranscriptComponentTurnId(children[turnStart]!));
         newChildren.push(summary);
         for (const idx of toMergeIndices) toDispose.push(children[idx]!);
         const toMergeSet = new Set(toMergeIndices);
@@ -4374,7 +4613,7 @@ export class ZimiTUI {
     for (const child of toDispose) {
       if (hasDispose(child)) child.dispose();
     }
-    children.splice(0, children.length, ...newChildren);
+    this.state.transcriptContainer.replaceChildren(newChildren);
   }
 
   showStatus(message: string, color?: ColorToken): void {
@@ -4457,6 +4696,10 @@ export class ZimiTUI {
   // Panes / Presentation State
   // =========================================================================
 
+  updateActivityPaneForTranscriptGrouping(): void {
+    if (transcriptGroupingActiveIn(this.state)) this.updateActivityPane();
+  }
+
   updateActivityPane(): void {
     const effectiveMode = this.resolveActivityPaneMode();
     const tipKind = loadingTipKind(effectiveMode);
@@ -4484,7 +4727,9 @@ export class ZimiTUI {
     const retry = effectiveMode === 'waiting' ? this.state.appState.stepRetry : null;
     const retryKey =
       retry === null ? '' : `${formatStepRetryLabel(retry)}|${formatStepRetryDetail(retry)}`;
-    const activityModeKey = `${effectiveMode}:${placeSpinnerInAgentSwarm ? 'swarm' : 'pane'}:${retryKey}`;
+    const hintAt = this.state.transcriptContainer.foldedBashHintAt();
+    const showBackgroundHint = hintAt !== undefined && Date.now() >= hintAt;
+    const activityModeKey = `${effectiveMode}:${placeSpinnerInAgentSwarm ? 'swarm' : 'pane'}:${retryKey}:${String(showBackgroundHint)}`;
 
     if (
       activityModeKey === this.lastActivityMode &&
@@ -4496,11 +4741,14 @@ export class ZimiTUI {
       if (placeSpinnerInAgentSwarm) {
         this.syncAgentSwarmActivitySpinner(this.state.activitySpinner?.instance);
       }
+      this.syncActivityBackgroundHintTimer(hintAt);
       return;
     }
 
     this.lastActivityMode = activityModeKey;
     this.state.activityContainer.clear();
+    const { timeline } = this.streamingUI;
+    const working: SpinnerLabel = (now) => workingLabel(timeline.turn(), instant(now));
 
     switch (effectiveMode) {
       case 'hidden':
@@ -4538,7 +4786,7 @@ export class ZimiTUI {
         break;
       }
       case 'thinking': {
-        const spinner = this.ensureActivitySpinner('braille', 'Working…', (s) =>
+        const spinner = this.ensureActivitySpinner('braille', working, (s) =>
           currentTheme.fg('primary', s),
         );
         this.syncAgentSwarmActivitySpinner(undefined);
@@ -4552,7 +4800,7 @@ export class ZimiTUI {
         break;
       }
       case 'composing': {
-        const spinner = this.ensureActivitySpinner('braille', 'Working…', (s) =>
+        const spinner = this.ensureActivitySpinner('braille', working, (s) =>
           currentTheme.fg('primary', s),
         );
         this.syncAgentSwarmActivitySpinner(undefined);
@@ -4582,13 +4830,17 @@ export class ZimiTUI {
       case 'session': {
         this.stopActivitySpinner();
         this.syncAgentSwarmActivitySpinner(undefined);
-        // Working modes occupy two rows (a spacer above the loader); idle
-        // keeps a one-row placeholder so the dock only shifts once at turn
-        // boundaries instead of on every intra-turn mode flip.
         this.state.activityContainer.addChild(new Spacer(1));
+        this.state.activityContainer.addChild(new LastTurnSummary(timeline));
         break;
       }
     }
+    if (showBackgroundHint && !placeSpinnerInAgentSwarm) {
+      const spinner = this.state.activitySpinner?.instance;
+      if (spinner?.currentLabel === '') spinner.setLabel('Working…');
+      spinner?.setTip(` · ${DETACH_HINT_TEXT}`);
+    }
+    this.syncActivityBackgroundHintTimer(hintAt);
     this.state.ui.requestRender();
   }
 
@@ -4615,6 +4867,7 @@ export class ZimiTUI {
 
   updateQueueDisplay(): void {
     this.programStatus?.refresh();
+    this.promptPredictionController.handleQueueChange();
     const { queueContainer, queuePane, queuedMessages } = this.state;
     if (queuedMessages.length === 0) {
       queuePane.scrollBodyToTop();
@@ -4632,74 +4885,13 @@ export class ZimiTUI {
     if (queueContainer.children.length === 0) queueContainer.addChild(queuePane);
   }
 
-  /**
-   * Index of the first transcript child ctrl+o may expand: a component is
-   * expandable only if it sits at or after the start of the
-   * (totalTurns - expandTurns)-th turn, i.e. it belongs to one of the most
-   * recent `expandTurns` turns. Position-based so it also covers streaming
-   * components that have no entry in the metadata map.
-   */
-  private expandCutoff(children: readonly Component[]): number {
-    const boundaries: number[] = [];
-    for (let i = 0; i < children.length; i++) {
-      if (this.isTurnBoundaryComponent(children[i]!)) boundaries.push(i);
-    }
-    return expandCutoffIndex(children.length, boundaries, TRANSCRIPT_EXPAND_TURNS);
-  }
-
-  /**
-   * What the footer's ctrl+o hint should offer: `expand` while a card in the
-   * expandable window keeps content out of its collapsed form, `collapse`
-   * once the toggle shows it, `null` when ctrl+o would change nothing.
-   */
   private toolOutputExpandHint(): 'expand' | 'collapse' | null {
-    const children = this.state.transcriptContainer.children;
-    if (this.state.toolOutputExpanded) {
-      // Toggling off collapses every expanded card, including one that slid
-      // out of the expansion window since it was expanded, so any expanded
-      // card with hidden content keeps the collapse hint on.
-      for (let i = children.length - 1; i >= 0; i--) {
-        const child = children[i];
-        if (isExpandedComponent(child) && countedByExpandHint(child)) return 'collapse';
-      }
-      return null;
-    }
-    const cutoff = this.expandCutoff(children);
-    for (let i = children.length - 1; i >= cutoff; i--) {
-      if (countedByExpandHint(children[i])) return 'expand';
-    }
-    return null;
-  }
-
-  private toggleClickedFoldBlock(index: number): TuiMouseEventResult | undefined {
-    const children = this.state.transcriptContainer.children;
-    const hit = children[index];
-    if (hit === undefined || !isExpandable(hit) || !hasHiddenContent(hit)) return undefined;
-    if (isExpandedComponent(hit)) {
-      hit.setExpanded(false);
-    } else if (index >= this.expandCutoff(children)) {
-      hit.setExpanded(true);
-    } else {
-      return undefined;
-    }
-    this.state.ui.requestRender();
-    return { handled: true };
+    if (transcriptGroupingActiveIn(this.state)) return null;
+    return this.state.transcriptContainer.toolOutputExpandHint();
   }
 
   toggleToolOutputExpansion(): void {
-    this.state.toolOutputExpanded = !this.state.toolOutputExpanded;
-    const children = this.state.transcriptContainer.children;
-    const expandCutoff = this.expandCutoff(children);
-
-    for (let i = 0; i < children.length; i++) {
-      const child = children[i]!;
-      if (!isExpandable(child)) continue;
-      child.setExpanded(this.state.toolOutputExpanded && i >= expandCutoff);
-    }
-    // Differential render only — no destructive full redraw on expand/collapse.
-    // (When the expanded region reaches above the viewport, the engine's own
-    // fallback may still do a full render; that path is not forced from here.)
-    this.state.ui.requestRender();
+    this.state.transcriptContainer.toggleToolOutputExpansion();
   }
 
   openTasksBrowser(): void {
@@ -4918,7 +5110,7 @@ export class ZimiTUI {
 
   private ensureActivitySpinner(
     style: SpinnerStyle,
-    label = '',
+    label: SpinnerLabel = '',
     colorFn?: (s: string) => string,
   ): MoonLoader {
     if (this.state.activitySpinner?.style !== style) {
@@ -4939,10 +5131,29 @@ export class ZimiTUI {
   }
 
   private stopActivitySpinner(): void {
+    this.clearActivityHintTimer();
     if (this.state.activitySpinner !== null) {
       this.state.activitySpinner.instance.stop();
       this.state.activitySpinner = null;
     }
+  }
+
+  private syncActivityBackgroundHintTimer(hintAt: number | undefined): void {
+    this.clearActivityHintTimer();
+    if (hintAt === undefined) return;
+    const delay = hintAt - Date.now();
+    if (delay <= 0) return;
+    this.activityHintTimer = setTimeout(() => {
+      this.activityHintTimer = undefined;
+      this.updateActivityPane();
+    }, delay);
+    this.activityHintTimer.unref?.();
+  }
+
+  private clearActivityHintTimer(): void {
+    if (this.activityHintTimer === undefined) return;
+    clearTimeout(this.activityHintTimer);
+    this.activityHintTimer = undefined;
   }
 
   // =========================================================================
@@ -4968,6 +5179,7 @@ export class ZimiTUI {
     this.editorReplacementOnDisplaced = onDisplaced;
     this.editorReplacementOnReplaced = onReplaced;
     this.editorReplacementOwner = owner;
+    this.promptPredictionController.notifyDisplaced();
     this.surveyController.notifyDisplaced();
     if (this.state.activeDialog === 'model-switch-confirm') this.state.activeDialog = null;
     this.disposeEditorReplacement();
@@ -5004,8 +5216,12 @@ export class ZimiTUI {
     if (panel !== undefined && hasDispose(panel)) panel.dispose();
   }
 
-  restoreInputText(text: string): void {
+  restoreInputText(text: string, inlineSkillActivations?: readonly InlineSkillActivation[]): void {
+    this.skillVariantPaths.clear();
     this.restoreEditor();
+    for (const { commandName, path, start } of skillVariantPathsForInput(text, inlineSkillActivations ?? [], this.skillCommandMap)) {
+      this.skillVariantPaths.set(start, { commandName, path });
+    }
     this.state.editor.setText(text);
     this.updateEditorBorderHighlight(text);
     this.state.ui.requestRender();
@@ -5126,6 +5342,10 @@ export class ZimiTUI {
     this.mountEditorReplacement(
       new HelpPanelComponent({
         commands: this.getSlashCommands(),
+        shortcuts: keyboardShortcuts(
+          resolveFollowUpBehavior(this.state.appState.followUpBehavior),
+          isKittyProtocolActive(),
+        ),
         onClose: () => {
           this.hideHelpPanel();
         },
@@ -5476,7 +5696,11 @@ export class ZimiTUI {
 }
 
 function isSteerableQueuedMessage(message: QueuedMessage): message is QueuedPromptMessage {
-  return isPromptQueuedMessage(message) && message.inlineSkillActivations === undefined;
+  return (
+    isPromptQueuedMessage(message) &&
+    message.inlineSkillActivations === undefined &&
+    message.holdUntilTurnEnds !== true
+  );
 }
 
 function toSteerInputItem(message: QueuedPromptMessage): SteerInputItem {

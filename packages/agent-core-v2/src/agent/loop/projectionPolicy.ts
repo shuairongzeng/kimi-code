@@ -1,6 +1,6 @@
-import type { LlmRecovery, LlmRecoveryRecord } from '#human/llm/policy/recovery';
-import type { LlmResolver } from '#human/llm/policy/resolver';
-import type { LlmRequest } from '#human/llm/request';
+import type { LlmRecovery, LlmRecoveryRecord } from '@zimi-ai/core/llm/policy/recovery';
+import type { LlmResolver } from '@zimi-ai/core/llm/policy/resolver';
+import type { LlmRequest } from '@zimi-ai/core/llm/request';
 
 import type { AgentLoopProjector } from './projector';
 

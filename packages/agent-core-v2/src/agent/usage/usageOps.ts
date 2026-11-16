@@ -2,9 +2,9 @@
 import { z } from 'zod';
 
 import { AgentEvent2 } from '#/app/event/event2';
-import { type TokenUsage } from '#human/llm-requester/usage';
+import { type TokenUsage } from '@zimi-ai/core/llm/usage';
 
-export type UsageRecordScope = 'session' | 'turn';
+export type UsageRecordScope = 'session' | 'turn' | 'prediction';
 
 export interface UsageModelState {
   readonly byModel: Record<string, TokenUsage>;

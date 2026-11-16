@@ -1,6 +1,6 @@
 {
   "name": "@zimi-ai/zimi-code-sdk",
-  "version": "0.23.0",
+  "version": "0.23.1",
   "private": true,
   "description": "TypeScript SDK for the Zimi Code Agent",
   "license": "MIT",
@@ -70,6 +70,7 @@
     "@anthropic-ai/sdk": "^0.95.2",
     "@google/genai": "^1.49.0",
     "@zimi-ai/agent-core-v2": "workspace:^",
+    "@zimi-ai/core": "workspace:^",
     "@zimi-ai/zimi-code-oauth": "workspace:^",
     "@zimi-ai/zimi-code-product": "workspace:^",
     "@zimi-ai/klient": "workspace:^",

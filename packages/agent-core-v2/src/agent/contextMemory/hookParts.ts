@@ -1,4 +1,4 @@
-import type { ContentPart, TextPart } from '#human/llm/message';
+import type { ContentPart, TextPart } from '@zimi-ai/core/llm/message';
 
 export const USER_PROMPT_SUBMIT_HOOK_SOURCE = 'user prompt submit hook';
 export const USER_PROMPT_SUBMIT_HOOK_CONTENT_TYPE = 'text/xml';

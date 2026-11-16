@@ -1,1 +1,1 @@
-export { isVacuousContentPart } from '#human/llm/message';
+export { isVacuousContentPart } from '@zimi-ai/core/llm/message';

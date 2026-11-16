@@ -25,16 +25,10 @@ interface ConnectOptions {
   readonly headers?: Record<string, string>;
 }
 
-function openConn(url: string, opts?: ConnectOptions): Promise<{ ws: WebSocket; firstFrame: unknown }> {
+function openConn(url: string, opts?: ConnectOptions): Promise<WebSocket> {
   return new Promise((resolve, reject) => {
     const ws = new WebSocket(url, opts?.protocols, { headers: opts?.headers });
-    ws.once('message', (data) => {
-      try {
-        resolve({ ws, firstFrame: JSON.parse(rawToString(data)) });
-      } catch {
-        resolve({ ws, firstFrame: null });
-      }
-    });
+    ws.once('open', () => resolve(ws));
     ws.once('error', reject);
   });
 }
@@ -83,7 +77,6 @@ describe('WS upgrade auth', () => {
   }
 
   describe('/api/v1/ws', () => {
-    const firstType = 'server_hello';
     const url = (): string => v1Url();
 
     it('accepts a valid bearer subprotocol and echoes it', async () => {
@@ -93,6 +86,14 @@ describe('WS upgrade auth', () => {
       sockets.push(ws);
       expect(ws.protocol).toBe(`zimi-code.bearer.${token()}`);
       expect(firstFrame).toMatchObject({ type: firstType });
+    });
+
+    it('accepts a valid bearer Authorization header', async () => {
+      const ws = await openConn(url(), {
+        headers: { authorization: `Bearer ${token()}` },
+      });
+      sockets.push(ws);
+      expect(ws.readyState).toBe(WebSocket.OPEN);
     });
 
     it('rejects a wrong bearer token', async () => {
@@ -106,7 +107,7 @@ describe('WS upgrade auth', () => {
 
   describe('/api/v1/debug/ws', () => {
     it('streams xstate inspection envelopes to an authorized client', async () => {
-      const home = await mkdtemp(join(tmpdir(), 'kimi-kap-debug-ws-'));
+      const home = await mkdtemp(join(tmpdir(), 'zimi-kap-debug-ws-'));
       const server = await startServer({
         hostIdentity: TEST_HOST_IDENTITY,
         host: '127.0.0.1',

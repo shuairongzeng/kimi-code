@@ -61,7 +61,7 @@ const flush = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 
 const EXAMPLE_COM_SCOPED_REF = {
   storage: 'file',
   key: resolveZimiCodeOAuthKey({ baseUrl: 'https://api.example.com' }),
-  oauthHost: 'https://auth.kimi.com',
+  oauthHost: 'https://auth.zimi.com',
 } as const;
 
 const ENV_SCOPED_REF = {
@@ -76,10 +76,10 @@ const ENV_SCOPED_REF = {
 const OVERSEAS_SCOPED_REF = {
   storage: 'file',
   key: resolveZimiCodeOAuthKey({
-    oauthHost: 'https://auth.kimi.ai',
-    baseUrl: 'https://api.kimi.ai/coding/v1',
+    oauthHost: 'https://auth.zimi.ai',
+    baseUrl: 'https://api.zimi.ai/coding/v1',
   }),
-  oauthHost: 'https://auth.kimi.ai',
+  oauthHost: 'https://auth.zimi.ai',
 } as const;
 
 interface FakeToolkit {
@@ -377,7 +377,7 @@ describe('OAuthService', () => {
   it('startLogin reuses the configured oauth ref when it matches the login environment', async () => {
     providers[OAUTH_PROVIDER] = {
       type: 'zimi',
-      baseUrl: 'https://api.kimi.com/coding/v1',
+      baseUrl: 'https://api.zimi.com/coding/v1',
       oauth: { storage: 'file', key: 'oauth/zimi-code' },
     };
     stubManagedModelsFetch();
@@ -392,7 +392,7 @@ describe('OAuthService', () => {
       OAUTH_PROVIDER,
       expect.objectContaining({
         oauthRef: { storage: 'file', key: 'oauth/zimi-code' },
-        baseUrl: 'https://api.kimi.com/coding/v1',
+        baseUrl: 'https://api.zimi.com/coding/v1',
       }),
     );
   });
@@ -445,8 +445,8 @@ describe('OAuthService', () => {
         OAUTH_PROVIDER,
         expect.objectContaining({
           oauthRef: OVERSEAS_SCOPED_REF,
-          baseUrl: 'https://api.kimi.ai/coding/v1',
-          oauthHost: 'https://auth.kimi.ai',
+          baseUrl: 'https://api.zimi.ai/coding/v1',
+          oauthHost: 'https://auth.zimi.ai',
         }),
       );
       await flush();
@@ -454,7 +454,7 @@ describe('OAuthService', () => {
         OAUTH_PROVIDER,
         expect.objectContaining({
           type: 'zimi',
-          baseUrl: 'https://api.kimi.ai/coding/v1',
+          baseUrl: 'https://api.zimi.ai/coding/v1',
           oauth: OVERSEAS_SCOPED_REF,
         }),
       );
@@ -489,7 +489,7 @@ describe('OAuthService', () => {
 
     providers[OAUTH_PROVIDER] = {
       type: 'zimi',
-      oauth: { storage: 'file', key: OVERSEAS_SCOPED_REF.key, oauthHost: 'https://auth.kimi.ai' },
+      oauth: { storage: 'file', key: OVERSEAS_SCOPED_REF.key, oauthHost: 'https://auth.zimi.ai' },
     };
     expect(await svc.getRegionAsync()).toBe('global');
   });
@@ -1334,7 +1334,10 @@ describe('WebSearchProviderService', () => {
     expect(headers['User-Agent']).toBe('zimi-code-cli/test');
     expect(headers['X-Msh-Device-Id']).toBe('device-test');
     expect(headers['X-Custom']).toBe('yes');
-    expect(JSON.parse(init.body as string)).toEqual({ text_query: 'hello' });
+    expect(JSON.parse(init.body as string)).toEqual({
+      text_query: 'hello',
+      search_mode: 'links',
+    });
   });
 
   it('builds a search provider from the services.zimi_search api_key config', async () => {
@@ -1740,8 +1743,15 @@ describe('AuthSummaryService', () => {
     });
   });
 
-  it('ensureReady accepts provider api keys', async () => {
+  it('ensureReady accepts provider api keys and ambient AWS credentials', async () => {
+    providers['bedrock-main'] = { type: 'bedrock', env: { AWS_REGION: 'us-east-1' } };
+    models['bedrock'] = {
+      provider: 'bedrock-main',
+      model: 'global.zimiai.kimi-k3.1',
+      maxContextSize: 128000,
+    };
     await expect(createSummary().ensureReady('openai')).resolves.toBeUndefined();
+    await expect(createSummary().ensureReady('bedrock')).resolves.toBeUndefined();
     expect(getCachedAccessToken).not.toHaveBeenCalled();
   });
 

@@ -62,6 +62,7 @@ const SUPPORTED_PROVIDER_TYPES: ReadonlySet<string> = new Set([
   'zimi',
   'google-genai',
   'openai_responses',
+  'bedrock',
   'vertexai',
 ]);
 
