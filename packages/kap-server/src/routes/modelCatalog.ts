@@ -1,4 +1,5 @@
 import {
+  IAgentIdentity,
   IConfigService,
   IKosongConfigService,
   IModelCatalog,
@@ -22,6 +23,12 @@ import {
   MODELS_SECTION,
   PROVIDERS_SECTION,
 } from '@zimi-ai/agent-core-v2/app/kosongConfig/configSection';
+import {
+  discoverEndpoint,
+  enrichDiscoveredModels,
+} from '@zimi-ai/agent-core-v2/app/importConfig/endpointDiscovery';
+import { getModelsDevCatalog } from '@zimi-ai/agent-core-v2/app/kosongConfig/modelsDevUpstream';
+import type { ModelsDevCatalog } from '@zimi-ai/agent-core-v2/app/kosongConfig/modelsDev';
 import { z } from 'zod';
 
 import { errEnvelope, okEnvelope } from '../envelope';
@@ -38,9 +45,13 @@ import {
   listModelsResponseSchema,
   listProvidersResponseSchema,
   providerCollectionActionBodySchema,
+  providerWireTypeSchema,
   replaceProviderRequestSchema,
   replaceProviderResponseSchema,
+  type CreateProviderRequest,
+  type CreateProviderModel,
   type ProviderCollectionActionBody,
+  type ProviderWireType,
 } from '../protocol/rest-modelCatalog';
 import { type ActionTable, runAction } from './action-dispatch';
 import { parseActionSuffix } from './action-suffix';
@@ -144,6 +155,172 @@ async function seedDefaultModelWhenUnset(config: IConfigService, alias: string):
   await config.replace(DEFAULT_MODEL_SECTION, alias);
 }
 
+const DISCOVER_ERROR_MESSAGES: Record<'network' | 'auth' | 'empty', string> = {
+  network: '无法连接到该端点',
+  auth: 'API Key 无效或端点拒绝访问',
+  empty: '该端点没有返回任何模型，可改用 models[] 手动建配',
+};
+
+const FALLBACK_MAX_CONTEXT_SIZE = 262144;
+
+function hostOfUrl(raw: string): string | undefined {
+  try {
+    const hostname = new URL(raw).hostname;
+    return hostname.length > 0 ? hostname : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+async function loadDiscoverCatalog(core: Scope): Promise<ModelsDevCatalog | undefined> {
+  const userAgent = (await core.accessor.get(IAgentIdentity).resolved()).outboundUserAgent;
+  return getModelsDevCatalog(userAgent).catch(() => undefined);
+}
+
+interface ProviderModelForm {
+  readonly model: string;
+  readonly maxContextSize: number;
+  readonly displayName?: string;
+  readonly capabilities?: string[];
+  readonly protocol?: CreateProviderModel['protocol'];
+  readonly maxOutputSize?: number;
+  readonly supportEfforts?: string[];
+  readonly offEffort?: string;
+  readonly adaptiveThinking?: boolean;
+}
+
+interface ResolvedProviderForm {
+  readonly type: string;
+  readonly models: readonly ProviderModelForm[];
+}
+
+async function resolveProviderForm(
+  core: Scope,
+  body: CreateProviderRequest,
+): Promise<ResolvedProviderForm | { code: number; msg: string }> {
+  if (body.discover !== true) {
+    const type = body.type;
+    if (type === undefined) {
+      return { code: ErrorCode.VALIDATION_FAILED, msg: 'type is required unless discover is true' };
+    }
+    return {
+      type,
+      models: (body.models ?? []).map((entry) => ({
+        model: entry.model,
+        maxContextSize: entry.max_context_size,
+        displayName: entry.display_name,
+        capabilities: entry.capabilities,
+        protocol: entry.protocol,
+        maxOutputSize: entry.max_output_size,
+        supportEfforts: entry.support_efforts,
+        offEffort: entry.off_effort,
+        adaptiveThinking: entry.adaptive_thinking,
+      })),
+    };
+  }
+  const baseUrl = body.base_url ?? '';
+  const probe = await discoverEndpoint({
+    baseUrl,
+    apiKey: body.api_key,
+    apiKeyEnv: body.api_key_env,
+    type: body.type,
+  });
+  if (!probe.ok) {
+    return { code: ErrorCode.VALIDATION_FAILED, msg: DISCOVER_ERROR_MESSAGES[probe.reason] };
+  }
+  const protocol = body.type ?? probe.protocol;
+  if (protocol === undefined) {
+    return {
+      code: ErrorCode.VALIDATION_FAILED,
+      msg: '无法自动识别接口协议，请显式传入 type',
+    };
+  }
+  const catalog = await loadDiscoverCatalog(core);
+  const enriched =
+    catalog !== undefined
+      ? enrichDiscoveredModels(probe.models, catalog, {
+          protocol: probe.protocol,
+          providerHost: hostOfUrl(baseUrl),
+        })
+      : probe.models;
+  if (
+    body.default_model !== undefined &&
+    !enriched.some((entry) => entry.modelId === body.default_model)
+  ) {
+    return {
+      code: ErrorCode.VALIDATION_FAILED,
+      msg: 'default_model 必须在探测到的模型列表中',
+    };
+  }
+  return {
+    type: protocol,
+    models: enriched.map((entry) => ({
+      model: entry.modelId,
+      maxContextSize: entry.contextWindow ?? FALLBACK_MAX_CONTEXT_SIZE,
+      supportEfforts: entry.supportEfforts,
+      offEffort: entry.offEffort,
+    })),
+  };
+}
+
+function normalizedEndpoint(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  if (trimmed === undefined || trimmed.length === 0) return undefined;
+  return trimmed.replace(/\/+$/, '');
+}
+
+const KNOWN_WIRE_TYPES = new Set<string>(providerWireTypeSchema.options);
+
+type MergeGuard = { code: number; msg: string };
+
+function mergeTypeConflict(
+  submittedType: string,
+  existingType: string | undefined,
+  providerId: string,
+): MergeGuard | undefined {
+  if (existingType === undefined) {
+    return {
+      code: ErrorCode.PROVIDER_CONFLICT,
+      msg: `provider ${providerId} has no type; merge cannot set it`,
+    };
+  }
+  if (!KNOWN_WIRE_TYPES.has(existingType)) {
+    return {
+      code: ErrorCode.PROVIDER_CONFLICT,
+      msg: `provider ${providerId} has type "${existingType}" which is not a known wire type`,
+    };
+  }
+  if (existingType !== submittedType) {
+    return {
+      code: ErrorCode.PROVIDER_CONFLICT,
+      msg: `provider ${providerId} has type "${existingType}"; merge cannot change it to "${submittedType}"`,
+    };
+  }
+  return undefined;
+}
+
+function mergeBaseUrlConflict(
+  submittedBaseUrl: string | undefined,
+  existingBaseUrl: string | undefined,
+  providerId: string,
+): MergeGuard | undefined {
+  if (submittedBaseUrl === undefined) return undefined;
+  const existing = normalizedEndpoint(existingBaseUrl);
+  if (existing === undefined) {
+    return {
+      code: ErrorCode.PROVIDER_CONFLICT,
+      msg: `provider ${providerId} has no base_url; merge cannot set it`,
+    };
+  }
+  if (existing !== normalizedEndpoint(submittedBaseUrl)) {
+    return {
+      code: ErrorCode.PROVIDER_CONFLICT,
+      msg: `provider ${providerId} has base_url "${existingBaseUrl}"; merge cannot change it to "${submittedBaseUrl}"`,
+    };
+  }
+  return undefined;
+}
+
 export function registerModelCatalogRoutes(app: ModelCatalogRouteHost, core: Scope): void {
   const listModelsRoute = defineRoute(
     {
@@ -234,18 +411,76 @@ export function registerModelCatalogRoutes(app: ModelCatalogRouteHost, core: Sco
       errors: {
         [ErrorCode.VALIDATION_FAILED]: {},
         [ErrorCode.PROVIDER_ALREADY_EXISTS]: {},
+        [ErrorCode.PROVIDER_OAUTH_MANAGED]: {},
+        [ErrorCode.PROVIDER_CONFLICT]: {},
       },
       description:
-        'Create a provider manually (type + credentials + model list). Credentials are either `api_key` (stored inline) or `api_key_env` (name of an environment variable to read the key from); they are mutually exclusive — submitting both fails validation. When no global default_model is configured (fresh setup), it is seeded with the new provider default (or first) model; an existing default is never modified.',
+        'Create a provider manually (type + credentials + model list) or via endpoint discovery (`discover: true` + `base_url`, mutually exclusive with `models[]`; the probe runs before the write queue so a slow endpoint never blocks other writes). Credentials are either `api_key` (stored inline) or `api_key_env` (name of an environment variable to read the key from); they are mutually exclusive — submitting both fails validation. When no global default_model is configured (fresh setup), it is seeded with the new provider default (or first) model; an existing default is never modified. Set `on_existing: "merge"` to merge into an existing provider instead of failing with 40921: the submitted `type` must match the stored one, `base_url` must match the stored endpoint (trailing slashes are ignored), OAuth-managed providers are rejected, `api_key`/`api_key_env` are tri-state (omitted keeps, "" clears, value replaces), `default_model` must belong to the merged model set, and `models[]` upserts entries field-by-field without deleting unlisted aliases; a fresh id still creates (201) while a merge returns 200.',
       tags: ['providers'],
       operationId: 'createProvider',
     },
     async (req, reply) => {
+      const form = await resolveProviderForm(core, req.body);
+      if ('code' in form) {
+        reply.send(errEnvelope(form.code, form.msg, req.id));
+        return;
+      }
       await enqueueProviderWrite(async () => {
         const config = await loadConfig(core);
         const { id } = req.body;
         const providers = config.inspect<ProvidersSection>(PROVIDERS_SECTION).userValue ?? {};
-        if (providers[id] !== undefined) {
+        const target = providers[id];
+        if (target === undefined) {
+          const provider: ProviderConfig = { type: form.type };
+          const credential = reconcileProviderCredentialUpdate(
+            {},
+            { apiKey: req.body.api_key, apiKeyEnv: req.body.api_key_env },
+            id,
+          );
+          if (!credential.ok) {
+            reply.send(errEnvelope(ErrorCode.VALIDATION_FAILED, credential.message, req.id));
+            return;
+          }
+          if (credential.apiKey !== undefined) provider.apiKey = credential.apiKey;
+          if (credential.apiKeyEnv !== undefined) provider.apiKeyEnv = credential.apiKeyEnv;
+          if (req.body.base_url !== undefined) provider.baseUrl = req.body.base_url;
+          if (req.body.default_model !== undefined) {
+            provider.defaultModel = `${id}/${req.body.default_model}`;
+          }
+          await config.set(PROVIDERS_SECTION, { [id]: provider });
+
+          const aliases: Record<string, ModelRecord> = {};
+          for (const entry of form.models) {
+            const alias: ModelRecord = {
+              provider: id,
+              model: entry.model,
+              maxContextSize: entry.maxContextSize,
+            };
+            if (entry.displayName !== undefined) alias.displayName = entry.displayName;
+            if (entry.capabilities !== undefined) alias.capabilities = [...entry.capabilities];
+            if (entry.protocol !== undefined) alias.protocol = entry.protocol;
+            if (entry.maxOutputSize !== undefined) alias.maxOutputSize = entry.maxOutputSize;
+            if (entry.supportEfforts !== undefined) alias.supportEfforts = [...entry.supportEfforts];
+            if (entry.offEffort !== undefined) alias.offEffort = entry.offEffort;
+            if (entry.adaptiveThinking !== undefined) alias.adaptiveThinking = entry.adaptiveThinking;
+            aliases[`${id}/${entry.model}`] = alias;
+          }
+          await config.set(MODELS_SECTION, aliases);
+
+          const firstModel = form.models[0];
+          if (firstModel !== undefined) {
+            await seedDefaultModelWhenUnset(
+              config,
+              provider.defaultModel ?? `${id}/${firstModel.model}`,
+            );
+          }
+
+          const created = await core.accessor.get(IModelCatalog).getProvider(id);
+          (reply as unknown as StatusReply).code(201).send(okEnvelope(created, req.id));
+          return;
+        }
+
+        if (req.body.on_existing !== 'merge') {
           reply.send(
             errEnvelope(
               ErrorCode.PROVIDER_ALREADY_EXISTS,
@@ -255,10 +490,30 @@ export function registerModelCatalogRoutes(app: ModelCatalogRouteHost, core: Sco
           );
           return;
         }
+        if (target.oauth !== undefined) {
+          reply.send(
+            errEnvelope(
+              ErrorCode.PROVIDER_OAUTH_MANAGED,
+              `provider ${id} is managed by OAuth login; use POST /oauth/logout instead`,
+              req.id,
+            ),
+          );
+          return;
+        }
+        const typeGuard = mergeTypeConflict(form.type, target.type, id);
+        if (typeGuard !== undefined) {
+          reply.send(errEnvelope(typeGuard.code, typeGuard.msg, req.id));
+          return;
+        }
+        const baseUrlGuard = mergeBaseUrlConflict(req.body.base_url, target.baseUrl, id);
+        if (baseUrlGuard !== undefined) {
+          reply.send(errEnvelope(baseUrlGuard.code, baseUrlGuard.msg, req.id));
+          return;
+        }
 
-        const provider: ProviderConfig = { type: req.body.type };
+        const provider: ProviderConfig = { ...target, type: form.type };
         const credential = reconcileProviderCredentialUpdate(
-          {},
+          target,
           { apiKey: req.body.api_key, apiKeyEnv: req.body.api_key_env },
           id,
         );
@@ -266,43 +521,64 @@ export function registerModelCatalogRoutes(app: ModelCatalogRouteHost, core: Sco
           reply.send(errEnvelope(ErrorCode.VALIDATION_FAILED, credential.message, req.id));
           return;
         }
-        if (credential.apiKey !== undefined) provider.apiKey = credential.apiKey;
-        if (credential.apiKeyEnv !== undefined) provider.apiKeyEnv = credential.apiKeyEnv;
-        if (req.body.base_url !== undefined) provider.baseUrl = req.body.base_url;
-        if (req.body.default_model !== undefined) {
-          provider.defaultModel = `${id}/${req.body.default_model}`;
-        }
-        await config.set(PROVIDERS_SECTION, { [id]: provider });
+        provider.apiKey = credential.apiKey;
+        provider.apiKeyEnv = credential.apiKeyEnv;
 
-        const aliases: Record<string, ModelRecord> = {};
-        for (const entry of req.body.models) {
+        const modelsSection = config.inspect<ModelsSection>(MODELS_SECTION).userValue ?? {};
+        const submittedAliases: Record<string, ModelRecord> = {};
+        for (const entry of form.models) {
+          const previous = modelsSection[`${id}/${entry.model}`];
           const alias: ModelRecord = {
+            ...previous,
             provider: id,
             model: entry.model,
-            maxContextSize: entry.max_context_size,
+            maxContextSize: entry.maxContextSize,
           };
-          if (entry.display_name !== undefined) alias.displayName = entry.display_name;
+          if (entry.displayName !== undefined) alias.displayName = entry.displayName;
           if (entry.capabilities !== undefined) alias.capabilities = [...entry.capabilities];
           if (entry.protocol !== undefined) alias.protocol = entry.protocol;
-          if (entry.max_output_size !== undefined) alias.maxOutputSize = entry.max_output_size;
-          if (entry.support_efforts !== undefined)
-            alias.supportEfforts = [...entry.support_efforts];
-          if (entry.adaptive_thinking !== undefined)
-            alias.adaptiveThinking = entry.adaptive_thinking;
-          aliases[`${id}/${entry.model}`] = alias;
-        }
-        await config.set(MODELS_SECTION, aliases);
-
-        const firstModel = req.body.models[0];
-        if (firstModel !== undefined) {
-          await seedDefaultModelWhenUnset(
-            config,
-            provider.defaultModel ?? `${id}/${firstModel.model}`,
-          );
+          if (entry.maxOutputSize !== undefined) alias.maxOutputSize = entry.maxOutputSize;
+          if (entry.supportEfforts !== undefined) alias.supportEfforts = [...entry.supportEfforts];
+          if (entry.offEffort !== undefined) alias.offEffort = entry.offEffort;
+          if (entry.adaptiveThinking !== undefined) alias.adaptiveThinking = entry.adaptiveThinking;
+          submittedAliases[`${id}/${entry.model}`] = alias;
         }
 
-        const created = await core.accessor.get(IModelCatalog).getProvider(id);
-        (reply as unknown as StatusReply).code(201).send(okEnvelope(created, req.id));
+        const mergedModelSet = new Set([
+          ...Object.keys(modelsSection).filter(
+            (alias) => modelsSection[alias]?.provider === id,
+          ),
+          ...Object.keys(submittedAliases),
+        ]);
+        if (req.body.default_model !== undefined) {
+          if (!mergedModelSet.has(`${id}/${req.body.default_model}`)) {
+            reply.send(
+              errEnvelope(
+                ErrorCode.VALIDATION_FAILED,
+                `default_model must be one of the merged model aliases`,
+                req.id,
+              ),
+            );
+            return;
+          }
+          provider.defaultModel = `${id}/${req.body.default_model}`;
+        }
+
+        await config.set(PROVIDERS_SECTION, { [id]: provider });
+        if (Object.keys(submittedAliases).length > 0) {
+          await config.set(MODELS_SECTION, submittedAliases);
+        }
+
+        const mergedDefault =
+          provider.defaultModel ??
+          Object.keys(submittedAliases)[0] ??
+          Object.keys(modelsSection).find((alias) => modelsSection[alias]?.provider === id);
+        if (mergedDefault !== undefined) {
+          await seedDefaultModelWhenUnset(config, mergedDefault);
+        }
+
+        const merged = await core.accessor.get(IModelCatalog).getProvider(id);
+        reply.send(okEnvelope(merged, req.id));
       });
     },
   );

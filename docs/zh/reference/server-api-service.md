@@ -442,12 +442,14 @@
 | 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
 | `id` | body | string | 必填。供应商 id，只能包含字母、数字、`-`、`_` 和空格，必须以字母或数字开头 |
-| `type` | body | string | 必填。通信协议：`zimi` / `openai` / `openai_responses` / `anthropic` / `bedrock` / `google-genai` / `vertexai` |
+| `type` | body | string | `discover` 为 true 时可省略，其余情况必填。通信协议：`zimi` / `openai` / `openai_responses` / `anthropic` / `bedrock` / `google-genai` / `vertexai`；显式传入时覆盖探测结果 |
 | `api_key` | body | string | API 密钥，存储在 `config.toml` 中 |
 | `api_key_env` | body | string | 读取 API 密钥的环境变量名。服务端只存储变量名，不存储密钥 |
 | `base_url` | body | string | API 基础 URL，不能包含环境变量占位符（`${...}`） |
-| `default_model` | body | string | 该供应商的默认模型，必须是 `models[].model` 之一 |
-| `models` | body | array | 必填。至少一条，`model` 值不能重复；条目结构见下表 |
+| `discover` | body | boolean | 为 `true` 时省略 `models`：服务端用给定凭据探测 `base_url`，识别通信协议，并为发现的每个模型创建一个别名（见下文） |
+| `on_existing` | body | string | 设为 `merge` 时，与既有同 `id` 供应商合并而不是报错：提交的模型别名新增或更新，未提及的别名保留，凭据保留（除非传入 `api_key`）。此时返回 200（不是 201） |
+| `default_model` | body | string | 该供应商的默认模型，必须是 `models[].model` 之一（`discover` 为 true 时为发现的模型之一） |
+| `models` | body | array | `discover` 为 true 时可省略，其余情况必填。至少一条，`model` 值不能重复；条目结构见下表 |
 
 每个 `models[]` 条目声明一个别名，别名 id 为 `id/model`：
 
@@ -460,12 +462,16 @@
 | `protocol` | string | 线路协议覆盖：`anthropic`、`openai` 或 `openai_responses`；省略时按模型 ID 推断 |
 | `max_output_size` | integer | 最大输出 token 数，≥ 1 |
 | `support_efforts` | array | 支持的 Thinking 模式 effort 档位 |
+| `off_effort` | string | 该模型关闭 Thinking 时使用的 effort 档位 |
 | `adaptive_thinking` | boolean | 自适应 thinking 开关 |
+
+`discover: true` 时探测会区分 Anthropic 与 OpenAI 形态的列表端点，保留每个模型上报的上下文窗口（缺失时回退到保守默认值），并在 models.dev 目录认识该模型时填充 `support_efforts` 与 `off_effort`——anthropic 协议的模型保留内建 thinking 档案。探测失败或无法识别时返回错误且不写入任何配置；不暴露列表 API 的网关请手动声明 `models`。
 
 成功时 `data` 为创建好的供应商条目（形态与 `GET /api/v1/providers` 的单项相同）。
 
 - `40001`：请求体校验失败，或 `api_key` 与 `api_key_env` 同时传入非空值
-- `40921`：已存在该 `id` 的供应商
+- `40921`：已存在该 `id` 的供应商（仅在 `on_existing` 不为 `merge` 时返回）
+- `40936`：请求了 `on_existing: merge`，但已存供应商的 `type` 或 `base_url` 不一致
 
 ### `GET /api/v1/providers/{provider_id}`
 

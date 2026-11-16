@@ -36,10 +36,12 @@ export interface DiscoveryOptions {
   readonly fetchImpl?: typeof fetch;
 }
 
-const ANTHROPIC_VERSION = '2023-06-01';
+export const ANTHROPIC_VERSION = '2023-06-01';
 
 /** Resolve the bearer/api key for a provider (inline key or env indirection). */
-function resolveKey(provider: DiscoverableProvider): string | undefined {
+export function resolveKey(
+  provider: { readonly apiKey?: string; readonly apiKeyEnv?: string },
+): string | undefined {
   if (provider.apiKey !== undefined && provider.apiKey.length > 0) return provider.apiKey;
   if (provider.apiKeyEnv !== undefined && provider.apiKeyEnv.length > 0) {
     const fromEnv = process.env[provider.apiKeyEnv];

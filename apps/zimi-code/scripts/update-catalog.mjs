@@ -22,6 +22,7 @@ const KEEP_MODEL = new Set([
   "limit",
   "tool_call",
   "reasoning",
+  "reasoning_options",
   "interleaved",
   "modalities",
   // Message-level tool declarations capability — the models.dev

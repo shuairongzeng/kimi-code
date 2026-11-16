@@ -1,6 +1,11 @@
 import type { FastifyInstance } from 'fastify';
 import type { Scope } from '@zimi-ai/agent-core-v2';
-import { discoverProviderModels } from '@zimi-ai/agent-core-v2/app/importConfig/discovery';
+import {
+  discoverEndpoint,
+  enrichDiscoveredModels,
+} from '@zimi-ai/agent-core-v2/app/importConfig/endpointDiscovery';
+import { IAgentIdentity } from '@zimi-ai/agent-core-v2';
+import { getModelsDevCatalog } from '@zimi-ai/agent-core-v2/app/kosongConfig/modelsDevUpstream';
 import { z } from 'zod';
 
 import { errEnvelope, okEnvelope } from '../envelope';
@@ -30,25 +35,24 @@ const discoveredModelSchema = z.object({
   providerId: z.string().optional(),
   modelId: z.string(),
   contextWindow: z.number().optional(),
+  support_efforts: z.array(z.string()).optional(),
+  off_effort: z.string().optional(),
 });
 
 const discoverModelsResponseSchema = z.object({
   models: z.array(discoveredModelSchema),
+  protocol: z
+    .enum(['anthropic', 'openai', 'openai_responses', 'google-genai'])
+    .nullable(),
 });
 
-function friendlyDiscoveryFailure(err: unknown): string {
-  const message = err instanceof Error ? err.message : String(err);
-  if (/\b401\b|unauthorized/i.test(message)) {
-    return 'API Key 无效或端点拒绝访问';
+function hostOfUrl(raw: string): string | undefined {
+  try {
+    const hostname = new URL(raw).hostname;
+    return hostname.length > 0 ? hostname : undefined;
+  } catch {
+    return undefined;
   }
-  if (
-    /fetch failed|econnrefused|enotfound|etimedout|econnreset|econnaborted|eai_again|getaddrinfo|network|socket|timeout|timed out|aborted|refused|unreachable|dns|connect/i.test(
-      message,
-    )
-  ) {
-    return '无法连接到该端点';
-  }
-  return `无法获取该端点的模型列表：${message}`;
 }
 
 export function registerAgentDiscoverRoutes(app: FastifyInstance, core: Scope): void {
@@ -69,18 +73,34 @@ export function registerAgentDiscoverRoutes(app: FastifyInstance, core: Scope): 
     },
     async (req, reply) => {
       const { baseUrl, apiKey, type } = req.body;
-      try {
-        const models = await discoverProviderModels([
-          { id: 'discover-models', baseUrl, apiKey, type },
-        ]);
-        if (models.length === 0) {
-          reply.send(errEnvelope(ErrorCode.VALIDATION_FAILED, '该端点没有返回任何模型', req.id));
-          return;
-        }
-        reply.send(okEnvelope({ models }, req.id));
-      } catch (err) {
-        reply.send(errEnvelope(ErrorCode.VALIDATION_FAILED, friendlyDiscoveryFailure(err), req.id));
+      const probe = await discoverEndpoint({ baseUrl, apiKey, type });
+      if (!probe.ok) {
+        reply.send(errEnvelope(ErrorCode.VALIDATION_FAILED, probe.message, req.id));
+        return;
       }
+      const userAgent = (await core.accessor.get(IAgentIdentity).resolved()).outboundUserAgent;
+      const catalog = await getModelsDevCatalog(userAgent).catch(() => undefined);
+      const models =
+        catalog !== undefined
+          ? enrichDiscoveredModels(probe.models, catalog, {
+              protocol: probe.protocol,
+              providerHost: hostOfUrl(baseUrl),
+            })
+          : probe.models;
+      reply.send(
+        okEnvelope(
+          {
+            models: models.map((entry) => ({
+              modelId: entry.modelId,
+              contextWindow: entry.contextWindow,
+              support_efforts: entry.supportEfforts,
+              off_effort: entry.offEffort,
+            })),
+            protocol: probe.protocol ?? null,
+          },
+          req.id,
+        ),
+      );
     },
   );
   routeHost.post(

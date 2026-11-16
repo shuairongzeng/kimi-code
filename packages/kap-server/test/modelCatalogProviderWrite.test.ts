@@ -2,7 +2,13 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { createServer, type Server } from 'node:http';
+
 import { IConfigService } from '@zimi-ai/agent-core-v2';
+import {
+  resetModelsDevUpstreamForTest,
+  setModelsDevUpstreamForTest,
+} from '@zimi-ai/agent-core-v2/app/kosongConfig/modelsDevUpstream';
 import { parse as parseToml } from 'smol-toml';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -111,6 +117,73 @@ const REPLACE_BODY = {
   ],
 } as const;
 
+const DISCOVER_CATALOG = {
+  openai: {
+    id: 'openai',
+    name: 'OpenAI',
+    api: 'https://api.openai.com/v1',
+    npm: '@ai-sdk/openai',
+    models: {
+      'gpt-x': {
+        id: 'gpt-x',
+        limit: { context: 96000 },
+        tool_call: true,
+        modalities: { input: ['text'], output: ['text'] },
+        reasoning_options: [{ type: 'effort', values: ['low', 'high', 'none'] }],
+      },
+    },
+  },
+} as const;
+
+type ProbeMode = 'list' | 'empty' | 'unauthorized';
+
+async function startProbeServer(mode: ProbeMode): Promise<string> {
+  const handler = createServer((req, res) => {
+    if (mode === 'unauthorized' || (req.url !== '/v1/models' && req.url !== '/models')) {
+      res.writeHead(401, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ error: 'unauthorized' }));
+      return;
+    }
+    if (mode === 'empty') {
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ object: 'list', data: [] }));
+      return;
+    }
+    res.writeHead(200, { 'content-type': 'application/json' });
+    res.end(
+      JSON.stringify({
+        object: 'list',
+        data: [
+          { id: 'gpt-x', object: 'model', context_length: 128_000 },
+          { id: 'gpt-y', object: 'model' },
+        ],
+      }),
+    );
+  });
+  const listening = new Promise<void>((resolve) => {
+    handler.listen(0, '127.0.0.1', () => resolve());
+  });
+  await listening;
+  probeServers.push(handler);
+  const address = handler.address();
+  if (typeof address !== 'object' || address === null || !('port' in address)) {
+    throw new Error('probe server did not expose a port');
+  }
+  return `http://127.0.0.1:${address.port}`;
+}
+
+const probeServers: Server[] = [];
+
+function installDiscoverCatalog(): void {
+  setModelsDevUpstreamForTest({
+    fetchImpl: (async () =>
+      new Response(JSON.stringify(DISCOVER_CATALOG), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })) as unknown as typeof fetch,
+  });
+}
+
 describe('server-v2 /api/v1 provider write endpoints', () => {
   let server: RunningServer | undefined;
   let home: string | undefined;
@@ -131,6 +204,13 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
   });
 
   afterAll(async () => {
+    resetModelsDevUpstreamForTest();
+    for (const probe of probeServers.splice(0)) {
+      const closed = new Promise<void>((resolve) => {
+        probe.close(() => resolve());
+      });
+      await closed;
+    }
     if (server !== undefined) {
       await server.close();
       server = undefined;
@@ -1089,5 +1169,998 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
       model: 'claude-thing',
       max_context_size: 200000,
     });
+  });
+
+  it('creates a provider via discover:true with the probed protocol and enriched models', async () => {
+    await boot();
+    const probeUrl = await startProbeServer('list');
+    installDiscoverCatalog();
+    const { status, body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'my-gateway',
+      api_key: 'sk-probe',
+      base_url: probeUrl,
+      discover: true,
+    });
+    expect(status).toBe(201);
+    expect(body.code).toBe(0);
+    expect(body.data).toEqual({
+      id: 'my-gateway',
+      type: 'openai',
+      base_url: probeUrl,
+      default_model: 'my-gateway/gpt-x',
+      has_api_key: true,
+      status: 'connected',
+      models: ['my-gateway/gpt-x', 'my-gateway/gpt-y'],
+    });
+
+    const onDisk = await readConfigToml();
+    expect(onDisk['providers']).toEqual({
+      'my-gateway': {
+        type: 'openai',
+        api_key: 'sk-probe',
+        base_url: probeUrl,
+      },
+    });
+    expect(onDisk['models']).toEqual({
+      'my-gateway/gpt-x': {
+        provider: 'my-gateway',
+        model: 'gpt-x',
+        max_context_size: 128000,
+        support_efforts: ['low', 'high'],
+        off_effort: 'none',
+      },
+      'my-gateway/gpt-y': {
+        provider: 'my-gateway',
+        model: 'gpt-y',
+        max_context_size: 262144,
+      },
+    });
+    expect(onDisk['default_model']).toBe('my-gateway/gpt-x');
+
+    const models = await getJson<{ items: unknown[] }>('/api/v1/models');
+    expect(models.body.data.items).toEqual([
+      {
+        provider: 'my-gateway',
+        model: 'my-gateway/gpt-x',
+        display_name: 'gpt-x',
+        max_context_size: 128000,
+        support_efforts: ['low', 'high'],
+      },
+      {
+        provider: 'my-gateway',
+        model: 'my-gateway/gpt-y',
+        display_name: 'gpt-y',
+        max_context_size: 262144,
+      },
+    ]);
+  });
+
+  it('uses an explicit type over the probed protocol on discover:true', async () => {
+    await boot();
+    const probeUrl = await startProbeServer('list');
+    installDiscoverCatalog();
+    const { status, body } = await postJson<{ type: string }>('/api/v1/providers', {
+      id: 'my-explicit',
+      type: 'openai_responses',
+      api_key: 'sk-probe',
+      base_url: probeUrl,
+      discover: true,
+    });
+    expect(status).toBe(201);
+    expect(body.data.type).toBe('openai_responses');
+
+    const onDisk = await readConfigToml();
+    expect((onDisk['providers'] as Record<string, { type: string }>)['my-explicit']?.type).toBe(
+      'openai_responses',
+    );
+  });
+
+  it('rejects discover:true when the endpoint cannot be reached (network envelope, no writes)', async () => {
+    await boot();
+    installDiscoverCatalog();
+    const { status, body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'net-fail',
+      api_key: 'sk-probe',
+      base_url: 'http://127.0.0.1:1',
+      discover: true,
+    });
+    expect(status).toBe(200);
+    expect(body.code).toBe(40001);
+    expect(body.data).toBeNull();
+    expect(body.msg).toContain('无法连接');
+
+    const onDisk = await readConfigToml();
+    expect(onDisk['providers']).toBeUndefined();
+    expect(onDisk['models']).toBeUndefined();
+    expect(onDisk['default_model']).toBeUndefined();
+  });
+
+  it('rejects discover:true with an auth failure (no writes)', async () => {
+    await boot();
+    const probeUrl = await startProbeServer('unauthorized');
+    installDiscoverCatalog();
+    const { status, body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'auth-fail',
+      api_key: 'sk-probe',
+      base_url: probeUrl,
+      discover: true,
+    });
+    expect(status).toBe(200);
+    expect(body.code).toBe(40001);
+    expect(body.data).toBeNull();
+    expect(body.msg).toContain('API Key');
+
+    const onDisk = await readConfigToml();
+    expect(onDisk['providers']).toBeUndefined();
+    expect(onDisk['models']).toBeUndefined();
+  });
+
+  it('rejects discover:true when the endpoint returns no models (no writes)', async () => {
+    await boot();
+    const probeUrl = await startProbeServer('empty');
+    installDiscoverCatalog();
+    const { status, body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'empty-fail',
+      api_key: 'sk-probe',
+      base_url: probeUrl,
+      discover: true,
+    });
+    expect(status).toBe(200);
+    expect(body.code).toBe(40001);
+    expect(body.data).toBeNull();
+    expect(body.msg).toContain('没有返回任何模型');
+
+    const onDisk = await readConfigToml();
+    expect(onDisk['providers']).toBeUndefined();
+    expect(onDisk['models']).toBeUndefined();
+  });
+
+  it('rejects discover and models submitted together with 40001', async () => {
+    await boot();
+    installDiscoverCatalog();
+    const { status, body } = await postJson<unknown>('/api/v1/providers', {
+      ...CREATE_BODY,
+      id: 'both-given',
+      discover: true,
+    });
+    expect(status).toBe(200);
+    expect(body.code).toBe(40001);
+    expect(body.data).toBeNull();
+    expect(body.msg).toContain('exactly one of discover=true or models[]');
+
+    const onDisk = await readConfigToml();
+    expect(onDisk['providers']).toBeUndefined();
+  });
+
+  it('rejects neither discover nor models with 40001', async () => {
+    await boot();
+    const { status, body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'neither-given',
+      type: 'openai',
+    });
+    expect(status).toBe(200);
+    expect(body.code).toBe(40001);
+    expect(body.data).toBeNull();
+    expect(body.msg).toContain('exactly one of discover=true or models[]');
+  });
+
+  it('rejects a default_model outside the probed model set with 40001 (no writes)', async () => {
+    await boot();
+    const probeUrl = await startProbeServer('list');
+    installDiscoverCatalog();
+    const { status, body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'dm-fail',
+      api_key: 'sk-probe',
+      base_url: probeUrl,
+      default_model: 'gpt-5',
+      discover: true,
+    });
+    expect(status).toBe(200);
+    expect(body.code).toBe(40001);
+    expect(body.data).toBeNull();
+    expect(body.msg).toContain('default_model 必须在探测到的模型列表中');
+
+    const onDisk = await readConfigToml();
+    expect(onDisk['providers']).toBeUndefined();
+    expect(onDisk['models']).toBeUndefined();
+  });
+
+  it('honors a default_model inside the probed model set on discover:true', async () => {
+    await boot();
+    const probeUrl = await startProbeServer('list');
+    installDiscoverCatalog();
+    const { status, body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'dm-ok',
+      api_key: 'sk-probe',
+      base_url: probeUrl,
+      default_model: 'gpt-y',
+      discover: true,
+    });
+    expect(status).toBe(201);
+    expect(body.data).toMatchObject({ id: 'dm-ok', default_model: 'dm-ok/gpt-y' });
+
+    const onDisk = await readConfigToml();
+    expect(onDisk['default_model']).toBe('dm-ok/gpt-y');
+  });
+
+  it('creates a provider via discover:true without efforts when the catalog is unavailable', async () => {
+    await boot();
+    const probeUrl = await startProbeServer('list');
+    resetModelsDevUpstreamForTest();
+    setModelsDevUpstreamForTest({
+      fetchImpl: (async () => {
+        throw new Error('offline');
+      }) as unknown as typeof fetch,
+    });
+    const { status, body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'my-offline',
+      api_key: 'sk-probe',
+      base_url: probeUrl,
+      discover: true,
+    });
+    expect(status).toBe(201);
+    expect(body.code).toBe(0);
+    expect(body.data).toMatchObject({ id: 'my-offline', type: 'openai' });
+
+    const onDisk = await readConfigToml();
+    expect(onDisk['models']).toEqual({
+      'my-offline/gpt-x': {
+        provider: 'my-offline',
+        model: 'gpt-x',
+        max_context_size: 128000,
+      },
+      'my-offline/gpt-y': {
+        provider: 'my-offline',
+        model: 'gpt-y',
+        max_context_size: 262144,
+      },
+    });
+  });
+
+  it('merges onto an OAuth-managed provider is rejected with 40003 (no writes)', async () => {
+    const OAUTH_TOML = [
+      '[providers.oauth-zimi]',
+      'type = "openai"',
+      'api_key = ""',
+      'oauth = { storage = "file", key = "oauth/zimi-code" }',
+      '',
+      '[models."oauth-zimi/kimi-k2"]',
+      'provider = "oauth-zimi"',
+      'model = "kimi-k2"',
+      'max_context_size = 131072',
+      '',
+    ].join('\n');
+    await boot(OAUTH_TOML);
+    const { status, body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'oauth-zimi',
+      on_existing: 'merge',
+      type: 'openai',
+      api_key: 'sk-new',
+    });
+    expect(status).toBe(200);
+    expect(body.code).toBe(40003);
+    expect(body.msg).toContain('/oauth/logout');
+
+    const onDisk = await readConfigToml();
+    expect(onDisk['providers']).toEqual({
+      'oauth-zimi': {
+        type: 'openai',
+        api_key: '',
+        oauth: { storage: 'file', key: 'oauth/zimi-code' },
+      },
+    });
+    expect(onDisk['models']).toEqual({
+      'oauth-zimi/kimi-k2': {
+        provider: 'oauth-zimi',
+        model: 'kimi-k2',
+        max_context_size: 131072,
+      },
+    });
+  });
+
+  it('merging a mismatched type is rejected with 40936 (no writes)', async () => {
+    await boot(KEEP_DEFAULT_TOML);
+    const { status, body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'anthropic',
+      api_key: 'sk-merged',
+    });
+    expect(status).toBe(200);
+    expect(body.code).toBe(40936);
+    expect(body.data).toBeNull();
+
+    const onDisk = await readConfigToml();
+    expect(onDisk['providers']).toEqual({
+      zimi: { type: 'zimi', api_key: 'sk-test' },
+      openai: { type: 'openai', api_key: 'sk-openai' },
+    });
+    expect(onDisk['models']).toEqual({
+      k2: { provider: 'zimi', model: 'kimi-k2', max_context_size: 131072 },
+      gpt4o: { provider: 'openai', model: 'gpt-4o', max_context_size: 128000 },
+    });
+  });
+
+  it('merging onto a provider without a stored type is rejected with 40936', async () => {
+    const UNTYPED_TOML = [
+      '[providers.openai]',
+      'api_key = "sk-openai"',
+      '',
+      '[models.gpt4o]',
+      'provider = "openai"',
+      'model = "gpt-4o"',
+      'max_context_size = 128000',
+      '',
+    ].join('\n');
+    await boot(UNTYPED_TOML);
+    const { body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+    });
+    expect(body.code).toBe(40936);
+
+    const onDisk = await readConfigToml();
+    expect(onDisk['providers']).toEqual({ openai: { api_key: 'sk-openai' } });
+  });
+
+  it('merging onto a provider with a free-string (non-enum) type is rejected with 40936', async () => {
+    const CUSTOM_TOML = [
+      '[providers.acme]',
+      'type = "custom-engine"',
+      '',
+      '[models."acme/pro"]',
+      'provider = "acme"',
+      'model = "pro"',
+      'max_context_size = 128000',
+      '',
+    ].join('\n');
+    await boot(CUSTOM_TOML);
+    const { body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'acme',
+      on_existing: 'merge',
+      type: 'openai',
+    });
+    expect(body.code).toBe(40936);
+
+    const onDisk = await readConfigToml();
+    expect(onDisk['providers']).toEqual({ acme: { type: 'custom-engine' } });
+  });
+
+  it('merging accepts a base_url that only differs by trailing slashes', async () => {
+    const BASED_TOML = [
+      '[providers.openai]',
+      'type = "openai"',
+      'api_key = "sk-openai"',
+      'base_url = "https://api.openai.example/v1"',
+      '',
+      '[models."openai/gpt-4o"]',
+      'provider = "openai"',
+      'model = "gpt-4o"',
+      'max_context_size = 128000',
+      '',
+    ].join('\n');
+    await boot(BASED_TOML);
+    const { status, body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+      base_url: 'https://api.openai.example/v1/',
+      api_key: 'sk-new',
+    });
+    expect(status).toBe(200);
+    expect(body.code).toBe(0);
+
+    const onDisk = await readConfigToml();
+    expect((onDisk['providers'] as Record<string, { base_url?: string }>)['openai']?.base_url).toBe(
+      'https://api.openai.example/v1',
+    );
+  });
+
+  it('merging a genuinely different base_url is rejected with 40936 (no writes)', async () => {
+    const BASED_TOML = [
+      '[providers.openai]',
+      'type = "openai"',
+      'api_key = "sk-openai"',
+      'base_url = "https://api.openai.example/v1"',
+      '',
+      '[models."openai/gpt-4o"]',
+      'provider = "openai"',
+      'model = "gpt-4o"',
+      'max_context_size = 128000',
+      '',
+    ].join('\n');
+    await boot(BASED_TOML);
+    const { body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+      base_url: 'https://api.other.example/v1',
+      api_key: 'sk-new',
+    });
+    expect(body.code).toBe(40936);
+
+    const onDisk = await readConfigToml();
+    expect(onDisk['providers']).toEqual({
+      openai: {
+        type: 'openai',
+        api_key: 'sk-openai',
+        base_url: 'https://api.openai.example/v1',
+      },
+    });
+  });
+
+  it('merging a base_url onto a provider that has none is rejected with 40936', async () => {
+    await boot(KEEP_DEFAULT_TOML);
+    const { body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+      base_url: 'https://api.openai.example/v1',
+    });
+    expect(body.code).toBe(40936);
+
+    const onDisk = await readConfigToml();
+    expect(onDisk['providers']).toEqual({
+      zimi: { type: 'zimi', api_key: 'sk-test' },
+      openai: { type: 'openai', api_key: 'sk-openai' },
+    });
+  });
+
+  it('merge keeps the stored api_key when api_key is omitted', async () => {
+    await boot(KEEP_DEFAULT_TOML);
+    const { status, body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+    });
+    expect(status).toBe(200);
+    expect(body.code).toBe(0);
+    expect(body.data).toMatchObject({ id: 'openai', has_api_key: true });
+
+    const onDisk = await readConfigToml();
+    expect((onDisk['providers'] as Record<string, { api_key?: string }>)['openai']?.api_key).toBe(
+      'sk-openai',
+    );
+  });
+
+  it('merge replaces the api_key when a non-empty one is submitted', async () => {
+    await boot(KEEP_DEFAULT_TOML);
+    const { status } = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+      api_key: 'sk-rotated',
+    });
+    expect(status).toBe(200);
+
+    const onDisk = await readConfigToml();
+    expect((onDisk['providers'] as Record<string, { api_key?: string }>)['openai']?.api_key).toBe(
+      'sk-rotated',
+    );
+  });
+
+  it('merge clears the api_key when an empty string is submitted', async () => {
+    await boot(KEEP_DEFAULT_TOML);
+    const { status, body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+      api_key: '',
+    });
+    expect(status).toBe(200);
+    expect(body.data).toMatchObject({ id: 'openai', has_api_key: false });
+
+    const onDisk = await readConfigToml();
+    expect(onDisk['providers']).toEqual({
+      zimi: { type: 'zimi', api_key: 'sk-test' },
+      openai: { type: 'openai' },
+    });
+  });
+
+  it('merge switches apiKey to apiKeyEnv without leaving residue, and back', async () => {
+    await boot(KEEP_DEFAULT_TOML);
+    const toEnv = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+      api_key_env: 'ZIMI_TEST_MERGE_KEY',
+    });
+    expect(toEnv.status).toBe(200);
+
+    let onDisk = await readConfigToml();
+    expect(onDisk['providers']).toEqual({
+      zimi: { type: 'zimi', api_key: 'sk-test' },
+      openai: { type: 'openai', api_key_env: 'ZIMI_TEST_MERGE_KEY' },
+    });
+
+    const backToKey = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+      api_key: 'sk-back',
+    });
+    expect(backToKey.status).toBe(200);
+
+    onDisk = await readConfigToml();
+    expect(onDisk['providers']).toEqual({
+      zimi: { type: 'zimi', api_key: 'sk-test' },
+      openai: { type: 'openai', api_key: 'sk-back' },
+    });
+  });
+
+  it('merge rejects api_key and api_key_env submitted together with 40001 (no writes)', async () => {
+    await boot(KEEP_DEFAULT_TOML);
+    const { body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+      api_key: 'sk-inline',
+      api_key_env: 'ZIMI_TEST_MERGE_KEY',
+    });
+    expect(body.code).toBe(40001);
+    expect(body.msg).toContain('mutually exclusive');
+
+    const onDisk = await readConfigToml();
+    expect(onDisk['providers']).toEqual({
+      zimi: { type: 'zimi', api_key: 'sk-test' },
+      openai: { type: 'openai', api_key: 'sk-openai' },
+    });
+  });
+
+  it('merge updates default_model when it names an existing-only alias', async () => {
+    const ALIASED_TOML = [
+      '[providers.openai]',
+      'type = "openai"',
+      'api_key = "sk-openai"',
+      '',
+      '[models."openai/gpt-4o"]',
+      'provider = "openai"',
+      'model = "gpt-4o"',
+      'max_context_size = 128000',
+      '',
+    ].join('\n');
+    await boot(ALIASED_TOML);
+    const { status, body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+      default_model: 'gpt-4o',
+    });
+    expect(status).toBe(200);
+    expect(body.code).toBe(0);
+    expect(body.data).toMatchObject({ id: 'openai', default_model: 'openai/gpt-4o' });
+
+    const onDisk = await readConfigToml();
+    expect((onDisk['providers'] as Record<string, { default_model?: string }>)['openai']?.default_model).toBe(
+      'openai/gpt-4o',
+    );
+  });
+
+  it('merge rejects a default_model outside the merged model set with 40001 (no writes)', async () => {
+    await boot(KEEP_DEFAULT_TOML);
+    const { body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+      default_model: 'gpt-5',
+    });
+    expect(body.code).toBe(40001);
+
+    const onDisk = await readConfigToml();
+    expect(onDisk['providers']).toEqual({
+      zimi: { type: 'zimi', api_key: 'sk-test' },
+      openai: { type: 'openai', api_key: 'sk-openai' },
+    });
+  });
+
+  it('merge keeps the stored default_model when it is omitted', async () => {
+    const DEFAULTED_PROVIDER_TOML = [
+      '[providers.openai]',
+      'type = "openai"',
+      'api_key = "sk-openai"',
+      'default_model = "openai/gpt-4o"',
+      '',
+      '[models.gpt4o]',
+      'provider = "openai"',
+      'model = "gpt-4o"',
+      'max_context_size = 128000',
+      '',
+    ].join('\n');
+    await boot(DEFAULTED_PROVIDER_TOML);
+    const { status } = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+      api_key: 'sk-new',
+    });
+    expect(status).toBe(200);
+
+    const onDisk = await readConfigToml();
+    expect((onDisk['providers'] as Record<string, { default_model?: string }>)['openai']?.default_model).toBe(
+      'openai/gpt-4o',
+    );
+  });
+
+  it('merge upserts models: new aliases added, submitted fields overwritten, existing fields kept, unlisted aliases untouched', async () => {
+    const RICH_TOML = [
+      '[providers.openai]',
+      'type = "openai"',
+      'api_key = "sk-openai"',
+      '',
+      '[models."openai/gpt-4o"]',
+      'provider = "openai"',
+      'model = "gpt-4o"',
+      'max_context_size = 128000',
+      'display_name = "Old Name"',
+      'beta_api = true',
+      '',
+      '[models."openai/legacy"]',
+      'provider = "openai"',
+      'model = "legacy"',
+      'max_context_size = 64000',
+      '',
+    ].join('\n');
+    await boot(RICH_TOML);
+    const { status, body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+      models: [
+        {
+          model: 'gpt-4o',
+          max_context_size: 256000,
+          display_name: 'New Name',
+        },
+        { model: 'gpt-4.1', max_context_size: 1047576 },
+      ],
+    });
+    expect(status).toBe(200);
+    expect(body.code).toBe(0);
+    expect(body.data).toMatchObject({
+      id: 'openai',
+      models: ['openai/gpt-4o', 'openai/legacy', 'openai/gpt-4.1'],
+    });
+
+    const onDisk = await readConfigToml();
+    expect(onDisk['models']).toEqual({
+      'openai/gpt-4o': {
+        provider: 'openai',
+        model: 'gpt-4o',
+        max_context_size: 256000,
+        display_name: 'New Name',
+        beta_api: true,
+      },
+      'openai/legacy': {
+        provider: 'openai',
+        model: 'legacy',
+        max_context_size: 64000,
+      },
+      'openai/gpt-4.1': {
+        provider: 'openai',
+        model: 'gpt-4.1',
+        max_context_size: 1047576,
+      },
+    });
+  });
+
+  it('merge preserves an existing upgrade pointer on a resubmitted model', async () => {
+    const UPGRADE_TOML = [
+      '[providers.openai]',
+      'type = "openai"',
+      'api_key = "sk-openai"',
+      '',
+      '[models."openai/gpt-4o"]',
+      'provider = "openai"',
+      'model = "gpt-4o"',
+      'max_context_size = 128000',
+      '',
+      '[models."openai/gpt-4.1"]',
+      'provider = "openai"',
+      'model = "gpt-4.1"',
+      'max_context_size = 1047576',
+      '',
+      '[models."openai/gpt-4o".upgrade]',
+      'model = "openai/gpt-4.1"',
+      'migration_markdown = "Use next"',
+      '',
+    ].join('\n');
+    await boot(UPGRADE_TOML);
+    const { status } = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+      models: [{ model: 'gpt-4o', max_context_size: 256000 }],
+    });
+    expect(status).toBe(200);
+
+    const onDisk = await readConfigToml();
+    expect(onDisk['models']).toMatchObject({
+      'openai/gpt-4o': {
+        max_context_size: 256000,
+        upgrade: { model: 'openai/gpt-4.1', migration_markdown: 'Use next' },
+      },
+      'openai/gpt-4.1': { max_context_size: 1047576 },
+    });
+  });
+
+  it('merge with models omitted makes zero changes to the models section', async () => {
+    const RICH_TOML = [
+      '[providers.openai]',
+      'type = "openai"',
+      'api_key = "sk-openai"',
+      '',
+      '[models."openai/gpt-4o"]',
+      'provider = "openai"',
+      'model = "gpt-4o"',
+      'max_context_size = 128000',
+      '',
+    ].join('\n');
+    await boot(RICH_TOML);
+    const { status } = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+      api_key: 'sk-rotated',
+    });
+    expect(status).toBe(200);
+
+    const onDisk = await readConfigToml();
+    expect(onDisk['models']).toEqual({
+      'openai/gpt-4o': {
+        provider: 'openai',
+        model: 'gpt-4o',
+        max_context_size: 128000,
+      },
+    });
+    expect((onDisk['providers'] as Record<string, { api_key?: string }>)['openai']?.api_key).toBe(
+      'sk-rotated',
+    );
+  });
+
+  it('merge rejects a duplicate model row with 40001', async () => {
+    await boot(KEEP_DEFAULT_TOML);
+    const { body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+      models: [
+        { model: 'gpt-4.1', max_context_size: 1047576 },
+        { model: 'gpt-4.1', max_context_size: 128000 },
+      ],
+    });
+    expect(body.code).toBe(40001);
+    expect(body.msg).toContain('duplicate model');
+  });
+
+  it('replaying the same merge body leaves config.toml byte-identical', async () => {
+    const RICH_TOML = [
+      '[providers.openai]',
+      'type = "openai"',
+      'api_key = "sk-openai"',
+      'base_url = "https://api.openai.example/v1"',
+      'default_model = "openai/gpt-4o"',
+      '',
+      '[models."openai/gpt-4o"]',
+      'provider = "openai"',
+      'model = "gpt-4o"',
+      'max_context_size = 128000',
+      'display_name = "GPT-4o"',
+      '',
+    ].join('\n');
+    await boot(RICH_TOML);
+    const mergeBody = {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+      base_url: 'https://api.openai.example/v1',
+      models: [
+        { model: 'gpt-4o', max_context_size: 256000, display_name: 'GPT-4o' },
+        { model: 'gpt-4.1', max_context_size: 1047576 },
+      ],
+    };
+    const first = await postJson<unknown>('/api/v1/providers', mergeBody);
+    expect(first.status).toBe(200);
+    expect(first.body.code).toBe(0);
+
+    const textAfterFirst = await readFile(join(home as string, 'config.toml'), 'utf-8');
+    const second = await postJson<unknown>('/api/v1/providers', mergeBody);
+    expect(second.status).toBe(200);
+    expect(second.body.code).toBe(0);
+
+    const textAfterSecond = await readFile(join(home as string, 'config.toml'), 'utf-8');
+    expect(textAfterSecond).toBe(textAfterFirst);
+  });
+
+  it('merge seeds the global default_model on a fresh setup but never overwrites a set one', async () => {
+    const PROVIDER_ONLY_TOML = [
+      '[providers.openai]',
+      'type = "openai"',
+      'api_key = "sk-openai"',
+      '',
+      '[models.gpt4o]',
+      'provider = "openai"',
+      'model = "gpt-4o"',
+      'max_context_size = 128000',
+      '',
+    ].join('\n');
+    await boot(PROVIDER_ONLY_TOML);
+    const seeded = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+      models: [{ model: 'gpt-4.1', max_context_size: 1047576 }],
+    });
+    expect(seeded.status).toBe(200);
+    expect((await readConfigToml())['default_model']).toBe('openai/gpt-4.1');
+
+    await boot(KEEP_DEFAULT_TOML);
+    const kept = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+      models: [{ model: 'gpt-4.1', max_context_size: 1047576 }],
+    });
+    expect(kept.status).toBe(200);
+    expect((await readConfigToml())['default_model']).toBe('k2');
+  });
+
+  it('merge falls back to the first existing alias when seeding and no models are submitted', async () => {
+    const PROVIDER_ONLY_TOML = [
+      '[providers.openai]',
+      'type = "openai"',
+      'api_key = "sk-openai"',
+      '',
+      '[models."openai/gpt-4o"]',
+      'provider = "openai"',
+      'model = "gpt-4o"',
+      'max_context_size = 128000',
+      '',
+    ].join('\n');
+    await boot(PROVIDER_ONLY_TOML);
+    const { status } = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+      api_key: 'sk-rotated',
+    });
+    expect(status).toBe(200);
+    expect((await readConfigToml())['default_model']).toBe('openai/gpt-4o');
+  });
+
+  it('concurrent same-id creates: one 201, one 40921', async () => {
+    await boot();
+    const [a, b] = await Promise.all([
+      postJson<unknown>('/api/v1/providers', CREATE_BODY),
+      postJson<unknown>('/api/v1/providers', CREATE_BODY),
+    ]);
+    const statuses = [a.status, b.status].sort();
+    const codes = [a.body.code, b.body.code].sort();
+    expect(statuses).toEqual([200, 201]);
+    expect(codes).toEqual([0, 40921]);
+  });
+
+  it('concurrent create + merge: one 201, one 200 merge', async () => {
+    await boot();
+    const mergeBody = {
+      ...CREATE_BODY,
+      on_existing: 'merge',
+    };
+    const [a, b] = await Promise.all([
+      postJson<unknown>('/api/v1/providers', CREATE_BODY),
+      postJson<unknown>('/api/v1/providers', mergeBody),
+    ]);
+    expect([a.status, b.status].sort()).toEqual([200, 201]);
+    expect(a.body.code).toBe(0);
+    expect(b.body.code).toBe(0);
+
+    const providers = await getJson<{ items: Array<{ id: string }> }>('/api/v1/providers');
+    expect(providers.body.data.items.map((p) => p.id)).toEqual(['my-openai']);
+  });
+
+  it('merge combines with discover:true: probe first, then merge into the existing record', async () => {
+    const probeUrl = await startProbeServer('list');
+    installDiscoverCatalog();
+    const EXISTING_TOML = [
+      '[providers.my-gateway]',
+      'type = "openai"',
+      'api_key = "sk-old"',
+      'base_url = "' + probeUrl + '"',
+      '',
+      '[models."my-gateway/legacy"]',
+      'provider = "my-gateway"',
+      'model = "legacy"',
+      'max_context_size = 64000',
+      '',
+    ].join('\n');
+    await boot(EXISTING_TOML);
+    const { status, body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'my-gateway',
+      on_existing: 'merge',
+      api_key: 'sk-probe',
+      base_url: probeUrl,
+      discover: true,
+    });
+    expect(status).toBe(200);
+    expect(body.code).toBe(0);
+    expect(body.data).toMatchObject({
+      id: 'my-gateway',
+      type: 'openai',
+      has_api_key: true,
+    });
+
+    const onDisk = await readConfigToml();
+    const providers = onDisk['providers'] as Record<string, Record<string, unknown>>;
+    expect(providers['my-gateway']).toEqual({
+      type: 'openai',
+      api_key: 'sk-probe',
+      base_url: probeUrl,
+    });
+    const models = onDisk['models'] as Record<string, Record<string, unknown>>;
+    expect(Object.keys(models).sort()).toEqual(
+      ['my-gateway/gpt-x', 'my-gateway/gpt-y', 'my-gateway/legacy'].sort(),
+    );
+    expect(models['my-gateway/legacy']).toEqual({
+      provider: 'my-gateway',
+      model: 'legacy',
+      max_context_size: 64000,
+    });
+  });
+
+  it('merge with discover:true and a mismatched probed protocol is rejected with 40936', async () => {
+    const probeUrl = await startProbeServer('list');
+    installDiscoverCatalog();
+    const EXISTING_TOML = [
+      '[providers.my-gateway]',
+      'type = "anthropic"',
+      'api_key = "sk-old"',
+      'base_url = "' + probeUrl + '"',
+      '',
+    ].join('\n');
+    await boot(EXISTING_TOML);
+    const { body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'my-gateway',
+      on_existing: 'merge',
+      base_url: probeUrl,
+      discover: true,
+    });
+    expect(body.code).toBe(40936);
+    expect(body.data).toBeNull();
+  });
+
+  it('merge onto a missing provider id still creates it (201)', async () => {
+    await boot();
+    const { status, body } = await postJson<unknown>('/api/v1/providers', {
+      ...CREATE_BODY,
+      on_existing: 'merge',
+    });
+    expect(status).toBe(201);
+    expect(body.code).toBe(0);
+    expect(body.data).toMatchObject({ id: 'my-openai' });
+  });
+
+  it('merge with neither discover nor models requires type (40001)', async () => {
+    await boot(KEEP_DEFAULT_TOML);
+    const { body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      api_key: 'sk-new',
+    });
+    expect(body.code).toBe(40001);
+    expect(body.msg).toContain('type is required');
+  });
+
+  it('merge still rejects discover and models submitted together with 40001', async () => {
+    await boot(KEEP_DEFAULT_TOML);
+    installDiscoverCatalog();
+    const { body } = await postJson<unknown>('/api/v1/providers', {
+      id: 'openai',
+      on_existing: 'merge',
+      type: 'openai',
+      discover: true,
+      models: [{ model: 'gpt-4.1', max_context_size: 1047576 }],
+    });
+    expect(body.code).toBe(40001);
+    expect(body.msg).toContain('exactly one of discover=true or models[]');
   });
 });

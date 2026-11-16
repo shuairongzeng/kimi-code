@@ -40,12 +40,13 @@ export const createProviderModelSchema = z.object({
   protocol: z.enum(['anthropic', 'openai', 'openai_responses']).optional(),
   max_output_size: z.number().int().min(1).optional(),
   support_efforts: z.array(z.string().min(1)).optional(),
+  off_effort: z.string().min(1).optional(),
   adaptive_thinking: z.boolean().optional(),
 });
 export type CreateProviderModel = z.infer<typeof createProviderModelSchema>;
 
 function refineProviderForm(
-  value: { base_url?: string | undefined; models: Array<{ model: string }> },
+  value: { base_url?: string | undefined; models?: Array<{ model: string }> | undefined },
   ctx: z.RefinementCtx,
 ): void {
   if (value.base_url !== undefined && value.base_url.includes('${')) {
@@ -56,7 +57,7 @@ function refineProviderForm(
     });
   }
   const seen = new Set<string>();
-  for (const entry of value.models) {
+  for (const entry of value.models ?? []) {
     if (seen.has(entry.model)) {
       ctx.addIssue({
         code: 'custom',
@@ -79,18 +80,76 @@ export const providerIdSchema = z
 export const createProviderRequestSchema = z
   .object({
     id: providerIdSchema,
-    type: providerWireTypeSchema,
+    type: providerWireTypeSchema.optional(),
     api_key: z.string().optional(),
     api_key_env: z.string().optional(),
     base_url: z.string().trim().optional(),
     default_model: z.string().min(1).optional(),
-    models: z.array(createProviderModelSchema).min(1),
+    discover: z.boolean().optional(),
+    on_existing: z.literal('merge').optional(),
+    models: z.array(createProviderModelSchema).optional(),
   })
   .superRefine((value, ctx) => {
     refineProviderForm(value, ctx);
+    const models = value.models;
+    const merge = value.on_existing === 'merge';
+    if (!merge && models !== undefined && models.length === 0) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'models must contain at least one entry',
+        path: ['models'],
+      });
+      return;
+    }
+    if (value.discover === true && models !== undefined) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'provide exactly one of discover=true or models[]',
+        path: ['discover'],
+      });
+      return;
+    }
+    if (!merge && value.discover !== true && models === undefined) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'provide exactly one of discover=true or models[]',
+        path: ['discover'],
+      });
+      return;
+    }
+    if (models === undefined) {
+      if (merge && value.discover !== true && value.type === undefined) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'type is required unless discover is true',
+          path: ['type'],
+        });
+      }
+      return;
+    }
+    if (value.type === undefined) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'type is required unless discover is true',
+        path: ['type'],
+      });
+    }
+    const seen = new Set<string>();
+    for (const entry of models) {
+      if (seen.has(entry.model)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `duplicate model: ${entry.model}`,
+          path: ['models'],
+        });
+        return;
+      }
+      seen.add(entry.model);
+    }
+    if (merge) return;
     if (
       value.default_model !== undefined &&
-      !value.models.some((entry) => entry.model === value.default_model)
+      !models.some((entry) => entry.model === value.default_model)
     ) {
       ctx.addIssue({
         code: 'custom',

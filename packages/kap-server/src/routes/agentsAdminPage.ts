@@ -682,7 +682,8 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
         }
         var models = (res.j.data && res.j.data.models) || [];
         endpointModels = models;
-        endpointInfo = { url: url, key: key, type: type || 'openai' };
+        var detected = (res.j.data && res.j.data.protocol) || '';
+        endpointInfo = { url: url, key: key, type: type || detected || 'openai' };
         $('ep-error').textContent = '';
         $('endpoint-panel').hidden = true;
         $('endpoint-toggle').textContent = '已从端点拉取 ' + models.length + ' 个模型（点击更换端点）';
@@ -726,16 +727,25 @@ export const AGENTS_ADMIN_HTML = `<!doctype html>
     if (endpointModel) {
       var host = '';
       try { host = new URL(endpointInfo.url).hostname.replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || 'endpoint'; } catch (e) { host = 'endpoint'; }
-      var providerId = 'ep-' + host;
-      var regBody = { id: providerId, type: endpointInfo.type, baseUrl: endpointInfo.url, apiKey: endpointInfo.key, models: [{ model: model, max_context_size: 128000 }] };
-      fetch('/api/v1/providers', { method: 'POST', headers: jsonHeaders(), body: JSON.stringify(regBody) })
-        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
-        .then(function (res) {
-          if (!res.ok || (res.j && res.j.code !== 0)) { showError($('form-error'), res.j); return; }
-          payload.model = providerId + '/' + model;
-          doSave(payload);
-        })
-        .catch(function (e) { showError($('form-error'), { error: { message: String(e) } }); });
+      var baseId = 'ep-' + host;
+      var idCandidates = [baseId, baseId + '-2', baseId + '-3'];
+      var discovered = endpointModels.filter(function (m) { return m.modelId === model; })[0];
+      var regModel = { model: model, max_context_size: (discovered && discovered.contextWindow) || 128000 };
+      if (discovered && discovered.support_efforts && discovered.support_efforts.length) regModel.support_efforts = discovered.support_efforts;
+      var regBody = { id: idCandidates[0], on_existing: 'merge', type: endpointInfo.type, base_url: endpointInfo.url, api_key: endpointInfo.key, models: [regModel] };
+      var registerProvider = function (index) {
+        regBody.id = idCandidates[index];
+        fetch('/api/v1/providers', { method: 'POST', headers: jsonHeaders(), body: JSON.stringify(regBody) })
+          .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+          .then(function (res) {
+            if (res.j && res.j.code === 40936 && index + 1 < idCandidates.length) { registerProvider(index + 1); return; }
+            if (!res.ok || (res.j && res.j.code !== 0)) { showError($('form-error'), res.j); return; }
+            payload.model = idCandidates[index] + '/' + model;
+            doSave(payload);
+          })
+          .catch(function (e) { showError($('form-error'), { error: { message: String(e) } }); });
+      };
+      registerProvider(0);
       return;
     }
     if (model) payload.model = modelAlias;

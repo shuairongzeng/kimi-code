@@ -442,12 +442,14 @@ Credentials are one of two forms: `api_key` stores the key directly, while `api_
 | Parameter | In | Type | Description |
 | --- | --- | --- | --- |
 | `id` | body | string | Required. Provider id. Only letters, digits, `-`, `_`, and spaces; must start with a letter or digit |
-| `type` | body | string | Required. Wire protocol: `zimi` / `openai` / `openai_responses` / `anthropic` / `bedrock` / `google-genai` / `vertexai` |
+| `type` | body | string | Required unless `discover` is true. Wire protocol: `zimi` / `openai` / `openai_responses` / `anthropic` / `bedrock` / `google-genai` / `vertexai`; an explicit value overrides the detected protocol |
 | `api_key` | body | string | API key, stored in `config.toml` |
 | `api_key_env` | body | string | Name of the environment variable to read the API key from. The server stores only the variable name, not the key |
 | `base_url` | body | string | API base URL; must not contain an environment variable placeholder (`${...}`) |
-| `default_model` | body | string | The provider's default model; must be one of `models[].model` |
-| `models` | body | array | Required. At least one entry, no duplicate `model` values; entry shape below |
+| `discover` | body | boolean | When `true`, omit `models`: the server probes `base_url` with the given credential, detects the wire protocol, and creates one alias per discovered model (see below) |
+| `on_existing` | body | string | Set to `merge` to merge into an existing provider with the same `id` instead of failing: submitted model aliases are added or updated, unlisted aliases are kept, and the stored credential is kept unless `api_key` is sent. Replies 200 (not 201) |
+| `default_model` | body | string | The provider's default model; must be one of `models[].model` (or of the discovered models when `discover` is true) |
+| `models` | body | array | Required unless `discover` is true. At least one entry, no duplicate `model` values; entry shape below |
 
 Each `models[]` entry declares one alias whose id is `id/model`:
 
@@ -460,12 +462,16 @@ Each `models[]` entry declares one alias whose id is `id/model`:
 | `protocol` | string | Wire-protocol override: `anthropic`, `openai`, or `openai_responses`; inferred from the model ID when omitted |
 | `max_output_size` | integer | Max output tokens, ≥ 1 |
 | `support_efforts` | array | Supported Thinking mode effort levels |
+| `off_effort` | string | Effort level used when Thinking is off for this model |
 | `adaptive_thinking` | boolean | Adaptive thinking switch |
+
+With `discover: true` the probe classifies Anthropic- and OpenAI-shaped listing endpoints, keeps each reported context window (falling back to a conservative default), and fills `support_efforts` and `off_effort` when the models.dev catalog knows the model — Anthropic-protocol models keep their built-in thinking profiles instead. A failed or unrecognized probe returns an error and writes nothing; declare `models` manually for gateways that expose no listing API.
 
 On success, `data` is the created provider item (same shape as a `GET /api/v1/providers` item).
 
 - `40001`: body validation failed, or both `api_key` and `api_key_env` were passed with non-empty values
-- `40921`: a provider with this `id` already exists
+- `40921`: a provider with this `id` already exists (returned only when `on_existing` is not `merge`)
+- `40936`: `on_existing: merge` was requested, but the stored provider's `type` or `base_url` differs
 
 ### `GET /api/v1/providers/{provider_id}`
 
