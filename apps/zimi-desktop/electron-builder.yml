@@ -7,7 +7,12 @@ files:
   - package.json
 extraResources:
   # Self-contained production deploy of the CLI (dist + dist-web + native +
-  # node_modules) produced by: pnpm --filter @zimi-ai/zimi-code deploy --prod --legacy apps/zimi-desktop/stage/cli
+  # node_modules) produced by:
+  # pnpm --filter @zimi-ai/zimi-code deploy --prod --legacy --config.node-linker=hoisted apps/zimi-desktop/stage/cli
+  # The hoisted (flat) node_modules layout is REQUIRED: NSIS drops the junctions of
+  # the default isolated layout and the installed app then dies with
+  # ERR_MODULE_NOT_FOUND (chokidar -> readdirp). Full rerunnable chain with an
+  # installed-tree boot gate: pnpm package:win (scripts/package-win.mjs).
   - from: stage/cli
     to: cli
   # Runtime window/taskbar icons. build/ is electron-builder's resource dir and

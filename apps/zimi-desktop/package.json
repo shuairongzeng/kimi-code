@@ -10,6 +10,7 @@
     "package": "pnpm build && electron-builder --config electron-builder.yml"
   },
   "devDependencies": {
+    "@playwright/test": "1.57.0",
     "electron": "^45.2.2",
     "electron-builder": "^25.1.8",
     "typescript": "^5.7.2"

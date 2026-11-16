@@ -11,16 +11,14 @@ import {
 import { ChildProcess, spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { openSettingsWindow, registerSettingsIpc, setServerUrl } from './settingsWindow';
 
 // Renderer-facing channel names; must stay in sync with src/preload.ts.
 // Every ipcRenderer.invoke channel carries the 'zimi-desktop:' prefix.
-// 'menu-action' is the main -> renderer push event the web bundle's
-// onMenuAction bridge subscribes to.
 const CHANNEL_OPEN_EXTERNAL = 'zimi-desktop:openExternal';
 const CHANNEL_SET_ONBOARDED = 'zimi-desktop:setOnboarded';
 const CHANNEL_SHOW_WINDOW = 'zimi-desktop:showWindow';
 const CHANNEL_WRITE_CLIPBOARD = 'zimi-desktop:writeClipboardText';
-const RENDERER_MENU_ACTION = 'menu-action';
 
 const SERVER_READY_URL = /http:\/\/127\.0\.0\.1:(\d+)\/#token=([A-Za-z0-9._-]+)/;
 const ANSI_ESCAPE = /\x1b\[[0-9;]*m/g;
@@ -185,8 +183,9 @@ function createWindow(url: string): void {
 
 function installMenu(): void {
   // Keep Electron's default application menu and append a custom top-level
-  // item. Its click reaches the web UI through the kimiDesktop.onMenuAction
-  // bridge ('open-settings' opens the settings view in the web bundle).
+  // item. The bundle has no provider/model configuration surface, so the
+  // click opens the native Settings window (settingsWindow.ts) which proxies
+  // /api/v1 REST calls in the main process.
   const menu = Menu.getApplicationMenu() ?? Menu.buildFromTemplate([]);
   menu.append(
     new MenuItem({
@@ -194,10 +193,9 @@ function installMenu(): void {
       submenu: Menu.buildFromTemplate([
         {
           label: 'Open Settings',
+          accelerator: 'CmdOrCtrl+Comma',
           click: () => {
-            if (mainWindow && !mainWindow.isDestroyed()) {
-              mainWindow.webContents.send(RENDERER_MENU_ACTION, 'open-settings');
-            }
+            openSettingsWindow();
           },
         },
       ]),
@@ -270,7 +268,11 @@ function startServer(): void {
       serverUrl = match[0];
       clearTimeout(handshakeTimer);
       console.log('[zimi-desktop] server ready at', serverUrl);
+      setServerUrl(serverUrl);
       createWindow(serverUrl);
+      if (process.argv.includes('--settings')) {
+        openSettingsWindow();
+      }
     }
   });
   proc.stderr!.on('data', (chunk: Buffer) => {
@@ -323,6 +325,7 @@ function main(): void {
   app.whenReady().then(() => {
     installMenu();
     registerIpc();
+    registerSettingsIpc();
     startServer();
   });
 
