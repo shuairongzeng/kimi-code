@@ -29,7 +29,7 @@ telemetry = true
 
 [providers."managed:zimi-code"]
 type = "zimi"
-base_url = "https://api.zimi.com/coding/v1"
+base_url = "https://api.kimi.com/coding/v1"
 api_key = ""
 
 [models."zimi-code/k3"]
@@ -66,11 +66,11 @@ reserved_context_size = 50000
 keep_alive_on_exit = false
 
 [services.zimi_search]
-base_url = "https://api.zimi.com/coding/v1/search"
+base_url = "https://api.kimi.com/coding/v1/search"
 api_key = ""
 
 [services.zimi_fetch]
-base_url = "https://api.zimi.com/coding/v1/fetch"
+base_url = "https://api.kimi.com/coding/v1/fetch"
 api_key = ""
 
 [[permission.rules]]
@@ -137,7 +137,7 @@ timeout = 5
 ```toml
 [providers.zimi.env]
 ZIMI_API_KEY = "sk-xxx"
-ZIMI_BASE_URL = "https://api.zimi.ai/v1"
+ZIMI_BASE_URL = "https://api.kimi.ai/v1"
 ```
 
 优先级：`api_key` 或 `api_key_env`（互斥替代项，只能设置其中一个）> `env` 子表键（两者都不存在时才读）> 全部缺失时启动报错。刷新 `/models` 时，声明的变量未设置或为空的供应商会被记为失败，不影响其他供应商。

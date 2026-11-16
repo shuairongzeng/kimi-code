@@ -194,7 +194,7 @@ function fakeFetch(opts: {
       if (step === 'error' || step === undefined) throw new Error('connection refused');
       return new Response(JSON.stringify(step), { status: 200 });
     }
-    if (u.includes('cdn.zimi.com/webbridge/')) {
+    if (u.includes('cdn.kimi.com/webbridge/')) {
       const bytes = opts.binary ?? new Uint8Array([1, 2, 3, 4]);
       return new Response(bytes, {
         status: 200,

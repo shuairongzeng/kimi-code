@@ -423,7 +423,7 @@ describe('runV2Print', () => {
     // Pin the telemetry kill-switch to "unset" so the host environment cannot
     // flip the default telemetry-on path these tests exercise.
     vi.stubEnv('ZIMI_DISABLE_TELEMETRY', '');
-    vi.stubEnv('ZIMI_CODE_OAUTH_HOST', 'https://auth.zimi.com');
+    vi.stubEnv('ZIMI_CODE_OAUTH_HOST', 'https://auth.kimi.com');
     resetZimiRegionCache();
     // `vi.clearAllMocks` keeps implementations, so re-pin the default here.
     mocks.loadMcpServersDetailed.mockImplementation(async () => ({

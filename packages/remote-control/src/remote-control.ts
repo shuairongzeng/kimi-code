@@ -16,7 +16,7 @@ import { WebSocket, type RawData } from 'ws';
 
 import { acquireRemoteControlLock } from './lock';
 
-export const REMOTE_CONTROL_RELAY_ORIGIN = 'https://code-rc.zimi.com';
+export const REMOTE_CONTROL_RELAY_ORIGIN = 'https://code-rc.kimi.com';
 
 export const REMOTE_CONTROL_RELAY_URL_ENV = 'ZIMI_CODE_REMOTE_CONTROL_RELAY_URL';
 

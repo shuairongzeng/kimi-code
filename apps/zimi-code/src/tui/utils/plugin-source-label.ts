@@ -51,7 +51,8 @@ export function pluginTrustLabel(plugin: PluginSourceSummary): PluginTrustLabel 
     if (
       url.protocol === 'https:' &&
       CODE_CDN_HOSTS.has(url.hostname) &&
-      url.pathname.startsWith('/kimi-code/plugins/curated/')
+      (url.pathname.startsWith('/kimi-code/plugins/curated/') ||
+        url.pathname.startsWith('/zimi-code/plugins/curated/'))
     ) {
       return 'curated';
     }
@@ -95,7 +96,8 @@ function isOfficialPluginUrl(url: URL): boolean {
   if (url.protocol !== 'https:') return false;
   return (
     (CODE_CDN_HOSTS.has(url.hostname) &&
-      url.pathname.startsWith('/kimi-code/plugins/official/')) ||
+      (url.pathname.startsWith('/kimi-code/plugins/official/') ||
+        url.pathname.startsWith('/zimi-code/plugins/official/'))) ||
     (CONTENT_CDN_HOSTS.has(url.hostname) &&
       (url.pathname.startsWith('/kimi-computer-use/') ||
         url.pathname.startsWith('/kimi-computer-use-windows/')))

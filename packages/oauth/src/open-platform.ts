@@ -22,14 +22,14 @@ export interface OpenPlatformDefinition {
 export const OPEN_PLATFORMS: readonly OpenPlatformDefinition[] = [
   {
     id: 'zimi-cn',
-    name: 'Zimi Platform (API key · platform.zimi.com)',
+    name: 'Zimi Platform (API key · platform.kimi.com)',
     baseUrl: 'https://api.moonshot.cn/v1',
     consoleUrl: 'https://platform.kimi.com',
     allowedPrefixes: ['kimi-k'],
   },
   {
     id: 'zimi-ai',
-    name: 'Zimi Platform (API key · platform.zimi.ai)',
+    name: 'Zimi Platform (API key · platform.kimi.ai)',
     baseUrl: 'https://api.moonshot.ai/v1',
     consoleUrl: 'https://platform.kimi.ai',
     allowedPrefixes: ['kimi-k'],

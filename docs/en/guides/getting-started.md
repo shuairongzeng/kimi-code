@@ -88,7 +88,7 @@ On first launch you need to configure an API source. In the interactive UI, ente
 `/login` opens a platform selector supporting two options:
 
 - **Zimi Code (OAuth)** — device-code flow; open the link on any device, sign in, and enter the code to authorize
-- **Zimi Platform API key** — enter an API key from `platform.zimi.com` or `platform.zimi.ai`
+- **Zimi Platform API key** — enter an API key from `platform.kimi.com` or `platform.kimi.ai`
 
 To sign out, enter `/logout` to clear the current credentials.
 

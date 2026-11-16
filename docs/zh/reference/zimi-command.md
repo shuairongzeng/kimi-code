@@ -215,7 +215,7 @@ zimi app ~/project
 
 ### `zimi install-desktop`
 
-打印 Zimi Code 桌面端页面地址并在默认浏览器中打开，无需离开终端即可下载并安装桌面端应用。页面地址随当前区域而定：国内区域为 `https://www.zimi.com/code`，全球区域为 `https://www.zimi.ai/code`。
+打印 Zimi Code 桌面端页面地址并在默认浏览器中打开，无需离开终端即可下载并安装桌面端应用。页面地址随当前区域而定：国内区域为 `https://www.kimi.com/code`，全球区域为 `https://www.kimi.ai/code`。
 
 ```sh
 zimi install-desktop

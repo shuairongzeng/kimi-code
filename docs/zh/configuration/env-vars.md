@@ -63,7 +63,7 @@ export ZIMI_CODE_CUSTOM_HEADERS=$'X-Gateway-Cluster: my-cluster\nX-Custom-Tag: d
 ```toml
 [providers.zimi.env]
 ZIMI_API_KEY = "sk-xxx"
-ZIMI_BASE_URL = "https://api.zimi.ai/v1"
+ZIMI_BASE_URL = "https://api.kimi.ai/v1"
 ```
 
 各供应商对应的键名：
@@ -71,7 +71,7 @@ ZIMI_BASE_URL = "https://api.zimi.ai/v1"
 | 键名 | 适用供应商 | 默认值 |
 | --- | --- | --- |
 | `ZIMI_API_KEY` | Zimi / Zimi | 无 |
-| `ZIMI_BASE_URL` | Zimi / Zimi | `https://api.zimi.ai/v1` |
+| `ZIMI_BASE_URL` | Zimi / Zimi | `https://api.kimi.ai/v1` |
 | `ANTHROPIC_API_KEY` | Anthropic | 无 |
 | `ANTHROPIC_BASE_URL` | Anthropic | Anthropic SDK 默认值 |
 | `OPENAI_API_KEY` | OpenAI（`openai` 和 `openai_responses`） | 无 |
@@ -104,8 +104,8 @@ ZIMI_BASE_URL = "https://api.zimi.ai/v1"
 | 环境变量 | 用途 | 默认值 |
 | --- | --- | --- |
 | `ZIMI_CODE_OAUTH_HOST` | OAuth 认证 host，优先级最高 | 未设时回退到 `ZIMI_OAUTH_HOST` |
-| `ZIMI_OAUTH_HOST` | OAuth 认证 host，作为上一个的 fallback | 未设时使用 `https://auth.zimi.com` |
-| `ZIMI_CODE_BASE_URL` | OAuth 登录后的托管 API base URL | `https://api.zimi.com/coding/v1` |
+| `ZIMI_OAUTH_HOST` | OAuth 认证 host，作为上一个的 fallback | 未设时使用 `https://auth.kimi.com` |
+| `ZIMI_CODE_BASE_URL` | OAuth 登录后的托管 API base URL | `https://api.kimi.com/coding/v1` |
 | `ZIMI_CODE_REGION_MARKER` | 安装渠道标记和未登录时的本地区域推断 | 默认启用；设为 `off` 同时禁用并使用 `mainland-cn` 默认值 |
 
 ::: warning

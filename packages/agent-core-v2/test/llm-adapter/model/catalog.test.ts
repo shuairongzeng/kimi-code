@@ -92,7 +92,7 @@ function createHost(
 
 const zimiSections: Record<string, unknown> = {
   providers: {
-    zimi: { type: 'zimi', apiKey: 'sk-test', baseUrl: 'https://api.zimi.ai/v1' },
+    zimi: { type: 'zimi', apiKey: 'sk-test', baseUrl: 'https://api.kimi.ai/v1' },
   },
   models: {
     k1: { provider: 'zimi', model: 'kimi-k2', maxContextSize: 262144 },
@@ -126,7 +126,7 @@ describe('Model assembly (pure data)', () => {
       expect(model.protocol).toBe('openai');
       expect(model.providerType).toBe('zimi');
       expect(model.providerName).toBe('zimi');
-      expect(model.endpoint.baseUrl).toBe('https://api.zimi.ai/v1');
+      expect(model.endpoint.baseUrl).toBe('https://api.kimi.ai/v1');
       expect(model.spec.maxContextSize).toBe(262144);
       expect(model.endpoint.headers).toMatchObject({
         'User-Agent': 'zimi-test/1.0',
@@ -498,7 +498,7 @@ describe('Model assembly (pure data)', () => {
     const { host, catalog } = createHost(
       {
         providers: {
-          zimi: { type: 'zimi', oauth: { storage: 'file', key: 'zimi' }, baseUrl: 'https://api.zimi.ai/v1' },
+          zimi: { type: 'zimi', oauth: { storage: 'file', key: 'zimi' }, baseUrl: 'https://api.kimi.ai/v1' },
         },
         models: { k1: { provider: 'zimi', model: 'kimi-k2', maxContextSize: 1 } },
       },
@@ -570,7 +570,7 @@ describe('ModelCatalog caching and config-event invalidation', () => {
   it('drops only the changed entries when a watched config section changes', async () => {
     const { host, catalog, models, providers } = createHost({
       providers: {
-        zimi: { type: 'zimi', apiKey: 'sk-test', baseUrl: 'https://api.zimi.ai/v1' },
+        zimi: { type: 'zimi', apiKey: 'sk-test', baseUrl: 'https://api.kimi.ai/v1' },
         openai: { type: 'openai', apiKey: 'sk-o', baseUrl: 'https://api.openai.com/v1' },
       },
       models: {
@@ -621,7 +621,7 @@ describe('headers merge order', () => {
         zimi: {
           type: 'zimi',
           apiKey: 'sk',
-          baseUrl: 'https://api.zimi.ai/v1',
+          baseUrl: 'https://api.kimi.ai/v1',
           customHeaders: { 'User-Agent': 'custom-ua', 'X-Custom': 'c' },
         },
       },

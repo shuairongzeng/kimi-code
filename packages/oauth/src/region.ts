@@ -83,7 +83,7 @@ export function zimiRegionProfile(region: ZimiRegion): ZimiRegionProfile {
 
 /**
  * Content-CDN URL builder (tips banner, WebBridge / Computer-Use binaries).
- * International mirror coverage of cdn.zimi.ai for these payloads is still
+ * International mirror coverage of cdn.kimi.ai for these payloads is still
  * being confirmed, so both regions currently share the .com host — funnel
  * every content URL through here so flipping later touches one function.
  */

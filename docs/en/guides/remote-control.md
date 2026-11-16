@@ -140,7 +140,7 @@ Check in this order:
 2. **Network connectivity**: can the machine reach the internet
 3. **Process status**: is the Remote Control process running on the machine
 4. **Account match**: is the web side logged in with the same Zimi account
-5. **Firewall and proxy**: is your corporate network or proxy blocking `code-rc.zimi.com`
+5. **Firewall and proxy**: is your corporate network or proxy blocking `code-rc.kimi.com`
 
 ## Next steps
 

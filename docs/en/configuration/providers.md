@@ -66,14 +66,14 @@ The same operations are also available in non-interactive environments via the s
 
 For connecting to Zimi AI's OpenAI-compatible interface, including the Zimi Code managed service and Zimi Platform API keys.
 
-- Default `base_url`: `https://api.zimi.ai/v1`
+- Default `base_url`: `https://api.kimi.ai/v1`
 - Credential key names: `ZIMI_API_KEY`, `ZIMI_BASE_URL`
 - Additional capability: supports video upload
 
 ```toml
 [providers.zimi]
 type = "zimi"
-base_url = "https://api.zimi.ai/v1"
+base_url = "https://api.kimi.ai/v1"
 api_key = "sk-xxxxx"
 ```
 

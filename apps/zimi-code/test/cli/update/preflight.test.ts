@@ -273,7 +273,7 @@ describe('runUpdatePreflight', () => {
     vi.stubEnv('ZIMI_CODE_UPDATE_CHANNEL', '');
     // Pin the region to cn so address assertions don't follow the dev
     // machine's own login/marker state; global tests override below.
-    vi.stubEnv('ZIMI_CODE_OAUTH_HOST', 'https://auth.zimi.com');
+    vi.stubEnv('ZIMI_CODE_OAUTH_HOST', 'https://auth.kimi.com');
     resetZimiRegionCache();
     mocks.readUpdateInstallState.mockResolvedValue(emptyUpdateInstallState());
     mocks.writeUpdateInstallState.mockResolvedValue(undefined);
@@ -535,7 +535,7 @@ describe('runUpdatePreflight', () => {
     await expect(runUpdatePreflight('0.4.0', options)).resolves.toBe('continue');
     expect(stdout.join('')).toContain('brew upgrade zimi-code');
     expect(stdout.join('')).toContain('Third-party sources may lag behind the official release.');
-    expect(stdout.join('')).toContain('https://www.zimi.com/code');
+    expect(stdout.join('')).toContain('https://www.kimi.com/code');
     expect(promptForInstallChoice).not.toHaveBeenCalled();
     expect(mocks.spawn).not.toHaveBeenCalled();
   });
@@ -588,7 +588,7 @@ describe('runUpdatePreflight', () => {
   });
 
   it('global region: derives install commands and site links from the .ai profile', async () => {
-    vi.stubEnv('ZIMI_CODE_OAUTH_HOST', 'https://auth.zimi.ai');
+    vi.stubEnv('ZIMI_CODE_OAUTH_HOST', 'https://auth.kimi.ai');
     resetZimiRegionCache();
     mocks.readUpdateCache.mockResolvedValue(cacheWith('0.5.0'));
     mocks.refreshUpdateCache.mockResolvedValue(cacheWith('0.5.0'));
@@ -598,13 +598,13 @@ describe('runUpdatePreflight', () => {
       // Native updates self-spawn the staged downloader silently, so the
       // region surface there is the manual install command text.
       expect(installCommandFor('native', '0.5.0', 'win32')).toBe(
-        'irm https://code.zimi.ai/zimi-code/install.ps1 | iex',
+        'irm https://code.kimi.ai/zimi-code/install.ps1 | iex',
       );
 
       mocks.detectInstallSource.mockResolvedValue('homebrew');
       const brew = captureOutput();
       await expect(runUpdatePreflight('0.4.0', brew.options)).resolves.toBe('continue');
-      expect(brew.stdout.join('')).toContain('https://www.zimi.ai/code');
+      expect(brew.stdout.join('')).toContain('https://www.kimi.ai/code');
       expect(mocks.spawn).not.toHaveBeenCalled();
     } finally {
       Object.defineProperty(process, 'platform', { value: originalPlatform });

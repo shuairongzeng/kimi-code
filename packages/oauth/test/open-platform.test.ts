@@ -47,13 +47,13 @@ function makeModelsResponse(): Response {
 describe('OPEN_PLATFORMS', () => {
   it('contains zimi.cn and zimi.ai', () => {
     expect(getOpenPlatformById('zimi-cn')).toMatchObject({
-      name: 'Zimi Platform (API key · platform.zimi.com)',
+      name: 'Zimi Platform (API key · platform.kimi.com)',
       baseUrl: 'https://api.moonshot.cn/v1',
       consoleUrl: 'https://platform.kimi.com',
       allowedPrefixes: ['kimi-k'],
     });
     expect(getOpenPlatformById('zimi-ai')).toMatchObject({
-      name: 'Zimi Platform (API key · platform.zimi.ai)',
+      name: 'Zimi Platform (API key · platform.kimi.ai)',
       baseUrl: 'https://api.moonshot.ai/v1',
       consoleUrl: 'https://platform.kimi.ai',
       allowedPrefixes: ['kimi-k'],

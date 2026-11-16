@@ -274,7 +274,7 @@ describe('session rating lifecycle', () => {
     '',
     '[providers."managed:zimi-code"]',
     'type = "zimi"',
-    'base_url = "https://api.zimi.com/coding/v1"',
+    'base_url = "https://api.kimi.com/coding/v1"',
     'api_key = "test-key"',
     '',
     '[models."zimi-code/k3"]',

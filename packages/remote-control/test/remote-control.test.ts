@@ -55,20 +55,20 @@ describe('Remote Control URLs', () => {
     const url = buildRemoteControlUrl(
       'device/one',
       undefined,
-      'https://code-rc.zimi.com',
+      'https://code-rc.kimi.com',
       'zimi_code_cli',
     );
     expect(url).toBe(
-      'https://code-rc.zimi.com/devices/device%2Fone/?rc=1&from=zimi_code_cli',
+      'https://code-rc.kimi.com/devices/device%2Fone/?rc=1&from=zimi_code_cli',
     );
     expect(url).not.toContain('token');
   });
 
   it('builds an encoded session deep link before the query', () => {
     expect(
-      buildRemoteControlUrl('device-1', 'session/a b', 'https://code-rc.zimi.com', 'zimi_code_cli'),
+      buildRemoteControlUrl('device-1', 'session/a b', 'https://code-rc.kimi.com', 'zimi_code_cli'),
     ).toBe(
-      'https://code-rc.zimi.com/devices/device-1/sessions/session%2Fa%20b?rc=1&from=zimi_code_cli',
+      'https://code-rc.kimi.com/devices/device-1/sessions/session%2Fa%20b?rc=1&from=zimi_code_cli',
     );
   });
 
@@ -77,19 +77,19 @@ describe('Remote Control URLs', () => {
       buildRemoteControlUrl(
         'device-1',
         undefined,
-        'https://code-rc.zimi.com',
+        'https://code-rc.kimi.com',
         'zimi_code_desktop',
       ),
-    ).toBe('https://code-rc.zimi.com/devices/device-1/?rc=1&from=zimi_code_desktop');
+    ).toBe('https://code-rc.kimi.com/devices/device-1/?rc=1&from=zimi_code_desktop');
   });
 
   it('falls back to the default relay origin when the env is unset or blank', () => {
-    expect(resolveRemoteControlRelayOrigin({})).toBe('https://code-rc.zimi.com');
+    expect(resolveRemoteControlRelayOrigin({})).toBe('https://code-rc.kimi.com');
     expect(
       resolveRemoteControlRelayOrigin({ ZIMI_CODE_REMOTE_CONTROL_RELAY_URL: '  ' }),
-    ).toBe('https://code-rc.zimi.com');
-    expect(resolveRemoteControlRelayOrigin({}, 'https://code-rc.zimi.ai')).toBe(
-      'https://code-rc.zimi.ai',
+    ).toBe('https://code-rc.kimi.com');
+    expect(resolveRemoteControlRelayOrigin({}, 'https://code-rc.kimi.ai')).toBe(
+      'https://code-rc.kimi.ai',
     );
   });
 
@@ -214,8 +214,8 @@ describe('Remote Control tunnel', () => {
     const homeDir = mkdtempSync(join(tmpdir(), 'zimi-rc-auth-'));
     cleanups.push(() => rmSync(homeDir, { recursive: true, force: true }));
     const oauthRef = resolveZimiCodeOAuthRef({
-      oauthHost: 'https://auth.zimi.ai',
-      baseUrl: 'https://api.zimi.ai/coding/v1',
+      oauthHost: 'https://auth.kimi.ai',
+      baseUrl: 'https://api.kimi.ai/coding/v1',
     });
     await new FileTokenStorage(join(homeDir, 'credentials')).save(
       resolveZimiTokenStorageName({ oauthKey: oauthRef.key }),
@@ -978,7 +978,7 @@ describe('Remote Control single-instance lock', () => {
         nonce: 'stale',
         local_origin: 'http://127.0.0.1:1',
         device_id: 'dead-device',
-        url: 'https://code-rc.zimi.com/devices/dead-device/',
+        url: 'https://code-rc.kimi.com/devices/dead-device/',
         started_at: 0,
       }),
     );
@@ -1092,7 +1092,7 @@ describe('Remote Control single-instance lock', () => {
         nonce: 'successor',
         local_origin: 'http://127.0.0.1:58628',
         device_id: 'device-2',
-        url: 'https://code-rc.zimi.com/devices/device-2/',
+        url: 'https://code-rc.kimi.com/devices/device-2/',
         started_at: Date.now(),
       }),
     );
@@ -1321,8 +1321,8 @@ describe('Remote Control device client', () => {
       rmSync(homeDir, { recursive: true, force: true });
     });
     const oauthRef = resolveZimiCodeOAuthRef({
-      oauthHost: 'https://auth.zimi.ai',
-      baseUrl: 'https://api.zimi.ai/coding/v1',
+      oauthHost: 'https://auth.kimi.ai',
+      baseUrl: 'https://api.kimi.ai/coding/v1',
     });
     await new FileTokenStorage(join(homeDir, 'credentials')).save(
       resolveZimiTokenStorageName({ oauthKey: oauthRef.key }),

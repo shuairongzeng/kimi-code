@@ -114,10 +114,10 @@ Two distinct platforms exist and must never be mixed:
 | Audience | Individual developers, subscription-based | Enterprise / product integration, pay-per-token |
 | OpenAI-compatible base URL | `https://api.kimi.com/coding/v1` | `https://api.moonshot.cn/v1` |
 | Anthropic-compatible base URL | `https://api.kimi.com/coding/` | Not supported |
-| API key entry | [Zimi Code console](https://www.kimi.com/code/console) | [platform.zimi.com](https://platform.kimi.com) |
+| API key entry | [Zimi Code console](https://www.kimi.com/code/console) | [platform.kimi.com](https://platform.kimi.com) |
 
 Rules:
-- When documenting Zimi Code CLI or VS Code: always use `api.zimi.com/coding/…`. Never write `api.zimi.cn` in this context.
+- When documenting Zimi Code CLI or VS Code: always use `api.kimi.com/coding/…`. Never write `api.zimi.cn` in this context.
 - When documenting Open Platform integration: use `api.zimi.cn/v1`.
 - Distinguish context explicitly: "in Zimi Code CLI / VS Code" vs "in third-party tools / your own product".
 - Product full names: **Zimi Code CLI** and **Zimi Code for VS Code**. Do not abbreviate to "Zimi CLI".
@@ -311,7 +311,7 @@ Before shipping, verify these values match the rest of the docs:
 - **Model ID**: use `kimi-for-coding`, not a versioned model name
 - **Login command**: `/login`, not `/setup`
 - **Product full name**: **Zimi Code CLI** or **Zimi Code for VS Code** — never "Zimi CLI"
-- **Platform URLs**: `api.zimi.com/coding/…` for Zimi Code platform; `api.zimi.cn/v1` for Open Platform — never mix the two
+- **Platform URLs**: `api.kimi.com/coding/…` for Zimi Code platform; `api.zimi.cn/v1` for Open Platform — never mix the two
 
 ## Build and preview
 

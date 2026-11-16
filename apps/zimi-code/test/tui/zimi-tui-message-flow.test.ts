@@ -3209,7 +3209,7 @@ command = "vim"
     expect(harness.auth.submitFeedback).not.toHaveBeenCalled();
     const transcript = stripSgr(renderTranscript(driver));
     expect(transcript).toContain("You're not signed in");
-    expect(transcript).toContain('https://www.zimi.com/code');
+    expect(transcript).toContain('https://www.kimi.com/code');
     expect(transcript).toContain('https://github.com/ZimiAI/zimi-code/issues');
   });
 
@@ -12940,13 +12940,13 @@ capabilities = ["image_in", "video_in"]
         enabledMcpServerCount: 1,
         hasErrors: false,
         source: 'zip-url',
-        originalSource: 'https://code.zimi.com/zimi-code/plugins/official/zimi-datasource.zip',
+        originalSource: 'https://code.kimi.com/zimi-code/plugins/official/zimi-datasource.zip',
       })),
     });
     const { driver } = await makeDriver(session);
 
     driver.handleUserInput(
-      '/plugins install https://code.zimi.com/zimi-code/plugins/official/zimi-datasource.zip',
+      '/plugins install https://code.kimi.com/zimi-code/plugins/official/zimi-datasource.zip',
     );
 
     await vi.waitFor(() => {
@@ -13028,7 +13028,7 @@ capabilities = ["image_in", "video_in"]
             distribution: { category: 'official' },
             displayName: 'Zimi Datasource',
             description: 'Datasource plugin',
-            source: 'https://code.zimi.com/zimi-code/plugins/official/zimi-datasource.zip',
+            source: 'https://code.kimi.com/zimi-code/plugins/official/zimi-datasource.zip',
           },
         ],
       }),
@@ -13084,7 +13084,7 @@ capabilities = ["image_in", "video_in"]
             platforms: ['macos', 'windows', 'linux'],
             distribution: { category: 'official' },
             displayName: 'Zimi Datasource',
-            source: 'https://code.zimi.com/zimi-code/plugins/official/zimi-datasource.zip',
+            source: 'https://code.kimi.com/zimi-code/plugins/official/zimi-datasource.zip',
           },
         ],
       }),
@@ -13247,7 +13247,7 @@ capabilities = ["image_in", "video_in"]
   it('installs default marketplace entries through plain install', async () => {
     const originalFetch = globalThis.fetch;
     const originalBaseUrl = process.env['ZIMI_CODE_BASE_URL'];
-    process.env['ZIMI_CODE_BASE_URL'] = 'https://api.zimi.com/coding/v1';
+    process.env['ZIMI_CODE_BASE_URL'] = 'https://api.kimi.com/coding/v1';
     const { ZimiOAuthToolkit } = await import('@zimi-ai/zimi-code-oauth');
     const tokenProvider = vi.spyOn(ZimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
@@ -13267,7 +13267,7 @@ capabilities = ["image_in", "video_in"]
                   distribution: { category: 'official' },
                   displayName: 'Zimi Datasource',
                   description: 'Datasource plugin',
-                  source: 'https://code.zimi.com/zimi-code/plugins/official/zimi-datasource.zip',
+                  source: 'https://code.kimi.com/zimi-code/plugins/official/zimi-datasource.zip',
                 },
               ],
             }),

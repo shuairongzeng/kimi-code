@@ -18,7 +18,7 @@ Zimi Code requires VS Code 1.100.0 or later.
 1. Install from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=zimi-ai.zimi-code)
 2. Open a folder in VS Code
 3. Click the Zimi icon in the Activity Bar
-4. Sign in with a [zimi.com/code](https://www.zimi.com/code) subscription, or use a provider already configured in the shared `config.toml`
+4. Sign in with a [zimi.com/code](https://www.kimi.com/code) subscription, or use a provider already configured in the shared `config.toml`
 
 The extension runs the Zimi Code Node SDK in the VS Code Extension Host. When
 the extension and the Zimi Code terminal app resolve to the same
@@ -36,7 +36,7 @@ See [the changelog](CHANGELOG.md) for the full compatibility notes.
 
 ## Docs
 
-Official doc for Zimi Code can be found at [www.zimi.com/code/docs](https://www.zimi.com/code/docs/en/zimi-code-for-vscode/guides/getting-started.html)
+Official doc for Zimi Code can be found at [www.kimi.com/code/docs](https://www.kimi.com/code/docs/en/zimi-code-for-vscode/guides/getting-started.html)
 
 ## License
 

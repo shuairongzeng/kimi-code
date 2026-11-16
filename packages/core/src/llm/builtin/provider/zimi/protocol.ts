@@ -33,7 +33,7 @@ import {
 import { classifyZimiQuotaError } from './errors';
 import { normalizeZimiToolSchema } from './schema';
 
-export const ZIMI_DEFAULT_BASE_URL = 'https://api.zimi.ai/v1';
+export const ZIMI_DEFAULT_BASE_URL = 'https://api.kimi.ai/v1';
 
 export interface ZimiThinkingConfig {
   type?: 'enabled' | 'disabled';

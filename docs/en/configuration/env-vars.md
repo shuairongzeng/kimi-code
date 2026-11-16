@@ -63,7 +63,7 @@ This design lets you keep familiar key name conventions while centralizing secre
 ```toml
 [providers.zimi.env]
 ZIMI_API_KEY = "sk-xxx"
-ZIMI_BASE_URL = "https://api.zimi.ai/v1"
+ZIMI_BASE_URL = "https://api.kimi.ai/v1"
 ```
 
 Key names per provider:
@@ -71,7 +71,7 @@ Key names per provider:
 | Key | Applicable provider | Default |
 | --- | --- | --- |
 | `ZIMI_API_KEY` | Zimi / Zimi | None |
-| `ZIMI_BASE_URL` | Zimi / Zimi | `https://api.zimi.ai/v1` |
+| `ZIMI_BASE_URL` | Zimi / Zimi | `https://api.kimi.ai/v1` |
 | `ANTHROPIC_API_KEY` | Anthropic | None |
 | `ANTHROPIC_BASE_URL` | Anthropic | Follows Anthropic SDK default |
 | `OPENAI_API_KEY` | OpenAI (`openai` and `openai_responses`) | None |
@@ -104,8 +104,8 @@ This group of variables redirects OAuth authentication and managed service endpo
 | Variable | Purpose | Default |
 | --- | --- | --- |
 | `ZIMI_CODE_OAUTH_HOST` | OAuth auth host; highest priority | Falls back to `ZIMI_OAUTH_HOST` when unset |
-| `ZIMI_OAUTH_HOST` | OAuth auth host; fallback for `ZIMI_CODE_OAUTH_HOST` | Falls back to `https://auth.zimi.com` when unset |
-| `ZIMI_CODE_BASE_URL` | Managed API base URL used after OAuth login | `https://api.zimi.com/coding/v1` |
+| `ZIMI_OAUTH_HOST` | OAuth auth host; fallback for `ZIMI_CODE_OAUTH_HOST` | Falls back to `https://auth.kimi.com` when unset |
+| `ZIMI_CODE_BASE_URL` | Managed API base URL used after OAuth login | `https://api.kimi.com/coding/v1` |
 | `ZIMI_CODE_REGION_MARKER` | Install-channel marker and logged-out local region inference | Enabled; set `off` to disable both and use the `mainland-cn` default |
 
 ::: warning

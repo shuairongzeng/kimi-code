@@ -29,7 +29,7 @@ telemetry = true
 
 [providers."managed:zimi-code"]
 type = "zimi"
-base_url = "https://api.zimi.com/coding/v1"
+base_url = "https://api.kimi.com/coding/v1"
 api_key = ""
 
 [models."zimi-code/k3"]
@@ -66,11 +66,11 @@ reserved_context_size = 50000
 keep_alive_on_exit = false
 
 [services.zimi_search]
-base_url = "https://api.zimi.com/coding/v1/search"
+base_url = "https://api.kimi.com/coding/v1/search"
 api_key = ""
 
 [services.zimi_fetch]
-base_url = "https://api.zimi.com/coding/v1/fetch"
+base_url = "https://api.kimi.com/coding/v1/fetch"
 api_key = ""
 
 [[permission.rules]]
@@ -137,7 +137,7 @@ Each entry in the `providers` table defines an API provider, keyed by a unique n
 ```toml
 [providers.zimi.env]
 ZIMI_API_KEY = "sk-xxx"
-ZIMI_BASE_URL = "https://api.zimi.ai/v1"
+ZIMI_BASE_URL = "https://api.kimi.ai/v1"
 ```
 
 Priority: `api_key` or `api_key_env` (mutually exclusive alternatives — set exactly one) > `env` sub-table key (only when neither is present) > if all are absent, startup fails with an error. During a `/models` refresh, a provider whose declared variable is unset or empty is reported as failed without affecting other providers.

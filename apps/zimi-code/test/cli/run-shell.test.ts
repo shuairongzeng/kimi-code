@@ -168,7 +168,7 @@ describe('runShell', () => {
   beforeEach(() => {
     // Pin region to cn: the telemetry endpoint assertion below must not
     // follow the dev machine's own login/marker state.
-    vi.stubEnv('ZIMI_CODE_OAUTH_HOST', 'https://auth.zimi.com');
+    vi.stubEnv('ZIMI_CODE_OAUTH_HOST', 'https://auth.kimi.com');
     vi.stubEnv('ZIMI_CODE_EXPERIMENTAL_FLAG', '');
     vi.stubEnv('ZIMI_CODE_TUI_FULL_SCREEN', '');
     vi.stubEnv('ZIMI_CODE_TUI_ANIMATION_FPS', '');
@@ -346,7 +346,7 @@ describe('runShell', () => {
     const telemetryOptions = mocks.initializeTelemetry.mock.calls[0]![0] as {
       endpoint: () => string;
     };
-    expect(telemetryOptions.endpoint()).toBe('https://telemetry-logs.zimi.com/v1/event');
+    expect(telemetryOptions.endpoint()).toBe('https://telemetry-logs.kimi.com/v1/event');
     expect(mocks.setCrashPhase).toHaveBeenCalledWith('runtime');
 
     const [, harness, startupInput] = mocks.zimiTuiConstructor.mock.calls[0]!;

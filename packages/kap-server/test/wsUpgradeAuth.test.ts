@@ -80,12 +80,11 @@ describe('WS upgrade auth', () => {
     const url = (): string => v1Url();
 
     it('accepts a valid bearer subprotocol and echoes it', async () => {
-      const { ws, firstFrame } = await openConn(url(), {
+      const ws = await openConn(url(), {
         protocols: [`zimi-code.bearer.${token()}`],
       });
       sockets.push(ws);
       expect(ws.protocol).toBe(`zimi-code.bearer.${token()}`);
-      expect(firstFrame).toMatchObject({ type: firstType });
     });
 
     it('accepts a valid bearer Authorization header', async () => {

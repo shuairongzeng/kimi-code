@@ -830,7 +830,7 @@ const WEBBRIDGE_POST_INSTALL_MARKDOWN = [
   '',
   '   - [Chrome Web Store](https://chromewebstore.google.com/detail/zimi-webbridge/fldmhceldgbpfpkbgopacenieobmligc)',
   '   - [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/zimi-webbridge/bnlffdbcfnanfbknnlaflhlhkocccckg)',
-  '   - [Manual installation guide](https://www.zimi.com/code/docs/zimi-code-cli/customization/plugins.html#install-the-browser-extension)',
+  '   - [Manual installation guide](https://www.kimi.com/code/docs/zimi-code-cli/customization/plugins.html#install-the-browser-extension)',
   '',
   '2. Run `/reload` or `/new` to apply it.',
 ].join('\n');

@@ -325,7 +325,7 @@ describe('resolveProviderEndpoint', () => {
     process.env['ZIMI_API_KEY'] = 'sk-zimi-env';
     expect(resolveProviderEndpoint('zimi')).toEqual({
       apiKey: 'sk-zimi-env',
-      baseUrl: 'https://api.zimi.ai/v1',
+      baseUrl: 'https://api.kimi.ai/v1',
     });
   });
 
@@ -379,7 +379,7 @@ describe('zimi provider definitions', () => {
       expect(definition?.endpoint).toEqual({
         apiKeyEnv: 'ZIMI_API_KEY',
         baseUrlEnv: 'ZIMI_BASE_URL',
-        defaultBaseUrl: 'https://api.zimi.ai/v1',
+        defaultBaseUrl: 'https://api.kimi.ai/v1',
       });
       expect(definition?.hostHeaders).toBe('full');
       expect(definition?.modelSource).toBe('oauth-catalog');

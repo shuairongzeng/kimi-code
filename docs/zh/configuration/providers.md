@@ -66,14 +66,14 @@ Zimi Code CLI 支持同时接入多家模型供应商服务，模型在供应商
 
 用于对接 Zimi AI 的 OpenAI 兼容接口，包括 Zimi Code 托管服务和 Zimi Platform API 密钥。
 
-- 默认 `base_url`：`https://api.zimi.ai/v1`
+- 默认 `base_url`：`https://api.kimi.ai/v1`
 - 凭证键名：`ZIMI_API_KEY`、`ZIMI_BASE_URL`
 - 额外能力：支持视频上传
 
 ```toml
 [providers.zimi]
 type = "zimi"
-base_url = "https://api.zimi.ai/v1"
+base_url = "https://api.kimi.ai/v1"
 api_key = "sk-xxxxx"
 ```
 
